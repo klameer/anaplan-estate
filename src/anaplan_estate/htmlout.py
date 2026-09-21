@@ -42,6 +42,15 @@ hr{border:0;border-top:1px solid var(--rule);margin:36px 0}
 pre{background:var(--soft);padding:12px;border-radius:6px;overflow-x:auto;font-family:var(--mono);font-size:12px}
 pre.mermaid{background:transparent}
 strong{font-weight:600}
+details.chapter{border-top:1px solid var(--rule);margin-top:28px;padding-top:8px}
+details.chapter>summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:baseline;padding:10px 0}
+details.chapter>summary::-webkit-details-marker{display:none}
+details.chapter .h1{font-weight:600;font-size:24px;letter-spacing:-.01em}
+details.chapter .hint{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+details.chapter[open] .hint::after{content:"ed"}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--rule)}
+#in-one-page+ol>li{margin:10px 0;max-width:80ch}
+@media print{details.chapter>summary .hint{display:none}}
 .sev-critical{color:var(--crit);font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
 .sev-major{color:var(--major);font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
 .sev-minor,.sev-info{color:var(--muted);font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
@@ -102,6 +111,7 @@ def _inline(s: str) -> str:
     s = html.escape(s, quote=False)
     s = re.sub(r"`([^`]+)`", r"<code>\1</code>", s)
     s = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", s)
+    s = re.sub(r"\[([^\]]+)\]\((#[^)]+)\)", r'<a href="\2">\1</a>', s)
     s = re.sub(r"(?<![\w])_([^_]+)_(?![\w])", r"<em>\1</em>", s)
     return s
 
@@ -115,18 +125,20 @@ def _cell(c: str) -> str:
 
 
 def md_to_html(md: str, title: str, css: str | None = None, logo_svg: str | None = None, brand: str | None = None,
-               mermaid: bool = False) -> str:
+               mermaid: bool = False, collapse: bool = True) -> str:
+    """`collapse`: every top-level chapter after the first becomes a <details> block, closed by default; print opens them all."""
     out = [f"<title>{html.escape(title)}</title>", f"<style>{css or CSS}</style>"]
     if mermaid:
         out.append('<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.1/mermaid.min.js"></script>'
                    '<script>if(window.mermaid){mermaid.initialize({startOnLoad:true,theme:document.documentElement.dataset.theme==="dark"||matchMedia("(prefers-color-scheme: dark)").matches?"dark":"neutral"})}</script>')
-    out.append('<div class="page">')
+    out.append('<script>addEventListener("beforeprint",()=>document.querySelectorAll("details").forEach(d=>d.open=true))</script><div class="page">')
     if logo_svg or brand:
         out.append('<div class="cover">' + (logo_svg or "") + (f'<div class="kicker">{html.escape(brand)}</div>' if brand else "") + "</div>")
     lines = md.split("\n")
     i = 0
     para: list[str] = []
     lst = None
+    seen_h1 = [False]; open_details = [False]
 
     def flush_para():
         nonlocal para
@@ -170,7 +182,18 @@ def md_to_html(md: str, title: str, css: str | None = None, logo_svg: str | None
         m = re.match(r"^(#{1,3})\s+(.*)", ln)
         if m:
             flush_para(); flush_list()
-            lvl = len(m.group(1)); out.append(f"<h{lvl}>{_inline(m.group(2))}</h{lvl}>"); i += 1; continue
+            lvl = len(m.group(1)); text = m.group(2)
+            hid = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+            if lvl == 1 and seen_h1[0] and collapse:
+                if open_details[0]:
+                    out.append("</details>")
+                out.append(f'<details class="chapter" id="{hid}"><summary><span class="h1">{_inline(text)}</span><span class="hint">open</span></summary>')
+                open_details[0] = True
+            else:
+                out.append(f'<h{lvl} id="{hid}">{_inline(text)}</h{lvl}>')
+            if lvl == 1:
+                seen_h1[0] = True
+            i += 1; continue
         if ln.strip() == "---":
             flush_para(); flush_list(); out.append("<hr>"); i += 1; continue
         m = re.match(r"^(\s*)[-*]\s+(.*)", ln)
@@ -187,5 +210,7 @@ def md_to_html(md: str, title: str, css: str | None = None, logo_svg: str | None
             flush_para(); flush_list(); i += 1; continue
         flush_list(); para.append(ln.strip()); i += 1
     flush_para(); flush_list()
+    if open_details[0]:
+        out.append("</details>")
     out.append("</div>")
     return "\n".join(out)

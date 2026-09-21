@@ -286,6 +286,89 @@ def run(root: str | Path, aliases: dict[str, str] | None = None, stale_months: i
 
 # ---------- rendering ----------
 
+def _slug(t: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", t.lower()).strip("-")
+
+
+def _headlines(er: EstateRun) -> list[str]:
+    """The report in ten sentences, each computed from the facts and each
+    pointing at the section that shows the working. Plain words, no verdicts."""
+    ms = er.models
+    big = max(ms, key=lambda m: m.facts["cells"])
+    total_cells = sum(m.facts["cells"] for m in ms)
+    total_li = sum(m.facts["line_items"] for m in ms)
+    h = []
+    top_mod = big.facts["cells_by_module"][0] if big.facts["cells_by_module"] else ("", 0, 0)
+    h.append(f"**{len(ms)} models, {_n(total_li)} line items, {_c(total_cells)} cells.** {big.name} is {round(100 * big.facts['cells'] / total_cells) if total_cells else 0}% of the estate by cells; "
+             f"its largest module alone holds {_c(top_mod[1])} ({top_mod[0]}). [Estate at a glance](#the-estate-at-a-glance)")
+    if er.edges:
+        feeders = Counter()
+        for e in er.edges:
+            feeders[e["from"]] += e["actions"]
+        hub, n = feeders.most_common(1)[0]
+        h.append(f"**{hub} is the hub.** It feeds {', '.join(e['to'] for e in er.edges if e['from'] == hub)} through {n} import actions; "
+                 f"{len(er.edges)} feeds between models in all, read off the import action names. [How the models connect](#how-the-models-connect-inferred)")
+    if er.external:
+        top = sorted(er.external.items(), key=lambda kv: -len(kv[1]))[0]
+        h.append(f"**Outside data arrives from {len(er.external)} named sources**, the busiest being {top[0]} with {len(top[1])} imports. [External sources](#how-the-models-connect-inferred)")
+    eff = [m for m in ms if m.facts["has_effort"]]
+    if eff:
+        w = max(eff, key=lambda m: m.facts["cells"])
+        top = w.facts["effort_top"][0]
+        h.append(f"**Calculation time is concentrated.** In {w.name}, ten line items carry {w.facts['effort_top10_share']}% of the model's effort; the single largest is {top[0]} at {top[1]:.1f}%. "
+                 f"[Where the time goes](#{_slug(w.name)})")
+    unref = sum(m.facts["unreferenced"] for m in ms)
+    if unref:
+        w = max(ms, key=lambda m: m.facts["unreferenced"])
+        h.append(f"**{_n(unref)} calculated line items feed nothing.** {w.name} has {_n(w.facts['unreferenced'])} of them: formulas that run on every recalculation and are read by no other formula. "
+                 f"Some are outputs read by pages or exports, which the exports do not show. [{w.name}](#{_slug(w.name)})")
+    stale = sum((m.facts["actions"] or {}).get("stale_count", 0) for m in ms)
+    orph = sum((m.facts["actions"] or {}).get("orphan_count", 0) for m in ms)
+    if stale or orph:
+        h.append(f"**{stale} imports and exports have not run inside the stale window, and {orph} sit outside any process.** Either is a candidate for retirement, or a load nobody schedules. "
+                 f"[Actions, per model](#{_slug(ms[0].name)})")
+    if er.duplicates:
+        d = er.duplicates[0]
+        h.append(f"**{len(er.duplicates)} formulas are copied between models.** {d['line_item']} appears in {', '.join(d['models'])} with the same logic; a change to one must be repeated in the others. "
+                 f"[Logic duplicated across models](#logic-duplicated-across-models)")
+    faults = sum(m.facts["cycles_fault"] for m in ms); bal = sum(m.facts["cycles_balance"] for m in ms)
+    if faults or bal:
+        h.append(f"**{bal + faults} circular reference{'s' if bal + faults != 1 else ''}**: {bal} through a time offset (the opening-balance pattern, normal) and {faults} without (a parser misread or a real fault).")
+    pats = sum(m.facts["patterns"] for m in ms); finds = sum(m.facts["findings"] for m in ms)
+    h.append(f"**{_n(finds)} rule findings collapse to {pats} patterns.** A pattern is one decision copied across modules or line items; fix the template and the copies follow. "
+             f"None of this says whether a finding matters for this estate. That is a review, and this report is its evidence. [Procedures performed](#procedures-performed)")
+    agree = [(m.name, m.facts["referenced_by_check"]["agreement"]) for m in ms if m.facts["referenced_by_check"]["agreement"] is not None]
+    if agree:
+        h.append("**How far to trust the graph.** Every formula parsed. Our dependency edges agree with Anaplan's own Referenced By column at "
+                 + ", ".join(f"{n} {a:.0%}" for n, a in agree)
+                 + "; the gap is line-item subsets through COLLECT(), which the export does not describe.")
+    return h
+
+
+def _toc(er: EstateRun) -> list[str]:
+    rows = [("The estate at a glance", "One row per model. Size, how much of it is calculated, how many imports and processes, when it last ran."),
+            ("How the models connect (inferred)", "Which model feeds which, read off the names of import actions, plus the outside systems those names mention. Inferred, and labelled so."),
+            ("Logic duplicated across models", "The same line item with the same formula in more than one model. One change, several places."),
+            ("Dimensions shared across models", "Lists that appear in more than one model. Where a hierarchy change ripples.")]
+    for m in er.models:
+        f = m.facts
+        rows.append((m.name, f"{f['modules']} modules, {_n(f['line_items'])} line items, {_c(f['cells'])} cells. Where its calculation time goes, what everything depends on, its actions, and its patterns."))
+    rows.append(("Procedures performed", "Every rule that ran and its source, so you know exactly what was and was not checked."))
+    out = ["| Section | What it tells you |", "|---|---|"]
+    for t, d in rows:
+        out.append(f"| [{t}](#{_slug(t)}) | {d} |")
+    return out
+
+
+GLOSSARY = [
+    "**Cells** are what Anaplan bills for and what makes a model slow to open: every line item multiplied out over its dimensions and time. 10.9B means ten thousand million.",
+    "**Calculation effort** is Anaplan's own measure of where the engine spends its time, as a share of the model, exported from Blueprint. Ten line items usually carry most of it.",
+    "**Patterns** are findings grouped by the decision behind them. A formula copied into 96 month columns is one pattern, not 96 problems.",
+    "**Referenced By agreement** is our dependency graph checked against the column Anaplan exports. High means the graph can be trusted; the gap is explained where it appears.",
+    "**Inferred** means read off names, not off a system table. Anaplan does not export which model imports from which; the action names usually say.",
+]
+
+
 def _n(x):
     return f"{x:,}" if isinstance(x, int) else str(x)
 
@@ -305,6 +388,14 @@ def render_markdown(er: EstateRun, max_patterns: int = 20) -> str:
     out = [f"# Anaplan estate: {len(er.models)} model{'s' if len(er.models) != 1 else ''}", "",
            f"Generated {er.generated} from each model's Line Items and Actions exports. Deterministic; no opinion. "
            "Model-to-model links are inferred from import action names and say so.", "",
+           "## In one page", ""]
+    out += [f"{i}. {h}" for i, h in enumerate(_headlines(er), 1)]
+    out += ["", "## How to read this report", "",
+            "Two parts. The first four sections look across the estate. Then one chapter per model, all the same shape, so you can compare them. "
+            "The last section lists what was checked. In the HTML view each chapter is folded; open the one you came for.", ""]
+    out += _toc(er)
+    out += ["", "A few words that carry weight here:", ""] + [f"- {g}" for g in GLOSSARY]
+    out += ["",
            "## The estate at a glance", "",
            "| Model | Modules | Line items | Calculated | Cells | Parse | Imports | Exports | Processes | Latest run | Patterns |",
            "|---|---|---|---|---|---|---|---|---|---|---|"]
