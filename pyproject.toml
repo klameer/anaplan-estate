@@ -1,0 +1,18 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "anaplan-estate"
+version = "0.1.0"
+description = "Deterministic health report for an estate of Anaplan models from their Line Items and Actions exports."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = ["anaplan-grammar"]
+
+[project.scripts]
+anaplan-estate = "anaplan_estate.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/anaplan_estate"]

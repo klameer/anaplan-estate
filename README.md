@@ -1,0 +1,79 @@
+# anaplan-estate
+
+A health report for a whole estate of Anaplan models, from two exports per
+model, run on your own machine. Nothing leaves it.
+
+For each model it reports where the calculation time goes, what depends on
+what, what is unreferenced, circular or daisy-chained, which imports are
+stale or outside any process, and which rule findings collapse into the
+same design decision. Across models it infers which model feeds which
+from the import actions, finds logic duplicated between models, and
+lists the dimensions they share.
+
+Deterministic. No opinion. Every formula is parsed with
+[anaplan-grammar](https://github.com/klameer/anaplan-grammar) and the
+dependency graph is checked against Anaplan's own Referenced By column,
+so the report tells you how much to trust it.
+
+## Export the two files
+
+In each model, as a workspace administrator:
+
+1. **Line items**: Model Settings > Modules > Line Items tab > Export.
+   The grid export with every column (Formula, Applies To, Cell Count,
+   Calculation Effort, Referenced By, Notes, Module Name).
+2. **Actions**: Model Settings > Actions > Export. All sections.
+
+Put them in one folder per model:
+
+```
+estate/
+  FP&A/       Line Items.csv   Actions.csv
+  HR/         Line Items.csv   Actions.csv
+  Pipeline/   Line Items.csv   Actions.csv
+```
+
+Subfolders are fine (`FP&A/line items/Line Items.csv`). A `Modules.csv`
+export alongside adds subsidiary-view and module-notes checks.
+
+## Run
+
+```bash
+pip install anaplan-estate
+anaplan-estate estate/ --out estate.md --json estate.json
+```
+
+`estate.md` is the report. `estate.json` is the same facts for anything
+that wants to read them, including an architect's review.
+
+Options: `--alias "Headcount Model=HR"` when an import action names a
+model differently from its folder; `--name "2 HR Model Documentation=HR"`
+to rename; `--stale-months 12`; `--list` to see what would be analysed.
+
+## What you get
+
+- **The estate at a glance**: one row per model, with parse rate.
+- **How the models connect**: an inferred feed graph (Mermaid) and the
+  external sources named in imports.
+- **Logic duplicated across models**: same line item, same formula tree.
+- Per model: where the calculation time goes (Anaplan's Calculation
+  Effort column, top line items and modules), largest modules by cells,
+  most depended-on line items, actions (orphans, stale, slowest), and
+  findings grouped into patterns.
+- **Procedures performed**: the rules run, so the report reads as
+  agreed-upon procedures, not an opinion.
+
+## What it does not do
+
+Say whether a finding matters for your model. A formula that breaks a
+rule may be doing its job. That judgement is a review, and this report is
+its evidence.
+
+## Development
+
+```bash
+pip install -e .
+python -m pytest -q tests
+```
+
+MIT.
