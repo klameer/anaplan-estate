@@ -24,7 +24,7 @@ from anaplan_grammar.lexer import LexError
 
 PSEUDO_LISTS = {"TIME", "VERSIONS", "VERSION", "USERS"}
 # (function, arg index) positions whose argument is a list name, not a line item
-LIST_ARG = {("FINDITEM", 0), ("ITEM", 0), ("PREVIOUS", 1), ("NEXT", 1), ("RANK", 4), ("RANKCUMULATE", 4),
+LIST_ARG = {("FINDITEM", 0), ("ITEM", 0), ("PREVIOUS", 1), ("NEXT", 1),   # RANK/RANKCUMULATE group-by (arg 4) is a line item: Anaplan lists it in Referenced By
             ("ISFIRSTOCCURRENCE", 1), ("TEXTLIST", 1), ("HIERARCHYLEVEL", 0), ("ITEMLEVEL", 0), ("COLLECT", 0)}
 
 

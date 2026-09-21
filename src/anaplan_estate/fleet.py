@@ -346,7 +346,8 @@ def _render_model(m: ModelRun, max_patterns: int) -> list[str]:
            f"| Cells (as exported) | {_n(f['cells'])} |", f"| Dimensions | {len(f['dimensions'])} |",
            f"| Formulas parsed | {f['parse_rate']:.2%} ({f['parse_errors']} failed) |",
            f"| References | {_n(f['edges'])} line-item edges, {_n(f['module_edges'])} module edges |",
-           f"| Agreement with Anaplan's Referenced By | {f['referenced_by_check']['agreement']} (ours only {f['referenced_by_check']['ours_only']}, Anaplan only {f['referenced_by_check']['anaplan_only']}) |",
+           f"| Agreement with Anaplan's Referenced By | {f['referenced_by_check']['agreement']} (ours only {f['referenced_by_check']['ours_only']}, Anaplan only {f['referenced_by_check']['anaplan_only']}; "
+           f"Anaplan-only edges are mostly line-item subsets via COLLECT(), which the export does not describe) |",
            f"| Circular references | {f['cycles']} ({f['cycles_balance']} through a time offset, {f['cycles_fault']} without) |",
            f"| Pass-through chains | {f['daisy_chains']} |", f"| Calculated but unreferenced | {_n(f['unreferenced'])} |",
            f"| Line items with notes | {f['notes_coverage']:.0%} |",
