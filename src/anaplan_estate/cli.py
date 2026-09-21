@@ -27,6 +27,11 @@ def main(argv=None):
     ap.add_argument("root")
     ap.add_argument("--out", help="write the Markdown report here (default: stdout)")
     ap.add_argument("--json", help="write the JSON bundle here")
+    ap.add_argument("--html", help="write a self-contained HTML page here")
+    ap.add_argument("--theme", help="CSS file replacing the built-in stylesheet (HTML only)")
+    ap.add_argument("--logo", help="SVG file placed on the cover (HTML only)")
+    ap.add_argument("--brand", help="kicker line on the cover, e.g. 'CODELESSOPS · ESTATE REPORT' (HTML only)")
+    ap.add_argument("--title", help="page title (HTML only)")
     ap.add_argument("--alias", action="append", metavar="PHRASE=MODEL", help="map an import-name phrase to a model name")
     ap.add_argument("--name", action="append", metavar="FOLDER=MODEL", help="rename a discovered model")
     ap.add_argument("--skip", action="append", metavar="MODEL", help="leave a discovered model out (e.g. a copy)")
@@ -43,6 +48,12 @@ def main(argv=None):
     if args.json:
         Path(args.json).write_text(json.dumps(er.to_dict(), indent=1, ensure_ascii=False), encoding="utf-8")
         print(f"wrote {args.json}", file=sys.stderr)
+    if args.html:
+        from .htmlout import md_to_html
+        css = Path(args.theme).read_text(encoding="utf-8") if args.theme else None
+        logo = Path(args.logo).read_text(encoding="utf-8") if args.logo else None
+        Path(args.html).write_text(md_to_html(md, args.title or f"Anaplan estate: {len(er.models)} models", css=css, logo_svg=logo, brand=args.brand), encoding="utf-8")
+        print(f"wrote {args.html}", file=sys.stderr)
     if args.out:
         Path(args.out).write_text(md, encoding="utf-8"); print(f"wrote {args.out}", file=sys.stderr)
     else:
