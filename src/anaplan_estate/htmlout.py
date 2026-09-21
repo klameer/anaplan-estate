@@ -94,7 +94,7 @@ def flow_svg(src: str) -> str | None:
     return "\n".join(out)
 
 
-_NUM_CELL = re.compile(r"^-?[\d,]+(\.\d+)?%?$|^\d+\.\d+$|^[\d,]+ \(.*\)$")
+_NUM_CELL = re.compile(r"^-?[\d,]+(\.\d+)?[KMB]?%?$|^\d+\.\d+$|^[\d,]+ \(.*\)$|^[\d.]+[KMB] \([\d,]+\)$")
 _SEV = {"critical", "major", "minor", "info"}
 
 

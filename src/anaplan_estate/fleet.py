@@ -290,6 +290,17 @@ def _n(x):
     return f"{x:,}" if isinstance(x, int) else str(x)
 
 
+def _c(x) -> str:
+    """Compact scale for cell counts: 10.9B, 222M, 8.9M, 720. Exact values stay in the JSON."""
+    if not isinstance(x, (int, float)):
+        return str(x)
+    for div, suf in ((1e9, "B"), (1e6, "M"), (1e3, "K")):
+        if abs(x) >= div:
+            v = x / div
+            return f"{v:.0f}{suf}" if v >= 100 else f"{v:.1f}{suf}"
+    return f"{x:,}"
+
+
 def render_markdown(er: EstateRun, max_patterns: int = 20) -> str:
     out = [f"# Anaplan estate: {len(er.models)} model{'s' if len(er.models) != 1 else ''}", "",
            f"Generated {er.generated} from each model's Line Items and Actions exports. Deterministic; no opinion. "
@@ -299,7 +310,7 @@ def render_markdown(er: EstateRun, max_patterns: int = 20) -> str:
            "|---|---|---|---|---|---|---|---|---|---|---|"]
     for m in er.models:
         f = m.facts; a = f["actions"] or {}
-        out.append(f"| {m.name} | {f['modules']} | {_n(f['line_items'])} | {_n(f['calculated'])} | {_n(f['cells'])} | {f['parse_rate']:.1%} | "
+        out.append(f"| {m.name} | {f['modules']} | {_n(f['line_items'])} | {_n(f['calculated'])} | {_c(f['cells'])} | {f['parse_rate']:.1%} | "
                    f"{a.get('imports', '')} | {a.get('exports', '')} | {a.get('processes', '')} | {a.get('latest_run', '')} | {f['patterns']} |")
     out += ["", "## How the models connect (inferred)", ""]
     if er.edges:
@@ -343,7 +354,7 @@ def _render_model(m: ModelRun, max_patterns: int) -> list[str]:
     out = [f"# {m.name}", "",
            f"| | |", "|---|---|",
            f"| Modules | {f['modules']} |", f"| Line items | {_n(f['line_items'])} ({_n(f['calculated'])} calculated, {_n(f['inputs'])} input) |",
-           f"| Cells (as exported) | {_n(f['cells'])} |", f"| Dimensions | {len(f['dimensions'])} |",
+           f"| Cells (as exported) | {_c(f['cells'])} ({_n(f['cells'])}) |", f"| Dimensions | {len(f['dimensions'])} |",
            f"| Formulas parsed | {f['parse_rate']:.2%} ({f['parse_errors']} failed) |",
            f"| References | {_n(f['edges'])} line-item edges, {_n(f['module_edges'])} module edges |",
            f"| Agreement with Anaplan's Referenced By | {f['referenced_by_check']['agreement']} (ours only {f['referenced_by_check']['ours_only']}, Anaplan only {f['referenced_by_check']['anaplan_only']}; "
@@ -356,13 +367,13 @@ def _render_model(m: ModelRun, max_patterns: int) -> list[str]:
         out += ["", f"## Where the calculation time goes (top 10 line items = {f['effort_top10_share']}% of the model's effort)", "",
                 "| Line item | Effort | Cells | Formula |", "|---|---|---|---|"]
         for name, eff, cells, formula in f["effort_top"][:15]:
-            out.append(f"| {name} | {eff:.2f}% | {_n(cells)} | `{formula[:80]}` |")
+            out.append(f"| {name} | {eff:.2f}% | {_c(cells)} | `{formula[:80]}` |")
         out += ["", "By module: " + ", ".join(f"{n} {v:.1f}%" for n, v in f["effort_by_module"][:8])]
     else:
         out += ["", "_No Calculation Effort column in this export (Blueprint > Calculation Effort, Classic engine, from March 2025)._"]
     out += ["", "## Largest modules by cells", "", "| Module | Cells | Share |", "|---|---|---|"]
     for n, c, p in f["cells_by_module"][:8]:
-        out.append(f"| {n} | {_n(c)} | {p}% |")
+        out.append(f"| {n} | {_c(c)} | {p}% |")
     out += ["", "## Most depended-on line items", "", "| Line item | Direct dependents |", "|---|---|"]
     for n, c in f["hubs"][:8]:
         out.append(f"| {n} | {c} |")
