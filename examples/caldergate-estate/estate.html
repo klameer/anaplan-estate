@@ -161,49 +161,49 @@ object: DAT03 Account Master.Sign
 object: DAT07 Customer Master.Region Code
 object: DAT03 Account Master.Revenue?
 evidence: Line item | Effort share | Cells | Formula
-formula: DAT01 GL Transactions.Loaded?
+object: DAT01 GL Transactions.Loaded?
 formula: Journal Count &gt; 0
 evidence: DAT01 GL Transactions.Loaded? | 88.35% | 1.3M | Journal Count &gt; 0
-formula: CAL01 Volume Summary.Units
+object: CAL01 Volume Summary.Units
 formula: &#x27;DAT06 Sales Orders&#x27;.Units[SUM: &#x27;DAT07 Customer Master&#x27;.Region]
 evidence: CAL01 Volume Summary.Units | 2.88% | 9.1K | &#x27;DAT06 Sales Orders&#x27;.Units[SUM: &#x27;DAT07 Customer Master&#x27;.Region]
-formula: CAL01 Volume Summary.Revenue
+object: CAL01 Volume Summary.Revenue
 formula: &#x27;DAT06 Sales Orders&#x27;.Order Revenue[SUM: &#x27;DAT07 Customer Master&#x27;.Region]
 evidence: CAL01 Volume Summary.Revenue | 2.88% | 9.1K | &#x27;DAT06 Sales Orders&#x27;.Order Revenue[SUM: &#x27;DAT07 Customer Master&#x27;.Region]
-formula: CAL01 Volume Summary.Orders
+object: CAL01 Volume Summary.Orders
 formula: &#x27;DAT06 Sales Orders&#x27;.Order Count[SUM: &#x27;DAT07 Customer Master&#x27;.Region]
 evidence: CAL01 Volume Summary.Orders | 2.88% | 9.1K | &#x27;DAT06 Sales Orders&#x27;.Order Count[SUM: &#x27;DAT07 Customer Master&#x27;.Region]
-formula: DAT05 CRM Pipeline.Weighted Pipeline
+object: DAT05 CRM Pipeline.Weighted Pipeline
 formula: Open Pipeline * Probability
 evidence: DAT05 CRM Pipeline.Weighted Pipeline | 1.83% | 17.3K | Open Pipeline * Probability
-formula: CAL01 Volume Summary.Average Order Value
+object: CAL01 Volume Summary.Average Order Value
 formula: DIVIDE(Revenue, Orders)
 evidence: CAL01 Volume Summary.Average Order Value | 0.96% | 9.1K | DIVIDE(Revenue, Orders)
-formula: DAT08 Employee Master.Employee Id
+object: DAT08 Employee Master.Employee Id
 formula: CODE(ITEM(Employees))
 evidence: DAT08 Employee Master.Employee Id | 0.07% | 1.9K | CODE(ITEM(Employees))
-formula: DAT03 Account Master.Sign
-formula: IF Revenue? THEN -1 ELSE 1
+object: DAT03 Account Master.Sign
+object: IF Revenue? THEN -1 ELSE 1
 evidence: DAT03 Account Master.Sign | 0.03% | 262 | IF Revenue? THEN -1 ELSE 1
-formula: DAT07 Customer Master.Region Code
+object: DAT07 Customer Master.Region Code
 formula: CODE(Region)
 evidence: DAT07 Customer Master.Region Code | 0.03% | 480 | CODE(Region)
-formula: DAT03 Account Master.Revenue?
+object: DAT03 Account Master.Revenue?
 formula: Account Type = Account Types.Revenue
 evidence: DAT03 Account Master.Revenue? | 0.02% | 262 | Account Type = Account Types.Revenue
-formula: DAT03 Account Master.Opex?
+object: DAT03 Account Master.Opex?
 formula: Account Type = Account Types.Opex
 evidence: DAT03 Account Master.Opex? | 0.02% | 262 | Account Type = Account Types.Opex
-formula: DAT03 Account Master.COGS?
+object: DAT03 Account Master.COGS?
 formula: Account Type = Account Types.COGS
 evidence: DAT03 Account Master.COGS? | 0.02% | 262 | Account Type = Account Types.COGS
-formula: DAT07 Customer Master.Customer Code
+object: DAT07 Customer Master.Customer Code
 formula: CODE(ITEM(Customers))
 evidence: DAT07 Customer Master.Customer Code | 0.02% | 480 | CODE(ITEM(Customers))
-formula: DAT03 Account Master.Account Code
+object: DAT03 Account Master.Account Code
 formula: CODE(ITEM(Accounts))
 evidence: DAT03 Account Master.Account Code | 0.01% | 262 | CODE(ITEM(Accounts))
-formula: SYS02 Data Checks.Check Message
+object: SYS02 Data Checks.Check Message
 formula: IF Within Tolerance? THEN &quot;OK&quot; ELSE &quot;GL and orders differ by &quot; &amp; TEXT(Difference)
 evidence: SYS02 Data Checks.Check Message | 0.01% | 36 | IF Within Tolerance? THEN &quot;OK&quot; ELSE &quot;GL and orders differ by &quot; &amp; TEXT(Difference)
 evidence: By module: `DAT01 GL Transactions` 88.3%, `CAL01 Volume Summary` 9.6%, `DAT05 CRM Pipeline` 1.8%, `DAT03 Account Master` 0.1%, `DAT08 Employee Master` 0.1%, `DAT07 Customer Master` 0.1%, `SYS02 Data Checks` 0.0%</div>
@@ -244,65 +244,65 @@ object: CAL03 Opex.Actual Opex
 object: CAL05 Opex OLD.Actual
 object: CAL05 Opex OLD.Opex Cumulative
 evidence: Line item | Effort share | Cells | Formula
-formula: CAL03 Opex.Forecast Opex
+object: CAL03 Opex.Forecast Opex
 formula: IF ITEM(Accounts) = Accounts.&#x27;6100 Rent&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Rent ELSE IF ITEM(Accounts) = Accounts.&#x27;6110 Rates&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Business Rates ELSE IF ITEM(Accounts) = Accounts.&#x27;6120 Utilities&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Utilities ELSE IF ITEM(Accounts) = Accounts.&#x27;6200 Travel&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Travel ELSE IF ITEM(Accounts) = Accounts.&#x27;6210 Subsistence&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Subsistence ELSE IF ITEM(Accounts) = Accounts.&#x27;6300 Marketing&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Events ELSE IF ITEM(Accounts) = Accounts.&#x27;6310 Digital&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Digital ELSE IF ITEM(Accounts) = Accounts.&#x27;6400 Software&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Software Licences ELSE IF ITEM(Accounts) = Accounts.&#x27;6410 Hardware&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Hardware ELSE IF ITEM(Accounts) = Accounts.&#x27;6500 Professional Fees&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Consultancy ELSE IF ITEM(Accounts) = Accounts.&#x27;6510 Audit&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Audit Fees ELSE IF ITEM(Accounts) = Accounts.&#x27;6600 Recruitment&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Recruitment Fees ELSE 0
 evidence: CAL03 Opex.Forecast Opex | 16.04% | 5.0M | IF ITEM(Accounts) = Accounts.&#x27;6100 Rent&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Rent ELSE IF ITEM(Accounts) = Accounts.&#x27;6110 Rates&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Business Rates ELSE IF ITEM(Accounts) = Accounts.&#x27;6120 Utilities&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Utilities ELSE IF ITEM(Accounts) = Accounts.&#x27;6200 Travel&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Travel ELSE IF ITEM(Accounts) = Accounts.&#x27;6210 Subsistence&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Subsistence ELSE IF ITEM(Accounts) = Accounts.&#x27;6300 Marketing&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Events ELSE IF ITEM(Accounts) = Accounts.&#x27;6310 Digital&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Digital ELSE IF ITEM(Accounts) = Accounts.&#x27;6400 Software&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Software Licences ELSE IF ITEM(Accounts) = Accounts.&#x27;6410 Hardware&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Hardware ELSE IF ITEM(Accounts) = Accounts.&#x27;6500 Professional Fees&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Consultancy ELSE IF ITEM(Accounts) = Accounts.&#x27;6510 Audit&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Audit Fees ELSE IF ITEM(Accounts) = Accounts.&#x27;6600 Recruitment&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Recruitment Fees ELSE 0
-formula: CAL03 Opex.Opex GBP
+object: CAL03 Opex.Opex GBP
 formula: Opex * &#x27;SYS05 FX Rates&#x27;.Rate to GBP[LOOKUP: &#x27;SYS02 Cost Centre Attributes&#x27;.Currency]
 evidence: CAL03 Opex.Opex GBP | 9.26% | 5.0M | Opex * &#x27;SYS05 FX Rates&#x27;.Rate to GBP[LOOKUP: &#x27;SYS02 Cost Centre Attributes&#x27;.Currency]
-formula: CAL05 Opex OLD.Opex GBP
+object: CAL05 Opex OLD.Opex GBP
 formula: Opex * &#x27;SYS05 FX Rates&#x27;.Rate to GBP[LOOKUP: &#x27;SYS02 Cost Centre Attributes&#x27;.Currency]
 evidence: CAL05 Opex OLD.Opex GBP | 9.26% | 5.0M | Opex * &#x27;SYS05 FX Rates&#x27;.Rate to GBP[LOOKUP: &#x27;SYS02 Cost Centre Attributes&#x27;.Currency]
-formula: CAL05 Opex OLD.Forecast
+object: CAL05 Opex OLD.Forecast
 formula: Rent Forecast + Rates Forecast + Utilities Forecast + Travel Forecast + Marketing Forecast + Software Forecast + Fees Forecast + Other Forecast
 evidence: CAL05 Opex OLD.Forecast | 6.94% | 5.0M | Rent Forecast + Rates Forecast + Utilities Forecast + Travel Forecast + Marketing Forecast + Software Forecast + Fees Forecast + Other Forecast
-formula: DAT01 Actuals GL.Journal Cost Centre
+object: DAT01 Actuals GL.Journal Cost Centre
 formula: FINDITEM(Cost Centres, Source Journal)
 evidence: DAT01 Actuals GL.Journal Cost Centre | 6.17% | 5.0M | FINDITEM(Cost Centres, Source Journal)
-formula: CAL03 Opex.Opex
-formula: IF &#x27;SYS01 Time Settings&#x27;.Actual? THEN Actual Opex ELSE Forecast Opex
+object: CAL03 Opex.Opex
+object: IF &#x27;SYS01 Time Settings&#x27;.Actual? THEN Actual Opex ELSE Forecast Opex
 evidence: CAL03 Opex.Opex | 4.94% | 5.0M | IF &#x27;SYS01 Time Settings&#x27;.Actual? THEN Actual Opex ELSE Forecast Opex
-formula: CAL05 Opex OLD.Opex
-formula: IF &#x27;SYS01 Time Settings&#x27;.Actual? THEN Actual ELSE Forecast
+object: CAL05 Opex OLD.Opex
+object: IF &#x27;SYS01 Time Settings&#x27;.Actual? THEN Actual ELSE Forecast
 evidence: CAL05 Opex OLD.Opex | 4.94% | 5.0M | IF &#x27;SYS01 Time Settings&#x27;.Actual? THEN Actual ELSE Forecast
-formula: CAL03 Opex.Actual Opex
-formula: IF &#x27;SYS03 Account Attributes&#x27;.Opex? THEN &#x27;DAT01 Actuals GL&#x27;.Amount ELSE 0
+object: CAL03 Opex.Actual Opex
+object: IF &#x27;SYS03 Account Attributes&#x27;.Opex? THEN &#x27;DAT01 Actuals GL&#x27;.Amount ELSE 0
 evidence: CAL03 Opex.Actual Opex | 3.70% | 5.0M | IF &#x27;SYS03 Account Attributes&#x27;.Opex? THEN &#x27;DAT01 Actuals GL&#x27;.Amount ELSE 0
-formula: CAL05 Opex OLD.Actual
-formula: IF &#x27;SYS01 Time Settings&#x27;.Actual? THEN &#x27;DAT01 Actuals GL&#x27;.Amount ELSE 0
+object: CAL05 Opex OLD.Actual
+object: IF &#x27;SYS01 Time Settings&#x27;.Actual? THEN &#x27;DAT01 Actuals GL&#x27;.Amount ELSE 0
 evidence: CAL05 Opex OLD.Actual | 3.70% | 5.0M | IF &#x27;SYS01 Time Settings&#x27;.Actual? THEN &#x27;DAT01 Actuals GL&#x27;.Amount ELSE 0
-formula: CAL05 Opex OLD.Opex Cumulative
+object: CAL05 Opex OLD.Opex Cumulative
 formula: CUMULATE(Opex GBP)
 evidence: CAL05 Opex OLD.Opex Cumulative | 3.09% | 5.0M | CUMULATE(Opex GBP)
-formula: CAL05 Opex OLD.Opex Run Rate
+object: CAL05 Opex OLD.Opex Run Rate
 formula: MOVINGSUM(Opex GBP, -2, 0) / 3
 evidence: CAL05 Opex OLD.Opex Run Rate | 3.09% | 5.0M | MOVINGSUM(Opex GBP, -2, 0) / 3
-formula: CAL05 Opex OLD.Rent Forecast
+object: CAL05 Opex OLD.Rent Forecast
 formula: IF ITEM(Accounts) = Accounts.&#x27;6100 Rent&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Rent ELSE 0
 evidence: CAL05 Opex OLD.Rent Forecast | 2.47% | 5.0M | IF ITEM(Accounts) = Accounts.&#x27;6100 Rent&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Rent ELSE 0
-formula: CAL05 Opex OLD.Rates Forecast
+object: CAL05 Opex OLD.Rates Forecast
 formula: IF ITEM(Accounts) = Accounts.&#x27;6110 Rates&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Business Rates ELSE 0
 evidence: CAL05 Opex OLD.Rates Forecast | 2.47% | 5.0M | IF ITEM(Accounts) = Accounts.&#x27;6110 Rates&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Business Rates ELSE 0
-formula: CAL05 Opex OLD.Utilities Forecast
+object: CAL05 Opex OLD.Utilities Forecast
 formula: IF ITEM(Accounts) = Accounts.&#x27;6120 Utilities&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Utilities ELSE 0
 evidence: CAL05 Opex OLD.Utilities Forecast | 2.47% | 5.0M | IF ITEM(Accounts) = Accounts.&#x27;6120 Utilities&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Utilities ELSE 0
-formula: CAL05 Opex OLD.Travel Forecast
+object: CAL05 Opex OLD.Travel Forecast
 formula: IF ITEM(Accounts) = Accounts.&#x27;6200 Travel&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Travel ELSE 0
 evidence: CAL05 Opex OLD.Travel Forecast | 2.47% | 5.0M | IF ITEM(Accounts) = Accounts.&#x27;6200 Travel&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Travel ELSE 0
-formula: CAL05 Opex OLD.Marketing Forecast
+object: CAL05 Opex OLD.Marketing Forecast
 formula: IF ITEM(Accounts) = Accounts.&#x27;6300 Marketing&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Events ELSE 0
 evidence: CAL05 Opex OLD.Marketing Forecast | 2.47% | 5.0M | IF ITEM(Accounts) = Accounts.&#x27;6300 Marketing&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Events ELSE 0
-formula: CAL05 Opex OLD.Software Forecast
+object: CAL05 Opex OLD.Software Forecast
 formula: IF ITEM(Accounts) = Accounts.&#x27;6400 Software&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Software Licences ELSE 0
 evidence: CAL05 Opex OLD.Software Forecast | 2.47% | 5.0M | IF ITEM(Accounts) = Accounts.&#x27;6400 Software&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Software Licences ELSE 0
-formula: CAL05 Opex OLD.Fees Forecast
+object: CAL05 Opex OLD.Fees Forecast
 formula: IF ITEM(Accounts) = Accounts.&#x27;6500 Professional Fees&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Consultancy ELSE 0
 evidence: CAL05 Opex OLD.Fees Forecast | 2.47% | 5.0M | IF ITEM(Accounts) = Accounts.&#x27;6500 Professional Fees&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Consultancy ELSE 0
-formula: CAL05 Opex OLD.Other Forecast
+object: CAL05 Opex OLD.Other Forecast
 formula: IF ITEM(Accounts) = Accounts.&#x27;6900 Other&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Other Opex ELSE 0
 evidence: CAL05 Opex OLD.Other Forecast | 2.47% | 5.0M | IF ITEM(Accounts) = Accounts.&#x27;6900 Other&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Other Opex ELSE 0
-formula: CAL03 Opex.Opex Variance
-formula: Opex GBP - Opex Prior Year
+object: CAL03 Opex.Opex Variance
+object: Opex GBP - Opex Prior Year
 evidence: CAL03 Opex.Opex Variance | 2.31% | 5.0M | Opex GBP - Opex Prior Year
 evidence: By module: `CAL05 Opex OLD` 50.8%, `CAL03 Opex` 37.8%, `DAT01 Actuals GL` 7.7%, `INP03 Headcount` 2.1%, `CAL12 Driver Phasing` 0.4%, `INP02 Opex Drivers` 0.3%, `CAL02 Revenue` 0.2%, `CAL01 Volumes` 0.1%, `CAL07 P&amp;L by Cost Centre` 0.1%, `CAL04 Margn` 0.1%</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-capacity">Area</a></p>
@@ -342,43 +342,43 @@ object: OUT01 Board Dashboard.Revenue
 object: OUT01 Board Dashboard.EBITDA
 object: OUT01 Board Dashboard.Revenue per FTE
 evidence: Line item | Effort share | Cells | Formula
-formula: CAL01 KPIs.Revenue per FTE
+object: CAL01 KPIs.Revenue per FTE
 formula: &#x27;DAT02 Board Lines&#x27;.Revenue / FTE
 evidence: CAL01 KPIs.Revenue per FTE | 11.21% | 144 | &#x27;DAT02 Board Lines&#x27;.Revenue / FTE
-formula: CAL01 KPIs.Opex Ratio
+object: CAL01 KPIs.Opex Ratio
 formula: DIVIDE(&#x27;DAT01 P&amp;L&#x27;.Opex, &#x27;DAT01 P&amp;L&#x27;.Revenue)
 evidence: CAL01 KPIs.Opex Ratio | 11.21% | 144 | DIVIDE(&#x27;DAT01 P&amp;L&#x27;.Opex, &#x27;DAT01 P&amp;L&#x27;.Revenue)
-formula: CAL01 KPIs.Revenue Growth
+object: CAL01 KPIs.Revenue Growth
 formula: DIVIDE(&#x27;DAT02 Board Lines&#x27;.Revenue - Revenue Prior Year, Revenue Prior Year)
 evidence: CAL01 KPIs.Revenue Growth | 11.21% | 144 | DIVIDE(&#x27;DAT02 Board Lines&#x27;.Revenue - Revenue Prior Year, Revenue Prior Year)
-formula: CAL01 KPIs.EBITDA Margin
+object: CAL01 KPIs.EBITDA Margin
 formula: DIVIDE(&#x27;DAT02 Board Lines&#x27;.EBITDA, &#x27;DAT02 Board Lines&#x27;.Revenue)
 evidence: CAL01 KPIs.EBITDA Margin | 11.21% | 144 | DIVIDE(&#x27;DAT02 Board Lines&#x27;.EBITDA, &#x27;DAT02 Board Lines&#x27;.Revenue)
-formula: CAL01 KPIs.FTE
-formula: &#x27;DAT03 Headcount&#x27;.FTE
+object: CAL01 KPIs.FTE
+object: &#x27;DAT03 Headcount&#x27;.FTE
 evidence: CAL01 KPIs.FTE | 7.48% | 144 | &#x27;DAT03 Headcount&#x27;.FTE
-formula: CAL01 KPIs.Revenue Prior Year
+object: CAL01 KPIs.Revenue Prior Year
 formula: LAG(&#x27;DAT02 Board Lines&#x27;.Revenue, 12, 0)
 evidence: CAL01 KPIs.Revenue Prior Year | 7.48% | 144 | LAG(&#x27;DAT02 Board Lines&#x27;.Revenue, 12, 0)
-formula: CAL01 KPIs.Revenue YTD
+object: CAL01 KPIs.Revenue YTD
 formula: YEARTODATE(&#x27;DAT02 Board Lines&#x27;.Revenue)
 evidence: CAL01 KPIs.Revenue YTD | 7.48% | 144 | YEARTODATE(&#x27;DAT02 Board Lines&#x27;.Revenue)
-formula: OUT01 Board Dashboard.Revenue
-formula: &#x27;DAT02 Board Lines&#x27;.Revenue
+object: OUT01 Board Dashboard.Revenue
+object: &#x27;DAT02 Board Lines&#x27;.Revenue
 evidence: OUT01 Board Dashboard.Revenue | 7.48% | 144 | &#x27;DAT02 Board Lines&#x27;.Revenue
-formula: OUT01 Board Dashboard.EBITDA
-formula: &#x27;DAT02 Board Lines&#x27;.EBITDA
+object: OUT01 Board Dashboard.EBITDA
+object: &#x27;DAT02 Board Lines&#x27;.EBITDA
 evidence: OUT01 Board Dashboard.EBITDA | 7.48% | 144 | &#x27;DAT02 Board Lines&#x27;.EBITDA
-formula: OUT01 Board Dashboard.Revenue per FTE
-formula: &#x27;CAL01 KPIs&#x27;.Revenue per FTE
+object: OUT01 Board Dashboard.Revenue per FTE
+object: &#x27;CAL01 KPIs&#x27;.Revenue per FTE
 evidence: OUT01 Board Dashboard.Revenue per FTE | 7.48% | 144 | &#x27;CAL01 KPIs&#x27;.Revenue per FTE
-formula: OUT01 Board Dashboard.Revenue Growth
-formula: &#x27;CAL01 KPIs&#x27;.Revenue Growth
+object: OUT01 Board Dashboard.Revenue Growth
+object: &#x27;CAL01 KPIs&#x27;.Revenue Growth
 evidence: OUT01 Board Dashboard.Revenue Growth | 7.48% | 144 | &#x27;CAL01 KPIs&#x27;.Revenue Growth
-formula: SYS01 Time.Current Period?
+object: SYS01 Time.Current Period?
 formula: ITEM(Time) = &#x27;SYS00 Settings&#x27;.Current Period
 evidence: SYS01 Time.Current Period? | 1.87% | 36 | ITEM(Time) = &#x27;SYS00 Settings&#x27;.Current Period
-formula: SYS01 Time.Period Label
+object: SYS01 Time.Period Label
 formula: NAME(ITEM(Time))
 evidence: SYS01 Time.Period Label | 0.93% | 36 | NAME(ITEM(Time))
 evidence: By module: `CAL01 KPIs` 67.3%, `OUT01 Board Dashboard` 29.9%, `SYS01 Time` 2.8%</div>
@@ -410,15 +410,15 @@ evidence: By module: `CAL01 KPIs` 67.3%, `OUT01 Board Dashboard` 29.9%, `SYS01 T
 object: DAT01 GL Transactions.Source System
 object: DAT06 Sales Orders.Last Order Ref
 evidence: Line item | What | Cells | Effort share | Formula
-formula: DAT01 GL Transactions.Source System
-formula: 
+object: DAT01 GL Transactions.Source System
+object: 
 evidence: DAT01 GL Transactions.Source System | Text-formatted line item | 1.3M | 0.00% | 
-formula: DAT06 Sales Orders.Last Order Ref
-formula: 
+object: DAT06 Sales Orders.Last Order Ref
+object: 
 evidence: DAT06 Sales Orders.Last Order Ref | Text-formatted line item | 726K | 0.00% | </div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-capacity">Area</a></p>
 </article>
-<article class="f" id="F15" data-id="F15" data-model="Caldergate FP&amp;A" data-area="capacity" data-importance="low" data-strength="confirmed" data-cells="" data-effort="" data-search="f15 sum combined with lookup or select in one formula caldergate fp&amp;a potential capacity or performance improvements review candidate f-mixed-clause">
+<article class="f" id="F15" data-id="F15" data-model="Caldergate FP&amp;A" data-area="capacity" data-importance="low" data-strength="confirmed" data-cells="" data-effort="0.0" data-search="f15 sum combined with lookup or select in one formula caldergate fp&amp;a potential capacity or performance improvements review candidate f-mixed-clause">
 <header><h3><span class="muted">F15.</span> SUM combined with LOOKUP or SELECT in one formula</h3><span class="badge">review candidate</span><span class="badge imp-low">importance low</span><span class="badge st-confirmed">evidence confirmed</span><span class="badge">complexity low</span><label class="status noprint"><span class="sr">Review status for F15</span><select class="stsel" aria-label="Review status (yours, stored in this browser)"><option selected>To review</option><option>Investigation in progress</option><option>Accepted exception</option><option>Change planned</option><option>Resolved</option></select></label></header>
 <div class="objs">Caldergate FP&amp;A &middot; <code>CAL06 Department Summary.Benchmark Opex</code> <span class="muted">(1 object)</span></div>
 <p class="hit" hidden></p>
@@ -443,7 +443,7 @@ evidence: DAT06 Sales Orders.Last Order Ref | Text-formatted line item | 726K | 
 <div class="idx">text: SUM combined with LOOKUP or SELECT in one formula 1 formulas combine SUM with LOOKUP or SELECT. Anaplan&#x27;s documentation: &quot;Never use SUM and LOOKUP in the same formula. This can lead to extremely long calculation times.&quot; and &quot;Never combine SUM and SELECT in the same formula.&quot; The documented concern is calculation time. Whether splitting a particular formula helps is not guaranteed; the documented approach is one line item to aggregate and another to look up or select from it. 1 formula; together 0.0% of Caldergate FP&amp;A&#x27;s measured effort
 object: CAL06 Department Summary.Benchmark Opex
 evidence: Line item | Combination | Effort share | Formula
-formula: CAL06 Department Summary.Benchmark Opex
+object: CAL06 Department Summary.Benchmark Opex
 formula: &#x27;CAL03 Opex&#x27;.Opex GBP[SUM: &#x27;SYS02 Cost Centre Attributes&#x27;.Department, LOOKUP: &#x27;SYS09 Department Settings&#x27;.Benchmark Account]
 evidence: CAL06 Department Summary.Benchmark Opex | SUM with LOOKUP in one formula (in the same bracket) | 0.00% | &#x27;CAL03 Opex&#x27;.Opex GBP[SUM: &#x27;SYS02 Cost Centre Attributes&#x27;.Department, LOOKUP: &#x27;SYS09 Department Settings&#x27;.Benchmark Account]</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-capacity">Area</a></p>
@@ -485,43 +485,43 @@ object: CAL05 Opex OLD.Software Forecast
 object: CAL05 Opex OLD.Travel Forecast
 object: CAL05 Opex OLD.Utilities Forecast
 evidence: Line item | What | Cells | Effort share | Formula
-formula: DAT01 Actuals GL.Source Journal
-formula: 
+object: DAT01 Actuals GL.Source Journal
+object: 
 evidence: DAT01 Actuals GL.Source Journal | Text-formatted line item | 5.0M | 0.00% | 
-formula: DAT01 Actuals GL.Journal Cost Centre
+object: DAT01 Actuals GL.Journal Cost Centre
 formula: FINDITEM(Cost Centres, Source Journal)
 evidence: DAT01 Actuals GL.Journal Cost Centre | FINDITEM in a large line item | 5.0M | 6.17% | FINDITEM(Cost Centres, Source Journal)
-formula: CAL02 Revenue.Revenue Label
+object: CAL02 Revenue.Revenue Label
 formula: NAME(ITEM(Products)) &amp; &quot; / &quot; &amp; NAME(ITEM(Regions))
 evidence: CAL02 Revenue.Revenue Label | Text concatenation in a large line item | 36.3K | 0.01% | NAME(ITEM(Products)) &amp; &quot; / &quot; &amp; NAME(ITEM(Regions))
-formula: CAL02 Revenue.Revenue Label
+object: CAL02 Revenue.Revenue Label
 formula: NAME(ITEM(Products)) &amp; &quot; / &quot; &amp; NAME(ITEM(Regions))
 evidence: CAL02 Revenue.Revenue Label | Unchanging function in a calculation module | 36.3K | 0.01% | NAME(ITEM(Products)) &amp; &quot; / &quot; &amp; NAME(ITEM(Regions))
-formula: CAL03 Opex.Forecast Opex
+object: CAL03 Opex.Forecast Opex
 formula: IF ITEM(Accounts) = Accounts.&#x27;6100 Rent&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Rent ELSE IF ITEM(Accounts) = Accounts.&#x27;6110 Rates&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Business Rates ELSE IF ITEM(Accounts) = Accounts.&#x27;6120 Utilities&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Utilities ELSE IF ITEM(Accounts) = Accounts.&#x27;6200 Travel&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Travel ELSE IF ITEM(Accounts) = Accounts.&#x27;6210 Subsistence&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Subsistence ELSE IF ITEM(Accounts) = Accounts.&#x27;6300 Marketing&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Events ELSE IF ITEM(Accounts) = Accounts.&#x27;6310 Digital&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Digital ELSE IF ITEM(Accounts) = Accounts.&#x27;6400 Software&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Software Licences ELSE IF ITEM(Accounts) = Accounts.&#x27;6410 Hardware&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Hardware ELSE IF ITEM(Accounts) = Accounts.&#x27;6500 Professional Fees&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Consultancy ELSE IF ITEM(Accounts) = Accounts.&#x27;6510 Audit&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Audit Fees ELSE IF ITEM(Accounts) = Accounts.&#x27;6600 Recruitment&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Recruitment Fees ELSE 0
 evidence: CAL03 Opex.Forecast Opex | Unchanging function in a calculation module | 5.0M | 16.04% | IF ITEM(Accounts) = Accounts.&#x27;6100 Rent&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Rent ELSE IF ITEM(Accounts) = Accounts.&#x27;6110 Rates&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Business Rates ELSE IF ITEM(Accounts) = Accounts.&#x27;6120 Utilities&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Utilities ELSE IF ITEM(Accounts) = Accounts.&#x27;6200 Travel&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Travel ELSE IF ITEM(Accounts) = Accounts.&#x27;6210 Subsistence&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Subsistence ELSE IF ITEM(Accounts) = Accounts.&#x27;6300 Marketing&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Events ELSE IF ITEM(Accounts) = Accounts.&#x27;6310 Digital&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Digital ELSE IF ITEM(Accounts) = Accounts.&#x27;6400 Software&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Software Licences ELSE IF ITEM(Accounts) = Accounts.&#x27;6410 Hardware&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Hardware ELSE IF ITEM(Accounts) = Accounts.&#x27;6500 Professional Fees&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Consultancy ELSE IF ITEM(Accounts) = Accounts.&#x27;6510 Audit&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Audit Fees ELSE IF ITEM(Accounts) = Accounts.&#x27;6600 Recruitment&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Recruitment Fees ELSE 0
-formula: CAL05 Opex OLD.Fees Forecast
+object: CAL05 Opex OLD.Fees Forecast
 formula: IF ITEM(Accounts) = Accounts.&#x27;6500 Professional Fees&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Consultancy ELSE 0
 evidence: CAL05 Opex OLD.Fees Forecast | Unchanging function in a calculation module | 5.0M | 2.47% | IF ITEM(Accounts) = Accounts.&#x27;6500 Professional Fees&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Consultancy ELSE 0
-formula: CAL05 Opex OLD.Marketing Forecast
+object: CAL05 Opex OLD.Marketing Forecast
 formula: IF ITEM(Accounts) = Accounts.&#x27;6300 Marketing&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Events ELSE 0
 evidence: CAL05 Opex OLD.Marketing Forecast | Unchanging function in a calculation module | 5.0M | 2.47% | IF ITEM(Accounts) = Accounts.&#x27;6300 Marketing&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Events ELSE 0
-formula: CAL05 Opex OLD.Other Forecast
+object: CAL05 Opex OLD.Other Forecast
 formula: IF ITEM(Accounts) = Accounts.&#x27;6900 Other&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Other Opex ELSE 0
 evidence: CAL05 Opex OLD.Other Forecast | Unchanging function in a calculation module | 5.0M | 2.47% | IF ITEM(Accounts) = Accounts.&#x27;6900 Other&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Other Opex ELSE 0
-formula: CAL05 Opex OLD.Rates Forecast
+object: CAL05 Opex OLD.Rates Forecast
 formula: IF ITEM(Accounts) = Accounts.&#x27;6110 Rates&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Business Rates ELSE 0
 evidence: CAL05 Opex OLD.Rates Forecast | Unchanging function in a calculation module | 5.0M | 2.47% | IF ITEM(Accounts) = Accounts.&#x27;6110 Rates&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Business Rates ELSE 0
-formula: CAL05 Opex OLD.Rent Forecast
+object: CAL05 Opex OLD.Rent Forecast
 formula: IF ITEM(Accounts) = Accounts.&#x27;6100 Rent&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Rent ELSE 0
 evidence: CAL05 Opex OLD.Rent Forecast | Unchanging function in a calculation module | 5.0M | 2.47% | IF ITEM(Accounts) = Accounts.&#x27;6100 Rent&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Rent ELSE 0
-formula: CAL05 Opex OLD.Software Forecast
+object: CAL05 Opex OLD.Software Forecast
 formula: IF ITEM(Accounts) = Accounts.&#x27;6400 Software&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Software Licences ELSE 0
 evidence: CAL05 Opex OLD.Software Forecast | Unchanging function in a calculation module | 5.0M | 2.47% | IF ITEM(Accounts) = Accounts.&#x27;6400 Software&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Software Licences ELSE 0
-formula: CAL05 Opex OLD.Travel Forecast
+object: CAL05 Opex OLD.Travel Forecast
 formula: IF ITEM(Accounts) = Accounts.&#x27;6200 Travel&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Travel ELSE 0
 evidence: CAL05 Opex OLD.Travel Forecast | Unchanging function in a calculation module | 5.0M | 2.47% | IF ITEM(Accounts) = Accounts.&#x27;6200 Travel&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Travel ELSE 0
-formula: CAL05 Opex OLD.Utilities Forecast
+object: CAL05 Opex OLD.Utilities Forecast
 formula: IF ITEM(Accounts) = Accounts.&#x27;6120 Utilities&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Utilities ELSE 0
 evidence: CAL05 Opex OLD.Utilities Forecast | Unchanging function in a calculation module | 5.0M | 2.47% | IF ITEM(Accounts) = Accounts.&#x27;6120 Utilities&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Utilities ELSE 0</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-capacity">Area</a></p>
@@ -553,13 +553,13 @@ object: Data - Employees.Employee Name
 object: Data - Employees.Name and Role
 object: Data - Employees.Name and Role
 evidence: Line item | What | Cells | Effort share | Formula
-formula: Data - Employees.Employee Name
-formula: 
+object: Data - Employees.Employee Name
+object: 
 evidence: Data - Employees.Employee Name | Text-formatted line item | 66.6K | n/a | 
-formula: Data - Employees.Name and Role
+object: Data - Employees.Name and Role
 formula: Employee Name &amp; &quot; (&quot; &amp; NAME(Role) &amp; &quot;)&quot;
 evidence: Data - Employees.Name and Role | Text-formatted line item | 66.6K | n/a | Employee Name &amp; &quot; (&quot; &amp; NAME(Role) &amp; &quot;)&quot;
-formula: Data - Employees.Name and Role
+object: Data - Employees.Name and Role
 formula: Employee Name &amp; &quot; (&quot; &amp; NAME(Role) &amp; &quot;)&quot;
 evidence: Data - Employees.Name and Role | Text concatenation in a large line item | 66.6K | n/a | Employee Name &amp; &quot; (&quot; &amp; NAME(Role) &amp; &quot;)&quot;</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-capacity">Area</a></p>
@@ -593,11 +593,11 @@ object: CAL05 Opex OLD
 object: CAL06 Department Summary
 object: CAL08 Cash Flow
 evidence: Module | Line items | Cells | Effort share | Exact twin in a read module | Coverage | Unmatched | Import target | Unparsed / COLLECT | Note
-formula: CAL05 Opex OLD
+object: CAL05 Opex OLD
 evidence: CAL05 Opex OLD | 14 | 70.2M | 50.8% |  |  |  |  | 0 / 0 | Replaced by CAL03 in 2021. Keep until the FY22 audit is closed.
-formula: CAL06 Department Summary
+object: CAL06 Department Summary
 evidence: CAL06 Department Summary | 6 | 15.6K | 0.0% |  |  |  |  | 0 / 0 | 
-formula: CAL08 Cash Flow
+object: CAL08 Cash Flow
 evidence: CAL08 Cash Flow | 10 | 5.8K | 0.0% |  |  |  |  | 0 / 0 | </div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-usage">Area</a></p>
 </article>
@@ -628,14 +628,14 @@ object: DAT01 Actuals GL
 object: CAL03 Opex
 object: CAL02 Revenue
 evidence: Module | Line items with no formula consumer | Cells | Effort share
-formula: DAT01 Actuals GL
-formula: Journal Cost Centre`, `Loaded?
+object: DAT01 Actuals GL
+object: Journal Cost Centre`, `Loaded?
 evidence: DAT01 Actuals GL | Journal Cost Centre`, `Loaded? | 10.0M | 7.7%
-formula: CAL03 Opex
-formula: Opex Variance
+object: CAL03 Opex
+object: Opex Variance
 evidence: CAL03 Opex | Opex Variance | 5.0M | 2.3%
-formula: CAL02 Revenue
-formula: Revenue USD`, `VAT
+object: CAL02 Revenue
+object: Revenue USD`, `VAT
 evidence: CAL02 Revenue | Revenue USD`, `VAT | 72.6K | 0.0%</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-usage">Area</a></p>
 </article>
@@ -664,7 +664,7 @@ evidence: CAL02 Revenue | Revenue USD`, `VAT | 72.6K | 0.0%</div>
 <div class="idx">text: 1 module with no consumer detected in the inspected dependency types No formula outside these modules reads any of their line items and no export action reads them. Together they hold 72 cells and 2.8% of Board Reporting&#x27;s measured calculation effort. The five largest: `SYS01 Time`. Pages, saved views, subsets and integrations are not in the exports, so each module is either read there or by nothing. The footprint says which to ask about first. 1 module, 2 line items
 object: SYS01 Time
 evidence: Module | Line items | Cells | Effort share | Exact twin in a read module | Coverage | Unmatched | Import target | Unparsed / COLLECT | Note
-formula: SYS01 Time
+object: SYS01 Time
 evidence: SYS01 Time | 2 | 72 | 2.8% |  |  |  |  | 0 / 0 | </div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-usage">Area</a></p>
 </article>
@@ -693,7 +693,7 @@ evidence: SYS01 Time | 2 | 72 | 2.8% |  |  |  |  | 0 / 0 | </div>
 <div class="idx">text: 1 module with no consumer detected in the inspected dependency types No formula outside these modules reads any of their line items and no export action reads them. Together they hold 13.4K cells. The five largest: `zz Archive - 2021 Cost`. Pages, saved views, subsets and integrations are not in the exports, so each module is either read there or by nothing. The footprint says which to ask about first. 1 module, 3 line items
 object: zz Archive - 2021 Cost
 evidence: Module | Line items | Cells | Effort share | Exact twin in a read module | Coverage | Unmatched | Import target | Unparsed / COLLECT | Note
-formula: zz Archive - 2021 Cost
+object: zz Archive - 2021 Cost
 evidence: zz Archive - 2021 Cost | 3 | 13.4K | 0.0% |  |  |  |  | 0 / 0 | Old cost calc from go-live. Kept for reference.</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-usage">Area</a></p>
 </article>
@@ -723,9 +723,9 @@ evidence: zz Archive - 2021 Cost | 3 | 13.4K | 0.0% |  |  |  |  | 0 / 0 | Old co
 object: SYS01 Time Settings
 object: SYS02 Data Checks
 evidence: Module | Line items | Cells | Effort share | Exact twin in a read module | Coverage | Unmatched | Import target | Unparsed / COLLECT | Note
-formula: SYS01 Time Settings
+object: SYS01 Time Settings
 evidence: SYS01 Time Settings | 5 | 180 | 0.0% |  |  |  |  | 0 / 0 | Standard time flags. Built Mar 2019.
-formula: SYS02 Data Checks
+object: SYS02 Data Checks
 evidence: SYS02 Data Checks | 5 | 180 | 0.0% |  |  |  |  | 0 / 0 | Reconciliation flags read by the load dashboard.</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-usage">Area</a></p>
 </article>
@@ -756,7 +756,7 @@ evidence: SYS02 Data Checks | 5 | 180 | 0.0% |  |  |  |  | 0 / 0 | Reconciliatio
 <div class="idx">text: Line items with the widest change impact 1 line items are read directly by 25 or more formulas. A change to any of these moves numbers across the model. Not a fault: a fact for change control and for choosing what to test after a release. 1 line item
 object: SYS01 Time Settings.Actual?
 evidence: Line item | Direct readers | Downstream (transitive) | Modules downstream
-formula: SYS01 Time Settings.Actual?
+object: SYS01 Time Settings.Actual?
 evidence: SYS01 Time Settings.Actual? | 36 | 101 | 13</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-dependency">Area</a></p>
 </article>
@@ -788,21 +788,21 @@ object: OUT01 Management Pack.Staff Cost
 object: OUT02 Board Pack.Revenue
 object: OUT02 Board Pack.EBITDA
 evidence: Head | Steps | Reads, in the end | Intermediates
-formula: OUT01 Management Pack.Opex
-formula: CAL03 Opex.Opex GBP
-formula: CAL11 Reporting Prep.Opex`, `CAL07 P&amp;L by Cost Centre.Opex
+object: OUT01 Management Pack.Opex
+object: CAL03 Opex.Opex GBP
+object: CAL11 Reporting Prep.Opex`, `CAL07 P&amp;L by Cost Centre.Opex
 evidence: OUT01 Management Pack.Opex | 4 | CAL03 Opex.Opex GBP | CAL11 Reporting Prep.Opex`, `CAL07 P&amp;L by Cost Centre.Opex
-formula: OUT01 Management Pack.Staff Cost
-formula: INP03 Headcount.Total Cost
-formula: CAL11 Reporting Prep.Staff Cost`, `CAL07 P&amp;L by Cost Centre.Staff Cost
+object: OUT01 Management Pack.Staff Cost
+object: INP03 Headcount.Total Cost
+object: CAL11 Reporting Prep.Staff Cost`, `CAL07 P&amp;L by Cost Centre.Staff Cost
 evidence: OUT01 Management Pack.Staff Cost | 4 | INP03 Headcount.Total Cost | CAL11 Reporting Prep.Staff Cost`, `CAL07 P&amp;L by Cost Centre.Staff Cost
-formula: OUT02 Board Pack.Revenue
-formula: CAL07 P&amp;L by Cost Centre.Revenue
-formula: OUT01 Management Pack.Revenue`, `CAL11 Reporting Prep.Revenue
+object: OUT02 Board Pack.Revenue
+object: CAL07 P&amp;L by Cost Centre.Revenue
+object: OUT01 Management Pack.Revenue`, `CAL11 Reporting Prep.Revenue
 evidence: OUT02 Board Pack.Revenue | 4 | CAL07 P&amp;L by Cost Centre.Revenue | OUT01 Management Pack.Revenue`, `CAL11 Reporting Prep.Revenue
-formula: OUT02 Board Pack.EBITDA
-formula: CAL07 P&amp;L by Cost Centre.EBITDA
-formula: OUT01 Management Pack.EBITDA`, `CAL11 Reporting Prep.EBITDA
+object: OUT02 Board Pack.EBITDA
+object: CAL07 P&amp;L by Cost Centre.EBITDA
+object: OUT01 Management Pack.EBITDA`, `CAL11 Reporting Prep.EBITDA
 evidence: OUT02 Board Pack.EBITDA | 4 | CAL07 P&amp;L by Cost Centre.EBITDA | OUT01 Management Pack.EBITDA`, `CAL11 Reporting Prep.EBITDA</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-dependency">Area</a></p>
 </article>
@@ -835,29 +835,29 @@ evidence: OUT02 Board Pack.EBITDA | 4 | CAL07 P&amp;L by Cost Centre.EBITDA | OU
 object: CAL03 Opex.Forecast Opex
 evidence: Formula: `IF ITEM(Accounts) = Accounts.&#x27;6100 Rent&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Rent ELSE IF ITEM(Accounts) = Accounts.&#x27;6110 Rates&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Business Rates ELSE IF ITEM(Accounts) = Accounts.&#x27;6120 Utilities&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Utilities ELSE IF ITEM(Accounts) = Accounts.&#x27;6200 Travel&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Travel ELSE IF ITEM(Accounts) = Accounts.&#x27;6210 Subsistence&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Subsistence ELSE IF ITEM(Accounts) = Accounts.&#x27;6300 Marketing&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Events ELSE IF ITEM(Accounts) = Accounts.&#x27;6310 Digital&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Digital ELSE IF ITEM(Accounts) = Accounts.&#x27;6400 Software&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Software Licences ELSE IF ITEM(Accounts) = Accounts.&#x27;6410 Hardware&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Hardware ELSE IF ITEM(Accounts) = Accounts.&#x27;6500 Professional Fees&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Consultancy ELSE IF ITEM(Accounts) = Accounts.&#x27;6510 Audit&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Audit Fees ELSE IF ITEM(Accounts) = Accounts.&#x27;6600 Recruitment&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Recruitment Fees ELSE 0
 evidence: Accounts item | Value
-formula: INP02 Opex Drivers.Rent
+object: INP02 Opex Drivers.Rent
 evidence: 6100 Rent | INP02 Opex Drivers.Rent
-formula: INP02 Opex Drivers.Business Rates
+object: INP02 Opex Drivers.Business Rates
 evidence: 6110 Rates | INP02 Opex Drivers.Business Rates
-formula: INP02 Opex Drivers.Utilities
+object: INP02 Opex Drivers.Utilities
 evidence: 6120 Utilities | INP02 Opex Drivers.Utilities
-formula: INP02 Opex Drivers.Travel
+object: INP02 Opex Drivers.Travel
 evidence: 6200 Travel | INP02 Opex Drivers.Travel
-formula: INP02 Opex Drivers.Subsistence
+object: INP02 Opex Drivers.Subsistence
 evidence: 6210 Subsistence | INP02 Opex Drivers.Subsistence
-formula: INP02 Opex Drivers.Marketing Events
+object: INP02 Opex Drivers.Marketing Events
 evidence: 6300 Marketing | INP02 Opex Drivers.Marketing Events
-formula: INP02 Opex Drivers.Marketing Digital
+object: INP02 Opex Drivers.Marketing Digital
 evidence: 6310 Digital | INP02 Opex Drivers.Marketing Digital
-formula: INP02 Opex Drivers.Software Licences
+object: INP02 Opex Drivers.Software Licences
 evidence: 6400 Software | INP02 Opex Drivers.Software Licences
-formula: INP02 Opex Drivers.Hardware
+object: INP02 Opex Drivers.Hardware
 evidence: 6410 Hardware | INP02 Opex Drivers.Hardware
-formula: INP02 Opex Drivers.Consultancy
+object: INP02 Opex Drivers.Consultancy
 evidence: 6500 Professional Fees | INP02 Opex Drivers.Consultancy
-formula: INP02 Opex Drivers.Audit Fees
+object: INP02 Opex Drivers.Audit Fees
 evidence: 6510 Audit | INP02 Opex Drivers.Audit Fees
-formula: INP02 Opex Drivers.Recruitment Fees
+object: INP02 Opex Drivers.Recruitment Fees
 evidence: 6600 Recruitment | INP02 Opex Drivers.Recruitment Fees</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
 </article>
@@ -899,47 +899,47 @@ object: OUT01 Management Pack.Phased Drivers
 object: OUT02 Board Pack.Revenue
 object: OUT02 Board Pack.EBITDA
 evidence: Alias | Copies | Cells | Readers to repoint | Summary (alias / source) | Module exported
-formula: CAL07 P&amp;L by Cost Centre.Depreciation
-formula: CAL10 Depreciation.Charge
+object: CAL07 P&amp;L by Cost Centre.Depreciation
+object: CAL10 Depreciation.Charge
 evidence: CAL07 P&amp;L by Cost Centre.Depreciation | CAL10 Depreciation.Charge | 19.2K | 1 | SUM / SUM | yes
-formula: CAL11 Reporting Prep.Revenue
-formula: CAL07 P&amp;L by Cost Centre.Revenue
+object: CAL11 Reporting Prep.Revenue
+object: CAL07 P&amp;L by Cost Centre.Revenue
 evidence: CAL11 Reporting Prep.Revenue | CAL07 P&amp;L by Cost Centre.Revenue | 19.2K | 1 | SUM / SUM | no
-formula: CAL11 Reporting Prep.EBITDA
-formula: CAL07 P&amp;L by Cost Centre.EBITDA
+object: CAL11 Reporting Prep.EBITDA
+object: CAL07 P&amp;L by Cost Centre.EBITDA
 evidence: CAL11 Reporting Prep.EBITDA | CAL07 P&amp;L by Cost Centre.EBITDA | 19.2K | 1 | SUM / SUM | no
-formula: CAL11 Reporting Prep.Opex
-formula: CAL07 P&amp;L by Cost Centre.Opex
+object: CAL11 Reporting Prep.Opex
+object: CAL07 P&amp;L by Cost Centre.Opex
 evidence: CAL11 Reporting Prep.Opex | CAL07 P&amp;L by Cost Centre.Opex | 19.2K | 2 | SUM / SUM | no
-formula: CAL11 Reporting Prep.Staff Cost
-formula: CAL07 P&amp;L by Cost Centre.Staff Cost
+object: CAL11 Reporting Prep.Staff Cost
+object: CAL07 P&amp;L by Cost Centre.Staff Cost
 evidence: CAL11 Reporting Prep.Staff Cost | CAL07 P&amp;L by Cost Centre.Staff Cost | 19.2K | 2 | SUM / SUM | no
-formula: OUT01 Management Pack.Revenue
-formula: CAL11 Reporting Prep.Revenue
+object: OUT01 Management Pack.Revenue
+object: CAL11 Reporting Prep.Revenue
 evidence: OUT01 Management Pack.Revenue | CAL11 Reporting Prep.Revenue | 19.2K | 4 | SUM / SUM | no
-formula: OUT01 Management Pack.EBITDA
-formula: CAL11 Reporting Prep.EBITDA
+object: OUT01 Management Pack.EBITDA
+object: CAL11 Reporting Prep.EBITDA
 evidence: OUT01 Management Pack.EBITDA | CAL11 Reporting Prep.EBITDA | 19.2K | 2 | SUM / SUM | no
-formula: OUT01 Management Pack.Opex
-formula: CAL11 Reporting Prep.Opex
+object: OUT01 Management Pack.Opex
+object: CAL11 Reporting Prep.Opex
 evidence: OUT01 Management Pack.Opex | CAL11 Reporting Prep.Opex | 19.2K | 0 | SUM / SUM | no
-formula: OUT01 Management Pack.Staff Cost
-formula: CAL11 Reporting Prep.Staff Cost
+object: OUT01 Management Pack.Staff Cost
+object: CAL11 Reporting Prep.Staff Cost
 evidence: OUT01 Management Pack.Staff Cost | CAL11 Reporting Prep.Staff Cost | 19.2K | 0 | SUM / SUM | no
-formula: OUT01 Management Pack.Total Cost
-formula: CAL11 Reporting Prep.Total Cost
+object: OUT01 Management Pack.Total Cost
+object: CAL11 Reporting Prep.Total Cost
 evidence: OUT01 Management Pack.Total Cost | CAL11 Reporting Prep.Total Cost | 19.2K | 0 | SUM / SUM | no
-formula: OUT01 Management Pack.Depreciation
-formula: CAL10 Depreciation.Charge
+object: OUT01 Management Pack.Depreciation
+object: CAL10 Depreciation.Charge
 evidence: OUT01 Management Pack.Depreciation | CAL10 Depreciation.Charge | 19.2K | 0 | SUM / SUM | no
-formula: OUT01 Management Pack.Phased Drivers
-formula: CAL12 Driver Phasing.Total Phased
+object: OUT01 Management Pack.Phased Drivers
+object: CAL12 Driver Phasing.Total Phased
 evidence: OUT01 Management Pack.Phased Drivers | CAL12 Driver Phasing.Total Phased | 19.2K | 0 | SUM / SUM | no
-formula: OUT02 Board Pack.Revenue
-formula: OUT01 Management Pack.Revenue
+object: OUT02 Board Pack.Revenue
+object: OUT01 Management Pack.Revenue
 evidence: OUT02 Board Pack.Revenue | OUT01 Management Pack.Revenue | 19.2K | 1 | SUM / SUM | yes
-formula: OUT02 Board Pack.EBITDA
-formula: OUT01 Management Pack.EBITDA
+object: OUT02 Board Pack.EBITDA
+object: OUT01 Management Pack.EBITDA
 evidence: OUT02 Board Pack.EBITDA | OUT01 Management Pack.EBITDA | 19.2K | 0 | SUM / SUM | yes</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
 </article>
@@ -970,8 +970,8 @@ evidence: OUT02 Board Pack.EBITDA | OUT01 Management Pack.EBITDA | 19.2K | 0 | S
 <div class="idx">text: Same calculation made more than once under different names 1 calculated line items in 1 groups have the same resolved formula and the same context (dimensions, time scale, time range, versions, data type, summary, formula scope) as another line item in the model. Together the copies hold 19.2K cells. Two copies of one calculation drift apart when one is changed. Where a page or process needs the second name, the copy is doing a job; where it does not, readers can share one. 1 line item in 1 group; 0 formulas would be re-pointed
 object: CAL07 P&amp;L by Cost Centre.Depreciation
 evidence: Kept (most read) | Also computed as | Context | Summary methods | Redundant cells | Readers to repoint
-formula: CAL07 P&amp;L by Cost Centre.Depreciation
-formula: OUT01 Management Pack.Depreciation
+object: CAL07 P&amp;L by Cost Centre.Depreciation
+object: OUT01 Management Pack.Depreciation
 evidence: CAL07 P&amp;L by Cost Centre.Depreciation | OUT01 Management Pack.Depreciation | Cost Centres; Month; All; NUMBER | SUM | 19.2K | 0
 evidence: Formulas (one per group):
 evidence: CAL07 P&amp;L by Cost Centre.Depreciation`: `CAL10 Depreciation.Charge</div>
@@ -1004,8 +1004,8 @@ evidence: CAL07 P&amp;L by Cost Centre.Depreciation`: `CAL10 Depreciation.Charge
 <div class="idx">text: Same calculation made more than once under different names 1 calculated line items in 1 groups have the same resolved formula and the same context (dimensions, time scale, time range, versions, data type, summary, formula scope) as another line item in the model. Together the copies hold 4.5K cells. Two copies of one calculation drift apart when one is changed. Where a page or process needs the second name, the copy is doing a job; where it does not, readers can share one. 1 line item in 1 group; 1 formulas would be re-pointed
 object: Calcs - Attrition.Headcount
 evidence: Kept (most read) | Also computed as | Context | Summary methods | Redundant cells | Readers to repoint
-formula: Calcs - Attrition.Headcount
-formula: zz Archive - 2021 Cost.Headcount
+object: Calcs - Attrition.Headcount
+object: zz Archive - 2021 Cost.Headcount
 evidence: Calcs - Attrition.Headcount | zz Archive - 2021 Cost.Headcount | Roles; Month; All; NUMBER | SUM | 4.5K | 1
 evidence: Formulas (one per group):
 evidence: Calcs - Attrition.Headcount`: `&#x27;Data - Employees&#x27;.FTE[SUM: &#x27;Data - Employees&#x27;.Role]</div>
@@ -1036,7 +1036,7 @@ evidence: Calcs - Attrition.Headcount`: `&#x27;Data - Employees&#x27;.FTE[SUM: &
 <div class="idx">text: DIVIDE() where a zero divisor shows Infinity 1 formulas use DIVIDE(). Anaplan&#x27;s documentation: &quot;If the divisor is zero, the operator returns zero as the result (the DIVIDE function returns Infinity).&quot; and &quot;DIVIDE(50,0) returns Infinity; DIVIDE(-45,0) returns -Infinity.&quot; Neither behaviour is an error. Where a divisor can be zero, the page shows Infinity or NaN with DIVIDE() and zero with /. This is a display decision for the owner, not a defect. 1 formula
 object: CAL01 Volume Summary.Average Order Value
 evidence: Line item | Formula
-formula: CAL01 Volume Summary.Average Order Value
+object: CAL01 Volume Summary.Average Order Value
 formula: DIVIDE(Revenue, Orders)
 evidence: CAL01 Volume Summary.Average Order Value | DIVIDE(Revenue, Orders)</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
@@ -1071,22 +1071,22 @@ object: CAL08 Cash Flow.Tax
 object: CAL10 Depreciation.Charge
 object: INP03 Headcount.Pension
 evidence: Line item | Constants | Formula
-formula: CAL02 Revenue.Revenue USD
+object: CAL02 Revenue.Revenue USD
 formula: Revenue GBP * 1.27
 evidence: CAL02 Revenue.Revenue USD | 1.27 | Revenue GBP * 1.27
-formula: CAL02 Revenue.VAT
+object: CAL02 Revenue.VAT
 formula: Net Revenue * 0.2
 evidence: CAL02 Revenue.VAT | 0.2 | Net Revenue * 0.2
-formula: CAL08 Cash Flow.Debtors
+object: CAL08 Cash Flow.Debtors
 formula: Revenue * &#x27;INP05 Balance Sheet Drivers&#x27;.Debtor Days / 30
 evidence: CAL08 Cash Flow.Debtors | 30 | Revenue * &#x27;INP05 Balance Sheet Drivers&#x27;.Debtor Days / 30
-formula: CAL08 Cash Flow.Tax
+object: CAL08 Cash Flow.Tax
 formula: IF EBITDA &gt; 0 THEN EBITDA * 0.25 ELSE 0
 evidence: CAL08 Cash Flow.Tax | 0.25 | IF EBITDA &gt; 0 THEN EBITDA * 0.25 ELSE 0
-formula: CAL10 Depreciation.Charge
+object: CAL10 Depreciation.Charge
 formula: IF ISBLANK(&#x27;INP04 Capex&#x27;.Asset Class) THEN 0 ELSE IF &#x27;INP04 Capex&#x27;.Useful Life Years = 3 THEN MOVINGSUM(&#x27;INP04 Capex&#x27;.Capex Spend, -35, 0) / 36 ELSE IF &#x27;INP04 Capex&#x27;.Useful Life Years = 5 THEN MOVINGSUM(&#x27;INP04 Capex&#x27;.Capex Spend, -59, 0) / 60 ELSE IF &#x27;INP04 Capex&#x27;.Useful Life Years = 7 THEN MOVINGSUM(&#x27;INP04 Capex&#x27;.Capex Spend, -83, 0) / 84 ELSE IF &#x27;INP04 Capex&#x27;.Useful Life Years = 10 THEN MOVINGSUM(&#x27;INP04 Capex&#x27;.Capex Spend, -119, 0) / 120 ELSE IF &#x27;INP04 Capex&#x27;.Useful Life Years &gt; 10 THEN MOVINGSUM(&#x27;INP04 Capex&#x27;.Capex Spend, -239, 0) / 240 ELSE &#x27;INP04 Capex&#x27;.Capex Spend / 12
 evidence: CAL10 Depreciation.Charge | 10, 119, 120, 239 | IF ISBLANK(&#x27;INP04 Capex&#x27;.Asset Class) THEN 0 ELSE IF &#x27;INP04 Capex&#x27;.Useful Life Years = 3 THEN MOVINGSUM(&#x27;INP04 Capex&#x27;.Capex Spend, -35, 0) / 36 ELSE IF &#x27;INP04 Capex&#x27;.Useful Life Years = 5 THEN MOVINGSUM(&#x27;INP04 Capex&#x27;.Capex Spend, -59, 0) / 60 ELSE IF &#x27;INP04 Capex&#x27;.Useful Life Years = 7 THEN MOVINGSUM(&#x27;INP04 Capex&#x27;.Capex Spend, -83, 0) / 84 ELSE IF &#x27;INP04 Capex&#x27;.Useful Life Years = 10 THEN MOVINGSUM(&#x27;INP04 Capex&#x27;.Capex Spend, -119, 0) / 120 ELSE IF &#x27;INP04 Capex&#x27;.Useful Life Years &gt; 10 THEN MOVINGSUM(&#x27;INP04 Capex&#x27;.Capex Spend, -239, 0) / 240 ELSE &#x27;INP04 Capex&#x27;.Capex Spend / 12
-formula: INP03 Headcount.Pension
+object: INP03 Headcount.Pension
 formula: Monthly Salary * 0.05
 evidence: INP03 Headcount.Pension | 0.05 | Monthly Salary * 0.05</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
@@ -1116,7 +1116,7 @@ evidence: INP03 Headcount.Pension | 0.05 | Monthly Salary * 0.05</div>
 <div class="idx">text: Subsidiary views used in calculation 1 line items are dimensioned differently from their module and are read by formulas. The line item&#x27;s dimensions are not visible at module level, so a reader can misjudge what a reference returns, and the engine maps between the two dimension sets on every read. Anaplan&#x27;s checklist: display and export only. 1 line item; 1 readers
 object: CAL01 Volumes.Launched?
 evidence: Line item | Applies to | Module applies to | Readers
-formula: CAL01 Volumes.Launched?
+object: CAL01 Volumes.Launched?
 evidence: CAL01 Volumes.Launched? | Products | Products, Regions | 1</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
 </article>
@@ -1197,7 +1197,7 @@ object: CAL09 Scenario Planning</div>
 <div class="idx">text: Very long formulas 1 formulas exceed 120 tokens. Hard to review and to test. Anaplan&#x27;s checklist: a formula should be explainable in one sentence. 1 formula
 object: CAL03 Opex.Forecast Opex
 evidence: Line item | Tokens | Formula
-formula: CAL03 Opex.Forecast Opex
+object: CAL03 Opex.Forecast Opex
 formula: IF ITEM(Accounts) = Accounts.&#x27;6100 Rent&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Rent ELSE IF ITEM(Accounts) = Accounts.&#x27;6110 Rates&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Business Rates ELSE IF ITEM(Accounts) = Accounts.&#x27;6120 Utilities&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Utilities ELSE IF ITEM(Accounts) = Accounts.&#x27;6200 Travel&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Travel ELSE IF ITEM(Accounts) = Accounts.&#x27;6210 Subsistence&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Subsistence ELSE IF ITEM(Accounts) = Accounts.&#x27;6300 Marketing&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Events ELSE IF ITEM(Accounts) = Accounts.&#x27;6310 Digital&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Digital ELSE IF ITEM(Accounts) = Accounts.&#x27;6400 Software&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Software Licences ELSE IF ITEM(Accounts) = Accounts.&#x27;6410 Hardware&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Hardware ELSE IF ITEM(Accounts) = Accounts.&#x27;6500 Professional Fees&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Consultancy ELSE IF ITEM(Accounts) = Accounts.&#x27;6510 Audit&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Audit Fees ELSE IF ITEM(Accounts) = Accounts.&#x27;6600 Recruitment&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Recruitment Fees ELSE 0
 evidence: CAL03 Opex.Forecast Opex | 133 | IF ITEM(Accounts) = Accounts.&#x27;6100 Rent&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Rent ELSE IF ITEM(Accounts) = Accounts.&#x27;6110 Rates&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Business Rates ELSE IF ITEM(Accounts) = Accounts.&#x27;6120 Utilities&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Utilities ELSE IF ITEM(Accounts) = Accounts.&#x27;6200 Travel&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Travel ELSE IF ITEM(Accounts) = Accounts.&#x27;6210 Subsistence&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Subsistence ELSE IF ITEM(Accounts) = Accounts.&#x27;6300 Marketing&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Events ELSE IF ITEM(Accounts) = Accounts.&#x27;6310 Digital&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Digital ELSE IF ITEM(Accounts) = Accounts.&#x27;6400 Software&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Software Licences ELSE IF ITEM(Accounts) = Accounts.&#x27;6410 Hardware&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Hardware ELSE IF ITEM(Accounts) = Accounts.&#x27;6500 Professional Fees&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Consultancy ELSE IF ITEM(Accounts) = Accounts.&#x27;6510 Audit&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Audit Fees ELSE IF ITEM(Accounts) = Accounts.&#x27;6600 Recruitment&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Recruitment Fees ELSE 0</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
@@ -1229,13 +1229,13 @@ object: CAL07 P&amp;L by Cost Centre.Opex Budget
 object: OUT02 Board Pack.Budget Revenue
 object: OUT02 Board Pack.Old Budget Revenue
 evidence: Line item | Selection | Formula
-formula: CAL07 P&amp;L by Cost Centre.Opex Budget
+object: CAL07 P&amp;L by Cost Centre.Opex Budget
 formula: Opex[SELECT: VERSIONS.Budget]
 evidence: CAL07 P&amp;L by Cost Centre.Opex Budget | SELECT: VERSIONS.Budget | Opex[SELECT: VERSIONS.Budget]
-formula: OUT02 Board Pack.Budget Revenue
+object: OUT02 Board Pack.Budget Revenue
 formula: &#x27;OUT01 Management Pack&#x27;.Revenue[SELECT: VERSIONS.Budget]
 evidence: OUT02 Board Pack.Budget Revenue | SELECT: VERSIONS.Budget | &#x27;OUT01 Management Pack&#x27;.Revenue[SELECT: VERSIONS.Budget]
-formula: OUT02 Board Pack.Old Budget Revenue
+object: OUT02 Board Pack.Old Budget Revenue
 formula: &#x27;OUT01 Management Pack&#x27;.Revenue[SELECT: VERSIONS.&#x27;Budget v2 DO NOT USE&#x27;]
 evidence: OUT02 Board Pack.Old Budget Revenue | SELECT: VERSIONS.Budget v2 DO NOT USE | &#x27;OUT01 Management Pack&#x27;.Revenue[SELECT: VERSIONS.&#x27;Budget v2 DO NOT USE&#x27;]</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
@@ -1272,28 +1272,28 @@ object: CAL07 P&amp;L by Cost Centre.EBITDA Margin
 object: OUT02 Board Pack.Revenue Variance %
 object: SYS05 FX Rates.Rate Movement
 evidence: Line item | Formula
-formula: CAL01 Volumes.Volume Growth
+object: CAL01 Volumes.Volume Growth
 formula: DIVIDE(Sellable Units - Sellable Units Prior Year, Sellable Units Prior Year)
 evidence: CAL01 Volumes.Volume Growth | DIVIDE(Sellable Units - Sellable Units Prior Year, Sellable Units Prior Year)
-formula: CAL02 Revenue.Average Price
+object: CAL02 Revenue.Average Price
 formula: DIVIDE(Net Revenue, &#x27;CAL01 Volumes&#x27;.Net Units)
 evidence: CAL02 Revenue.Average Price | DIVIDE(Net Revenue, &#x27;CAL01 Volumes&#x27;.Net Units)
-formula: CAL02 Revenue.Revenue Growth
+object: CAL02 Revenue.Revenue Growth
 formula: DIVIDE(Revenue GBP - Revenue Prior Year, Revenue Prior Year)
 evidence: CAL02 Revenue.Revenue Growth | DIVIDE(Revenue GBP - Revenue Prior Year, Revenue Prior Year)
-formula: CAL04 Margn.Margin %
+object: CAL04 Margn.Margin %
 formula: DIVIDE(Margin, &#x27;CAL02 Revenue&#x27;.Net Revenue)
 evidence: CAL04 Margn.Margin % | DIVIDE(Margin, &#x27;CAL02 Revenue&#x27;.Net Revenue)
-formula: CAL06 Department Summary.Cost per FTE
+object: CAL06 Department Summary.Cost per FTE
 formula: DIVIDE(Opex + Staff Cost, FTE)
 evidence: CAL06 Department Summary.Cost per FTE | DIVIDE(Opex + Staff Cost, FTE)
-formula: CAL07 P&amp;L by Cost Centre.EBITDA Margin
+object: CAL07 P&amp;L by Cost Centre.EBITDA Margin
 formula: DIVIDE(EBITDA, Revenue)
 evidence: CAL07 P&amp;L by Cost Centre.EBITDA Margin | DIVIDE(EBITDA, Revenue)
-formula: OUT02 Board Pack.Revenue Variance %
+object: OUT02 Board Pack.Revenue Variance %
 formula: DIVIDE(Revenue Variance, Budget Revenue)
 evidence: OUT02 Board Pack.Revenue Variance % | DIVIDE(Revenue Variance, Budget Revenue)
-formula: SYS05 FX Rates.Rate Movement
+object: SYS05 FX Rates.Rate Movement
 formula: DIVIDE(Rate to GBP - Rate to GBP Prior, Rate to GBP Prior)
 evidence: SYS05 FX Rates.Rate Movement | DIVIDE(Rate to GBP - Rate to GBP Prior, Rate to GBP Prior)</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
@@ -1325,14 +1325,14 @@ object: Calcs - Attrition.Annualised Attrition
 object: Calcs - Cost.Bonus
 object: Calcs - Headcount by CC.Bonus %
 evidence: Line item | Constants | Formula
-formula: Calcs - Attrition.Annualised Attrition
+object: Calcs - Attrition.Annualised Attrition
 formula: MOVINGSUM(Leavers by Role, -11, 0) / Headcount
 evidence: Calcs - Attrition.Annualised Attrition | 11 | MOVINGSUM(Leavers by Role, -11, 0) / Headcount
-formula: Calcs - Cost.Bonus
+object: Calcs - Cost.Bonus
 formula: Inflated Salary * 0.1
 evidence: Calcs - Cost.Bonus | 0.1 | Inflated Salary * 0.1
-formula: Calcs - Headcount by CC.Bonus %
-formula: 0.1
+object: Calcs - Headcount by CC.Bonus %
+object: 0.1
 evidence: Calcs - Headcount by CC.Bonus % | 0.1 | 0.1</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
 </article>
@@ -1361,7 +1361,7 @@ evidence: Calcs - Headcount by CC.Bonus % | 0.1 | 0.1</div>
 <div class="idx">text: Subsidiary views used in calculation 1 line items are dimensioned differently from their module and are read by formulas. The line item&#x27;s dimensions are not visible at module level, so a reader can misjudge what a reference returns, and the engine maps between the two dimension sets on every read. Anaplan&#x27;s checklist: display and export only. 1 line item; 1 readers
 object: Calcs - Attrition.Leavers
 evidence: Line item | Applies to | Module applies to | Readers
-formula: Calcs - Attrition.Leavers
+object: Calcs - Attrition.Leavers
 evidence: Calcs - Attrition.Leavers | Employees | Roles | 1</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
 </article>
@@ -1390,7 +1390,7 @@ evidence: Calcs - Attrition.Leavers | Employees | Roles | 1</div>
 <div class="idx">text: Hard-coded time period or version selections 1 formulas select a specific time period or version with SELECT. Anaplan&#x27;s SELECT page: &quot;We don&#x27;t recommend the use of the SELECT function in conjunction with non-generic time periods..&quot; The hard-coded element must be revisited when the timescale or versions change. 1 formula
 object: Reports - Headcount.FTE Budget
 evidence: Line item | Selection | Formula
-formula: Reports - Headcount.FTE Budget
+object: Reports - Headcount.FTE Budget
 formula: FTE[SELECT: VERSIONS.Budget]
 evidence: Reports - Headcount.FTE Budget | SELECT: VERSIONS.Budget | FTE[SELECT: VERSIONS.Budget]</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
@@ -1422,13 +1422,13 @@ object: Calcs - Headcount by CC.Average Salary
 object: Reports - Headcount.Cost per FTE
 object: zz Archive - 2021 Cost.Cost per Head
 evidence: Line item | Formula
-formula: Calcs - Headcount by CC.Average Salary
+object: Calcs - Headcount by CC.Average Salary
 formula: DIVIDE(Salary, FTE)
 evidence: Calcs - Headcount by CC.Average Salary | DIVIDE(Salary, FTE)
-formula: Reports - Headcount.Cost per FTE
+object: Reports - Headcount.Cost per FTE
 formula: DIVIDE(Total Cost, FTE)
 evidence: Reports - Headcount.Cost per FTE | DIVIDE(Total Cost, FTE)
-formula: zz Archive - 2021 Cost.Cost per Head
+object: zz Archive - 2021 Cost.Cost per Head
 formula: DIVIDE(Cost, Headcount)
 evidence: zz Archive - 2021 Cost.Cost per Head | DIVIDE(Cost, Headcount)</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
@@ -1460,13 +1460,13 @@ object: CAL01 KPIs.EBITDA Margin
 object: CAL01 KPIs.Opex Ratio
 object: CAL01 KPIs.Revenue Growth
 evidence: Line item | Formula
-formula: CAL01 KPIs.EBITDA Margin
+object: CAL01 KPIs.EBITDA Margin
 formula: DIVIDE(&#x27;DAT02 Board Lines&#x27;.EBITDA, &#x27;DAT02 Board Lines&#x27;.Revenue)
 evidence: CAL01 KPIs.EBITDA Margin | DIVIDE(&#x27;DAT02 Board Lines&#x27;.EBITDA, &#x27;DAT02 Board Lines&#x27;.Revenue)
-formula: CAL01 KPIs.Opex Ratio
+object: CAL01 KPIs.Opex Ratio
 formula: DIVIDE(&#x27;DAT01 P&amp;L&#x27;.Opex, &#x27;DAT01 P&amp;L&#x27;.Revenue)
 evidence: CAL01 KPIs.Opex Ratio | DIVIDE(&#x27;DAT01 P&amp;L&#x27;.Opex, &#x27;DAT01 P&amp;L&#x27;.Revenue)
-formula: CAL01 KPIs.Revenue Growth
+object: CAL01 KPIs.Revenue Growth
 formula: DIVIDE(&#x27;DAT02 Board Lines&#x27;.Revenue - Revenue Prior Year, Revenue Prior Year)
 evidence: CAL01 KPIs.Revenue Growth | DIVIDE(&#x27;DAT02 Board Lines&#x27;.Revenue - Revenue Prior Year, Revenue Prior Year)</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
@@ -1496,7 +1496,7 @@ evidence: CAL01 KPIs.Revenue Growth | DIVIDE(&#x27;DAT02 Board Lines&#x27;.Reven
 <div class="idx">text: Summary methods on large line items no formula reads 1 number line items with 10,000 cells or more have a summary method set and no formula reader. Summaries are calculated on every parent of every dimension. Only a page or export could need the totals; the exports cannot show whether one does. 1 line item
 object: DAT05 CRM Pipeline.Weighted Pipeline
 evidence: Line item | Summary | Cells
-formula: DAT05 CRM Pipeline.Weighted Pipeline
+object: DAT05 CRM Pipeline.Weighted Pipeline
 evidence: DAT05 CRM Pipeline.Weighted Pipeline | SUM | 17.3K</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
 </article>
@@ -1554,65 +1554,65 @@ object: OUT02 Board Pack.EBITDA
 object: OUT02 Board Pack.Old Budget Revenue
 object: OUT02 Board Pack.Revenue Variance %
 evidence: Line item | Summary | Cells
-formula: CAL01 Volumes.Volume Growth
+object: CAL01 Volumes.Volume Growth
 evidence: CAL01 Volumes.Volume Growth | FORMULA | 36.3K
-formula: CAL02 Revenue.Average Price
+object: CAL02 Revenue.Average Price
 evidence: CAL02 Revenue.Average Price | FORMULA | 36.3K
-formula: CAL02 Revenue.Revenue Growth
+object: CAL02 Revenue.Revenue Growth
 evidence: CAL02 Revenue.Revenue Growth | FORMULA | 36.3K
-formula: CAL02 Revenue.Revenue USD
+object: CAL02 Revenue.Revenue USD
 evidence: CAL02 Revenue.Revenue USD | SUM | 36.3K
-formula: CAL02 Revenue.Revenue per Unit
+object: CAL02 Revenue.Revenue per Unit
 evidence: CAL02 Revenue.Revenue per Unit | FORMULA | 36.3K
-formula: CAL02 Revenue.VAT
+object: CAL02 Revenue.VAT
 evidence: CAL02 Revenue.VAT | SUM | 36.3K
-formula: CAL03 Opex.Opex Variance
+object: CAL03 Opex.Opex Variance
 evidence: CAL03 Opex.Opex Variance | SUM | 5.0M
-formula: CAL04 Margn.Margin %
+object: CAL04 Margn.Margin %
 evidence: CAL04 Margn.Margin % | FORMULA | 36.3K
-formula: CAL04 Margn.Margin GBP
+object: CAL04 Margn.Margin GBP
 evidence: CAL04 Margn.Margin GBP | SUM | 36.3K
-formula: CAL05 Opex OLD.Opex Cumulative
+object: CAL05 Opex OLD.Opex Cumulative
 evidence: CAL05 Opex OLD.Opex Cumulative | SUM | 5.0M
-formula: CAL05 Opex OLD.Opex Run Rate
+object: CAL05 Opex OLD.Opex Run Rate
 evidence: CAL05 Opex OLD.Opex Run Rate | SUM | 5.0M
-formula: CAL07 P&amp;L by Cost Centre.EBIT
+object: CAL07 P&amp;L by Cost Centre.EBIT
 evidence: CAL07 P&amp;L by Cost Centre.EBIT | SUM | 19.2K
-formula: CAL07 P&amp;L by Cost Centre.EBITDA Margin
+object: CAL07 P&amp;L by Cost Centre.EBITDA Margin
 evidence: CAL07 P&amp;L by Cost Centre.EBITDA Margin | FORMULA | 19.2K
-formula: CAL07 P&amp;L by Cost Centre.Opex Variance to Budget
+object: CAL07 P&amp;L by Cost Centre.Opex Variance to Budget
 evidence: CAL07 P&amp;L by Cost Centre.Opex Variance to Budget | SUM | 19.2K
-formula: CAL10 Depreciation.NBV
+object: CAL10 Depreciation.NBV
 evidence: CAL10 Depreciation.NBV | SUM;time=CLOSING_BALANCE | 19.2K
-formula: DAT02 Actuals Volumes.Revenue Actual
+object: DAT02 Actuals Volumes.Revenue Actual
 evidence: DAT02 Actuals Volumes.Revenue Actual | SUM | 36.3K
-formula: INP02 Opex Drivers.Check
+object: INP02 Opex Drivers.Check
 evidence: INP02 Opex Drivers.Check | SUM | 19.2K
-formula: INP02 Opex Drivers.Driver Count
+object: INP02 Opex Drivers.Driver Count
 evidence: INP02 Opex Drivers.Driver Count | SUM | 19.2K
-formula: OUT01 Management Pack.Capex
+object: OUT01 Management Pack.Capex
 evidence: OUT01 Management Pack.Capex | SUM | 19.2K
-formula: OUT01 Management Pack.Depreciation
+object: OUT01 Management Pack.Depreciation
 evidence: OUT01 Management Pack.Depreciation | SUM | 19.2K
-formula: OUT01 Management Pack.EBITDA YTD
+object: OUT01 Management Pack.EBITDA YTD
 evidence: OUT01 Management Pack.EBITDA YTD | SUM | 19.2K
-formula: OUT01 Management Pack.Headcount
+object: OUT01 Management Pack.Headcount
 evidence: OUT01 Management Pack.Headcount | SUM | 19.2K
-formula: OUT01 Management Pack.Opex
+object: OUT01 Management Pack.Opex
 evidence: OUT01 Management Pack.Opex | SUM | 19.2K
-formula: OUT01 Management Pack.Phased Drivers
+object: OUT01 Management Pack.Phased Drivers
 evidence: OUT01 Management Pack.Phased Drivers | SUM | 19.2K
-formula: OUT01 Management Pack.Revenue YTD
+object: OUT01 Management Pack.Revenue YTD
 evidence: OUT01 Management Pack.Revenue YTD | SUM | 19.2K
-formula: OUT01 Management Pack.Staff Cost
+object: OUT01 Management Pack.Staff Cost
 evidence: OUT01 Management Pack.Staff Cost | SUM | 19.2K
-formula: OUT01 Management Pack.Total Cost
+object: OUT01 Management Pack.Total Cost
 evidence: OUT01 Management Pack.Total Cost | SUM | 19.2K
-formula: OUT02 Board Pack.EBITDA
+object: OUT02 Board Pack.EBITDA
 evidence: OUT02 Board Pack.EBITDA | SUM | 19.2K
-formula: OUT02 Board Pack.Old Budget Revenue
+object: OUT02 Board Pack.Old Budget Revenue
 evidence: OUT02 Board Pack.Old Budget Revenue | SUM | 19.2K
-formula: OUT02 Board Pack.Revenue Variance %
+object: OUT02 Board Pack.Revenue Variance %
 evidence: OUT02 Board Pack.Revenue Variance % | FORMULA | 19.2K</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
 </article>
@@ -1641,7 +1641,7 @@ evidence: OUT02 Board Pack.Revenue Variance % | FORMULA | 19.2K</div>
 <div class="idx">text: Summary methods on large line items no formula reads 1 number line items with 10,000 cells or more have a summary method set and no formula reader. Summaries are calculated on every parent of every dimension. Only a page or export could need the totals; the exports cannot show whether one does. 1 line item
 object: Calcs - Headcount by CC.Average Salary
 evidence: Line item | Summary | Cells
-formula: Calcs - Headcount by CC.Average Salary
+object: Calcs - Headcount by CC.Average Salary
 evidence: Calcs - Headcount by CC.Average Salary | FORMULA | 594K</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
 </article>
@@ -1674,15 +1674,15 @@ object: DAT01 P&amp;L.EBIT
 object: DAT01 P&amp;L.EBITDA
 object: DAT01 P&amp;L.Staff Cost
 evidence: Line item | Summary | Cells
-formula: DAT01 P&amp;L.COGS
+object: DAT01 P&amp;L.COGS
 evidence: DAT01 P&amp;L.COGS | SUM | 19.2K
-formula: DAT01 P&amp;L.Depreciation
+object: DAT01 P&amp;L.Depreciation
 evidence: DAT01 P&amp;L.Depreciation | SUM | 19.2K
-formula: DAT01 P&amp;L.EBIT
+object: DAT01 P&amp;L.EBIT
 evidence: DAT01 P&amp;L.EBIT | SUM | 19.2K
-formula: DAT01 P&amp;L.EBITDA
+object: DAT01 P&amp;L.EBITDA
 evidence: DAT01 P&amp;L.EBITDA | SUM | 19.2K
-formula: DAT01 P&amp;L.Staff Cost
+object: DAT01 P&amp;L.Staff Cost
 evidence: DAT01 P&amp;L.Staff Cost | SUM | 19.2K</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
 </article>
@@ -1718,28 +1718,28 @@ object: Revenue?
 object: Sign
 object: Working Days
 evidence: Line item | Models | Formula
-formula: COGS?
+object: COGS?
 formula: (Account Type = Account Types.COGS)
 evidence: COGS? | Caldergate Data Hub, Caldergate FP&amp;A | (Account Type = Account Types.COGS)
-formula: Current Period?
+object: Current Period?
 formula: (ITEM(Time) = SYS00 Model Settings.Current Period)
 evidence: Current Period? | Caldergate Data Hub, Caldergate FP&amp;A | (ITEM(Time) = SYS00 Model Settings.Current Period)
-formula: Employer NI
+object: Employer NI
 formula: (IF (Monthly Salary &gt; NI Threshold) THEN ((Monthly Salary - NI Threshold) * NI Rate) ELSE 0)
 evidence: Employer NI | Caldergate FP&amp;A, Workforce Planning | (IF (Monthly Salary &gt; NI Threshold) THEN ((Monthly Salary - NI Threshold) * NI Rate) ELSE 0)
-formula: Group
+object: Group
 formula: PARENT(ITEM(Cost Centres))
 evidence: Group | Caldergate Data Hub, Caldergate FP&amp;A | PARENT(ITEM(Cost Centres))
-formula: Opex?
+object: Opex?
 formula: (Account Type = Account Types.Opex)
 evidence: Opex? | Caldergate Data Hub, Caldergate FP&amp;A | (Account Type = Account Types.Opex)
-formula: Revenue?
+object: Revenue?
 formula: (Account Type = Account Types.Revenue)
 evidence: Revenue? | Caldergate Data Hub, Caldergate FP&amp;A | (Account Type = Account Types.Revenue)
-formula: Sign
+object: Sign
 formula: (IF &#x27;Revenue?&#x27; THEN -1 ELSE 1)
 evidence: Sign | Caldergate Data Hub, Caldergate FP&amp;A | (IF &#x27;Revenue?&#x27; THEN -1 ELSE 1)
-formula: Working Days
+object: Working Days
 formula: (Days in Month - Weekend Days - Bank Holidays)
 evidence: Working Days | Caldergate FP&amp;A, Workforce Planning | (Days in Month - Weekend Days - Bank Holidays)</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
@@ -1773,14 +1773,14 @@ object: Export Pipeline for Sales Ops
 object: Import Customers from Salesforce
 object: Import Products from PIM file
 evidence: Action | Kind | Most recent recorded run | In a process | Target or source
-formula: Import Products from PIM file
-formula: DAT04 Product Master
+object: Import Products from PIM file
+object: DAT04 Product Master
 evidence: Import Products from PIM file | import | 2023-06-14 | no | DAT04 Product Master
-formula: Export Pipeline for Sales Ops
-formula: DAT05 CRM Pipeline
+object: Export Pipeline for Sales Ops
+object: DAT05 CRM Pipeline
 evidence: Export Pipeline for Sales Ops | export | 2025-02-11 | no | DAT05 CRM Pipeline
-formula: Import Customers from Salesforce
-formula: DAT07 Customer Master
+object: Import Customers from Salesforce
+object: DAT07 Customer Master
 evidence: Import Customers from Salesforce | import | 2026-08-30 | no | DAT07 Customer Master</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-integration">Area</a></p>
 </article>
@@ -1813,20 +1813,20 @@ object: Import Budget from Excel
 object: Import FX from Treasury file
 object: Import from Caldergate Hub v1 - Cost Centres
 evidence: Action | Kind | Most recent recorded run | In a process | Target or source
-formula: Import from Caldergate Hub v1 - Cost Centres
-formula: SYS02 Cost Centre Attributes
+object: Import from Caldergate Hub v1 - Cost Centres
+object: SYS02 Cost Centre Attributes
 evidence: Import from Caldergate Hub v1 - Cost Centres | import | 2021-03-19 | no | SYS02 Cost Centre Attributes
-formula: Import FX from Treasury file
-formula: SYS05 FX Rates
+object: Import FX from Treasury file
+object: SYS05 FX Rates
 evidence: Import FX from Treasury file | import | 2023-11-02 | no | SYS05 FX Rates
-formula: Export Opex Drivers to Excel
-formula: INP02 Opex Drivers
+object: Export Opex Drivers to Excel
+object: INP02 Opex Drivers
 evidence: Export Opex Drivers to Excel | export | 2024-05-30 | no | INP02 Opex Drivers
-formula: Import Budget from Excel
-formula: INP02 Opex Drivers
+object: Import Budget from Excel
+object: INP02 Opex Drivers
 evidence: Import Budget from Excel | import | 2025-11-20 | no | INP02 Opex Drivers
-formula: Export Assumptions for Workforce
-formula: SYS00 Model Settings
+object: Export Assumptions for Workforce
+object: SYS00 Model Settings
 evidence: Export Assumptions for Workforce | export | 2026-09-05 | no | SYS00 Model Settings</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-integration">Area</a></p>
 </article>
@@ -1857,14 +1857,14 @@ object: Export Headcount by Department
 object: Export Leavers Report
 object: Import from Caldergate FP&amp;A - Assumptions
 evidence: Action | Kind | Most recent recorded run | In a process | Target or source
-formula: Import from Caldergate FP&amp;A - Assumptions
-formula: Inputs - Settings
+object: Import from Caldergate FP&amp;A - Assumptions
+object: Inputs - Settings
 evidence: Import from Caldergate FP&amp;A - Assumptions | import | 2022-08-17 | no | Inputs - Settings
-formula: Export Leavers Report
-formula: Calcs - Attrition
+object: Export Leavers Report
+object: Calcs - Attrition
 evidence: Export Leavers Report | export | 2024-12-19 | no | Calcs - Attrition
-formula: Export Headcount by Department
-formula: Reports - Headcount
+object: Export Headcount by Department
+object: Reports - Headcount
 evidence: Export Headcount by Department | export | 2026-09-08 | no | Reports - Headcount</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-integration">Area</a></p>
 </article>
@@ -1893,8 +1893,8 @@ evidence: Export Headcount by Department | export | 2026-09-08 | no | Reports - 
 <div class="idx">text: Imports and exports with no recent recorded run or outside every process Export date unknown. Latest recorded action run: 2026-09-08. 0 imports and exports have no recorded run since 2025-09-13 (12 months before the latest recorded run), 0 have no recorded run at all, and 1 are not in any process. An action outside a process can still run from a page, the Actions pane or the API; a run date older than the window may be right for a quarterly or annual load. What the list gives is the set to ask about, not a verdict. 1 action
 object: Export Board Pack PDF Data
 evidence: Action | Kind | Most recent recorded run | In a process | Target or source
-formula: Export Board Pack PDF Data
-formula: OUT01 Board Dashboard
+object: Export Board Pack PDF Data
+object: OUT01 Board Dashboard
 evidence: Export Board Pack PDF Data | export | 2026-09-08 | no | OUT01 Board Dashboard</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-integration">Area</a></p>
 </article>
@@ -1917,7 +1917,7 @@ evidence: Export Board Pack PDF Data | export | 2026-09-08 | no | OUT01 Board Da
 <tr><td><a href="#F12">F12</a></td><td>Maintainability and consistency</td><td>Same calculation made more than once under different names</td><td>Workforce Planning</td><td>review candidate</td><td>low</td><td>confirmed</td><td>medium</td><td data-v="4464">4.5K</td><td data-v="">n/a</td><td>footprint</td></tr>
 <tr><td><a href="#F13">F13</a></td><td>Potential capacity or performance improvements</td><td>Text, FINDITEM and per-item functions in large multi-dimensional line items</td><td>Caldergate Data Hub</td><td>review candidate</td><td>low</td><td>confirmed</td><td>low</td><td data-v="">n/a</td><td data-v="">n/a</td><td>footprint</td></tr>
 <tr><td><a href="#F14">F14</a></td><td>Maintainability and consistency</td><td>DIVIDE() where a zero divisor shows Infinity</td><td>Caldergate Data Hub</td><td>review candidate</td><td>low</td><td>confirmed</td><td>low</td><td data-v="">n/a</td><td data-v="">n/a</td><td>none</td></tr>
-<tr><td><a href="#F15">F15</a></td><td>Potential capacity or performance improvements</td><td>SUM combined with LOOKUP or SELECT in one formula</td><td>Caldergate FP&amp;A</td><td>review candidate</td><td>low</td><td>confirmed</td><td>low</td><td data-v="">n/a</td><td data-v="">n/a</td><td>footprint</td></tr>
+<tr><td><a href="#F15">F15</a></td><td>Potential capacity or performance improvements</td><td>SUM combined with LOOKUP or SELECT in one formula</td><td>Caldergate FP&amp;A</td><td>review candidate</td><td>low</td><td>confirmed</td><td>low</td><td data-v="">n/a</td><td data-v="0.0">0.0%</td><td>footprint</td></tr>
 <tr><td><a href="#F16">F16</a></td><td>Potential capacity or performance improvements</td><td>Text, FINDITEM and per-item functions in large multi-dimensional line items</td><td>Caldergate FP&amp;A</td><td>review candidate</td><td>low</td><td>confirmed</td><td>low</td><td data-v="">n/a</td><td data-v="">n/a</td><td>footprint</td></tr>
 <tr><td><a href="#F17">F17</a></td><td>Maintainability and consistency</td><td>Numeric literals inside formulas</td><td>Caldergate FP&amp;A</td><td>review candidate</td><td>low</td><td>confirmed</td><td>low</td><td data-v="">n/a</td><td data-v="">n/a</td><td>none</td></tr>
 <tr><td><a href="#F18">F18</a></td><td>Maintainability and consistency</td><td>Subsidiary views used in calculation</td><td>Caldergate FP&amp;A</td><td>review candidate</td><td>low</td><td>confirmed</td><td>medium</td><td data-v="">n/a</td><td data-v="">n/a</td><td>none</td></tr>
@@ -1989,7 +1989,7 @@ evidence: Export Board Pack PDF Data | export | 2026-09-08 | no | OUT01 Board Da
 <h4>Evidence strength labels</h4><ul><li><strong>confirmed.</strong> Everything this finding relies on is in the exports and was checked against Anaplan&#x27;s Referenced By column.</li><li><strong>partial.</strong> Formulas, imports and exports are in the exports; pages, saved views, line item subsets and integrations are not, and can hold consumers.</li><li><strong>inferred.</strong> Rests on names or on a comparison the exports cannot fully resolve. A hypothesis to test, not an observation.</li></ul>
 <h3 id="glossary">Glossary</h3><ul><li><strong>Cells.</strong> Every line item multiplied out over its dimensions and time, as the export counts them. Workspace size and model open time follow cells; contractual cost does not follow from cells alone.</li><li><strong>Calculation effort.</strong> Anaplan&#x27;s own measure of where the engine spends its time, per line item, as a share of one model. Classic measures the whole model at open; Polaris measures a rolling ten-minute window. The exports do not say which engine produced the column, and shares are never added across models.</li><li><strong>No consumer detected.</strong> No formula in the export references the object and no export action reads its module. Pages, saved views, line item subsets, filters, access drivers and integrations are not in the exports and can hold consumers. Not the same as unused.</li><li><strong>Referenced By agreement.</strong> Edges present in both the parsed dependency graph and Anaplan&#x27;s Referenced By column, over edges present in either. High means the graph can be trusted for change impact; discrepancies are listed by cause.</li><li><strong>Inferred.</strong> Read off names, not off a system table. Model-to-model feeds come from the words after &#x27;from&#x27; in import action names; the same words give the source-name candidates.</li><li><strong>Footprint.</strong> What objects occupy now. A conditional benefit is what would be released if an investigation confirms they can go. A measured improvement needs a before-and-after reading in the model; this report contains none.</li><li><strong>Evidence strength.</strong> Confirmed: everything relied on is in the exports. Partial: formulas and actions are, pages and subsets are not. Inferred: rests on names or on a comparison the exports cannot fully resolve.</li></ul></section>
 <footer>Automated findings and candidate recommendations from each model&#x27;s Line Items, Modules and Actions exports. Generated 2026-09-22. Review statuses are stored in this browser only.</footer>
-<script type="application/json" id="report-data">{"key": "anaplan-estate-4-models-2026-09-22", "csv": "id,area,title,model,kind_label,importance,strength,complexity,benefit_kind,footprint_cells,footprint_effort,object_label,scope,benefit,next_step,objects,rules,related\nF1,Usage and retirement investigations,3 modules with no consumer detected in the inspected dependency types,Caldergate FP&A,review candidate,high,partial,medium,conditional,70270848,50.78,\"3 modules, 30 line items\",\"3 modules, 30 line items\",If no consumer is found: 70.3M cells as exported; 50.8% of Caldergate FP&A's measured calculation effort would no longer be held or measured. Per module in the table.,\"Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.\",CAL05 Opex OLD; CAL06 Department Summary; CAL08 Cash Flow,G-UNUSED; REDUNDANT-EXACT,\nF2,Maintainability and consistency,IF chain that encodes a lookup table,Caldergate FP&A,review candidate,medium,confirmed,medium,footprint,,16.04,1 object,1 line item; 1 reader,Observed effort share only; improvement would be measured after the change.,Load the table into a mapping module and replace the chain with one LOOKUP; compare values before and after.,CAL03 Opex.Forecast Opex,A-IF-COUNT,\nF3,Potential capacity or performance improvements,Where measured calculation effort concentrates,Caldergate Data Hub,observation,medium,confirmed,medium,footprint,,,top 20 line items by effort share,top 20 line items by effort,Observed footprint only; no reduction is claimed.,\"Read the formulas of the top five and match each against the other findings that name it (SUM with LOOKUP, IF chains, text in large modules); decide which one to trial in a development copy first.\",DAT01 GL Transactions.Loaded?; CAL01 Volume Summary.Units; CAL01 Volume Summary.Revenue; CAL01 Volume Summary.Orders; DAT05 CRM Pipeline.Weighted Pipeline; CAL01 Volume Summary.Average Order Value; DAT08 Employee Master.Employee Id; DAT03 Account Master.Sign; DAT07 Customer Master.Region Code; DAT03 Account Master.Revenue?,EFFORT,\nF4,Dependencies and change impact,Line items with the widest change impact,Caldergate FP&A,observation,medium,confirmed,low,none,,,1 line item,1 line item,not applicable,Include these in the change-impact check for every release that touches them.,SYS01 Time Settings.Actual?,G-HUB,\nF5,Potential capacity or performance improvements,Where measured calculation effort concentrates,Caldergate FP&A,observation,medium,confirmed,medium,footprint,,,top 20 line items by effort share,top 20 line items by effort,Observed footprint only; no reduction is claimed.,\"Read the formulas of the top five and match each against the other findings that name it (SUM with LOOKUP, IF chains, text in large modules); decide which one to trial in a development copy first.\",CAL03 Opex.Forecast Opex; CAL03 Opex.Opex GBP; CAL05 Opex OLD.Opex GBP; CAL05 Opex OLD.Forecast; DAT01 Actuals GL.Journal Cost Centre; CAL03 Opex.Opex; CAL05 Opex OLD.Opex; CAL03 Opex.Actual Opex; CAL05 Opex OLD.Actual; CAL05 Opex OLD.Opex Cumulative,EFFORT,\nF6,Potential capacity or performance improvements,Where measured calculation effort concentrates,Board Reporting,observation,medium,confirmed,medium,footprint,,,top 20 line items by effort share,top 20 line items by effort,Observed footprint only; no reduction is claimed.,\"Read the formulas of the top five and match each against the other findings that name it (SUM with LOOKUP, IF chains, text in large modules); decide which one to trial in a development copy first.\",CAL01 KPIs.Revenue per FTE; CAL01 KPIs.Opex Ratio; CAL01 KPIs.Revenue Growth; CAL01 KPIs.EBITDA Margin; CAL01 KPIs.FTE; CAL01 KPIs.Revenue Prior Year; CAL01 KPIs.Revenue YTD; OUT01 Board Dashboard.Revenue; OUT01 Board Dashboard.EBITDA; OUT01 Board Dashboard.Revenue per FTE,EFFORT,\nF7,Usage and retirement investigations,\"Calculated line items with no consumer detected, outside output modules\",Caldergate FP&A,review candidate,medium,partial,medium,conditional,15126048,10.04,3 objects,5 line items in 3 modules,If no consumer is found: 15.1M cells as exported; 10.0% of Caldergate FP&A's measured calculation effort.,\"Complete the consumer and retention checks (pages, saved views, subsets, integrations, retained data) for the largest module's line items, then record a keep-or-retire recommendation for each.\",DAT01 Actuals GL; CAL03 Opex; CAL02 Revenue,G-UNUSED,\nF8,Usage and retirement investigations,1 module with no consumer detected in the inspected dependency types,Board Reporting,review candidate,medium,partial,medium,conditional,72,2.8,\"1 module, 2 line items\",\"1 module, 2 line items\",If no consumer is found: 72 cells as exported; 2.8% of Board Reporting's measured calculation effort would no longer be held or measured. Per module in the table.,\"Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.\",SYS01 Time,G-UNUSED; REDUNDANT-EXACT,\nF9,Maintainability and consistency,Line items that only copy another line item,Caldergate FP&A,review candidate,low,confirmed,low,footprint,268128,,14 copy line items,14 line items; 14 formulas read them,\"Footprint of the copies: 268K cells. Released only for copies without a page, export or access reason.\",\"For the largest copies, establish what shows or exports them under their own name and whether access differs, then decide which copies are interfaces to keep.\",CAL07 P&L by Cost Centre.Depreciation; CAL11 Reporting Prep.Revenue; CAL11 Reporting Prep.EBITDA; CAL11 Reporting Prep.Opex; CAL11 Reporting Prep.Staff Cost; OUT01 Management Pack.Revenue; OUT01 Management Pack.EBITDA; OUT01 Management Pack.Opex; OUT01 Management Pack.Staff Cost; OUT01 Management Pack.Total Cost; OUT01 Management Pack.Depreciation; OUT01 Management Pack.Phased Drivers; OUT02 Board Pack.Revenue; OUT02 Board Pack.EBITDA,REDUNDANT-ALIAS,\nF10,Dependencies and change impact,Pass-through chains,Caldergate FP&A,review candidate,low,confirmed,low,footprint,153216,,4 objects,4 chains,Footprint of the intermediates: 153K cells.,\"For each chain, establish what each intermediate is for (page, export, access boundary); decide which intermediates are interfaces to keep.\",OUT01 Management Pack.Opex; OUT01 Management Pack.Staff Cost; OUT02 Board Pack.Revenue; OUT02 Board Pack.EBITDA,A-DAISY,\nF11,Maintainability and consistency,Same calculation made more than once under different names,Caldergate FP&A,review candidate,low,confirmed,medium,footprint,19152,,1 group; 1 duplicate line item plus one kept line item per group,1 line item in 1 group; 0 formulas would be re-pointed,\"Footprint of the copies: 19.2K cells. Released only for copies that no page, view or process needs.\",\"Validate equivalence and the reasons for separate objects in the largest group (access boundaries, a reporting contract on the copy's name, a page that shows it), then decide whether consolidation is appropriate.\",CAL07 P&L by Cost Centre.Depreciation,REDUNDANT-EXACT,\nF12,Maintainability and consistency,Same calculation made more than once under different names,Workforce Planning,review candidate,low,confirmed,medium,footprint,4464,,1 group; 1 duplicate line item plus one kept line item per group,1 line item in 1 group; 1 formulas would be re-pointed,\"Footprint of the copies: 4.5K cells. Released only for copies that no page, view or process needs.\",\"Validate equivalence and the reasons for separate objects in the largest group (access boundaries, a reporting contract on the copy's name, a page that shows it), then decide whether consolidation is appropriate.\",Calcs - Attrition.Headcount,REDUNDANT-EXACT,\nF13,Potential capacity or performance improvements,\"Text, FINDITEM and per-item functions in large multi-dimensional line items\",Caldergate Data Hub,review candidate,low,confirmed,low,footprint,,,2 objects,2 line items,Observed footprint only; improvement would be measured after the change.,Start with the largest by cells; compute it once in a SYS module dimensioned by the list it depends on.,DAT01 GL Transactions.Source System; DAT06 Sales Orders.Last Order Ref,A-TEXT-FORMAT; A-FINDITEM; A-TEXT-JOIN; A-SYSTEMS-FN,\nF14,Maintainability and consistency,DIVIDE() where a zero divisor shows Infinity,Caldergate Data Hub,review candidate,low,confirmed,low,none,,,1 object,1 formula,not applicable,Confirm for each whether Infinity or NaN is acceptable on the pages that show it; no change is needed where it is.,CAL01 Volume Summary.Average Order Value,F-DIVIDE-FN,\nF15,Potential capacity or performance improvements,SUM combined with LOOKUP or SELECT in one formula,Caldergate FP&A,review candidate,low,confirmed,low,footprint,,,1 object,1 formula; together 0.0% of Caldergate FP&A's measured effort,Observed: the listed effort shares. Improvement would have to be measured after the change.,Take the formula with the largest effort share; split it in a sandbox copy; compare Calculation Effort before and after.,CAL06 Department Summary.Benchmark Opex,F-MIXED-CLAUSE,\nF16,Potential capacity or performance improvements,\"Text, FINDITEM and per-item functions in large multi-dimensional line items\",Caldergate FP&A,review candidate,low,confirmed,low,footprint,,,13 objects,13 line items,Observed footprint only; improvement would be measured after the change.,Start with the largest by cells; compute it once in a SYS module dimensioned by the list it depends on.,DAT01 Actuals GL.Source Journal; DAT01 Actuals GL.Journal Cost Centre; CAL02 Revenue.Revenue Label; CAL02 Revenue.Revenue Label; CAL03 Opex.Forecast Opex; CAL05 Opex OLD.Fees Forecast; CAL05 Opex OLD.Marketing Forecast; CAL05 Opex OLD.Other Forecast; CAL05 Opex OLD.Rates Forecast; CAL05 Opex OLD.Rent Forecast; CAL05 Opex OLD.Software Forecast; CAL05 Opex OLD.Travel Forecast; CAL05 Opex OLD.Utilities Forecast,A-TEXT-FORMAT; A-FINDITEM; A-TEXT-JOIN; A-SYSTEMS-FN,\nF17,Maintainability and consistency,Numeric literals inside formulas,Caldergate FP&A,review candidate,low,confirmed,low,none,,,6 objects,6 formulas,not quantified from the exports,\"Read the formulas with the most repeated literal; where a literal is a business assumption, give it a named input with a note.\",CAL02 Revenue.Revenue USD; CAL02 Revenue.VAT; CAL08 Cash Flow.Debtors; CAL08 Cash Flow.Tax; CAL10 Depreciation.Charge; INP03 Headcount.Pension,F-HARDCODE,\nF18,Maintainability and consistency,Subsidiary views used in calculation,Caldergate FP&A,review candidate,low,confirmed,medium,none,,,1 object,1 line item; 1 readers,not quantified from the exports,\"For each, decide whether a module dimensioned as the line item is would make its readers clearer.\",CAL01 Volumes.Launched?,A-SUBSIDIARY,\nF19,Maintainability and consistency,Module with more than 50 line items,Caldergate FP&A,review candidate,low,confirmed,medium,none,,,1 object,1 module; 50 readers outside it; 1 export,not quantified from the exports,\"Group the line items by what reads them; if the groups have different purposes, consider a split. Reducing the count is not the goal.\",INP02 Opex Drivers,A-LI-COUNT,\nF20,Maintainability and consistency,Modules with no line items,Caldergate FP&A,review candidate,low,confirmed,low,none,,,1 object,1 module,not applicable,\"Confirm nothing is planned for them, then decide whether to remove them.\",CAL09 Scenario Planning,G-EMPTY-MODULE,\nF21,Maintainability and consistency,Very long formulas,Caldergate FP&A,review candidate,low,confirmed,medium,none,,,1 object,1 formula,not quantified from the exports,Add a note to each explaining what it does; split only where a named intermediate would help a reader.,CAL03 Opex.Forecast Opex,F-LONG,\nF22,Maintainability and consistency,Hard-coded time period or version selections,Caldergate FP&A,review candidate,low,confirmed,low,none,,,3 objects,3 formulas,not quantified from the exports,\"Where the period is a moving concept (current year, prior year), hold it in a time-formatted line item and use LOOKUP.\",CAL07 P&L by Cost Centre.Opex Budget; OUT02 Board Pack.Budget Revenue; OUT02 Board Pack.Old Budget Revenue,F-SELECT-TIME,\nF23,Maintainability and consistency,DIVIDE() where a zero divisor shows Infinity,Caldergate FP&A,review candidate,low,confirmed,low,none,,,8 objects,8 formulas,not applicable,Confirm for each whether Infinity or NaN is acceptable on the pages that show it; no change is needed where it is.,CAL01 Volumes.Volume Growth; CAL02 Revenue.Average Price; CAL02 Revenue.Revenue Growth; CAL04 Margn.Margin %; CAL06 Department Summary.Cost per FTE; CAL07 P&L by Cost Centre.EBITDA Margin; OUT02 Board Pack.Revenue Variance %; SYS05 FX Rates.Rate Movement,F-DIVIDE-FN,\nF24,Potential capacity or performance improvements,\"Text, FINDITEM and per-item functions in large multi-dimensional line items\",Workforce Planning,review candidate,low,confirmed,low,footprint,,,3 objects,3 line items,Observed footprint only; improvement would be measured after the change.,Start with the largest by cells; compute it once in a SYS module dimensioned by the list it depends on.,Data - Employees.Employee Name; Data - Employees.Name and Role; Data - Employees.Name and Role,A-TEXT-FORMAT; A-FINDITEM; A-TEXT-JOIN; A-SYSTEMS-FN,\nF25,Maintainability and consistency,Numeric literals inside formulas,Workforce Planning,review candidate,low,confirmed,low,none,,,3 objects,3 formulas,not quantified from the exports,\"Read the formulas with the most repeated literal; where a literal is a business assumption, give it a named input with a note.\",Calcs - Attrition.Annualised Attrition; Calcs - Cost.Bonus; Calcs - Headcount by CC.Bonus %,F-HARDCODE,\nF26,Maintainability and consistency,Subsidiary views used in calculation,Workforce Planning,review candidate,low,confirmed,medium,none,,,1 object,1 line item; 1 readers,not quantified from the exports,\"For each, decide whether a module dimensioned as the line item is would make its readers clearer.\",Calcs - Attrition.Leavers,A-SUBSIDIARY,\nF27,Maintainability and consistency,Hard-coded time period or version selections,Workforce Planning,review candidate,low,confirmed,low,none,,,1 object,1 formula,not quantified from the exports,\"Where the period is a moving concept (current year, prior year), hold it in a time-formatted line item and use LOOKUP.\",Reports - Headcount.FTE Budget,F-SELECT-TIME,\nF28,Maintainability and consistency,DIVIDE() where a zero divisor shows Infinity,Workforce Planning,review candidate,low,confirmed,low,none,,,3 objects,3 formulas,not applicable,Confirm for each whether Infinity or NaN is acceptable on the pages that show it; no change is needed where it is.,Calcs - Headcount by CC.Average Salary; Reports - Headcount.Cost per FTE; zz Archive - 2021 Cost.Cost per Head,F-DIVIDE-FN,\nF29,Maintainability and consistency,DIVIDE() where a zero divisor shows Infinity,Board Reporting,review candidate,low,confirmed,low,none,,,3 objects,3 formulas,not applicable,Confirm for each whether Infinity or NaN is acceptable on the pages that show it; no change is needed where it is.,CAL01 KPIs.EBITDA Margin; CAL01 KPIs.Opex Ratio; CAL01 KPIs.Revenue Growth,F-DIVIDE-FN,\nF30,Usage and retirement investigations,1 module with no consumer detected in the inspected dependency types,Workforce Planning,review candidate,low,partial,medium,conditional,13392,,\"1 module, 3 line items\",\"1 module, 3 line items\",If no consumer is found: 13.4K cells as exported would no longer be held or measured. Per module in the table.,\"Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.\",zz Archive - 2021 Cost,G-UNUSED; REDUNDANT-EXACT,\nF31,Usage and retirement investigations,2 modules with no consumer detected in the inspected dependency types,Caldergate Data Hub,review candidate,low,partial,medium,conditional,360,0.01,\"2 modules, 10 line items\",\"2 modules, 10 line items\",If no consumer is found: 360 cells as exported; 0.0% of Caldergate Data Hub's measured calculation effort would no longer be held or measured. Per module in the table.,\"Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.\",SYS01 Time Settings; SYS02 Data Checks,G-UNUSED; REDUNDANT-EXACT,\nF32,Maintainability and consistency,Summary methods on large line items no formula reads,Caldergate Data Hub,review candidate,low,partial,low,none,,,1 object,1 line item,not quantified from the exports,\"Check the largest ones on their pages; where no total is shown, set the summary to None.\",DAT05 CRM Pipeline.Weighted Pipeline,A-SUMMARY-ON,\nF33,Integration and operational review,Imports and exports with no recent recorded run or outside every process,Caldergate Data Hub,review candidate,low,partial,low,none,,,3 objects,3 actions,not quantified from the exports,\"For each action with no recorded run in the window, ask the owner how and how often it runs; document the answer in the action's notes.\",Export Pipeline for Sales Ops; Import Customers from Salesforce; Import Products from PIM file,ACTIONS,\nF34,Maintainability and consistency,Summary methods on large line items no formula reads,Caldergate FP&A,review candidate,low,partial,low,none,,,30 objects,30 line items,not quantified from the exports,\"Check the largest ones on their pages; where no total is shown, set the summary to None.\",CAL01 Volumes.Volume Growth; CAL02 Revenue.Average Price; CAL02 Revenue.Revenue Growth; CAL02 Revenue.Revenue USD; CAL02 Revenue.Revenue per Unit; CAL02 Revenue.VAT; CAL03 Opex.Opex Variance; CAL04 Margn.Margin %; CAL04 Margn.Margin GBP; CAL05 Opex OLD.Opex Cumulative; CAL05 Opex OLD.Opex Run Rate; CAL07 P&L by Cost Centre.EBIT; CAL07 P&L by Cost Centre.EBITDA Margin; CAL07 P&L by Cost Centre.Opex Variance to Budget; CAL10 Depreciation.NBV; DAT02 Actuals Volumes.Revenue Actual; INP02 Opex Drivers.Check; INP02 Opex Drivers.Driver Count; OUT01 Management Pack.Capex; OUT01 Management Pack.Depreciation; OUT01 Management Pack.EBITDA YTD; OUT01 Management Pack.Headcount; OUT01 Management Pack.Opex; OUT01 Management Pack.Phased Drivers; OUT01 Management Pack.Revenue YTD; OUT01 Management Pack.Staff Cost; OUT01 Management Pack.Total Cost; OUT02 Board Pack.EBITDA; OUT02 Board Pack.Old Budget Revenue; OUT02 Board Pack.Revenue Variance %,A-SUMMARY-ON,\nF35,Integration and operational review,Imports and exports with no recent recorded run or outside every process,Caldergate FP&A,review candidate,low,partial,low,none,,,5 objects,5 actions,not quantified from the exports,\"For each action with no recorded run in the window, ask the owner how and how often it runs; document the answer in the action's notes.\",Export Assumptions for Workforce; Export Opex Drivers to Excel; Import Budget from Excel; Import FX from Treasury file; Import from Caldergate Hub v1 - Cost Centres,ACTIONS,\nF36,Maintainability and consistency,Summary methods on large line items no formula reads,Workforce Planning,review candidate,low,partial,low,none,,,1 object,1 line item,not quantified from the exports,\"Check the largest ones on their pages; where no total is shown, set the summary to None.\",Calcs - Headcount by CC.Average Salary,A-SUMMARY-ON,\nF37,Integration and operational review,Imports and exports with no recent recorded run or outside every process,Workforce Planning,review candidate,low,partial,low,none,,,3 objects,3 actions,not quantified from the exports,\"For each action with no recorded run in the window, ask the owner how and how often it runs; document the answer in the action's notes.\",Export Headcount by Department; Export Leavers Report; Import from Caldergate FP&A - Assumptions,ACTIONS,\nF38,Maintainability and consistency,Summary methods on large line items no formula reads,Board Reporting,review candidate,low,partial,low,none,,,5 objects,5 line items,not quantified from the exports,\"Check the largest ones on their pages; where no total is shown, set the summary to None.\",DAT01 P&L.COGS; DAT01 P&L.Depreciation; DAT01 P&L.EBIT; DAT01 P&L.EBITDA; DAT01 P&L.Staff Cost,A-SUMMARY-ON,\nF39,Integration and operational review,Imports and exports with no recent recorded run or outside every process,Board Reporting,review candidate,low,partial,low,none,,,1 object,1 action,not quantified from the exports,\"For each action with no recorded run in the window, ask the owner how and how often it runs; document the answer in the action's notes.\",Export Board Pack PDF Data,ACTIONS,\nF40,Maintainability and consistency,Same line item name and formula in more than one model,Estate,review candidate,low,inferred,medium,none,,,8 line item names,8 line items across 3 models,not quantified from the exports,Pick the copies that are genuinely one rule and record where it is owned; leave local filters and formatting where they are.,COGS?; Current Period?; Employer NI; Group; Opex?; Revenue?; Sign; Working Days,DUP-CROSS,\n", "ids": ["F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "F13", "F14", "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", "F24", "F25", "F26", "F27", "F28", "F29", "F30", "F31", "F32", "F33", "F34", "F35", "F36", "F37", "F38", "F39", "F40"]}</script><script>
+<script type="application/json" id="report-data">{"key": "anaplan-estate-4-models-2026-09-22", "csv": "id,area,title,model,kind_label,importance,strength,complexity,benefit_kind,footprint_cells,footprint_effort,object_label,scope,benefit,next_step,objects,rules,related\nF1,Usage and retirement investigations,3 modules with no consumer detected in the inspected dependency types,Caldergate FP&A,review candidate,high,partial,medium,conditional,70270848,50.78,\"3 modules, 30 line items\",\"3 modules, 30 line items\",If no consumer is found: 70.3M cells as exported; 50.8% of Caldergate FP&A's measured calculation effort would no longer be held or measured. Per module in the table.,\"Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.\",CAL05 Opex OLD; CAL06 Department Summary; CAL08 Cash Flow,G-UNUSED; REDUNDANT-EXACT,\nF2,Maintainability and consistency,IF chain that encodes a lookup table,Caldergate FP&A,review candidate,medium,confirmed,medium,footprint,,16.04,1 object,1 line item; 1 reader,Observed effort share only; improvement would be measured after the change.,Load the table into a mapping module and replace the chain with one LOOKUP; compare values before and after.,CAL03 Opex.Forecast Opex,A-IF-COUNT,\nF3,Potential capacity or performance improvements,Where measured calculation effort concentrates,Caldergate Data Hub,observation,medium,confirmed,medium,footprint,,,top 20 line items by effort share,top 20 line items by effort,Observed footprint only; no reduction is claimed.,\"Read the formulas of the top five and match each against the other findings that name it (SUM with LOOKUP, IF chains, text in large modules); decide which one to trial in a development copy first.\",DAT01 GL Transactions.Loaded?; CAL01 Volume Summary.Units; CAL01 Volume Summary.Revenue; CAL01 Volume Summary.Orders; DAT05 CRM Pipeline.Weighted Pipeline; CAL01 Volume Summary.Average Order Value; DAT08 Employee Master.Employee Id; DAT03 Account Master.Sign; DAT07 Customer Master.Region Code; DAT03 Account Master.Revenue?,EFFORT,\nF4,Dependencies and change impact,Line items with the widest change impact,Caldergate FP&A,observation,medium,confirmed,low,none,,,1 line item,1 line item,not applicable,Include these in the change-impact check for every release that touches them.,SYS01 Time Settings.Actual?,G-HUB,\nF5,Potential capacity or performance improvements,Where measured calculation effort concentrates,Caldergate FP&A,observation,medium,confirmed,medium,footprint,,,top 20 line items by effort share,top 20 line items by effort,Observed footprint only; no reduction is claimed.,\"Read the formulas of the top five and match each against the other findings that name it (SUM with LOOKUP, IF chains, text in large modules); decide which one to trial in a development copy first.\",CAL03 Opex.Forecast Opex; CAL03 Opex.Opex GBP; CAL05 Opex OLD.Opex GBP; CAL05 Opex OLD.Forecast; DAT01 Actuals GL.Journal Cost Centre; CAL03 Opex.Opex; CAL05 Opex OLD.Opex; CAL03 Opex.Actual Opex; CAL05 Opex OLD.Actual; CAL05 Opex OLD.Opex Cumulative,EFFORT,\nF6,Potential capacity or performance improvements,Where measured calculation effort concentrates,Board Reporting,observation,medium,confirmed,medium,footprint,,,top 20 line items by effort share,top 20 line items by effort,Observed footprint only; no reduction is claimed.,\"Read the formulas of the top five and match each against the other findings that name it (SUM with LOOKUP, IF chains, text in large modules); decide which one to trial in a development copy first.\",CAL01 KPIs.Revenue per FTE; CAL01 KPIs.Opex Ratio; CAL01 KPIs.Revenue Growth; CAL01 KPIs.EBITDA Margin; CAL01 KPIs.FTE; CAL01 KPIs.Revenue Prior Year; CAL01 KPIs.Revenue YTD; OUT01 Board Dashboard.Revenue; OUT01 Board Dashboard.EBITDA; OUT01 Board Dashboard.Revenue per FTE,EFFORT,\nF7,Usage and retirement investigations,\"Calculated line items with no consumer detected, outside output modules\",Caldergate FP&A,review candidate,medium,partial,medium,conditional,15126048,10.04,3 objects,5 line items in 3 modules,If no consumer is found: 15.1M cells as exported; 10.0% of Caldergate FP&A's measured calculation effort.,\"Complete the consumer and retention checks (pages, saved views, subsets, integrations, retained data) for the largest module's line items, then record a keep-or-retire recommendation for each.\",DAT01 Actuals GL; CAL03 Opex; CAL02 Revenue,G-UNUSED,\nF8,Usage and retirement investigations,1 module with no consumer detected in the inspected dependency types,Board Reporting,review candidate,medium,partial,medium,conditional,72,2.8,\"1 module, 2 line items\",\"1 module, 2 line items\",If no consumer is found: 72 cells as exported; 2.8% of Board Reporting's measured calculation effort would no longer be held or measured. Per module in the table.,\"Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.\",SYS01 Time,G-UNUSED; REDUNDANT-EXACT,\nF9,Maintainability and consistency,Line items that only copy another line item,Caldergate FP&A,review candidate,low,confirmed,low,footprint,268128,,14 copy line items,14 line items; 14 formulas read them,\"Footprint of the copies: 268K cells. Released only for copies without a page, export or access reason.\",\"For the largest copies, establish what shows or exports them under their own name and whether access differs, then decide which copies are interfaces to keep.\",CAL07 P&L by Cost Centre.Depreciation; CAL11 Reporting Prep.Revenue; CAL11 Reporting Prep.EBITDA; CAL11 Reporting Prep.Opex; CAL11 Reporting Prep.Staff Cost; OUT01 Management Pack.Revenue; OUT01 Management Pack.EBITDA; OUT01 Management Pack.Opex; OUT01 Management Pack.Staff Cost; OUT01 Management Pack.Total Cost; OUT01 Management Pack.Depreciation; OUT01 Management Pack.Phased Drivers; OUT02 Board Pack.Revenue; OUT02 Board Pack.EBITDA,REDUNDANT-ALIAS,\nF10,Dependencies and change impact,Pass-through chains,Caldergate FP&A,review candidate,low,confirmed,low,footprint,153216,,4 objects,4 chains,Footprint of the intermediates: 153K cells.,\"For each chain, establish what each intermediate is for (page, export, access boundary); decide which intermediates are interfaces to keep.\",OUT01 Management Pack.Opex; OUT01 Management Pack.Staff Cost; OUT02 Board Pack.Revenue; OUT02 Board Pack.EBITDA,A-DAISY,\nF11,Maintainability and consistency,Same calculation made more than once under different names,Caldergate FP&A,review candidate,low,confirmed,medium,footprint,19152,,1 group; 1 duplicate line item plus one kept line item per group,1 line item in 1 group; 0 formulas would be re-pointed,\"Footprint of the copies: 19.2K cells. Released only for copies that no page, view or process needs.\",\"Validate equivalence and the reasons for separate objects in the largest group (access boundaries, a reporting contract on the copy's name, a page that shows it), then decide whether consolidation is appropriate.\",CAL07 P&L by Cost Centre.Depreciation,REDUNDANT-EXACT,\nF12,Maintainability and consistency,Same calculation made more than once under different names,Workforce Planning,review candidate,low,confirmed,medium,footprint,4464,,1 group; 1 duplicate line item plus one kept line item per group,1 line item in 1 group; 1 formulas would be re-pointed,\"Footprint of the copies: 4.5K cells. Released only for copies that no page, view or process needs.\",\"Validate equivalence and the reasons for separate objects in the largest group (access boundaries, a reporting contract on the copy's name, a page that shows it), then decide whether consolidation is appropriate.\",Calcs - Attrition.Headcount,REDUNDANT-EXACT,\nF13,Potential capacity or performance improvements,\"Text, FINDITEM and per-item functions in large multi-dimensional line items\",Caldergate Data Hub,review candidate,low,confirmed,low,footprint,,,2 objects,2 line items,Observed footprint only; improvement would be measured after the change.,Start with the largest by cells; compute it once in a SYS module dimensioned by the list it depends on.,DAT01 GL Transactions.Source System; DAT06 Sales Orders.Last Order Ref,A-TEXT-FORMAT; A-FINDITEM; A-TEXT-JOIN; A-SYSTEMS-FN,\nF14,Maintainability and consistency,DIVIDE() where a zero divisor shows Infinity,Caldergate Data Hub,review candidate,low,confirmed,low,none,,,1 object,1 formula,not applicable,Confirm for each whether Infinity or NaN is acceptable on the pages that show it; no change is needed where it is.,CAL01 Volume Summary.Average Order Value,F-DIVIDE-FN,\nF15,Potential capacity or performance improvements,SUM combined with LOOKUP or SELECT in one formula,Caldergate FP&A,review candidate,low,confirmed,low,footprint,,0.0,1 object,1 formula; together 0.0% of Caldergate FP&A's measured effort,Observed: the listed effort shares. Improvement would have to be measured after the change.,Take the formula with the largest effort share; split it in a sandbox copy; compare Calculation Effort before and after.,CAL06 Department Summary.Benchmark Opex,F-MIXED-CLAUSE,\nF16,Potential capacity or performance improvements,\"Text, FINDITEM and per-item functions in large multi-dimensional line items\",Caldergate FP&A,review candidate,low,confirmed,low,footprint,,,13 objects,13 line items,Observed footprint only; improvement would be measured after the change.,Start with the largest by cells; compute it once in a SYS module dimensioned by the list it depends on.,DAT01 Actuals GL.Source Journal; DAT01 Actuals GL.Journal Cost Centre; CAL02 Revenue.Revenue Label; CAL02 Revenue.Revenue Label; CAL03 Opex.Forecast Opex; CAL05 Opex OLD.Fees Forecast; CAL05 Opex OLD.Marketing Forecast; CAL05 Opex OLD.Other Forecast; CAL05 Opex OLD.Rates Forecast; CAL05 Opex OLD.Rent Forecast; CAL05 Opex OLD.Software Forecast; CAL05 Opex OLD.Travel Forecast; CAL05 Opex OLD.Utilities Forecast,A-TEXT-FORMAT; A-FINDITEM; A-TEXT-JOIN; A-SYSTEMS-FN,\nF17,Maintainability and consistency,Numeric literals inside formulas,Caldergate FP&A,review candidate,low,confirmed,low,none,,,6 objects,6 formulas,not quantified from the exports,\"Read the formulas with the most repeated literal; where a literal is a business assumption, give it a named input with a note.\",CAL02 Revenue.Revenue USD; CAL02 Revenue.VAT; CAL08 Cash Flow.Debtors; CAL08 Cash Flow.Tax; CAL10 Depreciation.Charge; INP03 Headcount.Pension,F-HARDCODE,\nF18,Maintainability and consistency,Subsidiary views used in calculation,Caldergate FP&A,review candidate,low,confirmed,medium,none,,,1 object,1 line item; 1 readers,not quantified from the exports,\"For each, decide whether a module dimensioned as the line item is would make its readers clearer.\",CAL01 Volumes.Launched?,A-SUBSIDIARY,\nF19,Maintainability and consistency,Module with more than 50 line items,Caldergate FP&A,review candidate,low,confirmed,medium,none,,,1 object,1 module; 50 readers outside it; 1 export,not quantified from the exports,\"Group the line items by what reads them; if the groups have different purposes, consider a split. Reducing the count is not the goal.\",INP02 Opex Drivers,A-LI-COUNT,\nF20,Maintainability and consistency,Modules with no line items,Caldergate FP&A,review candidate,low,confirmed,low,none,,,1 object,1 module,not applicable,\"Confirm nothing is planned for them, then decide whether to remove them.\",CAL09 Scenario Planning,G-EMPTY-MODULE,\nF21,Maintainability and consistency,Very long formulas,Caldergate FP&A,review candidate,low,confirmed,medium,none,,,1 object,1 formula,not quantified from the exports,Add a note to each explaining what it does; split only where a named intermediate would help a reader.,CAL03 Opex.Forecast Opex,F-LONG,\nF22,Maintainability and consistency,Hard-coded time period or version selections,Caldergate FP&A,review candidate,low,confirmed,low,none,,,3 objects,3 formulas,not quantified from the exports,\"Where the period is a moving concept (current year, prior year), hold it in a time-formatted line item and use LOOKUP.\",CAL07 P&L by Cost Centre.Opex Budget; OUT02 Board Pack.Budget Revenue; OUT02 Board Pack.Old Budget Revenue,F-SELECT-TIME,\nF23,Maintainability and consistency,DIVIDE() where a zero divisor shows Infinity,Caldergate FP&A,review candidate,low,confirmed,low,none,,,8 objects,8 formulas,not applicable,Confirm for each whether Infinity or NaN is acceptable on the pages that show it; no change is needed where it is.,CAL01 Volumes.Volume Growth; CAL02 Revenue.Average Price; CAL02 Revenue.Revenue Growth; CAL04 Margn.Margin %; CAL06 Department Summary.Cost per FTE; CAL07 P&L by Cost Centre.EBITDA Margin; OUT02 Board Pack.Revenue Variance %; SYS05 FX Rates.Rate Movement,F-DIVIDE-FN,\nF24,Potential capacity or performance improvements,\"Text, FINDITEM and per-item functions in large multi-dimensional line items\",Workforce Planning,review candidate,low,confirmed,low,footprint,,,3 objects,3 line items,Observed footprint only; improvement would be measured after the change.,Start with the largest by cells; compute it once in a SYS module dimensioned by the list it depends on.,Data - Employees.Employee Name; Data - Employees.Name and Role; Data - Employees.Name and Role,A-TEXT-FORMAT; A-FINDITEM; A-TEXT-JOIN; A-SYSTEMS-FN,\nF25,Maintainability and consistency,Numeric literals inside formulas,Workforce Planning,review candidate,low,confirmed,low,none,,,3 objects,3 formulas,not quantified from the exports,\"Read the formulas with the most repeated literal; where a literal is a business assumption, give it a named input with a note.\",Calcs - Attrition.Annualised Attrition; Calcs - Cost.Bonus; Calcs - Headcount by CC.Bonus %,F-HARDCODE,\nF26,Maintainability and consistency,Subsidiary views used in calculation,Workforce Planning,review candidate,low,confirmed,medium,none,,,1 object,1 line item; 1 readers,not quantified from the exports,\"For each, decide whether a module dimensioned as the line item is would make its readers clearer.\",Calcs - Attrition.Leavers,A-SUBSIDIARY,\nF27,Maintainability and consistency,Hard-coded time period or version selections,Workforce Planning,review candidate,low,confirmed,low,none,,,1 object,1 formula,not quantified from the exports,\"Where the period is a moving concept (current year, prior year), hold it in a time-formatted line item and use LOOKUP.\",Reports - Headcount.FTE Budget,F-SELECT-TIME,\nF28,Maintainability and consistency,DIVIDE() where a zero divisor shows Infinity,Workforce Planning,review candidate,low,confirmed,low,none,,,3 objects,3 formulas,not applicable,Confirm for each whether Infinity or NaN is acceptable on the pages that show it; no change is needed where it is.,Calcs - Headcount by CC.Average Salary; Reports - Headcount.Cost per FTE; zz Archive - 2021 Cost.Cost per Head,F-DIVIDE-FN,\nF29,Maintainability and consistency,DIVIDE() where a zero divisor shows Infinity,Board Reporting,review candidate,low,confirmed,low,none,,,3 objects,3 formulas,not applicable,Confirm for each whether Infinity or NaN is acceptable on the pages that show it; no change is needed where it is.,CAL01 KPIs.EBITDA Margin; CAL01 KPIs.Opex Ratio; CAL01 KPIs.Revenue Growth,F-DIVIDE-FN,\nF30,Usage and retirement investigations,1 module with no consumer detected in the inspected dependency types,Workforce Planning,review candidate,low,partial,medium,conditional,13392,,\"1 module, 3 line items\",\"1 module, 3 line items\",If no consumer is found: 13.4K cells as exported would no longer be held or measured. Per module in the table.,\"Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.\",zz Archive - 2021 Cost,G-UNUSED; REDUNDANT-EXACT,\nF31,Usage and retirement investigations,2 modules with no consumer detected in the inspected dependency types,Caldergate Data Hub,review candidate,low,partial,medium,conditional,360,0.01,\"2 modules, 10 line items\",\"2 modules, 10 line items\",If no consumer is found: 360 cells as exported; 0.0% of Caldergate Data Hub's measured calculation effort would no longer be held or measured. Per module in the table.,\"Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.\",SYS01 Time Settings; SYS02 Data Checks,G-UNUSED; REDUNDANT-EXACT,\nF32,Maintainability and consistency,Summary methods on large line items no formula reads,Caldergate Data Hub,review candidate,low,partial,low,none,,,1 object,1 line item,not quantified from the exports,\"Check the largest ones on their pages; where no total is shown, set the summary to None.\",DAT05 CRM Pipeline.Weighted Pipeline,A-SUMMARY-ON,\nF33,Integration and operational review,Imports and exports with no recent recorded run or outside every process,Caldergate Data Hub,review candidate,low,partial,low,none,,,3 objects,3 actions,not quantified from the exports,\"For each action with no recorded run in the window, ask the owner how and how often it runs; document the answer in the action's notes.\",Export Pipeline for Sales Ops; Import Customers from Salesforce; Import Products from PIM file,ACTIONS,\nF34,Maintainability and consistency,Summary methods on large line items no formula reads,Caldergate FP&A,review candidate,low,partial,low,none,,,30 objects,30 line items,not quantified from the exports,\"Check the largest ones on their pages; where no total is shown, set the summary to None.\",CAL01 Volumes.Volume Growth; CAL02 Revenue.Average Price; CAL02 Revenue.Revenue Growth; CAL02 Revenue.Revenue USD; CAL02 Revenue.Revenue per Unit; CAL02 Revenue.VAT; CAL03 Opex.Opex Variance; CAL04 Margn.Margin %; CAL04 Margn.Margin GBP; CAL05 Opex OLD.Opex Cumulative; CAL05 Opex OLD.Opex Run Rate; CAL07 P&L by Cost Centre.EBIT; CAL07 P&L by Cost Centre.EBITDA Margin; CAL07 P&L by Cost Centre.Opex Variance to Budget; CAL10 Depreciation.NBV; DAT02 Actuals Volumes.Revenue Actual; INP02 Opex Drivers.Check; INP02 Opex Drivers.Driver Count; OUT01 Management Pack.Capex; OUT01 Management Pack.Depreciation; OUT01 Management Pack.EBITDA YTD; OUT01 Management Pack.Headcount; OUT01 Management Pack.Opex; OUT01 Management Pack.Phased Drivers; OUT01 Management Pack.Revenue YTD; OUT01 Management Pack.Staff Cost; OUT01 Management Pack.Total Cost; OUT02 Board Pack.EBITDA; OUT02 Board Pack.Old Budget Revenue; OUT02 Board Pack.Revenue Variance %,A-SUMMARY-ON,\nF35,Integration and operational review,Imports and exports with no recent recorded run or outside every process,Caldergate FP&A,review candidate,low,partial,low,none,,,5 objects,5 actions,not quantified from the exports,\"For each action with no recorded run in the window, ask the owner how and how often it runs; document the answer in the action's notes.\",Export Assumptions for Workforce; Export Opex Drivers to Excel; Import Budget from Excel; Import FX from Treasury file; Import from Caldergate Hub v1 - Cost Centres,ACTIONS,\nF36,Maintainability and consistency,Summary methods on large line items no formula reads,Workforce Planning,review candidate,low,partial,low,none,,,1 object,1 line item,not quantified from the exports,\"Check the largest ones on their pages; where no total is shown, set the summary to None.\",Calcs - Headcount by CC.Average Salary,A-SUMMARY-ON,\nF37,Integration and operational review,Imports and exports with no recent recorded run or outside every process,Workforce Planning,review candidate,low,partial,low,none,,,3 objects,3 actions,not quantified from the exports,\"For each action with no recorded run in the window, ask the owner how and how often it runs; document the answer in the action's notes.\",Export Headcount by Department; Export Leavers Report; Import from Caldergate FP&A - Assumptions,ACTIONS,\nF38,Maintainability and consistency,Summary methods on large line items no formula reads,Board Reporting,review candidate,low,partial,low,none,,,5 objects,5 line items,not quantified from the exports,\"Check the largest ones on their pages; where no total is shown, set the summary to None.\",DAT01 P&L.COGS; DAT01 P&L.Depreciation; DAT01 P&L.EBIT; DAT01 P&L.EBITDA; DAT01 P&L.Staff Cost,A-SUMMARY-ON,\nF39,Integration and operational review,Imports and exports with no recent recorded run or outside every process,Board Reporting,review candidate,low,partial,low,none,,,1 object,1 action,not quantified from the exports,\"For each action with no recorded run in the window, ask the owner how and how often it runs; document the answer in the action's notes.\",Export Board Pack PDF Data,ACTIONS,\nF40,Maintainability and consistency,Same line item name and formula in more than one model,Estate,review candidate,low,inferred,medium,none,,,8 line item names,8 line items across 3 models,not quantified from the exports,Pick the copies that are genuinely one rule and record where it is owned; leave local filters and formatting where they are.,COGS?; Current Period?; Employer NI; Group; Opex?; Revenue?; Sign; Working Days,DUP-CROSS,\n", "ids": ["F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "F13", "F14", "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", "F24", "F25", "F26", "F27", "F28", "F29", "F30", "F31", "F32", "F33", "F34", "F35", "F36", "F37", "F38", "F39", "F40"]}</script><script>
 (function(){
  var data=JSON.parse(document.getElementById('report-data').textContent);
  var key='anaplan-estate-status:'+data.key;

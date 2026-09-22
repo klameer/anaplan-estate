@@ -1296,7 +1296,7 @@
    ],
    "related": [],
    "footprint_cells": null,
-   "footprint_effort": null,
+   "footprint_effort": 0.0,
    "counts_benefit": true,
    "summary": "1 formulas combine SUM with LOOKUP or SELECT.",
    "object_label": "1 object",

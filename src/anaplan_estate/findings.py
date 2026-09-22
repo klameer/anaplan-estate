@@ -593,10 +593,6 @@ def build(er) -> list[Finding]:
             x.summary = first
         if not x.object_label:
             x.object_label = _pl(len(x.objects), "object")
-        if x.footprint_cells == 0:
-            x.footprint_cells = None
-        if x.footprint_effort == 0:
-            x.footprint_effort = None
     fs.sort(key=lambda x: (IMPORTANCE_ORDER[x.importance], STRENGTH_ORDER[x.strength], -(x.footprint_cells or 0), -(x.footprint_effort or 0)))
     for i, x in enumerate(fs, 1):
         old = x.id

@@ -295,7 +295,8 @@ def _index_text(x: dict) -> str:
             cells = [c.strip() for c in l.strip("|").split("|")]
             for c in cells:
                 if c.startswith("`") and c.endswith("`"):
-                    lines.append(f"formula: {c.strip('`')}")
+                    inner = c.strip("`")
+                    lines.append(("formula: " if re.search(r"[()\[\]+*/<>=]|IF|THEN", inner) else "object: ") + inner)
             lines.append("evidence: " + " | ".join(c.strip("`") for c in cells))
         elif l.strip() and not l.startswith("|"):
             lines.append("evidence: " + l.strip("-* ").strip("`"))

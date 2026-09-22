@@ -1856,7 +1856,7 @@ Examples: `Export Board Pack PDF Data` (1 object)
 | F12 | Maintainability and consistency | Same calculation made more than once under different names | Workforce Planning | low | confirmed | medium | 4.5K | n/a |
 | F13 | Potential capacity or performance improvements | Text, FINDITEM and per-item functions in large multi-dimensional line items | Caldergate Data Hub | low | confirmed | low | n/a | n/a |
 | F14 | Maintainability and consistency | DIVIDE() where a zero divisor shows Infinity | Caldergate Data Hub | low | confirmed | low | n/a | n/a |
-| F15 | Potential capacity or performance improvements | SUM combined with LOOKUP or SELECT in one formula | Caldergate FP&A | low | confirmed | low | n/a | n/a |
+| F15 | Potential capacity or performance improvements | SUM combined with LOOKUP or SELECT in one formula | Caldergate FP&A | low | confirmed | low | n/a | 0.0 |
 | F16 | Potential capacity or performance improvements | Text, FINDITEM and per-item functions in large multi-dimensional line items | Caldergate FP&A | low | confirmed | low | n/a | n/a |
 | F17 | Maintainability and consistency | Numeric literals inside formulas | Caldergate FP&A | low | confirmed | low | n/a | n/a |
 | F18 | Maintainability and consistency | Subsidiary views used in calculation | Caldergate FP&A | low | confirmed | medium | n/a | n/a |

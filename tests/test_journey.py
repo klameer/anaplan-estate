@@ -90,13 +90,11 @@ def test_search_index_covers_collapsed_evidence():
         art = h[h.index(f'id="{dup["id"]}"'):]
         art = art[:art.index("</article>")]
         idx = art[art.index('<div class="idx">'):]
-        assert "formula:" in idx
+        assert "formula:" in idx and "object:" in idx
 
 
 def test_sort_values_distinguish_unavailable_from_zero():
     er, rep, h = _rep()
-    for x in rep["findings"]:
-        assert x["footprint_cells"] != 0 and x["footprint_effort"] != 0
     eff = next(x for x in rep["findings"] if x["rules"] == ["EFFORT"])
     assert eff["footprint_effort"] is None and eff["kind_label"] == "observation"
     art = h[h.index(f'id="{eff["id"]}"'):h.index("</header>", h.index(f'id="{eff["id"]}"'))]
