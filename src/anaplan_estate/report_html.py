@@ -287,20 +287,27 @@ def _badges(x: dict) -> str:
 
 
 def _index_text(x: dict) -> str:
-    """Complete search text for one finding: every affected object, every evidence row and formula, explanatory text. One entry per line, prefixed by kind."""
+    """Complete search text for one finding: every affected object, every evidence row and formula, explanatory text.
+    One entry per line, prefixed by kind (object / formula / evidence / text) so a hit can say where it matched."""
+    formula_like = re.compile(r"[()\[\]+*/<>=]|IF|THEN")
+
+    def classify(inner: str) -> str:
+        return ("formula: " if formula_like.search(inner) else "object: ") + inner
+
     lines = [f"text: {x['title']} {x['observed']} {x['why']} {x['scope']}"]
     lines += [f"object: {o}" for o in x["objects"]]
     for l in x["evidence"]:
-        if l.startswith("|") and not re.match(r"^\|[\s:|-]+\|$", l):
-            cells = [c.strip() for c in l.strip("|").split("|")]
-            for c in cells:
-                if c.startswith("`") and c.endswith("`"):
-                    inner = c.strip("`")
-                    lines.append(("formula: " if re.search(r"[()\[\]+*/<>=]|IF|THEN", inner) else "object: ") + inner)
-            lines.append("evidence: " + " | ".join(c.strip("`") for c in cells))
-        elif l.strip() and not l.startswith("|"):
-            lines.append("evidence: " + l.strip("-* ").strip("`"))
-    return "\n".join(lines)
+        if not l.strip() or re.match(r"^\|[\s:|-]+\|$", l):
+            continue
+        for inner in re.findall(r"`([^`]+)`", l):
+            lines.append(classify(inner))
+        plain = re.sub(r"`", "", l)
+        if l.startswith("|"):
+            lines.append("evidence: " + " | ".join(c.strip() for c in plain.strip("|").split("|")))
+        else:
+            lines.append("evidence: " + plain.strip("-* ").strip())
+    return "
+".join(lines)
 
 
 def _finding(x: dict, rep: dict) -> str:
