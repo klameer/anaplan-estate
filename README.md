@@ -15,6 +15,24 @@ Deterministic. No opinion. Every formula is parsed with
 dependency graph is checked against Anaplan's own Referenced By column,
 so the report tells you how much to trust it.
 
+## Try it first on the example estate
+
+Four fictional models built to look inherited: two consultancies, three
+build years, a leftover module carrying half the calculation time, a
+formula nobody dares touch, an import from a hub that no longer exists.
+
+```bash
+git clone https://github.com/klameer/anaplan-estate
+cd anaplan-estate
+pip install -e .
+anaplan-estate examples/caldergate-estate --out estate.md --html estate.html
+```
+
+Open `estate.html`. Then read
+[examples/caldergate-estate/PLANTED.md](examples/caldergate-estate/PLANTED.md):
+everything that was planted and where the report finds it. Then export
+your own models and run it on those.
+
 ## Export the two files
 
 In each model, as a workspace administrator:
@@ -62,6 +80,15 @@ to rename; `--stale-months 12`; `--list` to see what would be analysed.
   findings grouped into patterns.
 - **Procedures performed**: the rules run, so the report reads as
   agreed-upon procedures, not an opinion.
+
+## What should it show next?
+
+Once line items and actions are in one place, most questions about an
+estate become a query over them. The report answers the ones above. Open
+a [Discussion](https://github.com/klameer/anaplan-estate/discussions) with
+the one it does not answer for your estate, or an Issue where the parser
+broke. The most useful contribution is an anonymised line-items export
+from an old model.
 
 ## What it does not do
 

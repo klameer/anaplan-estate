@@ -1,0 +1,2950 @@
+{
+ "generated": "2026-09-22",
+ "models": [
+  {
+   "name": "Caldergate Data Hub",
+   "folder": "examples\\caldergate-estate\\1 Caldergate Data Hub",
+   "facts": {
+    "modules": 12,
+    "line_items": 63,
+    "calculated": 28,
+    "inputs": 35,
+    "cells": 8060698,
+    "dimensions": [
+     "Accounts",
+     "Cost Centres",
+     "Customers",
+     "Employees",
+     "Products",
+     "Regions"
+    ],
+    "edges": 24,
+    "module_edges": 5,
+    "parse_errors": 0,
+    "parse_rate": 1.0,
+    "notes_coverage": 0.0,
+    "has_effort": true,
+    "effort_top10_share": 99.9,
+    "effort_top": [
+     [
+      "DAT01 GL Transactions.Loaded?",
+      88.35,
+      1254456,
+      "Journal Count > 0"
+     ],
+     [
+      "CAL01 Volume Summary.Units",
+      2.88,
+      9072,
+      "'DAT06 Sales Orders'.Units[SUM: 'DAT07 Customer Master'.Region]"
+     ],
+     [
+      "CAL01 Volume Summary.Revenue",
+      2.88,
+      9072,
+      "'DAT06 Sales Orders'.Order Revenue[SUM: 'DAT07 Customer Master'.Region]"
+     ],
+     [
+      "CAL01 Volume Summary.Orders",
+      2.88,
+      9072,
+      "'DAT06 Sales Orders'.Order Count[SUM: 'DAT07 Customer Master'.Region]"
+     ],
+     [
+      "DAT05 CRM Pipeline.Weighted Pipeline",
+      1.83,
+      17280,
+      "Open Pipeline * Probability"
+     ],
+     [
+      "CAL01 Volume Summary.Average Order Value",
+      0.96,
+      9072,
+      "DIVIDE(Revenue, Orders)"
+     ],
+     [
+      "DAT08 Employee Master.Employee Id",
+      0.07,
+      1850,
+      "CODE(ITEM(Employees))"
+     ],
+     [
+      "DAT03 Account Master.Sign",
+      0.03,
+      262,
+      "IF Revenue? THEN -1 ELSE 1"
+     ],
+     [
+      "DAT07 Customer Master.Region Code",
+      0.03,
+      480,
+      "CODE(Region)"
+     ],
+     [
+      "DAT03 Account Master.Revenue?",
+      0.02,
+      262,
+      "Account Type = Account Types.Revenue"
+     ],
+     [
+      "DAT03 Account Master.Opex?",
+      0.02,
+      262,
+      "Account Type = Account Types.Opex"
+     ],
+     [
+      "DAT03 Account Master.COGS?",
+      0.02,
+      262,
+      "Account Type = Account Types.COGS"
+     ],
+     [
+      "DAT07 Customer Master.Customer Code",
+      0.02,
+      480,
+      "CODE(ITEM(Customers))"
+     ],
+     [
+      "DAT03 Account Master.Account Code",
+      0.01,
+      262,
+      "CODE(ITEM(Accounts))"
+     ],
+     [
+      "SYS02 Data Checks.Check Message",
+      0.01,
+      36,
+      "IF Within Tolerance? THEN \"OK\" ELSE \"GL and orders differ by \" & TEXT(Difference)"
+     ]
+    ],
+    "effort_by_module": [
+     [
+      "DAT01 GL Transactions",
+      88.35
+     ],
+     [
+      "CAL01 Volume Summary",
+      9.6
+     ],
+     [
+      "DAT05 CRM Pipeline",
+      1.83
+     ],
+     [
+      "DAT03 Account Master",
+      0.1
+     ],
+     [
+      "DAT08 Employee Master",
+      0.07
+     ],
+     [
+      "DAT07 Customer Master",
+      0.05
+     ],
+     [
+      "SYS02 Data Checks",
+      0.01
+     ]
+    ],
+    "cells_by_module": [
+     [
+      "DAT01 GL Transactions",
+      5017824,
+      62.3
+     ],
+     [
+      "DAT06 Sales Orders",
+      2903040,
+      36.0
+     ],
+     [
+      "DAT05 CRM Pipeline",
+      86400,
+      1.1
+     ],
+     [
+      "CAL01 Volume Summary",
+      36288,
+      0.5
+     ],
+     [
+      "DAT08 Employee Master",
+      11100,
+      0.1
+     ],
+     [
+      "DAT07 Customer Master",
+      2400,
+      0.0
+     ],
+     [
+      "DAT03 Account Master",
+      1834,
+      0.0
+     ],
+     [
+      "DAT02 Cost Centre Master",
+      1197,
+      0.0
+     ],
+     [
+      "DAT04 Product Master",
+      252,
+      0.0
+     ],
+     [
+      "SYS01 Time Settings",
+      180,
+      0.0
+     ]
+    ],
+    "hubs": [
+     [
+      "DAT07 Customer Master.Region",
+      4
+     ],
+     [
+      "DAT03 Account Master.Account Type",
+      3
+     ],
+     [
+      "DAT06 Sales Orders.Order Revenue",
+      2
+     ],
+     [
+      "SYS02 Data Checks.Difference",
+      2
+     ],
+     [
+      "SYS00 Model Settings.Current Period",
+      1
+     ],
+     [
+      "DAT01 GL Transactions.Journal Count",
+      1
+     ],
+     [
+      "DAT03 Account Master.Revenue?",
+      1
+     ],
+     [
+      "DAT05 CRM Pipeline.Open Pipeline",
+      1
+     ],
+     [
+      "DAT05 CRM Pipeline.Probability",
+      1
+     ],
+     [
+      "DAT06 Sales Orders.Units",
+      1
+     ]
+    ],
+    "unreferenced": 46,
+    "cycles": 0,
+    "cycles_balance": 0,
+    "cycles_fault": 0,
+    "daisy_chains": 0,
+    "referenced_by_check": {
+     "agree": 24,
+     "ours_only": 0,
+     "anaplan_only": 0,
+     "agreement": 1.0
+    },
+    "findings": 5,
+    "patterns": 5,
+    "rules_skipped": [],
+    "has_modules_export": true,
+    "actions": {
+     "actions": 14,
+     "imports": 8,
+     "exports": 6,
+     "processes": 14,
+     "latest_run": "2026-09-21",
+     "stale_cutoff": "2025-09-26",
+     "imports_by_target": [
+      [
+       "DAT01 GL Transactions",
+       1
+      ],
+      [
+       "DAT06 Sales Orders",
+       1
+      ],
+      [
+       "DAT05 CRM Pipeline",
+       1
+      ],
+      [
+       "DAT02 Cost Centre Master",
+       1
+      ],
+      [
+       "DAT03 Account Master",
+       1
+      ],
+      [
+       "DAT08 Employee Master",
+       1
+      ],
+      [
+       "DAT04 Product Master",
+       1
+      ],
+      [
+       "DAT07 Customer Master",
+       1
+      ]
+     ],
+     "process_steps": [
+      [
+       "Daily Load",
+       0
+      ],
+      [
+       "Monthly Master Data",
+       0
+      ],
+      [
+       "Publish to Spokes",
+       0
+      ],
+      [
+       "Import GL from NetSuite",
+       0
+      ],
+      [
+       "Import Orders from Salesforce",
+       0
+      ],
+      [
+       "Import Pipeline from Salesforce",
+       0
+      ],
+      [
+       "Import Cost Centres from NetSuite",
+       0
+      ],
+      [
+       "Import Accounts from NetSuite",
+       0
+      ],
+      [
+       "Import Employees from Workday",
+       0
+      ],
+      [
+       "Export GL to FP&A",
+       0
+      ],
+      [
+       "Export Volumes to FP&A",
+       0
+      ],
+      [
+       "Export Cost Centre Map to Workforce",
+       0
+      ],
+      [
+       "Export Product Master to FP&A",
+       0
+      ],
+      [
+       "Export Account Master to FP&A",
+       0
+      ]
+     ],
+     "orphans": [
+      "Import Products from PIM file",
+      "Import Customers from Salesforce",
+      "Export Pipeline for Sales Ops"
+     ],
+     "orphan_count": 3,
+     "stale": [
+      [
+       "Import Products from PIM file",
+       "2023-06-14"
+      ],
+      [
+       "Export Pipeline for Sales Ops",
+       "2025-02-11"
+      ]
+     ],
+     "stale_count": 2,
+     "slow": [
+      [
+       "Import GL from NetSuite",
+       38900
+      ],
+      [
+       "Export GL to FP&A",
+       9800
+      ],
+      [
+       "Import Employees from Workday",
+       8200
+      ],
+      [
+       "Import Orders from Salesforce",
+       2100
+      ],
+      [
+       "Import Customers from Salesforce",
+       1900
+      ],
+      [
+       "Export Volumes to FP&A",
+       1200
+      ],
+      [
+       "Import Pipeline from Salesforce",
+       800
+      ],
+      [
+       "Export Pipeline for Sales Ops",
+       700
+      ],
+      [
+       "Import Cost Centres from NetSuite",
+       600
+      ],
+      [
+       "Import Accounts from NetSuite",
+       400
+      ]
+     ],
+     "sources": {
+      "NetSuite": [
+       "Import GL from NetSuite",
+       "Import Cost Centres from NetSuite",
+       "Import Accounts from NetSuite"
+      ],
+      "Salesforce": [
+       "Import Orders from Salesforce",
+       "Import Pipeline from Salesforce",
+       "Import Customers from Salesforce"
+      ],
+      "Workday": [
+       "Import Employees from Workday"
+      ],
+      "PIM file": [
+       "Import Products from PIM file"
+      ]
+     }
+    }
+   },
+   "patterns": [
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "DAT05 CRM Pipeline.Weighted Pipeline",
+     "count": 1,
+     "modules": [
+      "DAT05 CRM Pipeline"
+     ],
+     "objects": [
+      "DAT05 CRM Pipeline.Weighted Pipeline"
+     ],
+     "message": "summary SUM, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-TEXT-FORMAT",
+     "severity": "minor",
+     "key": "single",
+     "label": "DAT01 GL Transactions.Source System",
+     "count": 1,
+     "modules": [
+      "DAT01 GL Transactions"
+     ],
+     "objects": [
+      "DAT01 GL Transactions.Source System"
+     ],
+     "message": "TEXT with 1,254,456 cells",
+     "fix": "Use a list-formatted item or move text to a system module.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-TEXT-FORMAT",
+     "severity": "minor",
+     "key": "single",
+     "label": "DAT06 Sales Orders.Last Order Ref",
+     "count": 1,
+     "modules": [
+      "DAT06 Sales Orders"
+     ],
+     "objects": [
+      "DAT06 Sales Orders.Last Order Ref"
+     ],
+     "message": "TEXT with 725,760 cells",
+     "fix": "Use a list-formatted item or move text to a system module.",
+     "weight": 0.6
+    },
+    {
+     "rule": "G-UNUSED",
+     "severity": "info",
+     "key": "single",
+     "label": "DAT01 GL Transactions.Loaded?",
+     "count": 1,
+     "modules": [
+      "DAT01 GL Transactions"
+     ],
+     "objects": [
+      "DAT01 GL Transactions.Loaded?"
+     ],
+     "message": "calculated, 1,254,456 cells, referenced by no formula",
+     "fix": "Check views and exports; remove if unused.",
+     "weight": 0.15
+    },
+    {
+     "rule": "H-NOTES",
+     "severity": "info",
+     "key": "single",
+     "label": "(model)",
+     "count": 1,
+     "modules": [
+      "(model)"
+     ],
+     "objects": [
+      "(model)"
+     ],
+     "message": "8 of 12 modules have no notes; largest: DAT06 Sales Orders, DAT05 CRM Pipeline, CAL01 Volume Summary, DAT07 Customer Master, DAT03 Account Master",
+     "fix": "Add a one-line purpose note to each module, largest first.",
+     "weight": 0.15
+    }
+   ],
+   "findings_by_rule": {
+    "A-SUMMARY-ON": 1,
+    "A-TEXT-FORMAT": 2,
+    "G-UNUSED": 1,
+    "H-NOTES": 1
+   }
+  },
+  {
+   "name": "Caldergate FP&A",
+   "folder": "examples\\caldergate-estate\\2 Caldergate FP&A",
+   "facts": {
+    "modules": 30,
+    "line_items": 278,
+    "calculated": 171,
+    "inputs": 107,
+    "cells": 130001662,
+    "dimensions": [
+     "Accounts",
+     "Cost Centres",
+     "Currencies",
+     "Departments",
+     "Legal Entities",
+     "Products",
+     "Regions",
+     "Roles",
+     "Scenarios"
+    ],
+    "edges": 384,
+    "module_edges": 54,
+    "parse_errors": 0,
+    "parse_rate": 1.0,
+    "notes_coverage": 0.032,
+    "has_effort": true,
+    "effort_top10_share": 68.0,
+    "effort_top": [
+     [
+      "CAL03 Opex.Forecast Opex",
+      16.04,
+      5017824,
+      "IF ITEM(Accounts) = Accounts.'6100 Rent' THEN 'INP02 Opex Drivers'.Rent ELSE IF ITEM(Accounts) = Accounts.'6110 Rates' T"
+     ],
+     [
+      "CAL03 Opex.Opex GBP",
+      9.26,
+      5017824,
+      "Opex * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS02 Cost Centre Attributes'.Currency]"
+     ],
+     [
+      "CAL05 Opex OLD.Opex GBP",
+      9.26,
+      5017824,
+      "Opex * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS02 Cost Centre Attributes'.Currency]"
+     ],
+     [
+      "CAL05 Opex OLD.Forecast",
+      6.94,
+      5017824,
+      "Rent Forecast + Rates Forecast + Utilities Forecast + Travel Forecast + Marketing Forecast + Software Forecast + Fees Fo"
+     ],
+     [
+      "DAT01 Actuals GL.Journal Cost Centre",
+      6.17,
+      5017824,
+      "FINDITEM(Cost Centres, Source Journal)"
+     ],
+     [
+      "CAL03 Opex.Opex",
+      4.94,
+      5017824,
+      "IF 'SYS01 Time Settings'.Actual? THEN Actual Opex ELSE Forecast Opex"
+     ],
+     [
+      "CAL05 Opex OLD.Opex",
+      4.94,
+      5017824,
+      "IF 'SYS01 Time Settings'.Actual? THEN Actual ELSE Forecast"
+     ],
+     [
+      "CAL03 Opex.Actual Opex",
+      3.7,
+      5017824,
+      "IF 'SYS03 Account Attributes'.Opex? THEN 'DAT01 Actuals GL'.Amount ELSE 0"
+     ],
+     [
+      "CAL05 Opex OLD.Actual",
+      3.7,
+      5017824,
+      "IF 'SYS01 Time Settings'.Actual? THEN 'DAT01 Actuals GL'.Amount ELSE 0"
+     ],
+     [
+      "CAL05 Opex OLD.Opex Cumulative",
+      3.09,
+      5017824,
+      "CUMULATE(Opex GBP)"
+     ],
+     [
+      "CAL05 Opex OLD.Opex Run Rate",
+      3.09,
+      5017824,
+      "MOVINGSUM(Opex GBP, -2, 0) / 3"
+     ],
+     [
+      "CAL05 Opex OLD.Rent Forecast",
+      2.47,
+      5017824,
+      "IF ITEM(Accounts) = Accounts.'6100 Rent' THEN 'INP02 Opex Drivers'.Rent ELSE 0"
+     ],
+     [
+      "CAL05 Opex OLD.Rates Forecast",
+      2.47,
+      5017824,
+      "IF ITEM(Accounts) = Accounts.'6110 Rates' THEN 'INP02 Opex Drivers'.Business Rates ELSE 0"
+     ],
+     [
+      "CAL05 Opex OLD.Utilities Forecast",
+      2.47,
+      5017824,
+      "IF ITEM(Accounts) = Accounts.'6120 Utilities' THEN 'INP02 Opex Drivers'.Utilities ELSE 0"
+     ],
+     [
+      "CAL05 Opex OLD.Travel Forecast",
+      2.47,
+      5017824,
+      "IF ITEM(Accounts) = Accounts.'6200 Travel' THEN 'INP02 Opex Drivers'.Travel ELSE 0"
+     ],
+     [
+      "CAL05 Opex OLD.Marketing Forecast",
+      2.47,
+      5017824,
+      "IF ITEM(Accounts) = Accounts.'6300 Marketing' THEN 'INP02 Opex Drivers'.Marketing Events ELSE 0"
+     ],
+     [
+      "CAL05 Opex OLD.Software Forecast",
+      2.47,
+      5017824,
+      "IF ITEM(Accounts) = Accounts.'6400 Software' THEN 'INP02 Opex Drivers'.Software Licences ELSE 0"
+     ],
+     [
+      "CAL05 Opex OLD.Fees Forecast",
+      2.47,
+      5017824,
+      "IF ITEM(Accounts) = Accounts.'6500 Professional Fees' THEN 'INP02 Opex Drivers'.Consultancy ELSE 0"
+     ],
+     [
+      "CAL05 Opex OLD.Other Forecast",
+      2.47,
+      5017824,
+      "IF ITEM(Accounts) = Accounts.'6900 Other' THEN 'INP02 Opex Drivers'.Other Opex ELSE 0"
+     ],
+     [
+      "CAL03 Opex.Opex Variance",
+      2.31,
+      5017824,
+      "Opex GBP - Opex Prior Year"
+     ]
+    ],
+    "effort_by_module": [
+     [
+      "CAL05 Opex OLD",
+      50.78
+     ],
+     [
+      "CAL03 Opex",
+      37.79
+     ],
+     [
+      "DAT01 Actuals GL",
+      7.71
+     ],
+     [
+      "INP03 Headcount",
+      2.12
+     ],
+     [
+      "CAL12 Driver Phasing",
+      0.39
+     ],
+     [
+      "INP02 Opex Drivers",
+      0.27
+     ],
+     [
+      "CAL02 Revenue",
+      0.25
+     ],
+     [
+      "CAL01 Volumes",
+      0.15
+     ],
+     [
+      "CAL07 P&L by Cost Centre",
+      0.15
+     ],
+     [
+      "CAL04 Margn",
+      0.13
+     ]
+    ],
+    "cells_by_module": [
+     [
+      "CAL05 Opex OLD",
+      70249536,
+      54.0
+     ],
+     [
+      "CAL03 Opex",
+      30106944,
+      23.2
+     ],
+     [
+      "DAT01 Actuals GL",
+      20071296,
+      15.4
+     ],
+     [
+      "INP03 Headcount",
+      5937120,
+      4.6
+     ],
+     [
+      "INP02 Opex Drivers",
+      1110816,
+      0.9
+     ],
+     [
+      "CAL12 Driver Phasing",
+      593712,
+      0.5
+     ],
+     [
+      "CAL02 Revenue",
+      435456,
+      0.3
+     ],
+     [
+      "INP01 Volumes",
+      254016,
+      0.2
+     ],
+     [
+      "CAL01 Volumes",
+      223776,
+      0.2
+     ],
+     [
+      "CAL07 P&L by Cost Centre",
+      210672,
+      0.2
+     ]
+    ],
+    "hubs": [
+     [
+      "SYS01 Time Settings.Actual?",
+      36
+     ],
+     [
+      "SYS02 Cost Centre Attributes.Department",
+      6
+     ],
+     [
+      "SYS05 FX Rates.Rate to GBP",
+      6
+     ],
+     [
+      "CAL02 Revenue.Net Revenue",
+      6
+     ],
+     [
+      "INP02 Opex Drivers.Rent",
+      5
+     ],
+     [
+      "INP02 Opex Drivers.Business Rates",
+      5
+     ],
+     [
+      "INP02 Opex Drivers.Utilities",
+      5
+     ],
+     [
+      "INP02 Opex Drivers.Travel",
+      5
+     ],
+     [
+      "INP02 Opex Drivers.Marketing Events",
+      5
+     ],
+     [
+      "INP02 Opex Drivers.Software Licences",
+      5
+     ]
+    ],
+    "unreferenced": 77,
+    "cycles": 1,
+    "cycles_balance": 1,
+    "cycles_fault": 0,
+    "daisy_chains": 4,
+    "referenced_by_check": {
+     "agree": 384,
+     "ours_only": 0,
+     "anaplan_only": 0,
+     "agreement": 1.0
+    },
+    "findings": 68,
+    "patterns": 51,
+    "rules_skipped": [],
+    "has_modules_export": true,
+    "actions": {
+     "actions": 15,
+     "imports": 10,
+     "exports": 4,
+     "processes": 15,
+     "latest_run": "2026-09-08",
+     "stale_cutoff": "2025-09-13",
+     "imports_by_target": [
+      [
+       "SYS02 Cost Centre Attributes",
+       2
+      ],
+      [
+       "DAT01 Actuals GL",
+       1
+      ],
+      [
+       "DAT02 Actuals Volumes",
+       1
+      ],
+      [
+       "SYS04 Product Attributes",
+       1
+      ],
+      [
+       "SYS03 Account Attributes",
+       1
+      ],
+      [
+       "INP03 Headcount",
+       1
+      ],
+      [
+       "SYS05 FX Rates",
+       1
+      ],
+      [
+       "INP02 Opex Drivers",
+       1
+      ],
+      [
+       "INP01 Volumes",
+       1
+      ]
+     ],
+     "process_steps": [
+      [
+       "Monthly Actuals Load",
+       0
+      ],
+      [
+       "Master Data Refresh",
+       0
+      ],
+      [
+       "Headcount Refresh",
+       0
+      ],
+      [
+       "Publish Board Pack",
+       0
+      ],
+      [
+       "Roll Forecast",
+       0
+      ],
+      [
+       "Import from Caldergate Data Hub - GL Actuals",
+       0
+      ],
+      [
+       "Import from Caldergate Data Hub - Volumes",
+       0
+      ],
+      [
+       "Import from Caldergate Data Hub - Cost Centres",
+       0
+      ],
+      [
+       "Import from Caldergate Data Hub - Products",
+       0
+      ],
+      [
+       "Import from Caldergate Data Hub - Accounts",
+       0
+      ],
+      [
+       "Import from Workforce Planning - Headcount Cost",
+       0
+      ],
+      [
+       "Export Board Pack",
+       0
+      ],
+      [
+       "Export P&L to Board Reporting",
+       0
+      ],
+      [
+       "Clear Forecast Overrides",
+       0
+      ],
+      [
+       "Copy Actual to Forecast",
+       0
+      ]
+     ],
+     "orphans": [
+      "Import FX from Treasury file",
+      "Import from Caldergate Hub v1 - Cost Centres",
+      "Import Budget from Excel",
+      "Export Assumptions for Workforce",
+      "Export Opex Drivers to Excel"
+     ],
+     "orphan_count": 5,
+     "stale": [
+      [
+       "Import FX from Treasury file",
+       "2023-11-02"
+      ],
+      [
+       "Import from Caldergate Hub v1 - Cost Centres",
+       "2021-03-19"
+      ],
+      [
+       "Export Opex Drivers to Excel",
+       "2024-05-30"
+      ]
+     ],
+     "stale_count": 3,
+     "slow": [
+      [
+       "Import from Caldergate Data Hub - GL Actuals",
+       58400
+      ],
+      [
+       "Import from Workforce Planning - Headcount Cost",
+       7700
+      ],
+      [
+       "Import Budget from Excel",
+       4400
+      ],
+      [
+       "Export Board Pack",
+       3100
+      ],
+      [
+       "Import from Caldergate Data Hub - Volumes",
+       2600
+      ],
+      [
+       "Export P&L to Board Reporting",
+       2200
+      ],
+      [
+       "Copy Actual to Forecast",
+       1700
+      ],
+      [
+       "Clear Forecast Overrides",
+       1200
+      ],
+      [
+       "Import from Caldergate Data Hub - Cost Centres",
+       900
+      ],
+      [
+       "Export Opex Drivers to Excel",
+       900
+      ]
+     ],
+     "sources": {
+      "Caldergate Data Hub": [
+       "Import from Caldergate Data Hub - GL Actuals",
+       "Import from Caldergate Data Hub - Volumes",
+       "Import from Caldergate Data Hub - Cost Centres",
+       "Import from Caldergate Data Hub - Products",
+       "Import from Caldergate Data Hub - Accounts"
+      ],
+      "Workforce Planning": [
+       "Import from Workforce Planning - Headcount Cost"
+      ],
+      "Treasury file": [
+       "Import FX from Treasury file"
+      ],
+      "Caldergate Hub v1": [
+       "Import from Caldergate Hub v1 - Cost Centres"
+      ],
+      "Excel": [
+       "Import Budget from Excel"
+      ]
+     }
+    }
+   },
+   "patterns": [
+    {
+     "rule": "A-DAISY",
+     "severity": "major",
+     "key": "single",
+     "label": "OUT01 Management Pack.Opex",
+     "count": 1,
+     "modules": [
+      "OUT01 Management Pack"
+     ],
+     "objects": [
+      "OUT01 Management Pack.Opex"
+     ],
+     "message": "4-step pass-through chain ending at CAL03 Opex.Opex GBP",
+     "fix": "Reference CAL03 Opex.Opex GBP directly.",
+     "weight": 3.0
+    },
+    {
+     "rule": "A-DAISY",
+     "severity": "major",
+     "key": "single",
+     "label": "OUT01 Management Pack.Staff Cost",
+     "count": 1,
+     "modules": [
+      "OUT01 Management Pack"
+     ],
+     "objects": [
+      "OUT01 Management Pack.Staff Cost"
+     ],
+     "message": "4-step pass-through chain ending at INP03 Headcount.Total Cost",
+     "fix": "Reference INP03 Headcount.Total Cost directly.",
+     "weight": 3.0
+    },
+    {
+     "rule": "A-DAISY",
+     "severity": "major",
+     "key": "single",
+     "label": "OUT02 Board Pack.EBITDA",
+     "count": 1,
+     "modules": [
+      "OUT02 Board Pack"
+     ],
+     "objects": [
+      "OUT02 Board Pack.EBITDA"
+     ],
+     "message": "4-step pass-through chain ending at CAL07 P&L by Cost Centre.EBITDA",
+     "fix": "Reference CAL07 P&L by Cost Centre.EBITDA directly.",
+     "weight": 3.0
+    },
+    {
+     "rule": "A-DAISY",
+     "severity": "major",
+     "key": "single",
+     "label": "OUT02 Board Pack.Revenue",
+     "count": 1,
+     "modules": [
+      "OUT02 Board Pack"
+     ],
+     "objects": [
+      "OUT02 Board Pack.Revenue"
+     ],
+     "message": "4-step pass-through chain ending at CAL07 P&L by Cost Centre.Revenue",
+     "fix": "Reference CAL07 P&L by Cost Centre.Revenue directly.",
+     "weight": 3.0
+    },
+    {
+     "rule": "A-IF-COUNT",
+     "severity": "major",
+     "key": "single",
+     "label": "CAL03 Opex.Forecast Opex",
+     "count": 1,
+     "modules": [
+      "CAL03 Opex"
+     ],
+     "objects": [
+      "CAL03 Opex.Forecast Opex"
+     ],
+     "message": "12 IF THEN ELSE in one formula",
+     "fix": "Split conditions into Boolean line items or use a mapping module with LOOKUP.",
+     "weight": 3.0
+    },
+    {
+     "rule": "A-LI-COUNT",
+     "severity": "major",
+     "key": "single",
+     "label": "INP02 Opex Drivers",
+     "count": 1,
+     "modules": [
+      "INP02 Opex Drivers"
+     ],
+     "objects": [
+      "INP02 Opex Drivers"
+     ],
+     "message": "58 line items",
+     "fix": "Split into modules by purpose (DISCO).",
+     "weight": 3.0
+    },
+    {
+     "rule": "A-SUBSIDIARY",
+     "severity": "major",
+     "key": "single",
+     "label": "CAL01 Volumes.Launched?",
+     "count": 1,
+     "modules": [
+      "CAL01 Volumes"
+     ],
+     "objects": [
+      "CAL01 Volumes.Launched?"
+     ],
+     "message": "applies to Products in a module on Products, Regions; used by 1 formulas",
+     "fix": "Move to a module dimensioned as the line item is.",
+     "weight": 3.0
+    },
+    {
+     "rule": "F-DIVIDE",
+     "severity": "major",
+     "key": "single",
+     "label": "CAL02 Revenue.Revenue per Unit",
+     "count": 1,
+     "modules": [
+      "CAL02 Revenue"
+     ],
+     "objects": [
+      "CAL02 Revenue.Revenue per Unit"
+     ],
+     "message": "unguarded / by a line item",
+     "fix": "Use DIVIDE(a, b) or IF b <> 0 THEN a / b ELSE 0.",
+     "weight": 3.0
+    },
+    {
+     "rule": "F-MIXED-CLAUSE",
+     "severity": "major",
+     "key": "single",
+     "label": "CAL06 Department Summary.Benchmark Opex",
+     "count": 1,
+     "modules": [
+      "CAL06 Department Summary"
+     ],
+     "objects": [
+      "CAL06 Department Summary.Benchmark Opex"
+     ],
+     "message": "[LOOKUP + SUM] in one bracket",
+     "fix": "Split into two line items: aggregate first, then look up.",
+     "weight": 3.0
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "module",
+     "label": "OUT01 Management Pack (9 line items)",
+     "count": 9,
+     "modules": [
+      "OUT01 Management Pack"
+     ],
+     "objects": [
+      "OUT01 Management Pack.Capex",
+      "OUT01 Management Pack.Depreciation",
+      "OUT01 Management Pack.EBITDA YTD",
+      "OUT01 Management Pack.Headcount",
+      "OUT01 Management Pack.Opex",
+      "OUT01 Management Pack.Phased Drivers",
+      "OUT01 Management Pack.Revenue YTD",
+      "OUT01 Management Pack.Staff Cost"
+     ],
+     "message": "summary SUM, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 1.17
+    },
+    {
+     "rule": "A-SYSTEMS-FN",
+     "severity": "minor",
+     "key": "module",
+     "label": "CAL05 Opex OLD (8 line items)",
+     "count": 8,
+     "modules": [
+      "CAL05 Opex OLD"
+     ],
+     "objects": [
+      "CAL05 Opex OLD.Fees Forecast",
+      "CAL05 Opex OLD.Marketing Forecast",
+      "CAL05 Opex OLD.Other Forecast",
+      "CAL05 Opex OLD.Rates Forecast",
+      "CAL05 Opex OLD.Rent Forecast",
+      "CAL05 Opex OLD.Software Forecast",
+      "CAL05 Opex OLD.Travel Forecast",
+      "CAL05 Opex OLD.Utilities Forecast"
+     ],
+     "message": "ITEM in a 5,017,824-cell line item",
+     "fix": "Compute in a single-dimension systems module and reference it.",
+     "weight": 1.14
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "module",
+     "label": "CAL02 Revenue (3 line items)",
+     "count": 3,
+     "modules": [
+      "CAL02 Revenue"
+     ],
+     "objects": [
+      "CAL02 Revenue.Average Price",
+      "CAL02 Revenue.Revenue Growth",
+      "CAL02 Revenue.Revenue per Unit"
+     ],
+     "message": "summary FORMULA, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.89
+    },
+    {
+     "rule": "A-FINDITEM",
+     "severity": "minor",
+     "key": "single",
+     "label": "DAT01 Actuals GL.Journal Cost Centre",
+     "count": 1,
+     "modules": [
+      "DAT01 Actuals GL"
+     ],
+     "objects": [
+      "DAT01 Actuals GL.Journal Cost Centre"
+     ],
+     "message": "FINDITEM in a 5,017,824-cell line item",
+     "fix": "Map once in a systems module.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL01 Volumes.Volume Growth",
+     "count": 1,
+     "modules": [
+      "CAL01 Volumes"
+     ],
+     "objects": [
+      "CAL01 Volumes.Volume Growth"
+     ],
+     "message": "summary FORMULA, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL02 Revenue.Revenue USD",
+     "count": 1,
+     "modules": [
+      "CAL02 Revenue"
+     ],
+     "objects": [
+      "CAL02 Revenue.Revenue USD"
+     ],
+     "message": "summary SUM, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL02 Revenue.VAT",
+     "count": 1,
+     "modules": [
+      "CAL02 Revenue"
+     ],
+     "objects": [
+      "CAL02 Revenue.VAT"
+     ],
+     "message": "summary SUM, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL03 Opex.Opex Variance",
+     "count": 1,
+     "modules": [
+      "CAL03 Opex"
+     ],
+     "objects": [
+      "CAL03 Opex.Opex Variance"
+     ],
+     "message": "summary SUM, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL04 Margn.Margin %",
+     "count": 1,
+     "modules": [
+      "CAL04 Margn"
+     ],
+     "objects": [
+      "CAL04 Margn.Margin %"
+     ],
+     "message": "summary FORMULA, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL04 Margn.Margin GBP",
+     "count": 1,
+     "modules": [
+      "CAL04 Margn"
+     ],
+     "objects": [
+      "CAL04 Margn.Margin GBP"
+     ],
+     "message": "summary SUM, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL05 Opex OLD.Opex Cumulative",
+     "count": 1,
+     "modules": [
+      "CAL05 Opex OLD"
+     ],
+     "objects": [
+      "CAL05 Opex OLD.Opex Cumulative"
+     ],
+     "message": "summary SUM, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL05 Opex OLD.Opex Run Rate",
+     "count": 1,
+     "modules": [
+      "CAL05 Opex OLD"
+     ],
+     "objects": [
+      "CAL05 Opex OLD.Opex Run Rate"
+     ],
+     "message": "summary SUM, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL07 P&L by Cost Centre.EBIT",
+     "count": 1,
+     "modules": [
+      "CAL07 P&L by Cost Centre"
+     ],
+     "objects": [
+      "CAL07 P&L by Cost Centre.EBIT"
+     ],
+     "message": "summary SUM, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL07 P&L by Cost Centre.EBITDA Margin",
+     "count": 1,
+     "modules": [
+      "CAL07 P&L by Cost Centre"
+     ],
+     "objects": [
+      "CAL07 P&L by Cost Centre.EBITDA Margin"
+     ],
+     "message": "summary FORMULA, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL07 P&L by Cost Centre.Opex Variance to Budget",
+     "count": 1,
+     "modules": [
+      "CAL07 P&L by Cost Centre"
+     ],
+     "objects": [
+      "CAL07 P&L by Cost Centre.Opex Variance to Budget"
+     ],
+     "message": "summary SUM, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL10 Depreciation.NBV",
+     "count": 1,
+     "modules": [
+      "CAL10 Depreciation"
+     ],
+     "objects": [
+      "CAL10 Depreciation.NBV"
+     ],
+     "message": "summary SUM;time=CLOSING_BALANCE, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "DAT02 Actuals Volumes.Revenue Actual",
+     "count": 1,
+     "modules": [
+      "DAT02 Actuals Volumes"
+     ],
+     "objects": [
+      "DAT02 Actuals Volumes.Revenue Actual"
+     ],
+     "message": "summary SUM, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "INP02 Opex Drivers.Check",
+     "count": 1,
+     "modules": [
+      "INP02 Opex Drivers"
+     ],
+     "objects": [
+      "INP02 Opex Drivers.Check"
+     ],
+     "message": "summary SUM, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "INP02 Opex Drivers.Driver Count",
+     "count": 1,
+     "modules": [
+      "INP02 Opex Drivers"
+     ],
+     "objects": [
+      "INP02 Opex Drivers.Driver Count"
+     ],
+     "message": "summary SUM, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "OUT02 Board Pack.EBITDA",
+     "count": 1,
+     "modules": [
+      "OUT02 Board Pack"
+     ],
+     "objects": [
+      "OUT02 Board Pack.EBITDA"
+     ],
+     "message": "summary SUM, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "OUT02 Board Pack.Old Budget Revenue",
+     "count": 1,
+     "modules": [
+      "OUT02 Board Pack"
+     ],
+     "objects": [
+      "OUT02 Board Pack.Old Budget Revenue"
+     ],
+     "message": "summary SUM, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "OUT02 Board Pack.Revenue Variance %",
+     "count": 1,
+     "modules": [
+      "OUT02 Board Pack"
+     ],
+     "objects": [
+      "OUT02 Board Pack.Revenue Variance %"
+     ],
+     "message": "summary FORMULA, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SYSTEMS-FN",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL02 Revenue.Revenue Label",
+     "count": 1,
+     "modules": [
+      "CAL02 Revenue"
+     ],
+     "objects": [
+      "CAL02 Revenue.Revenue Label"
+     ],
+     "message": "ITEM, NAME in a 36,288-cell line item",
+     "fix": "Compute in a single-dimension systems module and reference it.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-SYSTEMS-FN",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL03 Opex.Forecast Opex",
+     "count": 1,
+     "modules": [
+      "CAL03 Opex"
+     ],
+     "objects": [
+      "CAL03 Opex.Forecast Opex"
+     ],
+     "message": "ITEM in a 5,017,824-cell line item",
+     "fix": "Compute in a single-dimension systems module and reference it.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-TEXT-FORMAT",
+     "severity": "minor",
+     "key": "single",
+     "label": "DAT01 Actuals GL.Source Journal",
+     "count": 1,
+     "modules": [
+      "DAT01 Actuals GL"
+     ],
+     "objects": [
+      "DAT01 Actuals GL.Source Journal"
+     ],
+     "message": "TEXT with 5,017,824 cells",
+     "fix": "Use a list-formatted item or move text to a system module.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-TEXT-JOIN",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL02 Revenue.Revenue Label",
+     "count": 1,
+     "modules": [
+      "CAL02 Revenue"
+     ],
+     "objects": [
+      "CAL02 Revenue.Revenue Label"
+     ],
+     "message": "& in a 36,288-cell line item",
+     "fix": "Build the text once in a systems module.",
+     "weight": 0.6
+    },
+    {
+     "rule": "F-HARDCODE",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL02 Revenue.Revenue USD",
+     "count": 1,
+     "modules": [
+      "CAL02 Revenue"
+     ],
+     "objects": [
+      "CAL02 Revenue.Revenue USD"
+     ],
+     "message": "constants 1.27",
+     "fix": "Move to an input line item with a name and a note.",
+     "weight": 0.6
+    },
+    {
+     "rule": "F-HARDCODE",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL02 Revenue.VAT",
+     "count": 1,
+     "modules": [
+      "CAL02 Revenue"
+     ],
+     "objects": [
+      "CAL02 Revenue.VAT"
+     ],
+     "message": "constants 0.2",
+     "fix": "Move to an input line item with a name and a note.",
+     "weight": 0.6
+    },
+    {
+     "rule": "F-HARDCODE",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL08 Cash Flow.Debtors",
+     "count": 1,
+     "modules": [
+      "CAL08 Cash Flow"
+     ],
+     "objects": [
+      "CAL08 Cash Flow.Debtors"
+     ],
+     "message": "constants 30",
+     "fix": "Move to an input line item with a name and a note.",
+     "weight": 0.6
+    },
+    {
+     "rule": "F-HARDCODE",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL08 Cash Flow.Tax",
+     "count": 1,
+     "modules": [
+      "CAL08 Cash Flow"
+     ],
+     "objects": [
+      "CAL08 Cash Flow.Tax"
+     ],
+     "message": "constants 0.25",
+     "fix": "Move to an input line item with a name and a note.",
+     "weight": 0.6
+    },
+    {
+     "rule": "F-HARDCODE",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL10 Depreciation.Charge",
+     "count": 1,
+     "modules": [
+      "CAL10 Depreciation"
+     ],
+     "objects": [
+      "CAL10 Depreciation.Charge"
+     ],
+     "message": "constants 10, 119, 120, 239",
+     "fix": "Move to an input line item with a name and a note.",
+     "weight": 0.6
+    },
+    {
+     "rule": "F-HARDCODE",
+     "severity": "minor",
+     "key": "single",
+     "label": "INP03 Headcount.Pension",
+     "count": 1,
+     "modules": [
+      "INP03 Headcount"
+     ],
+     "objects": [
+      "INP03 Headcount.Pension"
+     ],
+     "message": "constants 0.05",
+     "fix": "Move to an input line item with a name and a note.",
+     "weight": 0.6
+    },
+    {
+     "rule": "F-LONG",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL03 Opex.Forecast Opex",
+     "count": 1,
+     "modules": [
+      "CAL03 Opex"
+     ],
+     "objects": [
+      "CAL03 Opex.Forecast Opex"
+     ],
+     "message": "133 tokens",
+     "fix": "Break into named intermediate line items.",
+     "weight": 0.6
+    },
+    {
+     "rule": "G-EMPTY-MODULE",
+     "severity": "minor",
+     "key": "single",
+     "label": "CAL09 Scenario Planning",
+     "count": 1,
+     "modules": [
+      "CAL09 Scenario Planning"
+     ],
+     "objects": [
+      "CAL09 Scenario Planning"
+     ],
+     "message": "no line items",
+     "fix": "Delete or document.",
+     "weight": 0.6
+    },
+    {
+     "rule": "G-CYCLE",
+     "severity": "info",
+     "key": "single",
+     "label": "CAL08 Cash Flow.Closing Cash",
+     "count": 1,
+     "modules": [
+      "CAL08 Cash Flow"
+     ],
+     "objects": [
+      "CAL08 Cash Flow.Closing Cash"
+     ],
+     "message": "balance pattern via PREVIOUS: CAL08 Cash Flow.Closing Cash, CAL08 Cash Flow.Opening Cash",
+     "fix": "Confirm the opening/closing pattern is intended.",
+     "weight": 0.15
+    },
+    {
+     "rule": "G-HUB",
+     "severity": "info",
+     "key": "single",
+     "label": "SYS01 Time Settings.Actual?",
+     "count": 1,
+     "modules": [
+      "SYS01 Time Settings"
+     ],
+     "objects": [
+      "SYS01 Time Settings.Actual?"
+     ],
+     "message": "36 direct dependents, 101 downstream across 13 modules",
+     "fix": "Cover in every release test.",
+     "weight": 0.15
+    },
+    {
+     "rule": "G-UNUSED",
+     "severity": "info",
+     "key": "single",
+     "label": "CAL03 Opex.Opex Variance",
+     "count": 1,
+     "modules": [
+      "CAL03 Opex"
+     ],
+     "objects": [
+      "CAL03 Opex.Opex Variance"
+     ],
+     "message": "calculated, 5,017,824 cells, referenced by no formula",
+     "fix": "Check views and exports; remove if unused.",
+     "weight": 0.15
+    },
+    {
+     "rule": "G-UNUSED",
+     "severity": "info",
+     "key": "single",
+     "label": "CAL05 Opex OLD.Opex Cumulative",
+     "count": 1,
+     "modules": [
+      "CAL05 Opex OLD"
+     ],
+     "objects": [
+      "CAL05 Opex OLD.Opex Cumulative"
+     ],
+     "message": "calculated, 5,017,824 cells, referenced by no formula",
+     "fix": "Check views and exports; remove if unused.",
+     "weight": 0.15
+    },
+    {
+     "rule": "G-UNUSED",
+     "severity": "info",
+     "key": "single",
+     "label": "CAL05 Opex OLD.Opex Run Rate",
+     "count": 1,
+     "modules": [
+      "CAL05 Opex OLD"
+     ],
+     "objects": [
+      "CAL05 Opex OLD.Opex Run Rate"
+     ],
+     "message": "calculated, 5,017,824 cells, referenced by no formula",
+     "fix": "Check views and exports; remove if unused.",
+     "weight": 0.15
+    },
+    {
+     "rule": "G-UNUSED",
+     "severity": "info",
+     "key": "single",
+     "label": "DAT01 Actuals GL.Journal Cost Centre",
+     "count": 1,
+     "modules": [
+      "DAT01 Actuals GL"
+     ],
+     "objects": [
+      "DAT01 Actuals GL.Journal Cost Centre"
+     ],
+     "message": "calculated, 5,017,824 cells, referenced by no formula",
+     "fix": "Check views and exports; remove if unused.",
+     "weight": 0.15
+    },
+    {
+     "rule": "G-UNUSED",
+     "severity": "info",
+     "key": "single",
+     "label": "DAT01 Actuals GL.Loaded?",
+     "count": 1,
+     "modules": [
+      "DAT01 Actuals GL"
+     ],
+     "objects": [
+      "DAT01 Actuals GL.Loaded?"
+     ],
+     "message": "calculated, 5,017,824 cells, referenced by no formula",
+     "fix": "Check views and exports; remove if unused.",
+     "weight": 0.15
+    },
+    {
+     "rule": "H-NOTES",
+     "severity": "info",
+     "key": "single",
+     "label": "(model)",
+     "count": 1,
+     "modules": [
+      "(model)"
+     ],
+     "objects": [
+      "(model)"
+     ],
+     "message": "23 of 30 modules have no notes; largest: CAL03 Opex, INP02 Opex Drivers, CAL12 Driver Phasing, CAL02 Revenue, INP01 Volumes",
+     "fix": "Add a one-line purpose note to each module, largest first.",
+     "weight": 0.15
+    }
+   ],
+   "findings_by_rule": {
+    "A-DAISY": 4,
+    "A-IF-COUNT": 1,
+    "A-LI-COUNT": 1,
+    "A-SUBSIDIARY": 1,
+    "F-DIVIDE": 1,
+    "F-MIXED-CLAUSE": 1,
+    "A-FINDITEM": 1,
+    "A-SUMMARY-ON": 30,
+    "A-SYSTEMS-FN": 10,
+    "A-TEXT-FORMAT": 1,
+    "A-TEXT-JOIN": 1,
+    "F-HARDCODE": 6,
+    "F-LONG": 1,
+    "G-EMPTY-MODULE": 1,
+    "G-CYCLE": 1,
+    "G-HUB": 1,
+    "G-UNUSED": 5,
+    "H-NOTES": 1
+   }
+  },
+  {
+   "name": "Workforce Planning",
+   "folder": "examples\\caldergate-estate\\3 Workforce Planning",
+   "facts": {
+    "modules": 9,
+    "line_items": 55,
+    "calculated": 36,
+    "inputs": 19,
+    "cells": 6343559,
+    "dimensions": [
+     "Cost Centres",
+     "Departments",
+     "Employees",
+     "Roles"
+    ],
+    "edges": 64,
+    "module_edges": 11,
+    "parse_errors": 0,
+    "parse_rate": 1.0,
+    "notes_coverage": 0.018,
+    "has_effort": false,
+    "effort_top10_share": null,
+    "effort_top": [],
+    "effort_by_module": [],
+    "cells_by_module": [
+     [
+      "Calcs - Headcount by CC",
+      2968560,
+      46.8
+     ],
+     [
+      "Calcs - Cost",
+      2397600,
+      37.8
+     ],
+     [
+      "Data - Employees",
+      666000,
+      10.5
+     ],
+     [
+      "Calcs - Attrition",
+      284256,
+      4.5
+     ],
+     [
+      "zz Archive - 2021 Cost",
+      13392,
+      0.2
+     ],
+     [
+      "Reports - Headcount",
+      12960,
+      0.2
+     ],
+     [
+      "Data - Cost Centre Map",
+      532,
+      0.0
+     ],
+     [
+      "Inputs - Calendar",
+      252,
+      0.0
+     ],
+     [
+      "Inputs - Settings",
+      7,
+      0.0
+     ]
+    ],
+    "hubs": [
+     [
+      "Data - Employees.Role",
+      8
+     ],
+     [
+      "Calcs - Cost.Inflated Salary",
+      4
+     ],
+     [
+      "Data - Employees.FTE",
+      3
+     ],
+     [
+      "Data - Employees.Cost Centre",
+      3
+     ],
+     [
+      "Reports - Headcount.FTE",
+      3
+     ],
+     [
+      "Data - Employees.End Date",
+      2
+     ],
+     [
+      "Calcs - Cost.Monthly Salary",
+      2
+     ],
+     [
+      "Calcs - Cost.Total Cost",
+      2
+     ],
+     [
+      "Calcs - Headcount by CC.FTE",
+      2
+     ],
+     [
+      "Calcs - Attrition.Leavers by Role",
+      2
+     ]
+    ],
+    "unreferenced": 14,
+    "cycles": 0,
+    "cycles_balance": 0,
+    "cycles_fault": 0,
+    "daisy_chains": 0,
+    "referenced_by_check": {
+     "agree": 64,
+     "ours_only": 0,
+     "anaplan_only": 0,
+     "agreement": 1.0
+    },
+    "findings": 14,
+    "patterns": 14,
+    "rules_skipped": [],
+    "has_modules_export": true,
+    "actions": {
+     "actions": 6,
+     "imports": 3,
+     "exports": 3,
+     "processes": 5,
+     "latest_run": "2026-09-08",
+     "stale_cutoff": "2025-09-13",
+     "imports_by_target": [
+      [
+       "Data - Employees",
+       1
+      ],
+      [
+       "Data - Cost Centre Map",
+       1
+      ],
+      [
+       "Inputs - Settings",
+       1
+      ]
+     ],
+     "process_steps": [
+      [
+       "Monthly Refresh",
+       0
+      ],
+      [
+       "Push to FP&A",
+       0
+      ],
+      [
+       "Import Employees from Workday",
+       0
+      ],
+      [
+       "Import from Caldergate Data Hub - Cost Centre Map",
+       0
+      ],
+      [
+       "Export Headcount Cost to FP&A",
+       0
+      ]
+     ],
+     "orphans": [
+      "Import from Caldergate FP&A - Assumptions",
+      "Export Headcount by Department",
+      "Export Leavers Report"
+     ],
+     "orphan_count": 3,
+     "stale": [
+      [
+       "Import from Caldergate FP&A - Assumptions",
+       "2022-08-17"
+      ],
+      [
+       "Export Leavers Report",
+       "2024-12-19"
+      ]
+     ],
+     "stale_count": 2,
+     "slow": [
+      [
+       "Import Employees from Workday",
+       21900
+      ],
+      [
+       "Export Headcount Cost to FP&A",
+       3600
+      ],
+      [
+       "Import from Caldergate Data Hub - Cost Centre Map",
+       500
+      ],
+      [
+       "Export Headcount by Department",
+       400
+      ],
+      [
+       "Export Leavers Report",
+       300
+      ],
+      [
+       "Import from Caldergate FP&A - Assumptions",
+       200
+      ]
+     ],
+     "sources": {
+      "Workday": [
+       "Import Employees from Workday"
+      ],
+      "Caldergate Data Hub": [
+       "Import from Caldergate Data Hub - Cost Centre Map"
+      ],
+      "Caldergate FP&A": [
+       "Import from Caldergate FP&A - Assumptions"
+      ]
+     }
+    }
+   },
+   "patterns": [
+    {
+     "rule": "A-SUBSIDIARY",
+     "severity": "major",
+     "key": "single",
+     "label": "Calcs - Attrition.Leavers",
+     "count": 1,
+     "modules": [
+      "Calcs - Attrition"
+     ],
+     "objects": [
+      "Calcs - Attrition.Leavers"
+     ],
+     "message": "applies to Employees in a module on Roles; used by 1 formulas",
+     "fix": "Move to a module dimensioned as the line item is.",
+     "weight": 3.0
+    },
+    {
+     "rule": "F-DIVIDE",
+     "severity": "major",
+     "key": "single",
+     "label": "Calcs - Attrition.Annualised Attrition",
+     "count": 1,
+     "modules": [
+      "Calcs - Attrition"
+     ],
+     "objects": [
+      "Calcs - Attrition.Annualised Attrition"
+     ],
+     "message": "unguarded / by a line item",
+     "fix": "Use DIVIDE(a, b) or IF b <> 0 THEN a / b ELSE 0.",
+     "weight": 3.0
+    },
+    {
+     "rule": "F-DIVIDE",
+     "severity": "major",
+     "key": "single",
+     "label": "Calcs - Attrition.Attrition %",
+     "count": 1,
+     "modules": [
+      "Calcs - Attrition"
+     ],
+     "objects": [
+      "Calcs - Attrition.Attrition %"
+     ],
+     "message": "unguarded / by a line item",
+     "fix": "Use DIVIDE(a, b) or IF b <> 0 THEN a / b ELSE 0.",
+     "weight": 3.0
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "single",
+     "label": "Calcs - Headcount by CC.Average Salary",
+     "count": 1,
+     "modules": [
+      "Calcs - Headcount by CC"
+     ],
+     "objects": [
+      "Calcs - Headcount by CC.Average Salary"
+     ],
+     "message": "summary FORMULA, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-TEXT-FORMAT",
+     "severity": "minor",
+     "key": "single",
+     "label": "Data - Employees.Employee Name",
+     "count": 1,
+     "modules": [
+      "Data - Employees"
+     ],
+     "objects": [
+      "Data - Employees.Employee Name"
+     ],
+     "message": "TEXT with 66,600 cells",
+     "fix": "Use a list-formatted item or move text to a system module.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-TEXT-FORMAT",
+     "severity": "minor",
+     "key": "single",
+     "label": "Data - Employees.Name and Role",
+     "count": 1,
+     "modules": [
+      "Data - Employees"
+     ],
+     "objects": [
+      "Data - Employees.Name and Role"
+     ],
+     "message": "TEXT with 66,600 cells",
+     "fix": "Use a list-formatted item or move text to a system module.",
+     "weight": 0.6
+    },
+    {
+     "rule": "A-TEXT-JOIN",
+     "severity": "minor",
+     "key": "single",
+     "label": "Data - Employees.Name and Role",
+     "count": 1,
+     "modules": [
+      "Data - Employees"
+     ],
+     "objects": [
+      "Data - Employees.Name and Role"
+     ],
+     "message": "& in a 66,600-cell line item",
+     "fix": "Build the text once in a systems module.",
+     "weight": 0.6
+    },
+    {
+     "rule": "F-HARDCODE",
+     "severity": "minor",
+     "key": "single",
+     "label": "Calcs - Attrition.Annualised Attrition",
+     "count": 1,
+     "modules": [
+      "Calcs - Attrition"
+     ],
+     "objects": [
+      "Calcs - Attrition.Annualised Attrition"
+     ],
+     "message": "constants 11",
+     "fix": "Move to an input line item with a name and a note.",
+     "weight": 0.6
+    },
+    {
+     "rule": "F-HARDCODE",
+     "severity": "minor",
+     "key": "single",
+     "label": "Calcs - Cost.Bonus",
+     "count": 1,
+     "modules": [
+      "Calcs - Cost"
+     ],
+     "objects": [
+      "Calcs - Cost.Bonus"
+     ],
+     "message": "constants 0.1",
+     "fix": "Move to an input line item with a name and a note.",
+     "weight": 0.6
+    },
+    {
+     "rule": "F-HARDCODE",
+     "severity": "minor",
+     "key": "single",
+     "label": "Calcs - Headcount by CC.Bonus %",
+     "count": 1,
+     "modules": [
+      "Calcs - Headcount by CC"
+     ],
+     "objects": [
+      "Calcs - Headcount by CC.Bonus %"
+     ],
+     "message": "constants 0.1",
+     "fix": "Move to an input line item with a name and a note.",
+     "weight": 0.6
+    },
+    {
+     "rule": "G-UNUSED",
+     "severity": "info",
+     "key": "single",
+     "label": "Calcs - Headcount by CC.Average Salary",
+     "count": 1,
+     "modules": [
+      "Calcs - Headcount by CC"
+     ],
+     "objects": [
+      "Calcs - Headcount by CC.Average Salary"
+     ],
+     "message": "calculated, 593,712 cells, referenced by no formula",
+     "fix": "Check views and exports; remove if unused.",
+     "weight": 0.15
+    },
+    {
+     "rule": "G-UNUSED",
+     "severity": "info",
+     "key": "single",
+     "label": "Calcs - Headcount by CC.Bonus %",
+     "count": 1,
+     "modules": [
+      "Calcs - Headcount by CC"
+     ],
+     "objects": [
+      "Calcs - Headcount by CC.Bonus %"
+     ],
+     "message": "calculated, 593,712 cells, referenced by no formula",
+     "fix": "Check views and exports; remove if unused.",
+     "weight": 0.15
+    },
+    {
+     "rule": "G-UNUSED",
+     "severity": "info",
+     "key": "single",
+     "label": "Data - Employees.Name and Role",
+     "count": 1,
+     "modules": [
+      "Data - Employees"
+     ],
+     "objects": [
+      "Data - Employees.Name and Role"
+     ],
+     "message": "calculated, 66,600 cells, referenced by no formula",
+     "fix": "Check views and exports; remove if unused.",
+     "weight": 0.15
+    },
+    {
+     "rule": "H-NOTES",
+     "severity": "info",
+     "key": "single",
+     "label": "(model)",
+     "count": 1,
+     "modules": [
+      "(model)"
+     ],
+     "objects": [
+      "(model)"
+     ],
+     "message": "5 of 9 modules have no notes; largest: Calcs - Cost, Calcs - Attrition, Reports - Headcount, Inputs - Calendar, Inputs - Settings",
+     "fix": "Add a one-line purpose note to each module, largest first.",
+     "weight": 0.15
+    }
+   ],
+   "findings_by_rule": {
+    "A-SUBSIDIARY": 1,
+    "F-DIVIDE": 2,
+    "A-SUMMARY-ON": 1,
+    "A-TEXT-FORMAT": 2,
+    "A-TEXT-JOIN": 1,
+    "F-HARDCODE": 3,
+    "G-UNUSED": 3,
+    "H-NOTES": 1
+   }
+  },
+  {
+   "name": "Board Reporting",
+   "folder": "examples\\caldergate-estate\\4 Board Reporting",
+   "facts": {
+    "modules": 7,
+    "line_items": 30,
+    "calculated": 13,
+    "inputs": 17,
+    "cells": 137882,
+    "dimensions": [
+     "Cost Centres",
+     "Departments"
+    ],
+    "edges": 16,
+    "module_edges": 6,
+    "parse_errors": 0,
+    "parse_rate": 1.0,
+    "notes_coverage": 0.0,
+    "has_effort": true,
+    "effort_top10_share": 89.7,
+    "effort_top": [
+     [
+      "CAL01 KPIs.Revenue per FTE",
+      11.21,
+      144,
+      "'DAT02 Board Lines'.Revenue / FTE"
+     ],
+     [
+      "CAL01 KPIs.Opex Ratio",
+      11.21,
+      144,
+      "DIVIDE('DAT01 P&L'.Opex, 'DAT01 P&L'.Revenue)"
+     ],
+     [
+      "CAL01 KPIs.Revenue Growth",
+      11.21,
+      144,
+      "DIVIDE('DAT02 Board Lines'.Revenue - Revenue Prior Year, Revenue Prior Year)"
+     ],
+     [
+      "CAL01 KPIs.EBITDA Margin",
+      11.21,
+      144,
+      "DIVIDE('DAT02 Board Lines'.EBITDA, 'DAT02 Board Lines'.Revenue)"
+     ],
+     [
+      "CAL01 KPIs.FTE",
+      7.48,
+      144,
+      "'DAT03 Headcount'.FTE"
+     ],
+     [
+      "CAL01 KPIs.Revenue Prior Year",
+      7.48,
+      144,
+      "LAG('DAT02 Board Lines'.Revenue, 12, 0)"
+     ],
+     [
+      "CAL01 KPIs.Revenue YTD",
+      7.48,
+      144,
+      "YEARTODATE('DAT02 Board Lines'.Revenue)"
+     ],
+     [
+      "OUT01 Board Dashboard.Revenue",
+      7.48,
+      144,
+      "'DAT02 Board Lines'.Revenue"
+     ],
+     [
+      "OUT01 Board Dashboard.EBITDA",
+      7.48,
+      144,
+      "'DAT02 Board Lines'.EBITDA"
+     ],
+     [
+      "OUT01 Board Dashboard.Revenue per FTE",
+      7.48,
+      144,
+      "'CAL01 KPIs'.Revenue per FTE"
+     ],
+     [
+      "OUT01 Board Dashboard.Revenue Growth",
+      7.48,
+      144,
+      "'CAL01 KPIs'.Revenue Growth"
+     ],
+     [
+      "SYS01 Time.Current Period?",
+      1.87,
+      36,
+      "ITEM(Time) = 'SYS00 Settings'.Current Period"
+     ],
+     [
+      "SYS01 Time.Period Label",
+      0.93,
+      36,
+      "NAME(ITEM(Time))"
+     ]
+    ],
+    "effort_by_module": [
+     [
+      "CAL01 KPIs",
+      67.28
+     ],
+     [
+      "OUT01 Board Dashboard",
+      29.92
+     ],
+     [
+      "SYS01 Time",
+      2.8
+     ]
+    ],
+    "cells_by_module": [
+     [
+      "DAT01 P&L",
+      134064,
+      97.2
+     ],
+     [
+      "DAT03 Headcount",
+      1296,
+      0.9
+     ],
+     [
+      "CAL01 KPIs",
+      1008,
+      0.7
+     ],
+     [
+      "OUT01 Board Dashboard",
+      864,
+      0.6
+     ],
+     [
+      "DAT02 Board Lines",
+      576,
+      0.4
+     ],
+     [
+      "SYS01 Time",
+      72,
+      0.1
+     ],
+     [
+      "SYS00 Settings",
+      2,
+      0.0
+     ]
+    ],
+    "hubs": [
+     [
+      "DAT02 Board Lines.Revenue",
+      6
+     ],
+     [
+      "DAT02 Board Lines.EBITDA",
+      2
+     ],
+     [
+      "SYS00 Settings.Current Period",
+      1
+     ],
+     [
+      "DAT03 Headcount.FTE",
+      1
+     ],
+     [
+      "CAL01 KPIs.FTE",
+      1
+     ],
+     [
+      "DAT01 P&L.Opex",
+      1
+     ],
+     [
+      "DAT01 P&L.Revenue",
+      1
+     ],
+     [
+      "CAL01 KPIs.Revenue Prior Year",
+      1
+     ],
+     [
+      "CAL01 KPIs.Revenue per FTE",
+      1
+     ],
+     [
+      "CAL01 KPIs.Revenue Growth",
+      1
+     ]
+    ],
+    "unreferenced": 20,
+    "cycles": 0,
+    "cycles_balance": 0,
+    "cycles_fault": 0,
+    "daisy_chains": 0,
+    "referenced_by_check": {
+     "agree": 16,
+     "ours_only": 0,
+     "anaplan_only": 0,
+     "agreement": 1.0
+    },
+    "findings": 7,
+    "patterns": 3,
+    "rules_skipped": [],
+    "has_modules_export": true,
+    "actions": {
+     "actions": 4,
+     "imports": 3,
+     "exports": 1,
+     "processes": 4,
+     "latest_run": "2026-09-08",
+     "stale_cutoff": "2025-09-13",
+     "imports_by_target": [
+      [
+       "DAT01 P&L",
+       1
+      ],
+      [
+       "DAT02 Board Lines",
+       1
+      ],
+      [
+       "DAT03 Headcount",
+       1
+      ]
+     ],
+     "process_steps": [
+      [
+       "Refresh Pack",
+       0
+      ],
+      [
+       "Import from Caldergate FP&A - P&L by Cost Centre",
+       0
+      ],
+      [
+       "Import from Caldergate FP&A - Board Pack",
+       0
+      ],
+      [
+       "Import from Workforce Planning - Headcount by Department",
+       0
+      ]
+     ],
+     "orphans": [
+      "Export Board Pack PDF Data"
+     ],
+     "orphan_count": 1,
+     "stale": [],
+     "stale_count": 0,
+     "slow": [
+      [
+       "Import from Caldergate FP&A - P&L by Cost Centre",
+       2600
+      ],
+      [
+       "Import from Caldergate FP&A - Board Pack",
+       900
+      ],
+      [
+       "Import from Workforce Planning - Headcount by Department",
+       500
+      ],
+      [
+       "Export Board Pack PDF Data",
+       300
+      ]
+     ],
+     "sources": {
+      "Caldergate FP&A": [
+       "Import from Caldergate FP&A - P&L by Cost Centre",
+       "Import from Caldergate FP&A - Board Pack"
+      ],
+      "Workforce Planning": [
+       "Import from Workforce Planning - Headcount by Department"
+      ]
+     }
+    }
+   },
+   "patterns": [
+    {
+     "rule": "F-DIVIDE",
+     "severity": "major",
+     "key": "single",
+     "label": "CAL01 KPIs.Revenue per FTE",
+     "count": 1,
+     "modules": [
+      "CAL01 KPIs"
+     ],
+     "objects": [
+      "CAL01 KPIs.Revenue per FTE"
+     ],
+     "message": "unguarded / by a line item",
+     "fix": "Use DIVIDE(a, b) or IF b <> 0 THEN a / b ELSE 0.",
+     "weight": 3.0
+    },
+    {
+     "rule": "A-SUMMARY-ON",
+     "severity": "minor",
+     "key": "module",
+     "label": "DAT01 P&L (5 line items)",
+     "count": 5,
+     "modules": [
+      "DAT01 P&L"
+     ],
+     "objects": [
+      "DAT01 P&L.COGS",
+      "DAT01 P&L.Depreciation",
+      "DAT01 P&L.EBIT",
+      "DAT01 P&L.EBITDA",
+      "DAT01 P&L.Staff Cost"
+     ],
+     "message": "summary SUM, referenced by no formula",
+     "fix": "Set summary to None unless a view needs the total.",
+     "weight": 1.02
+    },
+    {
+     "rule": "H-NOTES",
+     "severity": "info",
+     "key": "single",
+     "label": "(model)",
+     "count": 1,
+     "modules": [
+      "(model)"
+     ],
+     "objects": [
+      "(model)"
+     ],
+     "message": "5 of 7 modules have no notes; largest: DAT03 Headcount, CAL01 KPIs, OUT01 Board Dashboard, SYS01 Time, SYS00 Settings",
+     "fix": "Add a one-line purpose note to each module, largest first.",
+     "weight": 0.15
+    }
+   ],
+   "findings_by_rule": {
+    "F-DIVIDE": 1,
+    "A-SUMMARY-ON": 5,
+    "H-NOTES": 1
+   }
+  }
+ ],
+ "edges": [
+  {
+   "from": "Caldergate Data Hub",
+   "to": "Caldergate FP&A",
+   "actions": 5,
+   "targets": [
+    "DAT01 Actuals GL",
+    "DAT02 Actuals Volumes",
+    "SYS02 Cost Centre Attributes",
+    "SYS04 Product Attributes",
+    "SYS03 Account Attributes"
+   ],
+   "phrases": [
+    "Caldergate Data Hub"
+   ],
+   "basis": "inferred from import action names"
+  },
+  {
+   "from": "Caldergate FP&A",
+   "to": "Board Reporting",
+   "actions": 2,
+   "targets": [
+    "DAT01 P&L",
+    "DAT02 Board Lines"
+   ],
+   "phrases": [
+    "Caldergate FP&A"
+   ],
+   "basis": "inferred from import action names"
+  },
+  {
+   "from": "Workforce Planning",
+   "to": "Caldergate FP&A",
+   "actions": 1,
+   "targets": [
+    "INP03 Headcount"
+   ],
+   "phrases": [
+    "Workforce Planning"
+   ],
+   "basis": "inferred from import action names"
+  },
+  {
+   "from": "Caldergate Data Hub",
+   "to": "Workforce Planning",
+   "actions": 1,
+   "targets": [
+    "Data - Cost Centre Map"
+   ],
+   "phrases": [
+    "Caldergate Data Hub"
+   ],
+   "basis": "inferred from import action names"
+  },
+  {
+   "from": "Caldergate FP&A",
+   "to": "Workforce Planning",
+   "actions": 1,
+   "targets": [
+    "Inputs - Settings"
+   ],
+   "phrases": [
+    "Caldergate FP&A"
+   ],
+   "basis": "inferred from import action names"
+  },
+  {
+   "from": "Workforce Planning",
+   "to": "Board Reporting",
+   "actions": 1,
+   "targets": [
+    "DAT03 Headcount"
+   ],
+   "phrases": [
+    "Workforce Planning"
+   ],
+   "basis": "inferred from import action names"
+  }
+ ],
+ "external_sources": {
+  "NetSuite": [
+   "Caldergate Data Hub: Import GL from NetSuite",
+   "Caldergate Data Hub: Import Cost Centres from NetSuite",
+   "Caldergate Data Hub: Import Accounts from NetSuite"
+  ],
+  "Salesforce": [
+   "Caldergate Data Hub: Import Orders from Salesforce",
+   "Caldergate Data Hub: Import Pipeline from Salesforce",
+   "Caldergate Data Hub: Import Customers from Salesforce"
+  ],
+  "Workday": [
+   "Caldergate Data Hub: Import Employees from Workday",
+   "Workforce Planning: Import Employees from Workday"
+  ],
+  "PIM file": [
+   "Caldergate Data Hub: Import Products from PIM file"
+  ],
+  "Treasury file": [
+   "Caldergate FP&A: Import FX from Treasury file"
+  ],
+  "Caldergate Hub v1": [
+   "Caldergate FP&A: Import from Caldergate Hub v1 - Cost Centres"
+  ],
+  "Excel": [
+   "Caldergate FP&A: Import Budget from Excel"
+  ]
+ },
+ "duplicates": [
+  {
+   "line_item": "COGS?",
+   "models": [
+    "Caldergate Data Hub",
+    "Caldergate FP&A"
+   ],
+   "copies": 2,
+   "where": [
+    "Caldergate Data Hub: DAT03 Account Master",
+    "Caldergate FP&A: SYS03 Account Attributes"
+   ],
+   "formula": "(Account Type = Account Types.COGS)"
+  },
+  {
+   "line_item": "Current Period?",
+   "models": [
+    "Caldergate Data Hub",
+    "Caldergate FP&A"
+   ],
+   "copies": 2,
+   "where": [
+    "Caldergate Data Hub: SYS01 Time Settings",
+    "Caldergate FP&A: SYS01 Time Settings"
+   ],
+   "formula": "(ITEM(Time) = SYS00 Model Settings.Current Period)"
+  },
+  {
+   "line_item": "Employer NI",
+   "models": [
+    "Caldergate FP&A",
+    "Workforce Planning"
+   ],
+   "copies": 2,
+   "where": [
+    "Caldergate FP&A: INP03 Headcount",
+    "Workforce Planning: Calcs - Cost"
+   ],
+   "formula": "(IF (Monthly Salary > NI Threshold) THEN ((Monthly Salary - NI Threshold) * NI Rate) ELSE 0)"
+  },
+  {
+   "line_item": "Group",
+   "models": [
+    "Caldergate Data Hub",
+    "Caldergate FP&A"
+   ],
+   "copies": 2,
+   "where": [
+    "Caldergate Data Hub: DAT02 Cost Centre Master",
+    "Caldergate FP&A: SYS02 Cost Centre Attributes"
+   ],
+   "formula": "PARENT(ITEM(Cost Centres))"
+  },
+  {
+   "line_item": "Opex?",
+   "models": [
+    "Caldergate Data Hub",
+    "Caldergate FP&A"
+   ],
+   "copies": 2,
+   "where": [
+    "Caldergate Data Hub: DAT03 Account Master",
+    "Caldergate FP&A: SYS03 Account Attributes"
+   ],
+   "formula": "(Account Type = Account Types.Opex)"
+  },
+  {
+   "line_item": "Revenue?",
+   "models": [
+    "Caldergate Data Hub",
+    "Caldergate FP&A"
+   ],
+   "copies": 2,
+   "where": [
+    "Caldergate Data Hub: DAT03 Account Master",
+    "Caldergate FP&A: SYS03 Account Attributes"
+   ],
+   "formula": "(Account Type = Account Types.Revenue)"
+  },
+  {
+   "line_item": "Sign",
+   "models": [
+    "Caldergate Data Hub",
+    "Caldergate FP&A"
+   ],
+   "copies": 2,
+   "where": [
+    "Caldergate Data Hub: DAT03 Account Master",
+    "Caldergate FP&A: SYS03 Account Attributes"
+   ],
+   "formula": "(IF 'Revenue?' THEN -1 ELSE 1)"
+  },
+  {
+   "line_item": "Working Days",
+   "models": [
+    "Caldergate FP&A",
+    "Workforce Planning"
+   ],
+   "copies": 2,
+   "where": [
+    "Caldergate FP&A: SYS01 Time Settings",
+    "Workforce Planning: Inputs - Calendar"
+   ],
+   "formula": "(Days in Month - Weekend Days - Bank Holidays)"
+  }
+ ],
+ "shared_dimensions": [
+  [
+   "Cost Centres",
+   [
+    "Caldergate Data Hub",
+    "Caldergate FP&A",
+    "Workforce Planning",
+    "Board Reporting"
+   ]
+  ],
+  [
+   "Departments",
+   [
+    "Caldergate FP&A",
+    "Workforce Planning",
+    "Board Reporting"
+   ]
+  ],
+  [
+   "Accounts",
+   [
+    "Caldergate Data Hub",
+    "Caldergate FP&A"
+   ]
+  ],
+  [
+   "Employees",
+   [
+    "Caldergate Data Hub",
+    "Workforce Planning"
+   ]
+  ],
+  [
+   "Products",
+   [
+    "Caldergate Data Hub",
+    "Caldergate FP&A"
+   ]
+  ],
+  [
+   "Regions",
+   [
+    "Caldergate Data Hub",
+    "Caldergate FP&A"
+   ]
+  ],
+  [
+   "Roles",
+   [
+    "Caldergate FP&A",
+    "Workforce Planning"
+   ]
+  ]
+ ]
+}

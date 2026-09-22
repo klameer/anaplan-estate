@@ -38,3 +38,27 @@ def test_render_and_cli(tmp_path, capsys):
     j = json.loads((tmp_path / "e.json").read_text(encoding="utf-8"))
     assert j["edges"][0]["to"] == "Caldergate HR"
     main([str(FX), "--list"]); assert "Caldergate HR" in capsys.readouterr().out
+
+
+EX = pathlib.Path(__file__).resolve().parents[1] / "examples" / "caldergate-estate"
+
+
+def test_example_estate_finds_the_planted_faults():
+    """examples/caldergate-estate/PLANTED.md lists what was put in; this keeps the report finding it."""
+    er = fleet.run(EX)
+    by = {m.name: m for m in er.models}
+    assert set(by) == {"Caldergate Data Hub", "Caldergate FP&A", "Workforce Planning", "Board Reporting"}
+    assert all(m.facts["parse_rate"] == 1.0 for m in er.models)
+    fp = by["Caldergate FP&A"].lint.counts["by_rule"]
+    for rule in ("A-LI-COUNT", "A-IF-COUNT", "F-LONG", "F-HARDCODE", "F-DIVIDE", "F-MIXED-CLAUSE", "A-DAISY", "G-CYCLE",
+                 "G-HUB", "G-EMPTY-MODULE", "A-SUBSIDIARY", "A-TEXT-FORMAT", "A-FINDITEM", "A-TEXT-JOIN", "A-SUMMARY-ON", "G-UNUSED"):
+        assert fp.get(rule), rule
+    assert by["Caldergate FP&A"].facts["effort_by_module"][0][0] == "CAL05 Opex OLD"        # the leftover module carries the time
+    assert by["Caldergate FP&A"].facts["hubs"][0][0] == "SYS01 Time Settings.Actual?"
+    acts = by["Caldergate FP&A"].facts["actions"]
+    assert "Import from Caldergate Hub v1 - Cost Centres" in acts["orphans"] and any(s[0] == "Import FX from Treasury file" for s in acts["stale"])
+    assert "Caldergate Hub v1" in er.external and len(er.external["Workday"]) == 2
+    assert {(e["from"], e["to"]) for e in er.edges} >= {("Caldergate Data Hub", "Caldergate FP&A"), ("Workforce Planning", "Caldergate FP&A"),
+                                                        ("Caldergate FP&A", "Board Reporting"), ("Caldergate Data Hub", "Workforce Planning")}
+    assert {d["line_item"] for d in er.duplicates} >= {"Employer NI", "Working Days", "Current Period?"}
+    assert not by["Workforce Planning"].facts["has_effort"]
