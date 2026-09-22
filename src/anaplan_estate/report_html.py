@@ -306,8 +306,7 @@ def _index_text(x: dict) -> str:
             lines.append("evidence: " + " | ".join(c.strip() for c in plain.strip("|").split("|")))
         else:
             lines.append("evidence: " + plain.strip("-* ").strip())
-    return "
-".join(lines)
+    return "\n".join(lines)
 
 
 def _finding(x: dict, rep: dict) -> str:

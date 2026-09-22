@@ -206,7 +206,14 @@ evidence: DAT03 Account Master.Account Code | 0.01% | 262 | CODE(ITEM(Accounts))
 object: SYS02 Data Checks.Check Message
 formula: IF Within Tolerance? THEN &quot;OK&quot; ELSE &quot;GL and orders differ by &quot; &amp; TEXT(Difference)
 evidence: SYS02 Data Checks.Check Message | 0.01% | 36 | IF Within Tolerance? THEN &quot;OK&quot; ELSE &quot;GL and orders differ by &quot; &amp; TEXT(Difference)
-evidence: By module: `DAT01 GL Transactions` 88.3%, `CAL01 Volume Summary` 9.6%, `DAT05 CRM Pipeline` 1.8%, `DAT03 Account Master` 0.1%, `DAT08 Employee Master` 0.1%, `DAT07 Customer Master` 0.1%, `SYS02 Data Checks` 0.0%</div>
+object: DAT01 GL Transactions
+object: CAL01 Volume Summary
+object: DAT05 CRM Pipeline
+object: DAT03 Account Master
+object: DAT08 Employee Master
+object: DAT07 Customer Master
+object: SYS02 Data Checks
+evidence: By module: DAT01 GL Transactions 88.3%, CAL01 Volume Summary 9.6%, DAT05 CRM Pipeline 1.8%, DAT03 Account Master 0.1%, DAT08 Employee Master 0.1%, DAT07 Customer Master 0.1%, SYS02 Data Checks 0.0%</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-capacity">Area</a></p>
 </article>
 <article class="f" id="F5" data-id="F5" data-model="Caldergate FP&amp;A" data-area="capacity" data-importance="medium" data-strength="confirmed" data-cells="" data-effort="" data-search="f5 where measured calculation effort concentrates caldergate fp&amp;a potential capacity or performance improvements observation effort">
@@ -304,7 +311,17 @@ evidence: CAL05 Opex OLD.Other Forecast | 2.47% | 5.0M | IF ITEM(Accounts) = Acc
 object: CAL03 Opex.Opex Variance
 object: Opex GBP - Opex Prior Year
 evidence: CAL03 Opex.Opex Variance | 2.31% | 5.0M | Opex GBP - Opex Prior Year
-evidence: By module: `CAL05 Opex OLD` 50.8%, `CAL03 Opex` 37.8%, `DAT01 Actuals GL` 7.7%, `INP03 Headcount` 2.1%, `CAL12 Driver Phasing` 0.4%, `INP02 Opex Drivers` 0.3%, `CAL02 Revenue` 0.2%, `CAL01 Volumes` 0.1%, `CAL07 P&amp;L by Cost Centre` 0.1%, `CAL04 Margn` 0.1%</div>
+object: CAL05 Opex OLD
+object: CAL03 Opex
+object: DAT01 Actuals GL
+object: INP03 Headcount
+object: CAL12 Driver Phasing
+object: INP02 Opex Drivers
+object: CAL02 Revenue
+object: CAL01 Volumes
+object: CAL07 P&amp;L by Cost Centre
+object: CAL04 Margn
+evidence: By module: CAL05 Opex OLD 50.8%, CAL03 Opex 37.8%, DAT01 Actuals GL 7.7%, INP03 Headcount 2.1%, CAL12 Driver Phasing 0.4%, INP02 Opex Drivers 0.3%, CAL02 Revenue 0.2%, CAL01 Volumes 0.1%, CAL07 P&amp;L by Cost Centre 0.1%, CAL04 Margn 0.1%</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-capacity">Area</a></p>
 </article>
 <article class="f" id="F6" data-id="F6" data-model="Board Reporting" data-area="capacity" data-importance="medium" data-strength="confirmed" data-cells="" data-effort="" data-search="f6 where measured calculation effort concentrates board reporting potential capacity or performance improvements observation effort">
@@ -381,7 +398,10 @@ evidence: SYS01 Time.Current Period? | 1.87% | 36 | ITEM(Time) = &#x27;SYS00 Set
 object: SYS01 Time.Period Label
 formula: NAME(ITEM(Time))
 evidence: SYS01 Time.Period Label | 0.93% | 36 | NAME(ITEM(Time))
-evidence: By module: `CAL01 KPIs` 67.3%, `OUT01 Board Dashboard` 29.9%, `SYS01 Time` 2.8%</div>
+object: CAL01 KPIs
+object: OUT01 Board Dashboard
+object: SYS01 Time
+evidence: By module: CAL01 KPIs 67.3%, OUT01 Board Dashboard 29.9%, SYS01 Time 2.8%</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-capacity">Area</a></p>
 </article>
 <article class="f" id="F13" data-id="F13" data-model="Caldergate Data Hub" data-area="capacity" data-importance="low" data-strength="confirmed" data-cells="" data-effort="" data-search="f13 text, finditem and per-item functions in large multi-dimensional line items caldergate data hub potential capacity or performance improvements review candidate a-text-format a-finditem a-text-join a-systems-fn">
@@ -411,10 +431,8 @@ object: DAT01 GL Transactions.Source System
 object: DAT06 Sales Orders.Last Order Ref
 evidence: Line item | What | Cells | Effort share | Formula
 object: DAT01 GL Transactions.Source System
-object: 
 evidence: DAT01 GL Transactions.Source System | Text-formatted line item | 1.3M | 0.00% | 
 object: DAT06 Sales Orders.Last Order Ref
-object: 
 evidence: DAT06 Sales Orders.Last Order Ref | Text-formatted line item | 726K | 0.00% | </div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-capacity">Area</a></p>
 </article>
@@ -486,7 +504,6 @@ object: CAL05 Opex OLD.Travel Forecast
 object: CAL05 Opex OLD.Utilities Forecast
 evidence: Line item | What | Cells | Effort share | Formula
 object: DAT01 Actuals GL.Source Journal
-object: 
 evidence: DAT01 Actuals GL.Source Journal | Text-formatted line item | 5.0M | 0.00% | 
 object: DAT01 Actuals GL.Journal Cost Centre
 formula: FINDITEM(Cost Centres, Source Journal)
@@ -554,7 +571,6 @@ object: Data - Employees.Name and Role
 object: Data - Employees.Name and Role
 evidence: Line item | What | Cells | Effort share | Formula
 object: Data - Employees.Employee Name
-object: 
 evidence: Data - Employees.Employee Name | Text-formatted line item | 66.6K | n/a | 
 object: Data - Employees.Name and Role
 formula: Employee Name &amp; &quot; (&quot; &amp; NAME(Role) &amp; &quot;)&quot;
@@ -629,14 +645,16 @@ object: CAL03 Opex
 object: CAL02 Revenue
 evidence: Module | Line items with no formula consumer | Cells | Effort share
 object: DAT01 Actuals GL
-object: Journal Cost Centre`, `Loaded?
-evidence: DAT01 Actuals GL | Journal Cost Centre`, `Loaded? | 10.0M | 7.7%
+object: Journal Cost Centre
+object: Loaded?
+evidence: DAT01 Actuals GL | Journal Cost Centre, Loaded? | 10.0M | 7.7%
 object: CAL03 Opex
 object: Opex Variance
 evidence: CAL03 Opex | Opex Variance | 5.0M | 2.3%
 object: CAL02 Revenue
-object: Revenue USD`, `VAT
-evidence: CAL02 Revenue | Revenue USD`, `VAT | 72.6K | 0.0%</div>
+object: Revenue USD
+object: VAT
+evidence: CAL02 Revenue | Revenue USD, VAT | 72.6K | 0.0%</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-usage">Area</a></p>
 </article>
 <article class="f" id="F8" data-id="F8" data-model="Board Reporting" data-area="usage" data-importance="medium" data-strength="partial" data-cells="72" data-effort="2.8" data-search="f8 1 module with no consumer detected in the inspected dependency types board reporting usage and retirement investigations review candidate g-unused redundant-exact">
@@ -790,20 +808,24 @@ object: OUT02 Board Pack.EBITDA
 evidence: Head | Steps | Reads, in the end | Intermediates
 object: OUT01 Management Pack.Opex
 object: CAL03 Opex.Opex GBP
-object: CAL11 Reporting Prep.Opex`, `CAL07 P&amp;L by Cost Centre.Opex
-evidence: OUT01 Management Pack.Opex | 4 | CAL03 Opex.Opex GBP | CAL11 Reporting Prep.Opex`, `CAL07 P&amp;L by Cost Centre.Opex
+object: CAL11 Reporting Prep.Opex
+object: CAL07 P&amp;L by Cost Centre.Opex
+evidence: OUT01 Management Pack.Opex | 4 | CAL03 Opex.Opex GBP | CAL11 Reporting Prep.Opex, CAL07 P&amp;L by Cost Centre.Opex
 object: OUT01 Management Pack.Staff Cost
 object: INP03 Headcount.Total Cost
-object: CAL11 Reporting Prep.Staff Cost`, `CAL07 P&amp;L by Cost Centre.Staff Cost
-evidence: OUT01 Management Pack.Staff Cost | 4 | INP03 Headcount.Total Cost | CAL11 Reporting Prep.Staff Cost`, `CAL07 P&amp;L by Cost Centre.Staff Cost
+object: CAL11 Reporting Prep.Staff Cost
+object: CAL07 P&amp;L by Cost Centre.Staff Cost
+evidence: OUT01 Management Pack.Staff Cost | 4 | INP03 Headcount.Total Cost | CAL11 Reporting Prep.Staff Cost, CAL07 P&amp;L by Cost Centre.Staff Cost
 object: OUT02 Board Pack.Revenue
 object: CAL07 P&amp;L by Cost Centre.Revenue
-object: OUT01 Management Pack.Revenue`, `CAL11 Reporting Prep.Revenue
-evidence: OUT02 Board Pack.Revenue | 4 | CAL07 P&amp;L by Cost Centre.Revenue | OUT01 Management Pack.Revenue`, `CAL11 Reporting Prep.Revenue
+object: OUT01 Management Pack.Revenue
+object: CAL11 Reporting Prep.Revenue
+evidence: OUT02 Board Pack.Revenue | 4 | CAL07 P&amp;L by Cost Centre.Revenue | OUT01 Management Pack.Revenue, CAL11 Reporting Prep.Revenue
 object: OUT02 Board Pack.EBITDA
 object: CAL07 P&amp;L by Cost Centre.EBITDA
-object: OUT01 Management Pack.EBITDA`, `CAL11 Reporting Prep.EBITDA
-evidence: OUT02 Board Pack.EBITDA | 4 | CAL07 P&amp;L by Cost Centre.EBITDA | OUT01 Management Pack.EBITDA`, `CAL11 Reporting Prep.EBITDA</div>
+object: OUT01 Management Pack.EBITDA
+object: CAL11 Reporting Prep.EBITDA
+evidence: OUT02 Board Pack.EBITDA | 4 | CAL07 P&amp;L by Cost Centre.EBITDA | OUT01 Management Pack.EBITDA, CAL11 Reporting Prep.EBITDA</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-dependency">Area</a></p>
 </article>
 <p class="empty" hidden>No findings match the current filters in this area.</p></section>
@@ -833,7 +855,8 @@ evidence: OUT02 Board Pack.EBITDA | 4 | CAL07 P&amp;L by Cost Centre.EBITDA | OU
 </div></details>
 <div class="idx">text: IF chain that encodes a lookup table 12 IF THEN ELSE in one formula. The branches map Accounts items to values; the table below is what the formula encodes. Every branch is evaluated for every cell, and every new case is a formula edit. Anaplan&#x27;s checklist: refactor above 10 IF conditions. This line item carries 16.0% of the model&#x27;s measured effort. 1 line item; 1 reader
 object: CAL03 Opex.Forecast Opex
-evidence: Formula: `IF ITEM(Accounts) = Accounts.&#x27;6100 Rent&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Rent ELSE IF ITEM(Accounts) = Accounts.&#x27;6110 Rates&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Business Rates ELSE IF ITEM(Accounts) = Accounts.&#x27;6120 Utilities&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Utilities ELSE IF ITEM(Accounts) = Accounts.&#x27;6200 Travel&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Travel ELSE IF ITEM(Accounts) = Accounts.&#x27;6210 Subsistence&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Subsistence ELSE IF ITEM(Accounts) = Accounts.&#x27;6300 Marketing&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Events ELSE IF ITEM(Accounts) = Accounts.&#x27;6310 Digital&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Digital ELSE IF ITEM(Accounts) = Accounts.&#x27;6400 Software&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Software Licences ELSE IF ITEM(Accounts) = Accounts.&#x27;6410 Hardware&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Hardware ELSE IF ITEM(Accounts) = Accounts.&#x27;6500 Professional Fees&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Consultancy ELSE IF ITEM(Accounts) = Accounts.&#x27;6510 Audit&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Audit Fees ELSE IF ITEM(Accounts) = Accounts.&#x27;6600 Recruitment&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Recruitment Fees ELSE 0
+formula: IF ITEM(Accounts) = Accounts.&#x27;6100 Rent&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Rent ELSE IF ITEM(Accounts) = Accounts.&#x27;6110 Rates&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Business Rates ELSE IF ITEM(Accounts) = Accounts.&#x27;6120 Utilities&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Utilities ELSE IF ITEM(Accounts) = Accounts.&#x27;6200 Travel&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Travel ELSE IF ITEM(Accounts) = Accounts.&#x27;6210 Subsistence&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Subsistence ELSE IF ITEM(Accounts) = Accounts.&#x27;6300 Marketing&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Events ELSE IF ITEM(Accounts) = Accounts.&#x27;6310 Digital&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Digital ELSE IF ITEM(Accounts) = Accounts.&#x27;6400 Software&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Software Licences ELSE IF ITEM(Accounts) = Accounts.&#x27;6410 Hardware&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Hardware ELSE IF ITEM(Accounts) = Accounts.&#x27;6500 Professional Fees&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Consultancy ELSE IF ITEM(Accounts) = Accounts.&#x27;6510 Audit&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Audit Fees ELSE IF ITEM(Accounts) = Accounts.&#x27;6600 Recruitment&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Recruitment Fees ELSE 0
+evidence: Formula: IF ITEM(Accounts) = Accounts.&#x27;6100 Rent&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Rent ELSE IF ITEM(Accounts) = Accounts.&#x27;6110 Rates&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Business Rates ELSE IF ITEM(Accounts) = Accounts.&#x27;6120 Utilities&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Utilities ELSE IF ITEM(Accounts) = Accounts.&#x27;6200 Travel&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Travel ELSE IF ITEM(Accounts) = Accounts.&#x27;6210 Subsistence&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Subsistence ELSE IF ITEM(Accounts) = Accounts.&#x27;6300 Marketing&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Events ELSE IF ITEM(Accounts) = Accounts.&#x27;6310 Digital&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Marketing Digital ELSE IF ITEM(Accounts) = Accounts.&#x27;6400 Software&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Software Licences ELSE IF ITEM(Accounts) = Accounts.&#x27;6410 Hardware&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Hardware ELSE IF ITEM(Accounts) = Accounts.&#x27;6500 Professional Fees&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Consultancy ELSE IF ITEM(Accounts) = Accounts.&#x27;6510 Audit&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Audit Fees ELSE IF ITEM(Accounts) = Accounts.&#x27;6600 Recruitment&#x27; THEN &#x27;INP02 Opex Drivers&#x27;.Recruitment Fees ELSE 0
 evidence: Accounts item | Value
 object: INP02 Opex Drivers.Rent
 evidence: 6100 Rent | INP02 Opex Drivers.Rent
@@ -974,7 +997,9 @@ object: CAL07 P&amp;L by Cost Centre.Depreciation
 object: OUT01 Management Pack.Depreciation
 evidence: CAL07 P&amp;L by Cost Centre.Depreciation | OUT01 Management Pack.Depreciation | Cost Centres; Month; All; NUMBER | SUM | 19.2K | 0
 evidence: Formulas (one per group):
-evidence: CAL07 P&amp;L by Cost Centre.Depreciation`: `CAL10 Depreciation.Charge</div>
+object: CAL07 P&amp;L by Cost Centre.Depreciation
+object: CAL10 Depreciation.Charge
+evidence: CAL07 P&amp;L by Cost Centre.Depreciation: CAL10 Depreciation.Charge</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
 </article>
 <article class="f" id="F12" data-id="F12" data-model="Workforce Planning" data-area="maintain" data-importance="low" data-strength="confirmed" data-cells="4464" data-effort="" data-search="f12 same calculation made more than once under different names workforce planning maintainability and consistency review candidate redundant-exact">
@@ -1008,7 +1033,9 @@ object: Calcs - Attrition.Headcount
 object: zz Archive - 2021 Cost.Headcount
 evidence: Calcs - Attrition.Headcount | zz Archive - 2021 Cost.Headcount | Roles; Month; All; NUMBER | SUM | 4.5K | 1
 evidence: Formulas (one per group):
-evidence: Calcs - Attrition.Headcount`: `&#x27;Data - Employees&#x27;.FTE[SUM: &#x27;Data - Employees&#x27;.Role]</div>
+object: Calcs - Attrition.Headcount
+formula: &#x27;Data - Employees&#x27;.FTE[SUM: &#x27;Data - Employees&#x27;.Role]
+evidence: Calcs - Attrition.Headcount: &#x27;Data - Employees&#x27;.FTE[SUM: &#x27;Data - Employees&#x27;.Role]</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-maintain">Area</a></p>
 </article>
 <article class="f" id="F14" data-id="F14" data-model="Caldergate Data Hub" data-area="maintain" data-importance="low" data-strength="confirmed" data-cells="" data-effort="" data-search="f14 divide() where a zero divisor shows infinity caldergate data hub maintainability and consistency review candidate f-divide-fn">
