@@ -168,7 +168,7 @@ def analyse(m: Model, g: Graph, export_sources: set[str] = frozenset(), import_t
         if not n["same_module"]:
             twin_of.setdefault(n["a"], set()).add(n["b"].split(".")[0])
             twin_of.setdefault(n["b"], set()).add(n["a"].split(".")[0])
-    read_modules = {a[0] for k, users in g.rev.items() for a in users if a[0] != k[0]} | {k[0] for k, users in g.rev.items() if any(a[0] != k[0] for a in users)}
+    read_modules = {k[0] for k, users in g.rev.items() if any(a[0] != k[0] for a in users)}   # modules some OTHER module reads
     for mod_name, mod in m.modules.items():
         keys = [(mod_name, n) for n in mod.line_items if (mod_name, n) in m.line_items]
         calc = [k for k in keys if m.line_items[k].formula]
@@ -188,6 +188,7 @@ def analyse(m: Model, g: Graph, export_sources: set[str] = frozenset(), import_t
             if overlap and overlap / max(len(names), 1) >= 0.6:
                 twins[other] += overlap
         twins = Counter({t: n for t, n in twins.items() if t not in reads})
+        twins = Counter({t: n for t, n in twins.items() if t in read_modules})   # a twin nobody reads cannot supersede anything
         by, matched = (twins.most_common(1)[0] if twins else (None, 0))
         if cells < 50_000 and effort < 1 and not by:
             continue                                                  # a small orphan module is a note, not an action
