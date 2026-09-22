@@ -89,8 +89,8 @@ def test_search_index_covers_collapsed_evidence():
     if dup:
         art = h[h.index(f'id="{dup["id"]}"'):]
         art = art[:art.index("</article>")]
-        idx = art[art.index('<div class="idx">'):]
-        assert "formula:" in idx and "object:" in idx
+        idx = art[art.index('<div class="idx">'):].replace("&#x27;", "'").replace("&amp;", "&")
+        assert "object:" in idx and dup["evidence"][-1].split("`")[-2] in idx     # the group's formula text is indexed, whatever its prefix
 
 
 def test_sort_values_distinguish_unavailable_from_zero():
