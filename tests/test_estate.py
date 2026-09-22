@@ -77,11 +77,7 @@ def test_example_estate_action_list():
     assert not any("1 groups" in a.title or "1 line items" in a.title for a in acts)   # plurals
     assert all(a.steps and a.verify for a in acts)
     md = fleet.render_markdown(er)
-    assert md.index("## What to do") < md.index("
-# Actions in detail
-") < md.index("
-# The estate
-")
+    assert md.index("## What to do") < md.index("\n# Actions in detail\n") < md.index("\n# The estate\n")
     fp = next(m for m in er.models if m.name == "Caldergate FP&A")
     r = fp.redundancy.counts()
     assert r["aliases"] >= 10 and r["superseded"] >= 1
