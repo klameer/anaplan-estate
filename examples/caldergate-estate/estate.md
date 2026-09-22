@@ -4,11 +4,9 @@ Automated findings and candidate recommendations from each model's Line Items, M
 
 ## Summary
 
-This report reads 4 Anaplan models: 426 line items and 145M cells as exported. Inputs are the Line Items, Modules and Actions grid exports; the latest recorded action run across the files is 2026-09-21, the closest the exports come to a snapshot date. The analysis was generated on 2026-09-22. Everything below is an automated reading of those files: observations first, then candidate investigations, never a verdict on what the business needs.
+4 Anaplan models, 426 line items, 145M cells as exported. Latest recorded action run 2026-09-21; analysis generated 2026-09-22. Read from the Line Items, Modules and Actions exports only: pages, saved views and subsets are not in them, so anything called 'no consumer detected' is a question to answer, not a saving.
 
-What stands out is set out in the observations, and the three investigations that follow are where the evidence is strongest and the footprint largest. Each says what was observed, why it deserves attention, and what to do next. Where the exports cannot see a consumer, the finding says so and lists the checks that remain, because a module read only by a page is not spare.
-
-Two limits shape everything here. The exports carry formulas, dimensions, actions and Anaplan's own Referenced By column, but not pages, saved views, line item subsets or integrations. And calculation effort is a measurement of where the engine spends time in one model, not a promise of what removal would save. Findings are labelled confirmed, partial or inferred on exactly that basis, and a benefit is stated only where the exports support it.
+Start with the steps below. Each is one decision, backed by one finding, with who does it and what you get. The findings section holds the evidence; low-importance findings are hidden until you ask for them.
 
 **Observations**
 
@@ -17,11 +15,12 @@ Two limits shape everything here. The exports carry formulas, dimensions, action
 3. Caldergate Data Hub feeds Caldergate FP&A, Workforce Planning through 6 import actions; 6 feeds between models in all, inferred from import action names and not confirmed by any system table.
 4. 16 calculated line items repeat a calculation already made in the same model under another name, or copy another line item outright; the copies hold 292K cells. Some will exist for a page or an access boundary.
 
-**Priority investigations**
+**Start here**
 
-- **Module with no consumer detected in the inspected dependency types** (Caldergate FP&A; [F1](#F1)). Observed: No formula outside `CAL05 Opex OLD` reads any of its 14 line items (14 calculated) and no export action reads it. Module note: "Replaced by CAL03 in 2021. Keep until the FY22 audit is closed.". Why: Either a page, view, subset or integration reads it, or nothing does. The exports cannot tell which; the footprint says whether it is worth finding out. Next: List the pages, saved views and subsets that use `CAL05 Opex OLD`; if none, blank the formulas in a sandbox copy and wait one cycle before deleting.
-- **IF chain that encodes a lookup table** (Caldergate FP&A; [F2](#F2)). Observed: 12 IF THEN ELSE in one formula. The branches map Accounts items to values; the table below is what the formula encodes. Why: Every branch is evaluated for every cell, and every new case is a formula edit. Anaplan's checklist: refactor above 10 IF conditions. This line item carries 16.0% of the model's measured effort. Next: Load the table into a mapping module and replace the chain with one LOOKUP; compare values before and after.
-- **Calculated line items with no consumer detected, outside output modules** (Caldergate FP&A; [F7](#F7)). Observed: 5 calculated line items in 3 modules are read by no formula, not exported, not in an output-style module and have no exact twin. Why: Each is computed and stored; if nothing reads it the footprint is spare. If a page reads it, it is an output that lives in a calculation module. Next: Take the largest module first; list its pages and views; blank one formula in a sandbox and wait a cycle.
+1. **Confirm what reads the largest modules no formula reads** (Caldergate FP&A: `CAL05 Opex OLD`, `CAL06 Department Summary`, `CAL08 Cash Flow`; [F1](#F1)). Who: model owner with a page builder. You get: a keep-or-retire decision per module, and the cells and effort that go with it. How: Take the five largest. For each, list the pages, saved views and subsets that use it (page builder; Modules export's Used in Dashboards for classic dashboards). Where the answer is none, blank the formulas in a sandbox copy and wait one cycle before deleting.
+2. **Replace the IF chain with a mapping module** (Caldergate FP&A: `CAL03 Opex.Forecast Opex`; [F2](#F2)). Who: model builder. You get: a table finance can maintain instead of a formula edit per new case. How: Load the table into a mapping module and replace the chain with one LOOKUP; compare values before and after.
+3. **Put the widest-impact line items in the release checklist** (Caldergate FP&A: `SYS01 Time Settings.Actual?`; [F4](#F4)). Who: model builder. You get: a change-impact list used before every release. How: Include these in the change-impact check for every release that touches them.
+4. **Confirm what reads the largest modules no formula reads** (Board Reporting: `SYS01 Time`; [F8](#F8)). Who: model owner with a page builder. You get: a keep-or-retire decision per module, and the cells and effort that go with it. How: Take the five largest. For each, list the pages, saved views and subsets that use it (page builder; Modules export's Used in Dashboards for classic dashboards). Where the answer is none, blank the formulas in a sandbox copy and wait one cycle before deleting.
 
 **Coverage limitations**
 
@@ -350,38 +349,46 @@ Objects: `Data - Employees.Employee Name`, `Data - Employees.Name and Role`, `Da
 
 Objects with no consumer detected in the inspected dependency types. Pages, saved views and subsets are not in the exports, so each carries outstanding checks.
 
-### F1. Module with no consumer detected in the inspected dependency types
+### F1. 3 modules with no consumer detected in the inspected dependency types
 
-Objects: `CAL05 Opex OLD`
+Objects: `CAL05 Opex OLD`, `CAL06 Department Summary`, `CAL08 Cash Flow`
 
 | Importance | Evidence | Change complexity | Model |
 |---|---|---|---|
 | high | partial | medium | Caldergate FP&A |
 
-**Observed.** No formula outside `CAL05 Opex OLD` reads any of its 14 line items (14 calculated) and no export action reads it. Module note: "Replaced by CAL03 in 2021. Keep until the FY22 audit is closed.".
+**Observed.** No formula outside these modules reads any of their line items and no export action reads them. Together they hold 70.3M cells and 50.8% of Caldergate FP&A's measured calculation effort. The five largest: `CAL05 Opex OLD`, `CAL06 Department Summary`, `CAL08 Cash Flow`.
 
-**Why it matters.** Either a page, view, subset or integration reads it, or nothing does. The exports cannot tell which; the footprint says whether it is worth finding out.
+**Why it matters.** Either a page, a saved view, a line item subset or an integration reads each of them, or nothing does. The exports cannot tell which; the footprint says which ones are worth the question first.
 
-**Affected scope.** 1 module, 14 line items
+**Affected scope.** 3 modules, 30 line items
 
-**Potential benefit.** If no consumer is found: 70.2M cells as exported; 50.8% of Caldergate FP&A's measured calculation effort would no longer be held or measured.
+**Potential benefit.** If no consumer is found: 70.3M cells as exported; 50.8% of Caldergate FP&A's measured calculation effort would no longer be held or measured. Per module in the table.
 
-**Evidence strength.** partial: No formula consumer detected in the inspected types (parsed formula references, checked against Referenced By); no export action reads the module. Dependency coverage for Caldergate FP&A: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
+**Evidence strength.** partial: No formula consumer detected (parsed references, checked against Referenced By); no export action. Dependency coverage for Caldergate FP&A: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
 
 **Missing information.**
 
-- UX pages and classic dashboards that show `CAL05 Opex OLD` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)
-- saved views on `CAL05 Opex OLD`: another model can import from a saved view without any export action existing here
-- line item subsets that include line items of `CAL05 Opex OLD` (COLLECT sources are not in the export)
+- UX pages and classic dashboards that show `each listed module` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)
+- saved views on `each listed module`: another model can import from a saved view without any export action existing here
+- line item subsets that include line items of `each listed module` (COLLECT sources are not in the export)
 - filters, access drivers, DCA and integration (CloudWorks, API) references
 
-**Next step.** List the pages, saved views and subsets that use `CAL05 Opex OLD`; if none, blank the formulas in a sandbox copy and wait one cycle before deleting.
+**Next step.** Take the five largest. For each, list the pages, saved views and subsets that use it (page builder; Modules export's Used in Dashboards for classic dashboards). Where the answer is none, blank the formulas in a sandbox copy and wait one cycle before deleting.
 
-**When keeping the current design is reasonable.** A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job even with no formula reader. Retained data in an import target may be needed for history.
+**When keeping the current design is reasonable.** A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. Modules with a twin still need the page check before the twin takes over.
+
+**Evidence**
+
+| Module | Line items | Cells | Effort share | Exact twin in a read module | Coverage | Unmatched | Import target | Unparsed / COLLECT | Note |
+|---|---|---|---|---|---|---|---|---|---|
+| `CAL05 Opex OLD` | 14 | 70.2M | 50.8% |  |  |  |  | 0 / 0 | Replaced by CAL03 in 2021. Keep until the FY22 audit is closed. |
+| `CAL06 Department Summary` | 6 | 15.6K | 0.0% |  |  |  |  | 0 / 0 |  |
+| `CAL08 Cash Flow` | 10 | 5.8K | 0.0% |  |  |  |  | 0 / 0 |  |
 
 **Validation**
 
-- After removal, the Line Items export no longer lists `CAL05 Opex OLD`; workspace size falls by about the module's cells; every page listed in the check opens without a blank card.
+- After a removal, the Line Items export no longer lists the module; workspace size falls by about its cells; every page listed in the check opens without a blank card.
 
 ### F7. Calculated line items with no consumer detected, outside output modules
 
@@ -422,7 +429,7 @@ Objects: `DAT01 Actuals GL`, `CAL03 Opex`, `CAL02 Revenue`
 
 - Re-run this report after removal: the list shrinks to the line items a page needs.
 
-### F8. Module with no consumer detected in the inspected dependency types
+### F8. 1 module with no consumer detected in the inspected dependency types
 
 Objects: `SYS01 Time`
 
@@ -430,65 +437,38 @@ Objects: `SYS01 Time`
 |---|---|---|---|
 | medium | partial | medium | Board Reporting |
 
-**Observed.** No formula outside `SYS01 Time` reads any of its 2 line items (2 calculated) and no export action reads it.
+**Observed.** No formula outside these modules reads any of their line items and no export action reads them. Together they hold 72 cells and 2.8% of Board Reporting's measured calculation effort. The five largest: `SYS01 Time`.
 
-**Why it matters.** Either a page, view, subset or integration reads it, or nothing does. The exports cannot tell which; the footprint says whether it is worth finding out.
+**Why it matters.** Either a page, a saved view, a line item subset or an integration reads each of them, or nothing does. The exports cannot tell which; the footprint says which ones are worth the question first.
 
 **Affected scope.** 1 module, 2 line items
 
-**Potential benefit.** If no consumer is found: 72 cells as exported; 2.8% of Board Reporting's measured calculation effort would no longer be held or measured.
+**Potential benefit.** If no consumer is found: 72 cells as exported; 2.8% of Board Reporting's measured calculation effort would no longer be held or measured. Per module in the table.
 
-**Evidence strength.** partial: No formula consumer detected in the inspected types (parsed formula references, checked against Referenced By); no export action reads the module. Dependency coverage for Board Reporting: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
-
-**Missing information.**
-
-- UX pages and classic dashboards that show `SYS01 Time` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)
-- saved views on `SYS01 Time`: another model can import from a saved view without any export action existing here
-- line item subsets that include line items of `SYS01 Time` (COLLECT sources are not in the export)
-- filters, access drivers, DCA and integration (CloudWorks, API) references
-
-**Next step.** List the pages, saved views and subsets that use `SYS01 Time`; if none, blank the formulas in a sandbox copy and wait one cycle before deleting.
-
-**When keeping the current design is reasonable.** A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job even with no formula reader. Retained data in an import target may be needed for history.
-
-**Validation**
-
-- After removal, the Line Items export no longer lists `SYS01 Time`; workspace size falls by about the module's cells; every page listed in the check opens without a blank card.
-
-### F30. Module with no consumer detected in the inspected dependency types
-
-Objects: `CAL06 Department Summary`
-
-| Importance | Evidence | Change complexity | Model |
-|---|---|---|---|
-| low | partial | medium | Caldergate FP&A |
-
-**Observed.** No formula outside `CAL06 Department Summary` reads any of its 6 line items (6 calculated) and no export action reads it.
-
-**Why it matters.** Either a page, view, subset or integration reads it, or nothing does. The exports cannot tell which; the footprint says whether it is worth finding out.
-
-**Affected scope.** 1 module, 6 line items
-
-**Potential benefit.** If no consumer is found: 15.6K cells as exported would no longer be held or measured.
-
-**Evidence strength.** partial: No formula consumer detected in the inspected types (parsed formula references, checked against Referenced By); no export action reads the module. Dependency coverage for Caldergate FP&A: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
+**Evidence strength.** partial: No formula consumer detected (parsed references, checked against Referenced By); no export action. Dependency coverage for Board Reporting: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
 
 **Missing information.**
 
-- UX pages and classic dashboards that show `CAL06 Department Summary` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)
-- saved views on `CAL06 Department Summary`: another model can import from a saved view without any export action existing here
-- line item subsets that include line items of `CAL06 Department Summary` (COLLECT sources are not in the export)
+- UX pages and classic dashboards that show `each listed module` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)
+- saved views on `each listed module`: another model can import from a saved view without any export action existing here
+- line item subsets that include line items of `each listed module` (COLLECT sources are not in the export)
 - filters, access drivers, DCA and integration (CloudWorks, API) references
 
-**Next step.** List the pages, saved views and subsets that use `CAL06 Department Summary`; if none, blank the formulas in a sandbox copy and wait one cycle before deleting.
+**Next step.** Take the five largest. For each, list the pages, saved views and subsets that use it (page builder; Modules export's Used in Dashboards for classic dashboards). Where the answer is none, blank the formulas in a sandbox copy and wait one cycle before deleting.
 
-**When keeping the current design is reasonable.** A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job even with no formula reader. Retained data in an import target may be needed for history.
+**When keeping the current design is reasonable.** A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. Modules with a twin still need the page check before the twin takes over.
+
+**Evidence**
+
+| Module | Line items | Cells | Effort share | Exact twin in a read module | Coverage | Unmatched | Import target | Unparsed / COLLECT | Note |
+|---|---|---|---|---|---|---|---|---|---|
+| `SYS01 Time` | 2 | 72 | 2.8% |  |  |  |  | 0 / 0 |  |
 
 **Validation**
 
-- After removal, the Line Items export no longer lists `CAL06 Department Summary`; workspace size falls by about the module's cells; every page listed in the check opens without a blank card.
+- After a removal, the Line Items export no longer lists the module; workspace size falls by about its cells; every page listed in the check opens without a blank card.
 
-### F31. Module with no consumer detected in the inspected dependency types
+### F30. 1 module with no consumer detected in the inspected dependency types
 
 Objects: `zz Archive - 2021 Cost`
 
@@ -496,129 +476,76 @@ Objects: `zz Archive - 2021 Cost`
 |---|---|---|---|
 | low | partial | medium | Workforce Planning |
 
-**Observed.** No formula outside `zz Archive - 2021 Cost` reads any of its 3 line items (3 calculated) and no export action reads it. Module note: "Old cost calc from go-live. Kept for reference.".
+**Observed.** No formula outside these modules reads any of their line items and no export action reads them. Together they hold 13.4K cells. The five largest: `zz Archive - 2021 Cost`.
 
-**Why it matters.** Either a page, view, subset or integration reads it, or nothing does. The exports cannot tell which; the footprint says whether it is worth finding out.
+**Why it matters.** Either a page, a saved view, a line item subset or an integration reads each of them, or nothing does. The exports cannot tell which; the footprint says which ones are worth the question first.
 
 **Affected scope.** 1 module, 3 line items
 
-**Potential benefit.** If no consumer is found: 13.4K cells as exported would no longer be held or measured.
+**Potential benefit.** If no consumer is found: 13.4K cells as exported would no longer be held or measured. Per module in the table.
 
-**Evidence strength.** partial: No formula consumer detected in the inspected types (parsed formula references, checked against Referenced By); no export action reads the module. Dependency coverage for Workforce Planning: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
-
-**Missing information.**
-
-- UX pages and classic dashboards that show `zz Archive - 2021 Cost` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)
-- saved views on `zz Archive - 2021 Cost`: another model can import from a saved view without any export action existing here
-- line item subsets that include line items of `zz Archive - 2021 Cost` (COLLECT sources are not in the export)
-- filters, access drivers, DCA and integration (CloudWorks, API) references
-
-**Next step.** List the pages, saved views and subsets that use `zz Archive - 2021 Cost`; if none, blank the formulas in a sandbox copy and wait one cycle before deleting.
-
-**When keeping the current design is reasonable.** A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job even with no formula reader. Retained data in an import target may be needed for history.
-
-**Validation**
-
-- After removal, the Line Items export no longer lists `zz Archive - 2021 Cost`; workspace size falls by about the module's cells; every page listed in the check opens without a blank card.
-
-### F32. Module with no consumer detected in the inspected dependency types
-
-Objects: `CAL08 Cash Flow`
-
-| Importance | Evidence | Change complexity | Model |
-|---|---|---|---|
-| low | partial | medium | Caldergate FP&A |
-
-**Observed.** No formula outside `CAL08 Cash Flow` reads any of its 10 line items (10 calculated) and no export action reads it.
-
-**Why it matters.** Either a page, view, subset or integration reads it, or nothing does. The exports cannot tell which; the footprint says whether it is worth finding out.
-
-**Affected scope.** 1 module, 10 line items
-
-**Potential benefit.** If no consumer is found: 5.8K cells as exported would no longer be held or measured.
-
-**Evidence strength.** partial: No formula consumer detected in the inspected types (parsed formula references, checked against Referenced By); no export action reads the module. Dependency coverage for Caldergate FP&A: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
+**Evidence strength.** partial: No formula consumer detected (parsed references, checked against Referenced By); no export action. Dependency coverage for Workforce Planning: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
 
 **Missing information.**
 
-- UX pages and classic dashboards that show `CAL08 Cash Flow` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)
-- saved views on `CAL08 Cash Flow`: another model can import from a saved view without any export action existing here
-- line item subsets that include line items of `CAL08 Cash Flow` (COLLECT sources are not in the export)
+- UX pages and classic dashboards that show `each listed module` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)
+- saved views on `each listed module`: another model can import from a saved view without any export action existing here
+- line item subsets that include line items of `each listed module` (COLLECT sources are not in the export)
 - filters, access drivers, DCA and integration (CloudWorks, API) references
 
-**Next step.** List the pages, saved views and subsets that use `CAL08 Cash Flow`; if none, blank the formulas in a sandbox copy and wait one cycle before deleting.
+**Next step.** Take the five largest. For each, list the pages, saved views and subsets that use it (page builder; Modules export's Used in Dashboards for classic dashboards). Where the answer is none, blank the formulas in a sandbox copy and wait one cycle before deleting.
 
-**When keeping the current design is reasonable.** A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job even with no formula reader. Retained data in an import target may be needed for history.
+**When keeping the current design is reasonable.** A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. Modules with a twin still need the page check before the twin takes over.
+
+**Evidence**
+
+| Module | Line items | Cells | Effort share | Exact twin in a read module | Coverage | Unmatched | Import target | Unparsed / COLLECT | Note |
+|---|---|---|---|---|---|---|---|---|---|
+| `zz Archive - 2021 Cost` | 3 | 13.4K | 0.0% |  |  |  |  | 0 / 0 | Old cost calc from go-live. Kept for reference. |
 
 **Validation**
 
-- After removal, the Line Items export no longer lists `CAL08 Cash Flow`; workspace size falls by about the module's cells; every page listed in the check opens without a blank card.
+- After a removal, the Line Items export no longer lists the module; workspace size falls by about its cells; every page listed in the check opens without a blank card.
 
-### F33. Module with no consumer detected in the inspected dependency types
+### F31. 2 modules with no consumer detected in the inspected dependency types
 
-Objects: `SYS02 Data Checks`
+Objects: `SYS01 Time Settings`, `SYS02 Data Checks`
 
 | Importance | Evidence | Change complexity | Model |
 |---|---|---|---|
 | low | partial | medium | Caldergate Data Hub |
 
-**Observed.** No formula outside `SYS02 Data Checks` reads any of its 5 line items (5 calculated) and no export action reads it. Module note: "Reconciliation flags read by the load dashboard.".
+**Observed.** No formula outside these modules reads any of their line items and no export action reads them. Together they hold 360 cells and 0.0% of Caldergate Data Hub's measured calculation effort. The five largest: `SYS01 Time Settings`, `SYS02 Data Checks`.
 
-**Why it matters.** Either a page, view, subset or integration reads it, or nothing does. The exports cannot tell which; the footprint says whether it is worth finding out.
+**Why it matters.** Either a page, a saved view, a line item subset or an integration reads each of them, or nothing does. The exports cannot tell which; the footprint says which ones are worth the question first.
 
-**Affected scope.** 1 module, 5 line items
+**Affected scope.** 2 modules, 10 line items
 
-**Potential benefit.** If no consumer is found: 180 cells as exported; 0.0% of Caldergate Data Hub's measured calculation effort would no longer be held or measured.
+**Potential benefit.** If no consumer is found: 360 cells as exported; 0.0% of Caldergate Data Hub's measured calculation effort would no longer be held or measured. Per module in the table.
 
-**Evidence strength.** partial: No formula consumer detected in the inspected types (parsed formula references, checked against Referenced By); no export action reads the module. Dependency coverage for Caldergate Data Hub: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
-
-**Missing information.**
-
-- UX pages and classic dashboards that show `SYS02 Data Checks` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)
-- saved views on `SYS02 Data Checks`: another model can import from a saved view without any export action existing here
-- line item subsets that include line items of `SYS02 Data Checks` (COLLECT sources are not in the export)
-- filters, access drivers, DCA and integration (CloudWorks, API) references
-
-**Next step.** List the pages, saved views and subsets that use `SYS02 Data Checks`; if none, blank the formulas in a sandbox copy and wait one cycle before deleting.
-
-**When keeping the current design is reasonable.** A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job even with no formula reader. Retained data in an import target may be needed for history.
-
-**Validation**
-
-- After removal, the Line Items export no longer lists `SYS02 Data Checks`; workspace size falls by about the module's cells; every page listed in the check opens without a blank card.
-
-### F34. Module with no consumer detected in the inspected dependency types
-
-Objects: `SYS01 Time Settings`
-
-| Importance | Evidence | Change complexity | Model |
-|---|---|---|---|
-| low | partial | medium | Caldergate Data Hub |
-
-**Observed.** No formula outside `SYS01 Time Settings` reads any of its 5 line items (5 calculated) and no export action reads it. Module note: "Standard time flags. Built Mar 2019.".
-
-**Why it matters.** Either a page, view, subset or integration reads it, or nothing does. The exports cannot tell which; the footprint says whether it is worth finding out.
-
-**Affected scope.** 1 module, 5 line items
-
-**Potential benefit.** If no consumer is found: 180 cells as exported would no longer be held or measured.
-
-**Evidence strength.** partial: No formula consumer detected in the inspected types (parsed formula references, checked against Referenced By); no export action reads the module. Dependency coverage for Caldergate Data Hub: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
+**Evidence strength.** partial: No formula consumer detected (parsed references, checked against Referenced By); no export action. Dependency coverage for Caldergate Data Hub: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
 
 **Missing information.**
 
-- UX pages and classic dashboards that show `SYS01 Time Settings` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)
-- saved views on `SYS01 Time Settings`: another model can import from a saved view without any export action existing here
-- line item subsets that include line items of `SYS01 Time Settings` (COLLECT sources are not in the export)
+- UX pages and classic dashboards that show `each listed module` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)
+- saved views on `each listed module`: another model can import from a saved view without any export action existing here
+- line item subsets that include line items of `each listed module` (COLLECT sources are not in the export)
 - filters, access drivers, DCA and integration (CloudWorks, API) references
 
-**Next step.** List the pages, saved views and subsets that use `SYS01 Time Settings`; if none, blank the formulas in a sandbox copy and wait one cycle before deleting.
+**Next step.** Take the five largest. For each, list the pages, saved views and subsets that use it (page builder; Modules export's Used in Dashboards for classic dashboards). Where the answer is none, blank the formulas in a sandbox copy and wait one cycle before deleting.
 
-**When keeping the current design is reasonable.** A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job even with no formula reader. Retained data in an import target may be needed for history.
+**When keeping the current design is reasonable.** A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. Modules with a twin still need the page check before the twin takes over.
+
+**Evidence**
+
+| Module | Line items | Cells | Effort share | Exact twin in a read module | Coverage | Unmatched | Import target | Unparsed / COLLECT | Note |
+|---|---|---|---|---|---|---|---|---|---|
+| `SYS01 Time Settings` | 5 | 180 | 0.0% |  |  |  |  | 0 / 0 | Standard time flags. Built Mar 2019. |
+| `SYS02 Data Checks` | 5 | 180 | 0.0% |  |  |  |  | 0 / 0 | Reconciliation flags read by the load dashboard. |
 
 **Validation**
 
-- After removal, the Line Items export no longer lists `SYS01 Time Settings`; workspace size falls by about the module's cells; every page listed in the check opens without a blank card.
+- After a removal, the Line Items export no longer lists the module; workspace size falls by about its cells; every page listed in the check opens without a blank card.
 
 ## Dependencies and change impact
 
@@ -1256,7 +1183,7 @@ Objects: `CAL01 KPIs.EBITDA Margin`, `CAL01 KPIs.Opex Ratio`, `CAL01 KPIs.Revenu
 | `CAL01 KPIs.Opex Ratio` | `DIVIDE('DAT01 P&L'.Opex, 'DAT01 P&L'.Revenue)` |
 | `CAL01 KPIs.Revenue Growth` | `DIVIDE('DAT02 Board Lines'.Revenue - Revenue Prior Year, Revenue Prior Year)` |
 
-### F35. Summary methods on large line items no formula reads
+### F32. Summary methods on large line items no formula reads
 
 Objects: `DAT05 CRM Pipeline.Weighted Pipeline`
 
@@ -1288,7 +1215,7 @@ Objects: `DAT05 CRM Pipeline.Weighted Pipeline`
 |---|---|---|
 | `DAT05 CRM Pipeline.Weighted Pipeline` | SUM | 17.3K |
 
-### F37. Summary methods on large line items no formula reads
+### F34. Summary methods on large line items no formula reads
 
 Objects: `CAL01 Volumes.Volume Growth`, `CAL02 Revenue.Average Price`, `CAL02 Revenue.Revenue Growth`, `CAL02 Revenue.Revenue USD`, `CAL02 Revenue.Revenue per Unit`, `CAL02 Revenue.VAT`, `CAL03 Opex.Opex Variance`, `CAL04 Margn.Margin %`, `CAL04 Margn.Margin GBP`, `CAL05 Opex OLD.Opex Cumulative`, `CAL05 Opex OLD.Opex Run Rate`, `CAL07 P&L by Cost Centre.EBIT`, `CAL07 P&L by Cost Centre.EBITDA Margin`, `CAL07 P&L by Cost Centre.Opex Variance to Budget`, `CAL10 Depreciation.NBV`, `DAT02 Actuals Volumes.Revenue Actual`, `INP02 Opex Drivers.Check`, `INP02 Opex Drivers.Driver Count`, `OUT01 Management Pack.Capex`, `OUT01 Management Pack.Depreciation`, `OUT01 Management Pack.EBITDA YTD`, `OUT01 Management Pack.Headcount`, `OUT01 Management Pack.Opex`, `OUT01 Management Pack.Phased Drivers`, `OUT01 Management Pack.Revenue YTD`, `OUT01 Management Pack.Staff Cost`, `OUT01 Management Pack.Total Cost`, `OUT02 Board Pack.EBITDA`, `OUT02 Board Pack.Old Budget Revenue`, `OUT02 Board Pack.Revenue Variance %`
 
@@ -1349,7 +1276,7 @@ Objects: `CAL01 Volumes.Volume Growth`, `CAL02 Revenue.Average Price`, `CAL02 Re
 | `OUT02 Board Pack.Old Budget Revenue` | SUM | 19.2K |
 | `OUT02 Board Pack.Revenue Variance %` | FORMULA | 19.2K |
 
-### F39. Summary methods on large line items no formula reads
+### F36. Summary methods on large line items no formula reads
 
 Objects: `Calcs - Headcount by CC.Average Salary`
 
@@ -1381,7 +1308,7 @@ Objects: `Calcs - Headcount by CC.Average Salary`
 |---|---|---|
 | `Calcs - Headcount by CC.Average Salary` | FORMULA | 594K |
 
-### F41. Summary methods on large line items no formula reads
+### F38. Summary methods on large line items no formula reads
 
 Objects: `DAT01 P&L.COGS`, `DAT01 P&L.Depreciation`, `DAT01 P&L.EBIT`, `DAT01 P&L.EBITDA`, `DAT01 P&L.Staff Cost`
 
@@ -1417,7 +1344,7 @@ Objects: `DAT01 P&L.COGS`, `DAT01 P&L.Depreciation`, `DAT01 P&L.EBIT`, `DAT01 P&
 | `DAT01 P&L.EBITDA` | SUM | 19.2K |
 | `DAT01 P&L.Staff Cost` | SUM | 19.2K |
 
-### F43. Same line item name and formula in more than one model
+### F40. Same line item name and formula in more than one model
 
 Objects: `COGS?`, `Current Period?`, `Employer NI`, `Group`, `Opex?`, `Revenue?`, `Sign`, `Working Days`
 
@@ -1461,7 +1388,7 @@ Objects: `COGS?`, `Current Period?`, `Employer NI`, `Group`, `Opex?`, `Revenue?`
 
 Imports, exports and processes: what runs, what has no recorded run, what feeds what.
 
-### F36. Imports and exports with no recent recorded run or outside every process
+### F33. Imports and exports with no recent recorded run or outside every process
 
 Objects: `Export Pipeline for Sales Ops`, `Import Customers from Salesforce`, `Import Products from PIM file`
 
@@ -1497,7 +1424,7 @@ Objects: `Export Pipeline for Sales Ops`, `Import Customers from Salesforce`, `I
 | `Export Pipeline for Sales Ops` | export | 2025-02-11 | no | `DAT05 CRM Pipeline` |
 | `Import Customers from Salesforce` | import | 2026-08-30 | no | `DAT07 Customer Master` |
 
-### F38. Imports and exports with no recent recorded run or outside every process
+### F35. Imports and exports with no recent recorded run or outside every process
 
 Objects: `Export Assumptions for Workforce`, `Export Opex Drivers to Excel`, `Import Budget from Excel`, `Import FX from Treasury file`, `Import from Caldergate Hub v1 - Cost Centres`
 
@@ -1535,7 +1462,7 @@ Objects: `Export Assumptions for Workforce`, `Export Opex Drivers to Excel`, `Im
 | `Import Budget from Excel` | import | 2025-11-20 | no | `INP02 Opex Drivers` |
 | `Export Assumptions for Workforce` | export | 2026-09-05 | no | `SYS00 Model Settings` |
 
-### F40. Imports and exports with no recent recorded run or outside every process
+### F37. Imports and exports with no recent recorded run or outside every process
 
 Objects: `Export Headcount by Department`, `Export Leavers Report`, `Import from Caldergate FP&A - Assumptions`
 
@@ -1571,7 +1498,7 @@ Objects: `Export Headcount by Department`, `Export Leavers Report`, `Import from
 | `Export Leavers Report` | export | 2024-12-19 | no | `Calcs - Attrition` |
 | `Export Headcount by Department` | export | 2026-09-08 | no | `Reports - Headcount` |
 
-### F42. Imports and exports with no recent recorded run or outside every process
+### F39. Imports and exports with no recent recorded run or outside every process
 
 Objects: `Export Board Pack PDF Data`
 
@@ -1611,14 +1538,14 @@ Objects: `Export Board Pack PDF Data`
 
 | ID | Area | Title | Model | Importance | Evidence | Complexity | Footprint cells | Effort share |
 |---|---|---|---|---|---|---|---|---|
-| F1 | Usage and retirement investigations | Module with no consumer detected in the inspected dependency types | Caldergate FP&A | high | partial | medium | 70.2M | 50.78 |
+| F1 | Usage and retirement investigations | 3 modules with no consumer detected in the inspected dependency types | Caldergate FP&A | high | partial | medium | 70.3M | 50.78 |
 | F2 | Maintainability and consistency | IF chain that encodes a lookup table | Caldergate FP&A | medium | confirmed | medium | 0 | 16.04 |
 | F3 | Potential capacity or performance improvements | Where measured calculation effort concentrates | Caldergate Data Hub | medium | confirmed | medium | 0 | 0.0 |
 | F4 | Dependencies and change impact | Line items with the widest change impact | Caldergate FP&A | medium | confirmed | low | 0 | 0.0 |
 | F5 | Potential capacity or performance improvements | Where measured calculation effort concentrates | Caldergate FP&A | medium | confirmed | medium | 0 | 0.0 |
 | F6 | Potential capacity or performance improvements | Where measured calculation effort concentrates | Board Reporting | medium | confirmed | medium | 0 | 0.0 |
 | F7 | Usage and retirement investigations | Calculated line items with no consumer detected, outside output modules | Caldergate FP&A | medium | partial | medium | 15.1M | 10.04 |
-| F8 | Usage and retirement investigations | Module with no consumer detected in the inspected dependency types | Board Reporting | medium | partial | medium | 72 | 2.8 |
+| F8 | Usage and retirement investigations | 1 module with no consumer detected in the inspected dependency types | Board Reporting | medium | partial | medium | 72 | 2.8 |
 | F9 | Maintainability and consistency | Line items that only copy another line item | Caldergate FP&A | low | confirmed | low | 268K | 0.0 |
 | F10 | Dependencies and change impact | Pass-through chains | Caldergate FP&A | low | confirmed | low | 153K | 0.0 |
 | F11 | Maintainability and consistency | Same calculation made more than once under different names | Caldergate FP&A | low | confirmed | medium | 19.2K | 0.0 |
@@ -1640,20 +1567,17 @@ Objects: `Export Board Pack PDF Data`
 | F27 | Maintainability and consistency | Hard-coded time period or version selections | Workforce Planning | low | confirmed | low | 0 | 0.0 |
 | F28 | Maintainability and consistency | DIVIDE() where a zero divisor shows Infinity | Workforce Planning | low | confirmed | low | 0 | 0.0 |
 | F29 | Maintainability and consistency | DIVIDE() where a zero divisor shows Infinity | Board Reporting | low | confirmed | low | 0 | 0.0 |
-| F30 | Usage and retirement investigations | Module with no consumer detected in the inspected dependency types | Caldergate FP&A | low | partial | medium | 15.6K | 0.0 |
-| F31 | Usage and retirement investigations | Module with no consumer detected in the inspected dependency types | Workforce Planning | low | partial | medium | 13.4K | 0.0 |
-| F32 | Usage and retirement investigations | Module with no consumer detected in the inspected dependency types | Caldergate FP&A | low | partial | medium | 5.8K | 0.0 |
-| F33 | Usage and retirement investigations | Module with no consumer detected in the inspected dependency types | Caldergate Data Hub | low | partial | medium | 180 | 0.01 |
-| F34 | Usage and retirement investigations | Module with no consumer detected in the inspected dependency types | Caldergate Data Hub | low | partial | medium | 180 | 0.0 |
-| F35 | Maintainability and consistency | Summary methods on large line items no formula reads | Caldergate Data Hub | low | partial | low | 0 | 0.0 |
-| F36 | Integration and operational review | Imports and exports with no recent recorded run or outside every process | Caldergate Data Hub | low | partial | low | 0 | 0.0 |
-| F37 | Maintainability and consistency | Summary methods on large line items no formula reads | Caldergate FP&A | low | partial | low | 0 | 0.0 |
-| F38 | Integration and operational review | Imports and exports with no recent recorded run or outside every process | Caldergate FP&A | low | partial | low | 0 | 0.0 |
-| F39 | Maintainability and consistency | Summary methods on large line items no formula reads | Workforce Planning | low | partial | low | 0 | 0.0 |
-| F40 | Integration and operational review | Imports and exports with no recent recorded run or outside every process | Workforce Planning | low | partial | low | 0 | 0.0 |
-| F41 | Maintainability and consistency | Summary methods on large line items no formula reads | Board Reporting | low | partial | low | 0 | 0.0 |
-| F42 | Integration and operational review | Imports and exports with no recent recorded run or outside every process | Board Reporting | low | partial | low | 0 | 0.0 |
-| F43 | Maintainability and consistency | Same line item name and formula in more than one model | Estate | low | inferred | medium | 0 | 0.0 |
+| F30 | Usage and retirement investigations | 1 module with no consumer detected in the inspected dependency types | Workforce Planning | low | partial | medium | 13.4K | 0.0 |
+| F31 | Usage and retirement investigations | 2 modules with no consumer detected in the inspected dependency types | Caldergate Data Hub | low | partial | medium | 360 | 0.01 |
+| F32 | Maintainability and consistency | Summary methods on large line items no formula reads | Caldergate Data Hub | low | partial | low | 0 | 0.0 |
+| F33 | Integration and operational review | Imports and exports with no recent recorded run or outside every process | Caldergate Data Hub | low | partial | low | 0 | 0.0 |
+| F34 | Maintainability and consistency | Summary methods on large line items no formula reads | Caldergate FP&A | low | partial | low | 0 | 0.0 |
+| F35 | Integration and operational review | Imports and exports with no recent recorded run or outside every process | Caldergate FP&A | low | partial | low | 0 | 0.0 |
+| F36 | Maintainability and consistency | Summary methods on large line items no formula reads | Workforce Planning | low | partial | low | 0 | 0.0 |
+| F37 | Integration and operational review | Imports and exports with no recent recorded run or outside every process | Workforce Planning | low | partial | low | 0 | 0.0 |
+| F38 | Maintainability and consistency | Summary methods on large line items no formula reads | Board Reporting | low | partial | low | 0 | 0.0 |
+| F39 | Integration and operational review | Imports and exports with no recent recorded run or outside every process | Board Reporting | low | partial | low | 0 | 0.0 |
+| F40 | Maintainability and consistency | Same line item name and formula in more than one model | Estate | low | inferred | medium | 0 | 0.0 |
 
 ## Models and coverage
 

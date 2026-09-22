@@ -121,7 +121,7 @@ def test_unique_matched_counts_cannot_exceed_source_and_partial_match_is_not_sup
     assert o["matched_source"] == 5 and o["calculated"] == 6 and o["coverage"] <= 1.0 and o["unmatched"] == ["extra"] and not o["complete"]
     fs = findings.build(_estate_from(m))
     txt = " ".join(f.title + f.observed + f.why for f in fs)
-    assert "supersed" not in txt.lower() and "5 of its 6" in txt
+    assert "supersed" not in txt.lower() and "5 of 6" in " ".join(l for f in fs for l in f.evidence)
 
 
 # ---- D. dependency coverage

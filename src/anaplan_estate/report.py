@@ -73,25 +73,47 @@ def _observations(er) -> list[str]:
     return obs[:4]
 
 
-def _priorities(er) -> list[dict]:
-    """Up to three investigations: findings that ask for a decision (not reference facts such as effort
-    concentration or hubs), highest importance first, evidence strength preferred, footprint next.
-    Distinct areas are preferred; none is manufactured when the evidence supports fewer."""
-    cands = [x for x in er.findings if x.kind not in ("capacity", "hub") and x.importance in ("high", "medium") and x.strength != "inferred"]
-    cands.sort(key=lambda x: ({"high": 0, "medium": 1}[x.importance], {"confirmed": 0, "partial": 1}[x.strength], -x.footprint_effort, -x.footprint_cells))
-    out = []; areas = []
-    for pref_distinct in (True, False):
+STEP_TEMPLATES = {
+    "retire":   ("Confirm what reads the largest modules no formula reads", "model owner with a page builder", "a keep-or-retire decision per module, and the cells and effort that go with it"),
+    "merge":    ("Choose a keeper for the largest duplicate calculations", "model builder", "one copy per calculation where nothing needs the second name"),
+    "collapse": ("Point readers at the source for the largest copies and chains", "model builder", "fewer stored copies; a change of source made once"),
+    "fix":      ("Trial-split the formula with the largest effort share", "model builder, in a sandbox copy", "a before-and-after Calculation Effort reading that says whether the split pays"),
+    "refactor": ("Replace the IF chain with a mapping module", "model builder", "a table finance can maintain instead of a formula edit per new case"),
+    "schedule": ("Ask owners about actions with no recent recorded run", "integration owner", "each action documented as scheduled, manual or retired"),
+    "dedupe":   ("Name an owner for the rules repeated across models", "estate architect", "one place each shared rule is maintained"),
+    "hub":      ("Put the widest-impact line items in the release checklist", "model builder", "a change-impact list used before every release"),
+    "tidy":     ("Review the structure findings with the largest footprint", "model builder", "a decided list of what to restructure and what to leave"),
+}
+
+
+def _steps(er) -> list[dict]:
+    """Start here: at most five concrete steps, each backed by one finding. Investigations first (highest
+    importance, strongest evidence, largest footprint), reference facts (effort concentration, hubs) never lead.
+    None is manufactured: fewer steps when the evidence supports fewer."""
+    cands = [x for x in er.findings if x.kind not in ("capacity",) and x.importance in ("high", "medium") and x.counts_benefit]
+    cands.sort(key=lambda x: ({"high": 0, "medium": 1}[x.importance], {"confirmed": 0, "partial": 1, "inferred": 2}[x.strength], -x.footprint_effort, -x.footprint_cells))
+    out = []; seen = set(); kinds = set()
+    for pass_ in ("distinct-kind", "fill"):
         for x in cands:
-            if any(p["id"] == x.id for p in out):
+            key = (x.kind, x.model)
+            if key in seen or (x.strength == "inferred" and x.importance != "high"):
                 continue
-            if pref_distinct and x.area in areas:
+            if pass_ == "distinct-kind" and x.kind in kinds:
                 continue
-            areas.append(x.area)
-            out.append({"id": x.id, "title": x.title, "model": x.model, "objects": x.objects[:3], "observed": x.observed, "why": x.why,
-                        "next": x.next_step, "importance": x.importance, "strength": x.strength, "benefit": x.benefit})
-            if len(out) == 3:
-                return out
+            seen.add(key); kinds.add(x.kind)
+            if len(out) == 5:
+                break
+            _append_step(out, x)
+        if len(out) == 5:
+            break
     return out
+
+
+def _append_step(out, x):
+    if True:
+        do, who, get = STEP_TEMPLATES.get(x.kind, ("Review this finding", "model builder", "a decision"))
+        out.append({"id": x.id, "n": len(out) + 1, "do": do, "model": x.model, "objects": x.objects[:3], "why": x.why, "who": who, "get": get,
+                    "next": x.next_step, "importance": x.importance, "strength": x.strength, "complexity": x.complexity, "benefit": x.benefit, "title": x.title})
 
 
 def _limitations(er) -> list[str]:
@@ -119,16 +141,13 @@ def _summary_text(er, rep) -> list[str]:
     ms = er.models
     total_li = sum(m.facts["line_items"] for m in ms); total_cells = sum(m.facts["cells"] for m in ms)
     snaps = [m.facts["coverage"]["snapshot_actions"] for m in ms if m.facts["coverage"]["snapshot_actions"]]
-    p1 = (f"This report reads {len(ms)} Anaplan model{'s' if len(ms) != 1 else ''}: {_n(total_li)} line items and {_c(total_cells)} cells as exported. "
-          f"Inputs are the Line Items, Modules and Actions grid exports; "
-          + (f"the latest recorded action run across the files is {max(snaps)}, the closest the exports come to a snapshot date. " if snaps else "no Actions export gives a snapshot date. ")
-          + f"The analysis was generated on {rep['generated']}. Everything below is an automated reading of those files: observations first, then candidate investigations, never a verdict on what the business needs.")
-    p2 = ("What stands out is set out in the observations, and the three investigations that follow are where the evidence is strongest and the footprint largest. "
-          "Each says what was observed, why it deserves attention, and what to do next. Where the exports cannot see a consumer, the finding says so and lists the checks that remain, because a module read only by a page is not spare.")
-    p3 = ("Two limits shape everything here. The exports carry formulas, dimensions, actions and Anaplan's own Referenced By column, but not pages, saved views, line item subsets or integrations. "
-          "And calculation effort is a measurement of where the engine spends time in one model, not a promise of what removal would save. "
-          "Findings are labelled confirmed, partial or inferred on exactly that basis, and a benefit is stated only where the exports support it.")
-    return [p1, p2, p3]
+    p1 = (f"{len(ms)} Anaplan model{'s' if len(ms) != 1 else ''}, {_n(total_li)} line items, {_c(total_cells)} cells as exported. "
+          + (f"Latest recorded action run {max(snaps)}; " if snaps else "")
+          + f"analysis generated {rep['generated']}. Read from the Line Items, Modules and Actions exports only: pages, saved views and subsets are not in them, "
+          "so anything called 'no consumer detected' is a question to answer, not a saving.")
+    p2 = ("Start with the steps below. Each is one decision, backed by one finding, with who does it and what you get. "
+          "The findings section holds the evidence; low-importance findings are hidden until you ask for them.")
+    return [p1, p2]
 
 
 # ---------------------------------------------------------------- build
@@ -142,7 +161,8 @@ def build(er, service_url: str | None = None, contact: str | None = None) -> dic
                     "cells": sum(m.facts["cells"] for m in ms), "findings": len(fs),
                     "parse_rate": round(1 - sum(m.facts["parse_errors"] for m in ms) / max(sum(m.facts["calculated"] for m in ms), 1), 4)}
     rep["observations"] = _observations(er)
-    rep["priorities"] = _priorities(er)
+    rep["steps"] = _steps(er)
+    rep["priorities"] = rep["steps"]
     rep["limitations"] = _limitations(er)
     rep["summary_text"] = _summary_text(er, rep)
     rep["map"] = {"nodes": [{"name": m.name, "cells": m.facts["cells"], "line_items": m.facts["line_items"]} for m in ms],
@@ -229,10 +249,10 @@ def render_markdown(er) -> str:
     out = [f"# {rep['title']}", "", f"{rep['description']} Generated {rep['generated']}.", "", "## Summary", ""]
     out += [p + "\n" for p in rep["summary_text"]]
     out += ["**Observations**", ""] + [f"{i}. {o}" for i, o in enumerate(rep["observations"], 1)] + [""]
-    if rep["priorities"]:
-        out += ["**Priority investigations**", ""]
-        for p in rep["priorities"]:
-            out += [f"- **{p['title']}** ({p['model']}; [{p['id']}](#{p['id']})). Observed: {p['observed']} Why: {p['why']} Next: {p['next']}"]
+    if rep["steps"]:
+        out += ["**Start here**", ""]
+        for p in rep["steps"]:
+            out += [f"{p['n']}. **{p['do']}** ({p['model']}: {', '.join('`' + o + '`' for o in p['objects'])}; [{p['id']}](#{p['id']})). Who: {p['who']}. You get: {p['get']}. How: {p['next']}"]
         out.append("")
     out += ["**Coverage limitations**", ""] + [f"- {l}" for l in rep["limitations"]] + [""]
     if rep["map"]["edges"]:

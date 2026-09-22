@@ -106,7 +106,7 @@ JS = r"""
    var d=h.closest('details');while(d){d.open=true;d=d.parentElement&&d.parentElement.closest('details')}
    var art=h.closest('article.f');if(art){art.hidden=false}h.scrollIntoView();}
  addEventListener('hashchange',openTo);openTo();
- var q=document.getElementById('q'),fm=document.getElementById('f-model'),fa=document.getElementById('f-area'),fs=document.getElementById('f-strength'),fst=document.getElementById('f-status'),so=document.getElementById('f-sort'),cnt=document.getElementById('f-count');
+ var fl=document.getElementById('f-low');var q=document.getElementById('q'),fm=document.getElementById('f-model'),fa=document.getElementById('f-area'),fs=document.getElementById('f-strength'),fst=document.getElementById('f-status'),so=document.getElementById('f-sort'),cnt=document.getElementById('f-count');
  var IMP={high:0,medium:1,low:2},STR={confirmed:0,partial:1,inferred:2};
  function apply(){
    var t=(q.value||'').toLowerCase().trim(),n=0;
@@ -118,6 +118,7 @@ JS = r"""
      if(ok&&fa.value&&a.dataset.area!==fa.value)ok=false;
      if(ok&&fs.value&&a.dataset.strength!==fs.value)ok=false;
      if(ok&&fst.value&&(a.dataset.status||'To review')!==fst.value)ok=false;
+     if(ok&&!fl.checked&&!t&&a.dataset.importance==='low')ok=false;
      a.hidden=!ok; if(ok)n++;
    });
    var s=so.value;
@@ -132,11 +133,11 @@ JS = r"""
      list.forEach(function(a){sec.appendChild(a)});
      var vis=list.some(function(a){return !a.hidden});var e=sec.querySelector('.empty');if(e)e.hidden=vis;
    });
-   cnt.textContent=n+' of '+arts.length+' findings shown';
+   cnt.textContent=n+' of '+arts.length+' findings shown'+((!fl.checked&&!t)?' (low importance hidden)':'');
  }
- [q,fm,fa,fs,fst,so].forEach(function(el){el.addEventListener('input',apply);el.addEventListener('change',apply)});
+ [q,fm,fa,fs,fst,so,fl].forEach(function(el){el.addEventListener('input',apply);el.addEventListener('change',apply)});
  apply();
- document.getElementById('f-clear').addEventListener('click',function(){q.value='';fm.value='';fa.value='';fs.value='';fst.value='';so.value='importance';apply();q.focus()});
+ document.getElementById('f-clear').addEventListener('click',function(){q.value='';fm.value='';fa.value='';fs.value='';fst.value='';so.value='importance';fl.checked=false;apply();q.focus()});
  document.querySelectorAll('.copy').forEach(function(b){b.addEventListener('click',function(){var t=b.previousElementSibling.textContent;
    if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){b.textContent='copied';setTimeout(function(){b.textContent='copy'},1200)})}})});
  function dl(name,text,type){var a=document.createElement('a');a.href='data:'+type+';charset=utf-8,'+encodeURIComponent(text);a.download=name;document.body.appendChild(a);a.click();a.remove()}
@@ -319,16 +320,16 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
     out.append('<div class="tiles">' + "".join(f'<div class="tile"><div class="v">{v}</div><div class="k">{k}</div></div>' for v, k in tiles) + "</div>")
     out += [f"<p>{_inline(p)}</p>" for p in rep["summary_text"]]
     out.append("<h3>Observations</h3><ol>" + "".join(f"<li>{_inline(o)}</li>" for o in rep["observations"]) + "</ol>")
-    if rep["priorities"]:
-        out.append("<h3>Priority investigations</h3><div class=\"cards\">")
-        for p in rep["priorities"]:
-            out.append(f'<div class="card"><h3><a href="#{p["id"]}">{_e(p["title"])}</a></h3><div>{_badges(fmap[p["id"]])}</div>'
-                       f'<p class="objs" style="font-family:var(--mono);font-size:12px">{" &middot; ".join(f"<code>{_e(o)}</code>" for o in p["objects"])}</p>'
-                       f'<p><span class="lab">Observed</span><br>{_inline(p["observed"])}</p><p><span class="lab">Why it deserves attention</span><br>{_inline(p["why"])}</p>'
-                       f'<p><span class="lab">Next</span><br>{_inline(p["next"])}</p></div>')
+    if rep["steps"]:
+        out.append("<h3>Start here</h3><p class=\"muted\">At most five steps. Each is one decision backed by one finding: who does it, what you get, how.</p><div class=\"cards\">")
+        for p in rep["steps"]:
+            out.append(f'<div class="card"><h3><span class="muted">{p["n"]}.</span> {_e(p["do"])}</h3><div>{_badges(fmap[p["id"]])}</div>'
+                       f'<p class="objs" style="font-family:var(--mono);font-size:12px">{_e(p["model"])} &middot; {" &middot; ".join(f"<code>{_e(o)}</code>" for o in p["objects"])}</p>'
+                       f'<p><span class="lab">Who</span><br>{_e(p["who"])}</p><p><span class="lab">You get</span><br>{_e(p["get"])}</p>'
+                       f'<p><span class="lab">How</span><br>{_inline(p["next"])}</p><p><a href="#{p["id"]}">Finding {p["id"]}: {_e(p["title"])}</a></p></div>')
         out.append("</div>")
     else:
-        out.append('<p class="muted">No finding met the bar for a priority investigation: the evidence supports the observations above and the findings below, not a headline.</p>')
+        out.append('<p class="muted">No finding met the bar for a step: the evidence supports the observations above and the findings below, not a headline.</p>')
     inv = "Have a change planned in this area? Use the estate analysis service to investigate affected dependencies, review the evidence and develop a validation plan."
     links = []
     if rep.get("service_url"):
@@ -344,14 +345,14 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
                        "".join(f'<tr><td>{_e(e["from"])}</td><td>{_e(e["to"])}</td><td>{e["actions"]}</td><td>{_e(", ".join(e["targets"]))}</td><td>{_e(e["basis"])}</td></tr>' for e in rep["map"]["edges"]) + "</tbody></table></div></details>")
     out.append("<h3>Coverage limitations that matter most</h3><ul class=\"limits\">" + "".join(f"<li>{_inline(l)}</li>" for l in rep["limitations"]) + "</ul></section>")
     # ---- level 2
-    out.append('<section id="findings"><h2>Findings</h2><p class="muted">Grouped by the decision they inform. Importance, evidence strength and change complexity are separate labels; no score is computed. Review status is yours and is stored only in this browser.</p>')
+    out.append('<section id="findings"><h2>Findings</h2><p class="muted">Grouped by the decision they inform. Importance, evidence strength and change complexity are separate labels; no score is computed. Low-importance findings are hidden until you tick the box. Review status is yours and is stored only in this browser.</p>')
     out.append('<div class="controls noprint" role="search"><label class="sr" for="q">Search findings</label><input id="q" type="search" placeholder="Search titles, IDs, models, object names, rules">'
                f'<select id="f-model" aria-label="Model"><option value="">All models</option>{"".join(f"<option>{_e(m)}</option>" for m in models)}</select>'
                f'<select id="f-area" aria-label="Category"><option value="">All categories</option>{"".join(f"<option value={a['key']}>{_e(a['label'])}</option>" for a in rep['areas'])}</select>'
                '<select id="f-strength" aria-label="Evidence status"><option value="">Any evidence</option><option>confirmed</option><option>partial</option><option>inferred</option></select>'
                f'<select id="f-status" aria-label="Review status"><option value="">Any status</option>{"".join(f"<option>{_e(s)}</option>" for s in rep['statuses'])}</select>'
                '<select id="f-sort" aria-label="Sort by"><option value="importance">Sort: importance, then evidence, then cells</option><option value="cells">Sort: footprint cells</option><option value="effort">Sort: effort share</option><option value="strength">Sort: evidence strength</option><option value="model">Sort: model</option><option value="id">Sort: ID</option></select>'
-               '<button type="button" id="f-clear">Clear</button><button type="button" id="expand-all">Expand evidence</button><button type="button" id="collapse-all">Collapse</button><span class="count" id="f-count"></span></div>')
+               '<label><input type="checkbox" id="f-low"> show low importance</label><button type="button" id="f-clear">Clear</button><button type="button" id="expand-all">Expand evidence</button><button type="button" id="collapse-all">Collapse</button><span class="count" id="f-count"></span></div>')
     for a in rep["areas"]:
         out.append(f'<section class="area" id="area-{a["key"]}"><h3>{_e(a["label"])} <span class="muted">({len(a["ids"])})</span></h3><p>{_e(a["blurb"])}</p>')
         for fid in a["ids"]:

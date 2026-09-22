@@ -176,43 +176,43 @@ def _per_model(er, m, nid) -> list[Finding]:
         out.append(fd)
         return fd
 
-    # ---- usage: orphan modules with an exact-twin overlap, and plain orphan modules
-    for s in red.overlap + red.orphan_modules:
-        mod = s["module"]
-        twin = s.get("target")
+    # ---- usage: one finding per model for every module with no consumer detected (overlap and plain), table inside
+    mods = red.overlap + red.orphan_modules
+    if mods:
+        mods = sorted(mods, key=lambda s: -s["cells"])
         strength = "partial" if not weak_graph else "inferred"
-        basis = f"No formula consumer detected in the inspected types (parsed formula references, checked against Referenced By); no export action reads the module. {coverage_note}"
-        missing = _usage_checks(mod, has_modules, s["imported_into"], False)
-        if s["unparsed"]:
-            missing.append(f"{s['unparsed']} formulas in the module did not parse; their references are missing from the graph")
-        if s["collect"]:
-            missing.append(f"{s['collect']} formulas use COLLECT(): their sources are line item subsets the export does not describe")
-        if twin:
-            cov = f"{s['matched_source']} of its {s['calculated']} calculated line items ({s['coverage']:.0%}) have an exact twin (same formula and context) in {_q(twin)}, which other formulas read; {s['matched_target']} distinct target line items; {len(s['unmatched'])} unmatched"
-            title = "Module with no detected consumer overlaps a module that is read"
-            observed = f"No formula outside {_q(mod)} reads any of its {s['line_items']} line items and no export action reads it. {cov}."
-            why = ("If the twin already serves the readers, this module may be a retained earlier version. " + ("Every calculated line item has an exact twin, so a replacement is plausible" if s["complete"] else f"{len(s['unmatched'])} line items have no twin, so it is not a straight replacement") + ".")
-            ev = ["| Unmatched line items in this module |", "|---|"] + [f"| {_q(mod + '.' + n)} |" for n in s["unmatched"]] if s["unmatched"] else ["All calculated line items matched."]
-        else:
-            title = "Module with no consumer detected in the inspected dependency types"
-            observed = f"No formula outside {_q(mod)} reads any of its {s['line_items']} line items ({s['calculated']} calculated) and no export action reads it."
-            why = "Either a page, view, subset or integration reads it, or nothing does. The exports cannot tell which; the footprint says whether it is worth finding out."
-            ev = []
-            if s["output_like"]:
-                why = "The module name suggests a reporting output, which is normally read by pages rather than formulas. " + why
-        if s["notes"]:
-            observed += f' Module note: "{s["notes"]}".'
-        fd = new(area="usage", kind="retire", title=title, objects=[mod] + ([twin] if twin else []), observed=observed, why=why,
-                 scope=f"1 module, {s['line_items']} line items" + (f"; {_pl(len(_exports_on(m, mod)), 'export')}" if _exports_on(m, mod) else ""),
-                 benefit=f"If no consumer is found: {_footprint(s['cells'], s['effort'], m.name, has_effort)} would no longer be held or measured.",
-                 benefit_kind="conditional", strength=strength, basis=basis, missing=missing,
-                 next_step=f"List the pages, saved views and subsets that use {_q(mod)}; if none, blank the formulas in a sandbox copy and wait one cycle before deleting.",
-                 keep_design="A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job even with no formula reader. Retained data in an import target may be needed for history.",
-                 importance="high" if (s["cells"] >= 50_000_000 or s["effort"] >= 5) else "medium" if (s["cells"] >= 1_000_000 or s["effort"] >= 1) else "low",
-                 complexity="low" if twin and s["complete"] else "medium", evidence=ev, rules=["G-UNUSED"],
-                 validation=[f"After removal, the Line Items export no longer lists {_q(mod)}; workspace size falls by about the module's cells; every page listed in the check opens without a blank card."],
-                 footprint_cells=s["cells"], footprint_effort=s["effort"])
-        fd._module = mod  # for overlap linking
+        total_cells = sum(s["cells"] for s in mods); total_eff = round(sum(s["effort"] for s in mods), 2)
+        rows = ["| Module | Line items | Cells | Effort share | Exact twin in a read module | Coverage | Unmatched | Import target | Unparsed / COLLECT | Note |", "|---|---|---|---|---|---|---|---|---|---|"]
+        for s in mods:
+            twin = s.get("target") or ""
+            cov = f"{s['matched_source']} of {s['calculated']} ({s['coverage']:.0%})" if twin else ""
+            rows.append(f"| {_q(s['module'])} | {s['line_items']} | {_c(s['cells'])} | {s['effort']:.1f}% | {_q(twin) if twin else ''} | {cov} | {len(s['unmatched']) if twin else ''} | {'yes' if s['imported_into'] else ''} | {s['unparsed']} / {s['collect']} | {s['notes'][:120]} |")
+        top = mods[:5]
+        with_twin = [s for s in mods if s.get("target")]
+        complete = [s for s in with_twin if s["complete"]]
+        missing = _usage_checks("each listed module", has_modules, any(s["imported_into"] for s in mods), False)
+        if any(s["unparsed"] for s in mods):
+            missing.append("modules with unparsed formulas (table) have references missing from the graph")
+        if any(s["collect"] for s in mods):
+            missing.append("modules using COLLECT() draw on line item subsets the export does not describe")
+        fd = new(area="usage", kind="retire", title=f"{_pl(len(mods), 'module')} with no consumer detected in the inspected dependency types",
+                 objects=[s["module"] for s in top],
+                 observed=f"No formula outside these modules reads any of their line items and no export action reads them. Together they hold {_c(total_cells)} cells"
+                          + (f" and {total_eff:.1f}% of {m.name}'s measured calculation effort" if has_effort and total_eff else "") + f". The five largest: {', '.join(_q(s['module']) for s in top)}."
+                          + (f" {len(with_twin)} of them have exact twins (same formula and context) in a module that is read; {len(complete)} are matched line for line." if with_twin else ""),
+                 why="Either a page, a saved view, a line item subset or an integration reads each of them, or nothing does. The exports cannot tell which; the footprint says which ones are worth the question first.",
+                 scope=f"{_pl(len(mods), 'module')}, {sum(s['line_items'] for s in mods)} line items",
+                 benefit=f"If no consumer is found: {_footprint(total_cells, total_eff, m.name, has_effort)} would no longer be held or measured. Per module in the table.",
+                 benefit_kind="conditional", strength=strength,
+                 basis=f"No formula consumer detected (parsed references, checked against Referenced By); no export action. {coverage_note}",
+                 missing=missing,
+                 next_step=f"Take the five largest. For each, list the pages, saved views and subsets that use it (page builder; Modules export's Used in Dashboards for classic dashboards). Where the answer is none, blank the formulas in a sandbox copy and wait one cycle before deleting.",
+                 keep_design="A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. Modules with a twin still need the page check before the twin takes over.",
+                 importance="high" if (total_cells >= 50_000_000 or total_eff >= 5) else "medium" if (total_cells >= 1_000_000 or total_eff >= 1) else "low",
+                 complexity="medium", evidence=rows, rules=["G-UNUSED", "REDUNDANT-EXACT"],
+                 validation=["After a removal, the Line Items export no longer lists the module; workspace size falls by about its cells; every page listed in the check opens without a blank card."],
+                 footprint_cells=total_cells, footprint_effort=total_eff)
+        fd._modules = {s["module"] for s in mods}
 
     # ---- usage: unreferenced line items outside those modules
     big = [u for u in red.unknown if u["cells"] >= 50_000]
@@ -525,21 +525,17 @@ def _per_model(er, m, nid) -> list[Finding]:
             importance="low", complexity="low", evidence=rows, rules=["F-PARSE"])
 
     # link alternatives: module usage finding vs module size finding on the same module
-    by_mod = defaultdict(list)
+    rollup = next((fd for fd in out if hasattr(fd, "_modules")), None)
     for fd in out:
-        if hasattr(fd, "_module"):
-            by_mod[fd._module].append(fd)
-    for mod, fds in by_mod.items():
-        if len(fds) > 1:
-            ids = [x.id for x in fds]
-            for x in fds:
-                x.related = [i for i in ids if i != x.id]
-                if x.kind != "retire":
-                    x.counts_benefit = False
-                    x.benefit = f"Alternative to {', '.join(x.related)}; benefit counted there."
+        if hasattr(fd, "_module") and rollup and fd._module in rollup._modules:
+            fd.related = [rollup.id]
+            rollup.related = sorted(set(rollup.related) | {fd.id})
+            fd.counts_benefit = False
+            fd.benefit = f"Alternative to {rollup.id} for {_q(fd._module)}; footprint counted there."
     for fd in out:
-        if hasattr(fd, "_module"):
-            del fd._module
+        for attr in ("_module", "_modules"):
+            if hasattr(fd, attr):
+                delattr(fd, attr)
     return out
 
 
