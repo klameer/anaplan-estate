@@ -74,7 +74,7 @@ def test_example_estate_findings():
     areas = {f.area for f in fs}
     assert {"usage", "maintain", "dependency", "capacity", "integration"} <= areas
     titles = " | ".join(f.title for f in fs)
-    for frag in ("lookup table", "Numeric literals", "DIVIDE()", "Pass-through", "more than one model", "no recent recorded run", "differ in exactly one place"):
+    for frag in ("lookup table", "Numeric literals", "DIVIDE()", "Pass-through", "more than one model", "no recent recorded run", "only copy another"):
         assert frag in titles, frag
     assert all(f.next_step and f.keep_design and f.basis for f in fs)
     md = fleet.render_markdown(er)

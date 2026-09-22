@@ -182,7 +182,7 @@ def test_identical_constants_are_not_consolidated():
 
 
 def test_near_match_is_not_presumed_stale():
-    m = model([("M", "A", "", ("L",)), ("M", "B", "", ("L",)), ("M", "X", "A * B + 7", ("L",)), ("N", "Y", "'M'.A * 'M'.B + 8", ("L",))])
+    m = model([("M", "A", "", ("L",)), ("M", "B", "", ("L",)), ("M", "C", "", ("L",)), ("M", "X", "A * B + C * 7", ("L",)), ("N", "Y", "'M'.A * 'M'.B + 'M'.C * 8", ("L",))])
     er = _estate_from(m)
     fs = [f for f in er.findings if "differ in exactly one place" in f.title]
     assert fs and fs[0].strength == "inferred" and "presumed stale" in fs[0].keep_design
