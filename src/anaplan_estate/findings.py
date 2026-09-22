@@ -76,9 +76,13 @@ class Finding:
     validation: list[str] = field(default_factory=list) # how to prove a change worked
     rules: list[str] = field(default_factory=list)
     related: list[str] = field(default_factory=list)    # ids of alternative or overlapping findings
-    footprint_cells: int = 0
-    footprint_effort: float = 0.0                        # share of THIS model's measured effort
+    footprint_cells: int | None = None                   # None = not applicable or not measured (never a zero)
+    footprint_effort: float | None = None                # share of THIS model's measured effort; None = unavailable
     counts_benefit: bool = True                          # False when an alternative carries the footprint
+    summary: str = ""                                    # one sentence for the compact view (defaults to the first sentence of observed)
+    object_label: str = ""                               # accurate count label, e.g. "217 groups; 512 duplicate line items"
+    implementation: list[str] = field(default_factory=list)  # change guidance with explicit prerequisites; kept apart from the next investigation step
+    kind_label: str = "review candidate"                 # observation | review candidate
 
     def to_dict(self):
         return asdict(self)
@@ -190,6 +194,7 @@ def _per_model(er, m, nid) -> list[Finding]:
         top = mods[:5]
         with_twin = [s for s in mods if s.get("target")]
         complete = [s for s in with_twin if s["complete"]]
+        matched_items = sum(s["matched_source"] for s in with_twin)
         missing = _usage_checks("each listed module", has_modules, any(s["imported_into"] for s in mods), False)
         if any(s["unparsed"] for s in mods):
             missing.append("modules with unparsed formulas (table) have references missing from the graph")
@@ -199,19 +204,24 @@ def _per_model(er, m, nid) -> list[Finding]:
                  objects=[s["module"] for s in top],
                  observed=f"No formula outside these modules reads any of their line items and no export action reads them. Together they hold {_c(total_cells)} cells"
                           + (f" and {total_eff:.1f}% of {m.name}'s measured calculation effort" if has_effort and total_eff else "") + f". The five largest: {', '.join(_q(s['module']) for s in top)}."
-                          + (f" {len(with_twin)} of them have exact twins (same formula and context) in a module that is read; {len(complete)} are matched line for line." if with_twin else ""),
-                 why="Either a page, a saved view, a line item subset or an integration reads each of them, or nothing does. The exports cannot tell which; the footprint says which ones are worth the question first.",
+                          + (f" {len(with_twin)} of them contain line items whose formula and context match a line item in a module that is read ({matched_items} matching line items); {len(complete)} match line for line, so no module is a proven duplicate of another." if with_twin else ""),
+                 why="Pages, saved views, subsets and integrations are not in the exports, so each module is either read there or by nothing. The footprint says which to ask about first.",
                  scope=f"{_pl(len(mods), 'module')}, {sum(s['line_items'] for s in mods)} line items",
                  benefit=f"If no consumer is found: {_footprint(total_cells, total_eff, m.name, has_effort)} would no longer be held or measured. Per module in the table.",
                  benefit_kind="conditional", strength=strength,
                  basis=f"No formula consumer detected (parsed references, checked against Referenced By); no export action. {coverage_note}",
                  missing=missing,
-                 next_step=f"Take the five largest. For each, list the pages, saved views and subsets that use it (page builder; Modules export's Used in Dashboards for classic dashboards). Where the answer is none, blank the formulas in a sandbox copy and wait one cycle before deleting.",
-                 keep_design="A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. Modules with a twin still need the page check before the twin takes over.",
+                 next_step="Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.",
+                 keep_design="A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. A module containing matching line items is not a duplicate of the module they match until the unmatched line items and the consumers are accounted for.",
+                 summary=f"{_pl(len(mods), 'module')} holding {_c(total_cells)} cells" + (f" and {total_eff:.1f}% of measured effort" if has_effort and total_eff else "") + " have no formula or export consumer in the exports.",
+                 object_label=f"{_pl(len(mods), 'module')}, {sum(s['line_items'] for s in mods):,} line items",
+                 implementation=["Prerequisites: every consumer check returned none, retained data is not needed, and the model owner has accepted the recommendation.",
+                                 "Then: blank the formulas in a development copy, reconcile the outputs the owner names against production over a full cycle, obtain owner sign-off, and only then delete.",
+                                 "A module containing matching line items: repoint any page from the module to the matching line items first, and account for the unmatched line items separately."],
                  importance="high" if (total_cells >= 50_000_000 or total_eff >= 5) else "medium" if (total_cells >= 1_000_000 or total_eff >= 1) else "low",
                  complexity="medium", evidence=rows, rules=["G-UNUSED", "REDUNDANT-EXACT"],
                  validation=["After a removal, the Line Items export no longer lists the module; workspace size falls by about its cells; every page listed in the check opens without a blank card."],
-                 footprint_cells=total_cells, footprint_effort=total_eff)
+                 footprint_cells=total_cells, footprint_effort=(total_eff if has_effort else None))
         fd._modules = {s["module"] for s in mods}
 
     # ---- usage: unreferenced line items outside those modules
@@ -222,16 +232,17 @@ def _per_model(er, m, nid) -> list[Finding]:
             rows.append(f"| {_q(u['module'])} | {', '.join(_q(x) for x in u['items'])} | {_c(u['cells'])} | {u['effort']:.1f}% |")
         n = sum(len(u["items"]) for u in big); cells = sum(u["cells"] for u in big); eff = sum(u["effort"] for u in big)
         new(area="usage", kind="retire", title="Calculated line items with no consumer detected, outside output modules",
-            objects=[u["module"] for u in big], observed=f"{n} calculated line items in {len(big)} modules are read by no formula, not exported, not in an output-style module and have no exact twin.",
+            objects=[u["module"] for u in big], observed=f"{n} calculated line items in {len(big)} modules are read by no formula, not exported, not in an output-style module and have no matching line item elsewhere.",
             why="Each is computed and stored; if nothing reads it the footprint is spare. If a page reads it, it is an output that lives in a calculation module.",
             scope=f"{_pl(n, 'line item')} in {_pl(len(big), 'module')}",
             benefit=f"If no consumer is found: {_footprint(cells, eff, m.name, has_effort)}.", benefit_kind="conditional",
             strength="partial" if not weak_graph else "inferred", basis=f"Parsed references and export actions only. {coverage_note}",
             missing=["pages, saved views, line item subsets and integrations for each listed module", "the " + str(len(red.output_like)) + " unreferenced line items that look like outputs by module name, format or time scale are not listed here"],
-            next_step="Take the largest module first; list its pages and views; blank one formula in a sandbox and wait a cycle.",
+            next_step="Complete the consumer and retention checks (pages, saved views, subsets, integrations, retained data) for the largest module's line items, then record a keep-or-retire recommendation for each.",
+            implementation=["Prerequisites: consumer checks returned none and the owner accepts. Then blank in a development copy, reconcile named outputs over a cycle, owner sign-off, delete."],
             keep_design="A line item read only by a page is not spare. A calculation kept for audit or reconciliation can be right to keep even if nothing reads it now.",
             importance="medium" if cells >= 10_000_000 else "low", complexity="medium", evidence=rows, rules=["G-UNUSED"],
-            validation=["Re-run this report after removal: the list shrinks to the line items a page needs."], footprint_cells=cells, footprint_effort=eff)
+            validation=["Re-run this report after removal: the list shrinks to the line items a page needs."], footprint_cells=cells, footprint_effort=(eff if has_effort else None))
 
     # ---- maintain: exact duplicates
     if red.exact:
@@ -250,10 +261,15 @@ def _per_model(er, m, nid) -> list[Finding]:
             benefit=f"Footprint of the copies: {_c(c['exact_cells'])} cells. Released only for copies that no page, view or process needs.", benefit_kind="footprint",
             strength="confirmed" if not weak_graph else "partial", basis="Resolved formula text and every context field agree; COLLECT() formulas and items with blank context are excluded and listed separately.",
             missing=["pages and views that show the copy under its own name", "access boundaries and reporting contracts that justify a separate object"],
-            next_step="Start with the group holding the most cells: check what shows the copy, then point its readers at the kept line item.",
-            keep_design="Different access (DCA or selective access) on the two modules, a reporting contract on the copy's name, or a page that needs the copy's summary setting are all reasons to keep both.",
+            next_step="Validate equivalence and the reasons for separate objects in the largest group (access boundaries, a reporting contract on the copy's name, a page that shows it), then decide whether consolidation is appropriate.",
+            keep_design="Different access (DCA or selective access) on the two modules, a reporting contract on the copy's name, or a deliberately separate process are reasons to keep both. Summary methods already match within a group, so they do not explain the copy.",
+            summary=f"{c['exact_redundant']} line items in {c['exact_groups']} groups repeat a calculation already made with the same formula and context; the copies hold {_c(c['exact_cells'])} cells.",
+            object_label=f"{_pl(c['exact_groups'], 'group')}; {_pl(c['exact_redundant'], 'duplicate line item')} plus one kept line item per group",
+            implementation=["Prerequisites: equivalence validated for the group, the reason for the second object ruled out, the owner accepts.",
+                            "Then: repoint each reader of the copy to the kept line item in a development copy, reconcile the outputs that read it, owner sign-off, remove the copy."],
             importance="medium" if c["exact_cells"] >= 10_000_000 else "low", complexity="medium", evidence=rows, rules=["REDUNDANT-EXACT"],
             validation=["Re-run this report: the group count falls; no page shows a blank; no export loses a column."], footprint_cells=c["exact_cells"])
+        out[-1].objects = [e["items"][0]["key"] for e in red.exact]
 
     # ---- maintain: same text, unresolved context
     if red.same_text:
@@ -285,7 +301,9 @@ def _per_model(er, m, nid) -> list[Finding]:
             benefit=f"Footprint of the copies: {_c(c['alias_cells'])} cells. Released only for copies without a page, export or access reason.", benefit_kind="footprint",
             strength="confirmed" if not weak_graph else "partial", basis="Single-reference formulas with identical context.",
             missing=["pages that show the alias under its name", "exports and views that read the alias module (the 'module exported' column shows export actions only)"],
-            next_step="Sort by cells; for the largest, check what shows it; point readers at the source where nothing does.",
+            next_step="For the largest copies, establish what shows or exports them under their own name and whether access differs, then decide which copies are interfaces to keep.",
+            object_label=f"{_pl(c['aliases'], 'copy line item')}",
+            implementation=["Prerequisites: no page, export or access reason for the copy; owner accepts. Then repoint readers in a development copy, reconcile, sign-off, remove."],
             keep_design="An alias that is an interface (a reporting name, an export column, an access boundary) is a good alias.",
             importance="low" if c["alias_cells"] < 50_000_000 else "medium", complexity="low", evidence=rows, rules=["REDUNDANT-ALIAS"],
             validation=["Re-run this report: aliases that remain are the ones kept on purpose."], footprint_cells=c["alias_cells"])
@@ -303,7 +321,7 @@ def _per_model(er, m, nid) -> list[Finding]:
             scope=f"{_pl(len(cross), 'pair')}", benefit="not quantified from the exports", benefit_kind="none", strength="inferred",
             basis="Structural comparison of parsed formulas; intent is not in the export.",
             missing=["the reason for each difference (notes are mostly blank)"],
-            next_step="Read the difference column for the largest pairs; where the difference is intended, put it in the line item name or a note.",
+            next_step="For the largest pairs, establish whether the one difference is intended; record it in the name or a note, or treat the pair as a duplicate candidate.",
             keep_design="A one-leaf difference is often the whole business rule. Neither side is presumed stale.",
             importance="low", complexity="low", evidence=rows, rules=["REDUNDANT-NEAR"])
 
@@ -320,7 +338,8 @@ def _per_model(er, m, nid) -> list[Finding]:
             scope=f"{_pl(len(chains), 'chain')}", benefit=f"Footprint of the intermediates: {_c(cells)} cells.", benefit_kind="footprint",
             strength="confirmed" if not weak_graph else "partial", basis="Single-reference formulas in sequence.",
             missing=["whether an intermediate is read by a page, a view or another model's import"],
-            next_step="For each chain, ask what each intermediate is for; where the answer is nothing, point the head at the end.",
+            next_step="For each chain, establish what each intermediate is for (page, export, access boundary); decide which intermediates are interfaces to keep.",
+            implementation=["Prerequisites: the intermediate has no consumer and no interface role; owner accepts. Then repoint the head in a development copy, reconcile, sign-off."],
             keep_design="A pass-through that is an interface (OUT module read by pages, source of an export, access boundary) should stay.",
             importance="low", complexity="low", evidence=rows, rules=["A-DAISY"], footprint_cells=cells)
 
@@ -337,7 +356,8 @@ def _per_model(er, m, nid) -> list[Finding]:
             scope=f"{_pl(len(hubs), 'line item')}", benefit="not applicable", benefit_kind="none", strength="confirmed" if not weak_graph else "partial",
             basis="Parsed references, checked against Referenced By.", missing=["page and export consumers, which widen the impact further"],
             next_step="Include these in the change-impact check for every release that touches them.",
-            keep_design="Hubs are by design; the action is awareness, not change.", importance="medium", complexity="low", evidence=rows, rules=["G-HUB"])
+            keep_design="Hubs are by design; the action is awareness, not change.", importance="medium", complexity="low", evidence=rows, rules=["G-HUB"], kind_label="observation",
+            object_label=f"{_pl(len(hubs), 'line item')}")
 
     # ---- capacity: effort concentration (observed footprint only)
     if has_effort and f["effort_top"]:
@@ -352,8 +372,10 @@ def _per_model(er, m, nid) -> list[Finding]:
             why="Effort is where a redesign would show. " + _effort_note(m),
             scope="top 20 line items by effort", benefit="Observed footprint only; no reduction is claimed.", benefit_kind="footprint",
             strength="confirmed", basis="Anaplan's Calculation Effort column as exported.", missing=["engine (Classic or Polaris)", "when the measurement was taken"],
-            next_step="Read the formulas of the top five; each other finding that names one of them is the place to start.",
-            keep_design="High effort in the line item that does the model's main job is expected.", importance="medium", complexity="medium", evidence=rows, rules=["EFFORT"])
+            next_step="Read the formulas of the top five and match each against the other findings that name it (SUM with LOOKUP, IF chains, text in large modules); decide which one to trial in a development copy first.",
+            keep_design="High effort in the line item that does the model's main job is expected.", importance="medium", complexity="medium", evidence=rows, rules=["EFFORT"], kind_label="observation",
+            summary=f"Ten line items carry {f['effort_top10_share']}% of {m.name}'s measured calculation effort, led by {_q(f['effort_top'][0][0])} at {f['effort_top'][0][1]:.1f}%; a concentration to investigate, not a saving.",
+            object_label="top 20 line items by effort share", footprint_effort=None)
 
     # ---- capacity: SUM with LOOKUP/SELECT
     if by_rule.get("F-MIXED-CLAUSE"):
@@ -371,7 +393,8 @@ def _per_model(er, m, nid) -> list[Finding]:
             strength="confirmed", basis="Parsed clause kinds per formula; official guidance quoted.", missing=["measured effort after a trial split"],
             next_step="Take the formula with the largest effort share; split it in a sandbox copy; compare Calculation Effort before and after.",
             keep_design="A formula with a small effort share that reads clearly can stay as it is; the guidance targets calculation time, not style.",
-            importance="medium" if eff >= 5 else "low", complexity="low", evidence=rows, rules=["F-MIXED-CLAUSE"], footprint_effort=eff)
+            importance="medium" if eff >= 5 else "low", complexity="low", evidence=rows, rules=["F-MIXED-CLAUSE"], footprint_effort=(eff if has_effort else None),
+            implementation=["Prerequisites: a development copy and a Calculation Effort reading before the change. Then split, reconcile values cell for cell, read effort again; keep the split only if it pays."])
 
     # ---- capacity: text, FINDITEM, joins, system fns
     heavy = [x for r in ("A-TEXT-FORMAT", "A-FINDITEM", "A-TEXT-JOIN", "A-SYSTEMS-FN") for x in by_rule.get(r, [])]
@@ -405,7 +428,8 @@ def _per_model(er, m, nid) -> list[Finding]:
             strength="confirmed", basis="Parsed formula.", missing=["whether the mapping is stable enough to hold in a module"],
             next_step=("Load the table into a mapping module and replace the chain with one LOOKUP; compare values before and after." if mapping else "Split the conditions into named Boolean line items."),
             keep_design="A short, stable chain that a finance user can read may be clearer than a mapping module.", importance="medium" if li and li.calc_effort >= 5 else "low", complexity="medium",
-            evidence=rows, rules=["A-IF-COUNT"], footprint_effort=(li.calc_effort if li else 0), validation=["Export the line item before and after; every cell equal."])
+            evidence=rows, rules=["A-IF-COUNT"], footprint_effort=(li.calc_effort if li and has_effort and li.calc_effort else None), validation=["Export the line item before and after; every cell equal."],
+            implementation=["Prerequisites: the mapping is stable and the owner accepts a module in place of the formula. Then build the mapping module in a development copy, replace the formula, reconcile every cell, sign-off."])
 
     # ---- maintain: hard-coded constants
     if by_rule.get("F-HARDCODE"):
@@ -465,7 +489,7 @@ def _per_model(er, m, nid) -> list[Finding]:
         xs = by_rule["G-EMPTY-MODULE"]
         new(area="maintain", kind="tidy", title="Modules with no line items", objects=[x.module for x in xs],
             observed=f"{len(xs)} modules have no line items.", why="Usually a leftover from a build that moved on.", scope=f"{_pl(len(xs), 'module')}",
-            benefit="not applicable", benefit_kind="none", strength="confirmed", basis="Line Items export.", missing=[], next_step="Confirm nothing is planned for them and delete.",
+            benefit="not applicable", benefit_kind="none", strength="confirmed", basis="Line Items export.", missing=[], next_step="Confirm nothing is planned for them, then decide whether to remove them.",
             keep_design="A placeholder for planned work, if noted.", importance="low", complexity="low", rules=["G-EMPTY-MODULE"])
     if by_rule.get("F-LONG"):
         xs = by_rule["F-LONG"]
@@ -504,7 +528,7 @@ def _per_model(er, m, nid) -> list[Finding]:
             act = acts.get(name)
             rows.append(f"| {_q(name)} | {act.kind if act else ''} | {act.last_run[:10] if act and act.last_run else 'none recorded'} | {'no' if name in a['not_in_process'] else 'yes'} | {_q(act.target) if act and act.target else ''} |")
         new(area="integration", kind="schedule", title="Imports and exports with no recent recorded run or outside every process", objects=sorted(listed),
-            observed=f"Actions export snapshot: latest recorded run {a['snapshot'] or 'unknown'}. {len(a['no_recent_run'])} imports and exports have no recorded run since {a['stale_cutoff'] or 'n/a'} ({a['stale_months']} months before the snapshot), {len(a['never_recorded'])} have no recorded run at all, and {len(a['not_in_process'])} are not in any process.",
+            observed=f"Export date unknown. Latest recorded action run: {a['snapshot'] or 'none'}. {len(a['no_recent_run'])} imports and exports have no recorded run since {a['stale_cutoff'] or 'n/a'} ({a['stale_months']} months before the latest recorded run), {len(a['never_recorded'])} have no recorded run at all, and {len(a['not_in_process'])} are not in any process.",
             why="An action outside a process can still run from a page, the Actions pane or the API; a run date older than the window may be right for a quarterly or annual load. What the list gives is the set to ask about, not a verdict.",
             scope=f"{_pl(len(listed), 'action')}", benefit="not quantified from the exports", benefit_kind="none", strength="partial",
             basis=f"Actions export: most recent run per action, process membership. {DOCS['actions'][2]}",
@@ -522,7 +546,7 @@ def _per_model(er, m, nid) -> list[Finding]:
             why="Counts of readers, hubs and 'no consumer detected' that touch these line items are incomplete. This is a limitation of the analysis; it is not evidence of a model defect.",
             scope=f"{_pl(len(xs), 'formula')}", benefit="not applicable", benefit_kind="none", strength="confirmed", basis="Parser output.", missing=["the references inside these formulas"],
             next_step="Treat any finding that names one of these line items as unverified until the parser covers the shape.", keep_design="Nothing to change in the model.",
-            importance="low", complexity="low", evidence=rows, rules=["F-PARSE"])
+            importance="low", complexity="low", evidence=rows, rules=["F-PARSE"], kind_label="observation")
 
     # link alternatives: module usage finding vs module size finding on the same module
     rollup = next((fd for fd in out if hasattr(fd, "_modules")), None)
@@ -553,7 +577,7 @@ def _estate(er, nid) -> list[Finding]:
                            missing=["whether the referenced lists and modules hold the same data in each model", "which model is the source of truth for each"],
                            next_step="Pick the copies that are genuinely one rule and record where it is owned; leave local filters and formatting where they are.",
                            keep_design="A rule that must be evaluated locally in each model (a filter, a format, a local flag) is right to repeat.",
-                           importance="low", complexity="medium", evidence=rows, rules=["DUP-CROSS"]))
+                           importance="low", complexity="medium", evidence=rows, rules=["DUP-CROSS"], object_label=f"{_pl(len(er.duplicates), 'line item name')}"))
     return out
 
 
@@ -563,7 +587,17 @@ def build(er) -> list[Finding]:
     for m in er.models:
         fs += _per_model(er, m, nid)
     fs += _estate(er, nid)
-    fs.sort(key=lambda x: (IMPORTANCE_ORDER[x.importance], STRENGTH_ORDER[x.strength], -x.footprint_cells, -x.footprint_effort))
+    for x in fs:
+        if not x.summary:
+            first = re.split(r"(?<=[.!?])\s+", x.observed.strip(), maxsplit=1)[0]
+            x.summary = first
+        if not x.object_label:
+            x.object_label = _pl(len(x.objects), "object")
+        if x.footprint_cells == 0:
+            x.footprint_cells = None
+        if x.footprint_effort == 0:
+            x.footprint_effort = None
+    fs.sort(key=lambda x: (IMPORTANCE_ORDER[x.importance], STRENGTH_ORDER[x.strength], -(x.footprint_cells or 0), -(x.footprint_effort or 0)))
     for i, x in enumerate(fs, 1):
         old = x.id
         x.id = f"F{i}"

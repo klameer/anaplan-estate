@@ -17,12 +17,13 @@ def _rep():
 def test_summary_has_scope_observations_priorities_and_limits():
     er, rep = _rep()
     words = sum(len(p.split()) for p in rep["summary_text"])
-    assert 60 <= words <= 400
+    assert 40 <= words <= 400
     assert 3 <= len(rep["observations"]) <= 4
-    assert 1 <= len(rep["steps"]) <= 5
-    for p in rep["steps"]:
-        assert p["do"] and p["who"] and p["get"] and p["next"]
-    assert rep["steps"][0]["objects"][0] == "CAL05 Opex OLD"
+    assert 1 <= len(rep["investigations"]) <= 3
+    for p in rep["investigations"]:
+        assert p["title"] and p["who"] and p["next"] and p["ids"]
+    usage = next(p for p in rep["investigations"] if p["key"] == "usage")
+    assert usage["per_model"][0]["top"][0] == "CAL05 Opex OLD"
     assert any("not in any export" in l for l in rep["limitations"])
     assert rep["description"].startswith("Automated findings")
 
@@ -76,10 +77,10 @@ def test_markdown_has_three_levels_and_no_banned_claims():
 def test_steps_are_decisions_not_reference_facts_and_usage_is_rolled_up():
     er, rep = _rep()
     fmap = {x["id"]: x for x in rep["findings"]}
-    for p in rep["steps"]:
-        assert fmap[p["id"]]["kind"] != "capacity"
-    kinds = [(p["id"], fmap[p["id"]]["kind"], p["model"]) for p in rep["steps"]]
-    assert len({(k, m) for _, k, m in kinds}) == len(kinds)                       # one step per kind per model
+    assert len({p["key"] for p in rep["investigations"]}) == len(rep["investigations"])
+    for p in rep["investigations"]:
+        for i in p["ids"]:
+            assert i in fmap
     usage = [x for x in rep["findings"] if x["area"] == "usage" and "with no consumer detected in the inspected" in x["title"]]
     assert len(usage) == len({x["model"] for x in usage})                        # one roll-up per model
     fp = next(x for x in usage if x["model"] == "Caldergate FP&A")

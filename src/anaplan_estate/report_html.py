@@ -75,6 +75,12 @@ table.reg th[data-sort]{cursor:pointer}table.reg th[data-sort]:after{content:" \
 .empty{color:var(--muted);font-style:italic;padding:12px}
 footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:12px;font-size:12.5px;color:var(--muted)}
 .sr{position:absolute;left:-9999px}
+.hit{font-size:12px;color:var(--accent);margin:4px 0}
+.per{font-size:13px;margin:6px 0 0;padding-left:18px}
+.idx{display:none}
+.metric{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:15px;margin:10px 0 14px}.metric b{font-size:22px;font-weight:600;margin-right:4px}
+.example{border:1px solid var(--rule);border-radius:8px;padding:10px 14px;margin:12px 0;font-size:13.5px}.example dt{font-weight:600;margin-top:6px}.example dd{margin:0}
+.fnote{font-size:12.5px;color:var(--muted)}
 @media (max-width:640px){dl.fields{grid-template-columns:1fr}.controls{position:static}nav.jump{position:static}}
 @media print{
  :root{--bg:#fff;--ink:#111;--muted:#444;--rule:#bbb;--soft:#f2f2f2;--accent:#0E5E6F;--card:#fff}
@@ -112,8 +118,11 @@ JS = r"""
    var t=(q.value||'').toLowerCase().trim(),n=0;
    var arts=Array.prototype.slice.call(document.querySelectorAll('article.f'));
    arts.forEach(function(a){
-     var ok=true;
-     if(t){ok=(a.dataset.search||'').indexOf(t)>=0}
+     var ok=true;var hit=a.querySelector('.hit');if(hit){hit.hidden=true;hit.textContent=''}
+     if(t){var head=(a.dataset.search||'').indexOf(t)>=0;var idx=a.querySelector('.idx');var body=idx?idx.textContent.toLowerCase():'';var pos=body.indexOf(t);ok=head||pos>=0;
+       if(ok&&!head&&hit){var line=body.slice(Math.max(0,body.lastIndexOf('\n',pos)+1),body.indexOf('\n',pos)>0?body.indexOf('\n',pos):body.length);
+         hit.textContent='Matched in '+(line.indexOf('formula:')===0?'a formula':line.indexOf('object:')===0?'an affected object':'the evidence')+': '+line.replace(/^(formula|object|evidence|text):\s*/,'').slice(0,140);hit.hidden=false;
+         var d=a.querySelector('details.full');if(d)d.open=true}}
      if(ok&&fm.value&&a.dataset.model!==fm.value)ok=false;
      if(ok&&fa.value&&a.dataset.area!==fa.value)ok=false;
      if(ok&&fs.value&&a.dataset.strength!==fs.value)ok=false;
@@ -122,18 +131,22 @@ JS = r"""
      a.hidden=!ok; if(ok)n++;
    });
    var s=so.value;
+   function num(v){return v===''?null:parseFloat(v)}
+   function descNullLast(a,b){if(a===null&&b===null)return 0;if(a===null)return 1;if(b===null)return -1;return b-a}
    document.querySelectorAll('section.area').forEach(function(sec){
      var list=Array.prototype.slice.call(sec.querySelectorAll('article.f'));
      list.sort(function(x,y){
-       if(s==='importance')return (IMP[x.dataset.importance]-IMP[y.dataset.importance])||(STR[x.dataset.strength]-STR[y.dataset.strength])||(y.dataset.cells-x.dataset.cells);
-       if(s==='cells')return y.dataset.cells-x.dataset.cells; if(s==='effort')return y.dataset.effort-x.dataset.effort;
+       if(s==='importance')return (IMP[x.dataset.importance]-IMP[y.dataset.importance])||(STR[x.dataset.strength]-STR[y.dataset.strength])||descNullLast(num(x.dataset.cells),num(y.dataset.cells));
+       if(s==='cells')return descNullLast(num(x.dataset.cells),num(y.dataset.cells))||(IMP[x.dataset.importance]-IMP[y.dataset.importance]);
+       if(s==='effort')return x.dataset.model.localeCompare(y.dataset.model)||descNullLast(num(x.dataset.effort),num(y.dataset.effort));
        if(s==='model')return x.dataset.model.localeCompare(y.dataset.model)||(IMP[x.dataset.importance]-IMP[y.dataset.importance]);
        if(s==='strength')return (STR[x.dataset.strength]-STR[y.dataset.strength])||(IMP[x.dataset.importance]-IMP[y.dataset.importance]);
        return parseInt(x.dataset.id.slice(1))-parseInt(y.dataset.id.slice(1));});
      list.forEach(function(a){sec.appendChild(a)});
      var vis=list.some(function(a){return !a.hidden});var e=sec.querySelector('.empty');if(e)e.hidden=vis;
    });
-   cnt.textContent=n+' of '+arts.length+' findings shown'+((!fl.checked&&!t)?' (low importance hidden)':'');
+   var active=[];if(fm.value)active.push('model');if(fa.value)active.push('category');if(fs.value)active.push('evidence');if(fst.value)active.push('status');
+   cnt.textContent=n+' of '+arts.length+' findings shown'+((!fl.checked&&!t)?' (reference findings hidden)':'')+(active.length?' with filters on '+active.join(', ')+' (Clear removes them)':'')+(t?' for "'+t+'" (searched across all evidence)':'');
  }
  [q,fm,fa,fs,fst,so,fl].forEach(function(el){el.addEventListener('input',apply);el.addEventListener('change',apply)});
  apply();
@@ -148,7 +161,7 @@ JS = r"""
  document.getElementById('collapse-all').addEventListener('click',function(){document.querySelectorAll('#findings details').forEach(function(d){d.open=false})});
  var reg=document.querySelector('table.reg');if(reg){reg.querySelectorAll('th[data-sort]').forEach(function(th,i){th.addEventListener('click',function(){
    var rows=Array.prototype.slice.call(reg.tBodies[0].rows),num=th.dataset.sort==='num',asc=th.dataset.asc!=='1';th.dataset.asc=asc?'1':'0';
-   rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].textContent,y=b.cells[i].dataset.v||b.cells[i].textContent;if(num){x=parseFloat(x)||0;y=parseFloat(y)||0;return asc?x-y:y-x}return asc?x.localeCompare(y):y.localeCompare(x)});
+   rows.sort(function(a,b){var x=a.cells[i].hasAttribute('data-v')?a.cells[i].dataset.v:a.cells[i].textContent,y=b.cells[i].hasAttribute('data-v')?b.cells[i].dataset.v:b.cells[i].textContent;if(num){if(x===''&&y==='')return 0;if(x==='')return 1;if(y==='')return -1;x=parseFloat(x);y=parseFloat(y);return asc?x-y:y-x}return asc?x.localeCompare(y):y.localeCompare(x)});
    rows.forEach(function(r){reg.tBodies[0].appendChild(r)})})})}
 })();
 """
@@ -273,32 +286,60 @@ def _badges(x: dict) -> str:
             f'<span class="badge">complexity {x["complexity"]}</span>')
 
 
+def _index_text(x: dict) -> str:
+    """Complete search text for one finding: every affected object, every evidence row and formula, explanatory text. One entry per line, prefixed by kind."""
+    lines = [f"text: {x['title']} {x['observed']} {x['why']} {x['scope']}"]
+    lines += [f"object: {o}" for o in x["objects"]]
+    for l in x["evidence"]:
+        if l.startswith("|") and not re.match(r"^\|[\s:|-]+\|$", l):
+            cells = [c.strip() for c in l.strip("|").split("|")]
+            for c in cells:
+                if c.startswith("`") and c.endswith("`"):
+                    lines.append(f"formula: {c.strip('`')}")
+            lines.append("evidence: " + " | ".join(c.strip("`") for c in cells))
+        elif l.strip() and not l.startswith("|"):
+            lines.append("evidence: " + l.strip("-* ").strip("`"))
+    return "\n".join(lines)
+
+
 def _finding(x: dict, rep: dict) -> str:
-    search = " ".join([x["id"], x["title"], x["model"], " ".join(x["objects"]), x["observed"], " ".join(x["rules"])]).lower()
+    head = " ".join([x["id"], x["title"], x["model"], AREA_LABEL[x["area"]], x["kind_label"]] + x["rules"]).lower()
     status_opts = "".join(f'<option{" selected" if s == "To review" else ""}>{_e(s)}</option>' for s in rep["statuses"])
+    ex = x["objects"][:3]; more = len(x["objects"]) - len(ex)
     svc = ""
     if rep.get("service_url"):
-        svc = f'<p class="muted noprint">Have a change planned here? <a href="{_e(rep["service_url"])}">Investigate affected dependencies with the estate analysis service</a>.</p>'
+        svc = f'<p class="fnote noprint">Have a change planned here? <a href="{_e(rep["service_url"])}">Request a change-impact review</a>.</p>'
     missing = "".join(f"<li>{_inline(m)}</li>" for m in x["missing"]) or "<li>nothing beyond the exports</li>"
-    related = f'<dt>Alternative to</dt><dd>{", ".join(f"<a href=#{r}>{r}</a>" for r in x["related"])}</dd>' if x["related"] else ""
-    ev = f'<details class="ev"><summary>Evidence ({len([l for l in x["evidence"] if l.startswith("|")]) - 2 if any(l.startswith("|") for l in x["evidence"]) else len(x["evidence"])} rows)</summary><div>{md_fragment(x["evidence"])}</div></details>' if x["evidence"] else ""
+    related = f'<dt>Alternative or related</dt><dd>{", ".join(f"<a href=#{r}>{r}</a>" for r in x["related"])}</dd>' if x["related"] else ""
+    impl = f'<dt>Implementation, with prerequisites</dt><dd><ul>{"".join(f"<li>{_inline(v)}</li>" for v in x["implementation"])}</ul></dd>' if x["implementation"] else ""
+    nrows = len([l for l in x["evidence"] if l.startswith("|")]) - 2 if any(l.startswith("|") for l in x["evidence"]) else len(x["evidence"])
+    ev = f'<details class="ev"><summary>Evidence ({max(nrows, 0)} rows)</summary><div>{md_fragment(x["evidence"])}</div></details>' if x["evidence"] else ""
     val = f'<details><summary>Validation guidance</summary><div><ul>{"".join(f"<li>{_inline(v)}</li>" for v in x["validation"])}</ul></div></details>' if x["validation"] else ""
-    return f'''<article class="f" id="{x["id"]}" data-id="{x["id"]}" data-model="{_e(x["model"])}" data-area="{x["area"]}" data-importance="{x["importance"]}" data-strength="{x["strength"]}" data-cells="{x["footprint_cells"]}" data-effort="{x["footprint_effort"]}" data-search="{_e(search)}">
-<header><h3><span class="muted">{x["id"]}.</span> {_e(x["title"])}</h3>{_badges(x)}<label class="status noprint"><span class="sr">Review status for {x["id"]}</span><select class="stsel" aria-label="Review status (yours, stored in this browser)">{status_opts}</select></label></header>
-<div class="objs">{" &middot; ".join(f"<code>{_e(o)}</code>" for o in x["objects"])}</div>
+    cells_v = "" if x["footprint_cells"] is None else x["footprint_cells"]
+    eff_v = "" if x["footprint_effort"] is None else x["footprint_effort"]
+    return f'''<article class="f" id="{x["id"]}" data-id="{x["id"]}" data-model="{_e(x["model"])}" data-area="{x["area"]}" data-importance="{x["importance"]}" data-strength="{x["strength"]}" data-cells="{cells_v}" data-effort="{eff_v}" data-search="{_e(head)}">
+<header><h3><span class="muted">{x["id"]}.</span> {_e(x["title"])}</h3><span class="badge">{x["kind_label"]}</span>{_badges(x)}<label class="status noprint"><span class="sr">Review status for {x["id"]}</span><select class="stsel" aria-label="Review status (yours, stored in this browser)">{status_opts}</select></label></header>
+<div class="objs">{_e(x["model"])} &middot; {" &middot; ".join(f"<code>{_e(o)}</code>" for o in ex)}{f" &middot; and {more} more" if more > 0 else ""} <span class="muted">({_e(x["object_label"])})</span></div>
+<p class="hit" hidden></p>
 <dl class="fields">
-<dt>Model</dt><dd>{_e(x["model"])}</dd>
-<dt>Observed</dt><dd>{_inline(x["observed"])}</dd>
+<dt>Observed</dt><dd>{_inline(x["summary"])}</dd>
 <dt>Why it matters</dt><dd>{_inline(x["why"])}</dd>
+<dt>Next investigation step</dt><dd>{_inline(x["next_step"])}</dd>
+</dl>
+<details class="full"><summary>Full assessment and affected objects ({_e(x["object_label"])})</summary><div>
+<dl class="fields">
+<dt>Observed, in full</dt><dd>{_inline(x["observed"])}</dd>
 <dt>Affected scope</dt><dd>{_inline(x["scope"])}</dd>
 <dt>Potential benefit</dt><dd>{_inline(x["benefit"])} <span class="badge">{x["benefit_kind"]}</span></dd>
 <dt>Evidence strength</dt><dd><strong>{x["strength"]}.</strong> {_inline(x["basis"])}</dd>
 <dt>Missing information</dt><dd><ul>{missing}</ul></dd>
-<dt>Next step</dt><dd>{_inline(x["next_step"])}</dd>
 <dt>Keeping the design</dt><dd>{_inline(x["keep_design"])}</dd>
-{related}
+{impl}{related}
+<dt>All affected objects</dt><dd class="objs">{" &middot; ".join(f"<code>{_e(o)}</code>" for o in x["objects"])}</dd>
 </dl>
 {ev}{val}{svc}
+</div></details>
+<div class="idx">{_e(_index_text(x))}</div>
 <p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-{x["area"]}">Area</a></p>
 </article>'''
 
@@ -316,43 +357,48 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
                '<span style="margin-left:auto"></span><button type="button" id="print-summary" class="noprint">Print summary</button></nav>')
     # ---- level 1
     out.append('<section id="summary"><h2>Summary</h2>')
-    tiles = [(_n_(sc["models"]), "models"), (_c(sc["line_items"]), "line items"), (_c(sc["cells"]), "cells as exported"), (f"{sc['parse_rate']:.1%}", "formulas parsed"), (_n_(sc["findings"]), "findings")]
-    out.append('<div class="tiles">' + "".join(f'<div class="tile"><div class="v">{v}</div><div class="k">{k}</div></div>' for v, k in tiles) + "</div>")
+    mt = rep["metrics"]
+    out.append(f'<div class="metric"><span><b>{mt["models"]}</b> models reviewed</span><span>&middot;</span><span><b>{mt["review_first"]}</b> findings to review first</span><span>&middot;</span><span><b>{mt["reference"]}</b> additional reference findings</span></div>'
+               f'<p class="fnote">Findings are observations ({mt["observations"]}) or review candidates; none is a validated defect. Coverage is under Models and coverage.</p>')
     out += [f"<p>{_inline(p)}</p>" for p in rep["summary_text"]]
     out.append("<h3>Observations</h3><ol>" + "".join(f"<li>{_inline(o)}</li>" for o in rep["observations"]) + "</ol>")
-    if rep["steps"]:
-        out.append("<h3>Start here</h3><p class=\"muted\">At most five steps. Each is one decision backed by one finding: who does it, what you get, how.</p><div class=\"cards\">")
-        for p in rep["steps"]:
-            out.append(f'<div class="card"><h3><span class="muted">{p["n"]}.</span> {_e(p["do"])}</h3><div>{_badges(fmap[p["id"]])}</div>'
-                       f'<p class="objs" style="font-family:var(--mono);font-size:12px">{_e(p["model"])} &middot; {" &middot; ".join(f"<code>{_e(o)}</code>" for o in p["objects"])}</p>'
-                       f'<p><span class="lab">Who</span><br>{_e(p["who"])}</p><p><span class="lab">You get</span><br>{_e(p["get"])}</p>'
-                       f'<p><span class="lab">How</span><br>{_inline(p["next"])}</p><p><a href="#{p["id"]}">Finding {p["id"]}: {_e(p["title"])}</a></p></div>')
+    if rep["investigations"]:
+        out.append("<h3>Priority investigations</h3><div class=\"cards\">")
+        for n, p in enumerate(rep["investigations"], 1):
+            per = ""
+            if p.get("per_model"):
+                per = "<details><summary>Per model</summary><ul class=\"per\">" + "".join(
+                    f'<li><a href="#{pm["id"]}">{_e(pm["model"])}</a>: {pm["modules"]} modules, {_c(pm["cells"])} cells' + (f', {pm["effort"]:.1f}% effort' if pm["effort"] else "") + f'; largest {" &middot; ".join(f"<code>{_e(t)}</code>" for t in pm["top"])} <span class="badge st-{pm["strength"]}">evidence {pm["strength"]}</span></li>' for pm in p["per_model"]) + "</ul></details>"
+            links = " ".join(f'<a href="#{i_}">{i_}</a>' for i_ in p["ids"])
+            out.append(f'<div class="card"><h3><span class="muted">{n}.</span> {_e(p["title"])}</h3><p>{_inline(p["sentence"])}</p>'
+                       f'<p><span class="lab">Who</span><br>{_e(p["who"])}</p><p><span class="lab">Next step</span><br>{_inline(p["next"])}</p>{per}<p class="fnote">Findings: {links}</p></div>')
         out.append("</div>")
     else:
-        out.append('<p class="muted">No finding met the bar for a step: the evidence supports the observations above and the findings below, not a headline.</p>')
-    inv = "Have a change planned in this area? Use the estate analysis service to investigate affected dependencies, review the evidence and develop a validation plan."
-    links = []
-    if rep.get("service_url"):
-        links.append(f'<a href="{_e(rep["service_url"])}">Explore a specific question with the AI service</a>')
-    if rep.get("contact"):
-        links.append(_inline(rep["contact"]))
-    out.append(f'<div class="invite">{inv}' + (" " + " &middot; ".join(links) if links else "") + "</div>")
+        out.append('<p class="muted">No finding met the bar for a priority investigation.</p>')
+    action = (f'<p><a href="{_e(rep["service_url"])}"><strong>Request a change-impact review</strong></a></p>' if rep.get("service_url")
+              else '<p class="fnote">Request route: not configured in this report (set --service-url when generating).</p>')
+    out.append('<div class="invite"><strong>Have a change planned in this estate?</strong><p>Request a review of one proposed change: the dependencies visible in your exports, what still needs checking, and a validation plan with your model owner.</p>' + action + "</div>")
+    ex = rep.get("example")
+    if ex:
+        out.append(f'<details class="example"><summary>Illustrative example: from a proposed change to a validation plan</summary><p class="fnote">Built from the exports; no further analysis has been run.</p><dl>'
+                   f'<dt>Proposed change</dt><dd>{_inline(ex["change"])}</dd><dt>Dependency evidence examined</dt><dd>{_inline(ex["evidence"])}</dd>'
+                   f'<dt>Additional context required</dt><dd>{_inline(ex["context"])}</dd><dt>Validation plan that would result</dt><dd>{_inline(ex["plan"])}</dd></dl></details>')
     if rep["map"]["nodes"]:
-        out.append("<h3>Model map</h3><p class=\"muted\">Feeds are inferred from the words after \"from\" in import action names (dashed). No export confirms model-to-model imports; a saved view can feed another model with no action shown here.</p>"
+        out.append("<h3>Model map</h3><p class=\"muted\">Feeds inferred from import action names (dashed); no export confirms them.</p>"
                    f'<div class="map">{map_svg(rep["map"]["nodes"], rep["map"]["edges"])}</div>')
         if rep["map"]["edges"]:
             out.append('<details><summary>Feed table</summary><div class="wrap"><table><thead><tr><th>From</th><th>To</th><th>Import actions</th><th>Into</th><th>Basis</th></tr></thead><tbody>' +
                        "".join(f'<tr><td>{_e(e["from"])}</td><td>{_e(e["to"])}</td><td>{e["actions"]}</td><td>{_e(", ".join(e["targets"]))}</td><td>{_e(e["basis"])}</td></tr>' for e in rep["map"]["edges"]) + "</tbody></table></div></details>")
-    out.append("<h3>Coverage limitations that matter most</h3><ul class=\"limits\">" + "".join(f"<li>{_inline(l)}</li>" for l in rep["limitations"]) + "</ul></section>")
+    out.append("<h3>Coverage limitations</h3><ul class=\"limits\">" + "".join(f"<li>{_inline(l)}</li>" for l in rep["limitations"]) + "</ul></section>")
     # ---- level 2
-    out.append('<section id="findings"><h2>Findings</h2><p class="muted">Grouped by the decision they inform. Importance, evidence strength and change complexity are separate labels; no score is computed. Low-importance findings are hidden until you tick the box. Review status is yours and is stored only in this browser.</p>')
+    out.append('<section id="findings"><h2>Findings</h2><p class="muted">Grouped by the decision they inform. Each finding opens compact: observed, why it matters, the next investigation step, three example objects. "Full assessment" holds every affected object, the evidence and formulas, missing checks, reasons to keep the design, and implementation prerequisites. Search covers all of it, collapsed or not. Sorting is within each category. Reference findings are hidden until you tick the box. Review status is yours and is stored only in this browser.</p>')
     out.append('<div class="controls noprint" role="search"><label class="sr" for="q">Search findings</label><input id="q" type="search" placeholder="Search titles, IDs, models, object names, rules">'
                f'<select id="f-model" aria-label="Model"><option value="">All models</option>{"".join(f"<option>{_e(m)}</option>" for m in models)}</select>'
                f'<select id="f-area" aria-label="Category"><option value="">All categories</option>{"".join(f"<option value={a['key']}>{_e(a['label'])}</option>" for a in rep['areas'])}</select>'
                '<select id="f-strength" aria-label="Evidence status"><option value="">Any evidence</option><option>confirmed</option><option>partial</option><option>inferred</option></select>'
                f'<select id="f-status" aria-label="Review status"><option value="">Any status</option>{"".join(f"<option>{_e(s)}</option>" for s in rep['statuses'])}</select>'
-               '<select id="f-sort" aria-label="Sort by"><option value="importance">Sort: importance, then evidence, then cells</option><option value="cells">Sort: footprint cells</option><option value="effort">Sort: effort share</option><option value="strength">Sort: evidence strength</option><option value="model">Sort: model</option><option value="id">Sort: ID</option></select>'
-               '<label><input type="checkbox" id="f-low"> show low importance</label><button type="button" id="f-clear">Clear</button><button type="button" id="expand-all">Expand evidence</button><button type="button" id="collapse-all">Collapse</button><span class="count" id="f-count"></span></div>')
+               '<select id="f-sort" aria-label="Sort by"><option value="importance">Sort within category: importance, evidence, then cells (unavailable last)</option><option value="cells">Sort within category: footprint cells (unavailable last)</option><option value="effort">Sort within category: model, then effort share within that model (unavailable last)</option><option value="strength">Sort within category: evidence strength</option><option value="model">Sort within category: model</option><option value="id">Sort within category: ID</option></select>'
+               '<label><input type="checkbox" id="f-low"> show reference findings (low importance)</label><button type="button" id="f-clear">Clear</button><button type="button" id="expand-all">Expand evidence</button><button type="button" id="collapse-all">Collapse</button><span class="count" id="f-count"></span></div>')
     for a in rep["areas"]:
         out.append(f'<section class="area" id="area-{a["key"]}"><h3>{_e(a["label"])} <span class="muted">({len(a["ids"])})</span></h3><p>{_e(a["blurb"])}</p>')
         for fid in a["ids"]:
@@ -362,17 +408,17 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
     # ---- level 3
     out.append('<section id="reference"><h2>Reference</h2>')
     out.append('<h3 id="register">Findings register</h3><p class="noprint"><button type="button" id="dl-register">Download register (CSV)</button> <button type="button" id="dl-status">Export review statuses (JSON)</button> <span class="muted">Statuses live in this browser\'s localStorage; the export is the only copy you can share.</span></p>')
-    out.append('<div class="wrap"><table class="reg"><thead><tr><th data-sort="text">ID</th><th data-sort="text">Area</th><th data-sort="text">Title</th><th data-sort="text">Model</th><th data-sort="text">Importance</th><th data-sort="text">Evidence</th><th data-sort="text">Complexity</th><th data-sort="num">Footprint cells</th><th data-sort="num">Effort share</th><th data-sort="text">Benefit</th></tr></thead><tbody>')
+    out.append('<div class="wrap"><table class="reg"><thead><tr><th data-sort="text">ID</th><th data-sort="text">Area</th><th data-sort="text">Title</th><th data-sort="text">Model</th><th data-sort="text">Kind</th><th data-sort="text">Importance</th><th data-sort="text">Evidence</th><th data-sort="text">Complexity</th><th data-sort="num">Footprint cells (n/a last)</th><th data-sort="num">Effort share of its model (n/a last)</th><th data-sort="text">Benefit</th></tr></thead><tbody>')
     for x in rep["findings"]:
-        out.append(f'<tr><td><a href="#{x["id"]}">{x["id"]}</a></td><td>{_e(AREA_LABEL[x["area"]])}</td><td>{_e(x["title"])}</td><td>{_e(x["model"])}</td><td>{x["importance"]}</td><td>{x["strength"]}</td><td>{x["complexity"]}</td>'
-                   f'<td data-v="{x["footprint_cells"]}">{_c(x["footprint_cells"]) if x["footprint_cells"] else ""}</td><td data-v="{x["footprint_effort"]}">{f"{x['footprint_effort']:.1f}%" if x["footprint_effort"] else ""}</td><td>{x["benefit_kind"]}</td></tr>')
+        out.append(f'<tr><td><a href="#{x["id"]}">{x["id"]}</a></td><td>{_e(AREA_LABEL[x["area"]])}</td><td>{_e(x["title"])}</td><td>{_e(x["model"])}</td><td>{x["kind_label"]}</td><td>{x["importance"]}</td><td>{x["strength"]}</td><td>{x["complexity"]}</td>'
+                   f'<td data-v="{"" if x["footprint_cells"] is None else x["footprint_cells"]}">{_c(x["footprint_cells"]) if x["footprint_cells"] is not None else "n/a"}</td><td data-v="{"" if x["footprint_effort"] is None else x["footprint_effort"]}">{f"{x['footprint_effort']:.1f}%" if x["footprint_effort"] is not None else "n/a"}</td><td>{x["benefit_kind"]}</td></tr>')
     out.append("</tbody></table></div>")
     # models and coverage
     out.append('<h3 id="models">Models and coverage</h3>')
     for m in rep["models"]:
         f, cov, rc = m["facts"], m["coverage"], m["facts"]["referenced_by_check"]
         rows = [("Files supplied", ", ".join(f"{k}: {v}" for k, v in cov["files"].items() if v) + ("" if cov["files"]["actions"] else "; no Actions export") + ("" if cov["files"]["modules"] else "; no Modules export")),
-                ("Actions snapshot (latest recorded run)", cov["snapshot_actions"] or "no Actions export"), ("Analysis generated", rep["generated"]),
+                ("Export date", "unknown (not in the files)"), ("Latest recorded action run", cov["snapshot_actions"] or "no Actions export"), ("Analysis generated", rep["generated"]),
                 ("Engine", "not in any export (Classic or Polaris unknown)"),
                 ("Modules / line items / calculated", f"{f['modules']} / {_n_(f['line_items'])} / {_n_(f['calculated'])}"), ("Cells as exported", _n_(f["cells"])),
                 ("Formulas parsed", f"{f['parse_rate']:.2%} ({f['parse_errors']} not parsed)"),

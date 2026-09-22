@@ -13,171 +13,290 @@
   "parse_rate": 1.0
  },
  "observations": [
-  "Caldergate FP&A holds 90% of the estate's 145M exported cells; its largest module, CAL05 Opex OLD, holds 70.2M on its own.",
-  "In Caldergate FP&A, ten line items carry 68.0% of the measured calculation effort, led by CAL03 Opex.Forecast Opex at 16.0%. Effort shares are per model and depend on the engine (Classic at open, Polaris over ten minutes), which the export does not name.",
-  "Caldergate Data Hub feeds Caldergate FP&A, Workforce Planning through 6 import actions; 6 feeds between models in all, inferred from import action names and not confirmed by any system table.",
-  "16 calculated line items repeat a calculation already made in the same model under another name, or copy another line item outright; the copies hold 292K cells. Some will exist for a page or an access boundary."
+  "Caldergate FP&A holds 90% of the estate's 145M exported cells; CAL05 Opex OLD alone holds 70.2M.",
+  "Ten line items carry 68.0% of Caldergate FP&A's measured calculation effort (per model; the engine is not in the export).",
+  "Caldergate Data Hub feeds Caldergate FP&A, Workforce Planning through 6 import actions; all 6 feeds are inferred from action names."
+ ],
+ "investigations": [
+  {
+   "key": "hotspots",
+   "title": "Investigate Caldergate Data Hub's principal calculation hotspots",
+   "sentence": "Ten line items carry 99.9% of Caldergate Data Hub's measured calculation effort, led by DAT01 GL Transactions.Loaded? at 88.3%.",
+   "who": "model builder who owns Caldergate Data Hub",
+   "next": "Read the formulas of the top five and match each against the findings that name it; choose one to trial in a development copy.",
+   "ids": [
+    "F3"
+   ],
+   "model": "Caldergate Data Hub"
+  },
+  {
+   "key": "usage",
+   "title": "Establish whether the large modules nothing reads remain necessary",
+   "sentence": "7 modules across 4 models hold 70.3M cells with no formula or export consumer in the exports; each needs a consumer check before any keep-or-retire decision.",
+   "who": "model owner with a page builder",
+   "next": "Complete the consumer and retention checks for the largest modules in each model, then record a keep-or-retire recommendation per module.",
+   "ids": [
+    "F1",
+    "F30",
+    "F31",
+    "F8"
+   ],
+   "per_model": [
+    {
+     "model": "Caldergate FP&A",
+     "id": "F1",
+     "modules": 3,
+     "cells": 70270848,
+     "effort": 50.78,
+     "top": [
+      "CAL05 Opex OLD",
+      "CAL06 Department Summary"
+     ],
+     "strength": "partial"
+    },
+    {
+     "model": "Workforce Planning",
+     "id": "F30",
+     "modules": 1,
+     "cells": 13392,
+     "effort": null,
+     "top": [
+      "zz Archive - 2021 Cost"
+     ],
+     "strength": "partial"
+    },
+    {
+     "model": "Caldergate Data Hub",
+     "id": "F31",
+     "modules": 2,
+     "cells": 360,
+     "effort": 0.01,
+     "top": [
+      "SYS01 Time Settings",
+      "SYS02 Data Checks"
+     ],
+     "strength": "partial"
+    },
+    {
+     "model": "Board Reporting",
+     "id": "F8",
+     "modules": 1,
+     "cells": 72,
+     "effort": 2.8,
+     "top": [
+      "SYS01 Time"
+     ],
+     "strength": "partial"
+    }
+   ],
+   "model": "all models"
+  },
+  {
+   "key": "duplicates",
+   "title": "Validate one substantial duplicate-calculation group",
+   "sentence": "In Caldergate FP&A, 1 group; 1 duplicate line item plus one kept line item per group; the largest group repeats CAL07 P&L by Cost Centre.Depreciation 1 more time (19.2K cells).",
+   "who": "model builder who owns Caldergate FP&A",
+   "next": "Validate equivalence and the reasons for separate objects in that group, then decide whether consolidation is appropriate.",
+   "ids": [
+    "F11"
+   ],
+   "model": "Caldergate FP&A"
+  }
  ],
  "steps": [
   {
-   "id": "F1",
-   "n": 1,
-   "do": "Confirm what reads the largest modules no formula reads",
-   "model": "Caldergate FP&A",
-   "objects": [
-    "CAL05 Opex OLD",
-    "CAL06 Department Summary",
-    "CAL08 Cash Flow"
+   "key": "hotspots",
+   "title": "Investigate Caldergate Data Hub's principal calculation hotspots",
+   "sentence": "Ten line items carry 99.9% of Caldergate Data Hub's measured calculation effort, led by DAT01 GL Transactions.Loaded? at 88.3%.",
+   "who": "model builder who owns Caldergate Data Hub",
+   "next": "Read the formulas of the top five and match each against the findings that name it; choose one to trial in a development copy.",
+   "ids": [
+    "F3"
    ],
-   "why": "Either a page, a saved view, a line item subset or an integration reads each of them, or nothing does. The exports cannot tell which; the footprint says which ones are worth the question first.",
+   "model": "Caldergate Data Hub"
+  },
+  {
+   "key": "usage",
+   "title": "Establish whether the large modules nothing reads remain necessary",
+   "sentence": "7 modules across 4 models hold 70.3M cells with no formula or export consumer in the exports; each needs a consumer check before any keep-or-retire decision.",
    "who": "model owner with a page builder",
-   "get": "a keep-or-retire decision per module, and the cells and effort that go with it",
-   "next": "Take the five largest. For each, list the pages, saved views and subsets that use it (page builder; Modules export's Used in Dashboards for classic dashboards). Where the answer is none, blank the formulas in a sandbox copy and wait one cycle before deleting.",
-   "importance": "high",
-   "strength": "partial",
-   "complexity": "medium",
-   "benefit": "If no consumer is found: 70.3M cells as exported; 50.8% of Caldergate FP&A's measured calculation effort would no longer be held or measured. Per module in the table.",
-   "title": "3 modules with no consumer detected in the inspected dependency types"
+   "next": "Complete the consumer and retention checks for the largest modules in each model, then record a keep-or-retire recommendation per module.",
+   "ids": [
+    "F1",
+    "F30",
+    "F31",
+    "F8"
+   ],
+   "per_model": [
+    {
+     "model": "Caldergate FP&A",
+     "id": "F1",
+     "modules": 3,
+     "cells": 70270848,
+     "effort": 50.78,
+     "top": [
+      "CAL05 Opex OLD",
+      "CAL06 Department Summary"
+     ],
+     "strength": "partial"
+    },
+    {
+     "model": "Workforce Planning",
+     "id": "F30",
+     "modules": 1,
+     "cells": 13392,
+     "effort": null,
+     "top": [
+      "zz Archive - 2021 Cost"
+     ],
+     "strength": "partial"
+    },
+    {
+     "model": "Caldergate Data Hub",
+     "id": "F31",
+     "modules": 2,
+     "cells": 360,
+     "effort": 0.01,
+     "top": [
+      "SYS01 Time Settings",
+      "SYS02 Data Checks"
+     ],
+     "strength": "partial"
+    },
+    {
+     "model": "Board Reporting",
+     "id": "F8",
+     "modules": 1,
+     "cells": 72,
+     "effort": 2.8,
+     "top": [
+      "SYS01 Time"
+     ],
+     "strength": "partial"
+    }
+   ],
+   "model": "all models"
   },
   {
-   "id": "F2",
-   "n": 2,
-   "do": "Replace the IF chain with a mapping module",
-   "model": "Caldergate FP&A",
-   "objects": [
-    "CAL03 Opex.Forecast Opex"
+   "key": "duplicates",
+   "title": "Validate one substantial duplicate-calculation group",
+   "sentence": "In Caldergate FP&A, 1 group; 1 duplicate line item plus one kept line item per group; the largest group repeats CAL07 P&L by Cost Centre.Depreciation 1 more time (19.2K cells).",
+   "who": "model builder who owns Caldergate FP&A",
+   "next": "Validate equivalence and the reasons for separate objects in that group, then decide whether consolidation is appropriate.",
+   "ids": [
+    "F11"
    ],
-   "why": "Every branch is evaluated for every cell, and every new case is a formula edit. Anaplan's checklist: refactor above 10 IF conditions. This line item carries 16.0% of the model's measured effort.",
-   "who": "model builder",
-   "get": "a table finance can maintain instead of a formula edit per new case",
-   "next": "Load the table into a mapping module and replace the chain with one LOOKUP; compare values before and after.",
-   "importance": "medium",
-   "strength": "confirmed",
-   "complexity": "medium",
-   "benefit": "Observed effort share only; improvement would be measured after the change.",
-   "title": "IF chain that encodes a lookup table"
-  },
-  {
-   "id": "F4",
-   "n": 3,
-   "do": "Put the widest-impact line items in the release checklist",
-   "model": "Caldergate FP&A",
-   "objects": [
-    "SYS01 Time Settings.Actual?"
-   ],
-   "why": "A change to any of these moves numbers across the model. Not a fault: a fact for change control and for choosing what to test after a release.",
-   "who": "model builder",
-   "get": "a change-impact list used before every release",
-   "next": "Include these in the change-impact check for every release that touches them.",
-   "importance": "medium",
-   "strength": "confirmed",
-   "complexity": "low",
-   "benefit": "not applicable",
-   "title": "Line items with the widest change impact"
-  },
-  {
-   "id": "F8",
-   "n": 4,
-   "do": "Confirm what reads the largest modules no formula reads",
-   "model": "Board Reporting",
-   "objects": [
-    "SYS01 Time"
-   ],
-   "why": "Either a page, a saved view, a line item subset or an integration reads each of them, or nothing does. The exports cannot tell which; the footprint says which ones are worth the question first.",
-   "who": "model owner with a page builder",
-   "get": "a keep-or-retire decision per module, and the cells and effort that go with it",
-   "next": "Take the five largest. For each, list the pages, saved views and subsets that use it (page builder; Modules export's Used in Dashboards for classic dashboards). Where the answer is none, blank the formulas in a sandbox copy and wait one cycle before deleting.",
-   "importance": "medium",
-   "strength": "partial",
-   "complexity": "medium",
-   "benefit": "If no consumer is found: 72 cells as exported; 2.8% of Board Reporting's measured calculation effort would no longer be held or measured. Per module in the table.",
-   "title": "1 module with no consumer detected in the inspected dependency types"
+   "model": "Caldergate FP&A"
   }
  ],
  "priorities": [
   {
-   "id": "F1",
-   "n": 1,
-   "do": "Confirm what reads the largest modules no formula reads",
-   "model": "Caldergate FP&A",
-   "objects": [
-    "CAL05 Opex OLD",
-    "CAL06 Department Summary",
-    "CAL08 Cash Flow"
+   "key": "hotspots",
+   "title": "Investigate Caldergate Data Hub's principal calculation hotspots",
+   "sentence": "Ten line items carry 99.9% of Caldergate Data Hub's measured calculation effort, led by DAT01 GL Transactions.Loaded? at 88.3%.",
+   "who": "model builder who owns Caldergate Data Hub",
+   "next": "Read the formulas of the top five and match each against the findings that name it; choose one to trial in a development copy.",
+   "ids": [
+    "F3"
    ],
-   "why": "Either a page, a saved view, a line item subset or an integration reads each of them, or nothing does. The exports cannot tell which; the footprint says which ones are worth the question first.",
+   "model": "Caldergate Data Hub"
+  },
+  {
+   "key": "usage",
+   "title": "Establish whether the large modules nothing reads remain necessary",
+   "sentence": "7 modules across 4 models hold 70.3M cells with no formula or export consumer in the exports; each needs a consumer check before any keep-or-retire decision.",
    "who": "model owner with a page builder",
-   "get": "a keep-or-retire decision per module, and the cells and effort that go with it",
-   "next": "Take the five largest. For each, list the pages, saved views and subsets that use it (page builder; Modules export's Used in Dashboards for classic dashboards). Where the answer is none, blank the formulas in a sandbox copy and wait one cycle before deleting.",
-   "importance": "high",
-   "strength": "partial",
-   "complexity": "medium",
-   "benefit": "If no consumer is found: 70.3M cells as exported; 50.8% of Caldergate FP&A's measured calculation effort would no longer be held or measured. Per module in the table.",
-   "title": "3 modules with no consumer detected in the inspected dependency types"
+   "next": "Complete the consumer and retention checks for the largest modules in each model, then record a keep-or-retire recommendation per module.",
+   "ids": [
+    "F1",
+    "F30",
+    "F31",
+    "F8"
+   ],
+   "per_model": [
+    {
+     "model": "Caldergate FP&A",
+     "id": "F1",
+     "modules": 3,
+     "cells": 70270848,
+     "effort": 50.78,
+     "top": [
+      "CAL05 Opex OLD",
+      "CAL06 Department Summary"
+     ],
+     "strength": "partial"
+    },
+    {
+     "model": "Workforce Planning",
+     "id": "F30",
+     "modules": 1,
+     "cells": 13392,
+     "effort": null,
+     "top": [
+      "zz Archive - 2021 Cost"
+     ],
+     "strength": "partial"
+    },
+    {
+     "model": "Caldergate Data Hub",
+     "id": "F31",
+     "modules": 2,
+     "cells": 360,
+     "effort": 0.01,
+     "top": [
+      "SYS01 Time Settings",
+      "SYS02 Data Checks"
+     ],
+     "strength": "partial"
+    },
+    {
+     "model": "Board Reporting",
+     "id": "F8",
+     "modules": 1,
+     "cells": 72,
+     "effort": 2.8,
+     "top": [
+      "SYS01 Time"
+     ],
+     "strength": "partial"
+    }
+   ],
+   "model": "all models"
   },
   {
-   "id": "F2",
-   "n": 2,
-   "do": "Replace the IF chain with a mapping module",
-   "model": "Caldergate FP&A",
-   "objects": [
-    "CAL03 Opex.Forecast Opex"
+   "key": "duplicates",
+   "title": "Validate one substantial duplicate-calculation group",
+   "sentence": "In Caldergate FP&A, 1 group; 1 duplicate line item plus one kept line item per group; the largest group repeats CAL07 P&L by Cost Centre.Depreciation 1 more time (19.2K cells).",
+   "who": "model builder who owns Caldergate FP&A",
+   "next": "Validate equivalence and the reasons for separate objects in that group, then decide whether consolidation is appropriate.",
+   "ids": [
+    "F11"
    ],
-   "why": "Every branch is evaluated for every cell, and every new case is a formula edit. Anaplan's checklist: refactor above 10 IF conditions. This line item carries 16.0% of the model's measured effort.",
-   "who": "model builder",
-   "get": "a table finance can maintain instead of a formula edit per new case",
-   "next": "Load the table into a mapping module and replace the chain with one LOOKUP; compare values before and after.",
-   "importance": "medium",
-   "strength": "confirmed",
-   "complexity": "medium",
-   "benefit": "Observed effort share only; improvement would be measured after the change.",
-   "title": "IF chain that encodes a lookup table"
-  },
-  {
-   "id": "F4",
-   "n": 3,
-   "do": "Put the widest-impact line items in the release checklist",
-   "model": "Caldergate FP&A",
-   "objects": [
-    "SYS01 Time Settings.Actual?"
-   ],
-   "why": "A change to any of these moves numbers across the model. Not a fault: a fact for change control and for choosing what to test after a release.",
-   "who": "model builder",
-   "get": "a change-impact list used before every release",
-   "next": "Include these in the change-impact check for every release that touches them.",
-   "importance": "medium",
-   "strength": "confirmed",
-   "complexity": "low",
-   "benefit": "not applicable",
-   "title": "Line items with the widest change impact"
-  },
-  {
-   "id": "F8",
-   "n": 4,
-   "do": "Confirm what reads the largest modules no formula reads",
-   "model": "Board Reporting",
-   "objects": [
-    "SYS01 Time"
-   ],
-   "why": "Either a page, a saved view, a line item subset or an integration reads each of them, or nothing does. The exports cannot tell which; the footprint says which ones are worth the question first.",
-   "who": "model owner with a page builder",
-   "get": "a keep-or-retire decision per module, and the cells and effort that go with it",
-   "next": "Take the five largest. For each, list the pages, saved views and subsets that use it (page builder; Modules export's Used in Dashboards for classic dashboards). Where the answer is none, blank the formulas in a sandbox copy and wait one cycle before deleting.",
-   "importance": "medium",
-   "strength": "partial",
-   "complexity": "medium",
-   "benefit": "If no consumer is found: 72 cells as exported; 2.8% of Board Reporting's measured calculation effort would no longer be held or measured. Per module in the table.",
-   "title": "1 module with no consumer detected in the inspected dependency types"
+   "model": "Caldergate FP&A"
   }
  ],
+ "metrics": {
+  "models": 4,
+  "review_first": 8,
+  "reference": 32,
+  "validated_defects": 0,
+  "observations": 4
+ },
+ "example": {
+  "change": "Change the formula of SYS01 Time Settings.Actual? in Caldergate FP&A.",
+  "evidence": "36 formulas read it directly and 101 line items across 13 modules depend on it transitively (parsed references, checked against Referenced By at 100% agreement); 2 export actions read those modules; Caldergate FP&A feeds Board Reporting, Workforce Planning by inferred import actions.",
+  "context": "Pages and saved views that show any of the dependent line items; line item subsets that include them; whether the exports feed another model's import; the owner's acceptance criteria for the outputs.",
+  "plan": "Compare the dependent outputs the owner names between a development copy and production before and after the change; reconcile the exports read by other models; sign-off by the model owner before promotion.",
+  "model": "Caldergate FP&A",
+  "hub": "SYS01 Time Settings.Actual?"
+ },
  "limitations": [
-  "Pages, dashboards, saved views, line item subsets, filters, access drivers and integrations are not in any export. Every 'no consumer detected' finding carries the checks that remain.",
-  "No Calculation Effort figures for Workforce Planning.",
-  "The date the Line Items and Modules exports were taken is not in the files; the Actions export's latest recorded run is the closest thing to a snapshot date. The report generation date is not data freshness."
+  "Pages, saved views, line item subsets, filters, access drivers and integrations are not in any export; each 'no consumer detected' finding lists the checks that remain.",
+  "Export date unknown for every file; the latest recorded action run is not an export date."
  ],
  "summary_text": [
-  "4 Anaplan models, 426 line items, 145M cells as exported. Latest recorded action run 2026-09-21; analysis generated 2026-09-22. Read from the Line Items, Modules and Actions exports only: pages, saved views and subsets are not in them, so anything called 'no consumer detected' is a question to answer, not a saving.",
-  "Start with the steps below. Each is one decision, backed by one finding, with who does it and what you get. The findings section holds the evidence; low-importance findings are hidden until you ask for them."
+  "4 Anaplan models, 426 line items, 145M cells as exported. Export date unknown. Latest recorded action run: 2026-09-21. Analysis generated 2026-09-22. Read from the exports only; pages, saved views and subsets are not in them, so 'no consumer detected' is a question, not a saving.",
+  "The investigations below were chosen for footprint and evidence strength and can proceed independently. Reference findings are hidden until asked for."
  ],
  "map": {
   "nodes": [
@@ -388,7 +507,7 @@
     "CAL08 Cash Flow"
    ],
    "observed": "No formula outside these modules reads any of their line items and no export action reads them. Together they hold 70.3M cells and 50.8% of Caldergate FP&A's measured calculation effort. The five largest: `CAL05 Opex OLD`, `CAL06 Department Summary`, `CAL08 Cash Flow`.",
-   "why": "Either a page, a saved view, a line item subset or an integration reads each of them, or nothing does. The exports cannot tell which; the footprint says which ones are worth the question first.",
+   "why": "Pages, saved views, subsets and integrations are not in the exports, so each module is either read there or by nothing. The footprint says which to ask about first.",
    "scope": "3 modules, 30 line items",
    "benefit": "If no consumer is found: 70.3M cells as exported; 50.8% of Caldergate FP&A's measured calculation effort would no longer be held or measured. Per module in the table.",
    "benefit_kind": "conditional",
@@ -400,8 +519,8 @@
     "line item subsets that include line items of `each listed module` (COLLECT sources are not in the export)",
     "filters, access drivers, DCA and integration (CloudWorks, API) references"
    ],
-   "next_step": "Take the five largest. For each, list the pages, saved views and subsets that use it (page builder; Modules export's Used in Dashboards for classic dashboards). Where the answer is none, blank the formulas in a sandbox copy and wait one cycle before deleting.",
-   "keep_design": "A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. Modules with a twin still need the page check before the twin takes over.",
+   "next_step": "Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.",
+   "keep_design": "A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. A module containing matching line items is not a duplicate of the module they match until the unmatched line items and the consumers are accounted for.",
    "importance": "high",
    "complexity": "medium",
    "evidence": [
@@ -421,7 +540,15 @@
    "related": [],
    "footprint_cells": 70270848,
    "footprint_effort": 50.78,
-   "counts_benefit": true
+   "counts_benefit": true,
+   "summary": "3 modules holding 70.3M cells and 50.8% of measured effort have no formula or export consumer in the exports.",
+   "object_label": "3 modules, 30 line items",
+   "implementation": [
+    "Prerequisites: every consumer check returned none, retained data is not needed, and the model owner has accepted the recommendation.",
+    "Then: blank the formulas in a development copy, reconcile the outputs the owner names against production over a full cycle, obtain owner sign-off, and only then delete.",
+    "A module containing matching line items: repoint any page from the module to the matching line items first, and account for the unmatched line items separately."
+   ],
+   "kind_label": "review candidate"
   },
   {
    "id": "F2",
@@ -471,9 +598,15 @@
     "A-IF-COUNT"
    ],
    "related": [],
-   "footprint_cells": 0,
+   "footprint_cells": null,
    "footprint_effort": 16.04,
-   "counts_benefit": true
+   "counts_benefit": true,
+   "summary": "12 IF THEN ELSE in one formula.",
+   "object_label": "1 object",
+   "implementation": [
+    "Prerequisites: the mapping is stable and the owner accepts a module in place of the formula. Then build the mapping module in a development copy, replace the formula, reconcile every cell, sign-off."
+   ],
+   "kind_label": "review candidate"
   },
   {
    "id": "F3",
@@ -504,7 +637,7 @@
     "engine (Classic or Polaris)",
     "when the measurement was taken"
    ],
-   "next_step": "Read the formulas of the top five; each other finding that names one of them is the place to start.",
+   "next_step": "Read the formulas of the top five and match each against the other findings that name it (SUM with LOOKUP, IF chains, text in large modules); decide which one to trial in a development copy first.",
    "keep_design": "High effort in the line item that does the model's main job is expected.",
    "importance": "medium",
    "complexity": "medium",
@@ -534,9 +667,13 @@
     "EFFORT"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "Ten line items carry 99.9% of Caldergate Data Hub's measured calculation effort, led by `DAT01 GL Transactions.Loaded?` at 88.3%; a concentration to investigate, not a saving.",
+   "object_label": "top 20 line items by effort share",
+   "implementation": [],
+   "kind_label": "observation"
   },
   {
    "id": "F4",
@@ -571,9 +708,13 @@
     "G-HUB"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "1 line items are read directly by 25 or more formulas.",
+   "object_label": "1 line item",
+   "implementation": [],
+   "kind_label": "observation"
   },
   {
    "id": "F5",
@@ -604,7 +745,7 @@
     "engine (Classic or Polaris)",
     "when the measurement was taken"
    ],
-   "next_step": "Read the formulas of the top five; each other finding that names one of them is the place to start.",
+   "next_step": "Read the formulas of the top five and match each against the other findings that name it (SUM with LOOKUP, IF chains, text in large modules); decide which one to trial in a development copy first.",
    "keep_design": "High effort in the line item that does the model's main job is expected.",
    "importance": "medium",
    "complexity": "medium",
@@ -639,9 +780,13 @@
     "EFFORT"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "Ten line items carry 68.0% of Caldergate FP&A's measured calculation effort, led by `CAL03 Opex.Forecast Opex` at 16.0%; a concentration to investigate, not a saving.",
+   "object_label": "top 20 line items by effort share",
+   "implementation": [],
+   "kind_label": "observation"
   },
   {
    "id": "F6",
@@ -672,7 +817,7 @@
     "engine (Classic or Polaris)",
     "when the measurement was taken"
    ],
-   "next_step": "Read the formulas of the top five; each other finding that names one of them is the place to start.",
+   "next_step": "Read the formulas of the top five and match each against the other findings that name it (SUM with LOOKUP, IF chains, text in large modules); decide which one to trial in a development copy first.",
    "keep_design": "High effort in the line item that does the model's main job is expected.",
    "importance": "medium",
    "complexity": "medium",
@@ -700,9 +845,13 @@
     "EFFORT"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "Ten line items carry 89.7% of Board Reporting's measured calculation effort, led by `CAL01 KPIs.Revenue per FTE` at 11.2%; a concentration to investigate, not a saving.",
+   "object_label": "top 20 line items by effort share",
+   "implementation": [],
+   "kind_label": "observation"
   },
   {
    "id": "F7",
@@ -715,7 +864,7 @@
     "CAL03 Opex",
     "CAL02 Revenue"
    ],
-   "observed": "5 calculated line items in 3 modules are read by no formula, not exported, not in an output-style module and have no exact twin.",
+   "observed": "5 calculated line items in 3 modules are read by no formula, not exported, not in an output-style module and have no matching line item elsewhere.",
    "why": "Each is computed and stored; if nothing reads it the footprint is spare. If a page reads it, it is an output that lives in a calculation module.",
    "scope": "5 line items in 3 modules",
    "benefit": "If no consumer is found: 15.1M cells as exported; 10.0% of Caldergate FP&A's measured calculation effort.",
@@ -726,7 +875,7 @@
     "pages, saved views, line item subsets and integrations for each listed module",
     "the 29 unreferenced line items that look like outputs by module name, format or time scale are not listed here"
    ],
-   "next_step": "Take the largest module first; list its pages and views; blank one formula in a sandbox and wait a cycle.",
+   "next_step": "Complete the consumer and retention checks (pages, saved views, subsets, integrations, retained data) for the largest module's line items, then record a keep-or-retire recommendation for each.",
    "keep_design": "A line item read only by a page is not spare. A calculation kept for audit or reconciliation can be right to keep even if nothing reads it now.",
    "importance": "medium",
    "complexity": "medium",
@@ -746,7 +895,13 @@
    "related": [],
    "footprint_cells": 15126048,
    "footprint_effort": 10.04,
-   "counts_benefit": true
+   "counts_benefit": true,
+   "summary": "5 calculated line items in 3 modules are read by no formula, not exported, not in an output-style module and have no matching line item elsewhere.",
+   "object_label": "3 objects",
+   "implementation": [
+    "Prerequisites: consumer checks returned none and the owner accepts. Then blank in a development copy, reconcile named outputs over a cycle, owner sign-off, delete."
+   ],
+   "kind_label": "review candidate"
   },
   {
    "id": "F8",
@@ -758,7 +913,7 @@
     "SYS01 Time"
    ],
    "observed": "No formula outside these modules reads any of their line items and no export action reads them. Together they hold 72 cells and 2.8% of Board Reporting's measured calculation effort. The five largest: `SYS01 Time`.",
-   "why": "Either a page, a saved view, a line item subset or an integration reads each of them, or nothing does. The exports cannot tell which; the footprint says which ones are worth the question first.",
+   "why": "Pages, saved views, subsets and integrations are not in the exports, so each module is either read there or by nothing. The footprint says which to ask about first.",
    "scope": "1 module, 2 line items",
    "benefit": "If no consumer is found: 72 cells as exported; 2.8% of Board Reporting's measured calculation effort would no longer be held or measured. Per module in the table.",
    "benefit_kind": "conditional",
@@ -770,8 +925,8 @@
     "line item subsets that include line items of `each listed module` (COLLECT sources are not in the export)",
     "filters, access drivers, DCA and integration (CloudWorks, API) references"
    ],
-   "next_step": "Take the five largest. For each, list the pages, saved views and subsets that use it (page builder; Modules export's Used in Dashboards for classic dashboards). Where the answer is none, blank the formulas in a sandbox copy and wait one cycle before deleting.",
-   "keep_design": "A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. Modules with a twin still need the page check before the twin takes over.",
+   "next_step": "Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.",
+   "keep_design": "A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. A module containing matching line items is not a duplicate of the module they match until the unmatched line items and the consumers are accounted for.",
    "importance": "medium",
    "complexity": "medium",
    "evidence": [
@@ -789,7 +944,15 @@
    "related": [],
    "footprint_cells": 72,
    "footprint_effort": 2.8,
-   "counts_benefit": true
+   "counts_benefit": true,
+   "summary": "1 module holding 72 cells and 2.8% of measured effort have no formula or export consumer in the exports.",
+   "object_label": "1 module, 2 line items",
+   "implementation": [
+    "Prerequisites: every consumer check returned none, retained data is not needed, and the model owner has accepted the recommendation.",
+    "Then: blank the formulas in a development copy, reconcile the outputs the owner names against production over a full cycle, obtain owner sign-off, and only then delete.",
+    "A module containing matching line items: repoint any page from the module to the matching line items first, and account for the unmatched line items separately."
+   ],
+   "kind_label": "review candidate"
   },
   {
    "id": "F9",
@@ -824,7 +987,7 @@
     "pages that show the alias under its name",
     "exports and views that read the alias module (the 'module exported' column shows export actions only)"
    ],
-   "next_step": "Sort by cells; for the largest, check what shows it; point readers at the source where nothing does.",
+   "next_step": "For the largest copies, establish what shows or exports them under their own name and whether access differs, then decide which copies are interfaces to keep.",
    "keep_design": "An alias that is an interface (a reporting name, an export column, an access boundary) is a good alias.",
    "importance": "low",
    "complexity": "low",
@@ -854,8 +1017,14 @@
    ],
    "related": [],
    "footprint_cells": 268128,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "14 line items have the formula `B = A` with the same context as A.",
+   "object_label": "14 copy line items",
+   "implementation": [
+    "Prerequisites: no page, export or access reason for the copy; owner accepts. Then repoint readers in a development copy, reconcile, sign-off, remove."
+   ],
+   "kind_label": "review candidate"
   },
   {
    "id": "F10",
@@ -879,7 +1048,7 @@
    "missing": [
     "whether an intermediate is read by a page, a view or another model's import"
    ],
-   "next_step": "For each chain, ask what each intermediate is for; where the answer is nothing, point the head at the end.",
+   "next_step": "For each chain, establish what each intermediate is for (page, export, access boundary); decide which intermediates are interfaces to keep.",
    "keep_design": "A pass-through that is an interface (OUT module read by pages, source of an export, access boundary) should stay.",
    "importance": "low",
    "complexity": "low",
@@ -897,8 +1066,14 @@
    ],
    "related": [],
    "footprint_cells": 153216,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "4 chains where A copies B copies C.",
+   "object_label": "4 objects",
+   "implementation": [
+    "Prerequisites: the intermediate has no consumer and no interface role; owner accepts. Then repoint the head in a development copy, reconcile, sign-off."
+   ],
+   "kind_label": "review candidate"
   },
   {
    "id": "F11",
@@ -920,8 +1095,8 @@
     "pages and views that show the copy under its own name",
     "access boundaries and reporting contracts that justify a separate object"
    ],
-   "next_step": "Start with the group holding the most cells: check what shows the copy, then point its readers at the kept line item.",
-   "keep_design": "Different access (DCA or selective access) on the two modules, a reporting contract on the copy's name, or a page that needs the copy's summary setting are all reasons to keep both.",
+   "next_step": "Validate equivalence and the reasons for separate objects in the largest group (access boundaries, a reporting contract on the copy's name, a page that shows it), then decide whether consolidation is appropriate.",
+   "keep_design": "Different access (DCA or selective access) on the two modules, a reporting contract on the copy's name, or a deliberately separate process are reasons to keep both. Summary methods already match within a group, so they do not explain the copy.",
    "importance": "low",
    "complexity": "medium",
    "evidence": [
@@ -941,8 +1116,15 @@
    ],
    "related": [],
    "footprint_cells": 19152,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "1 line items in 1 groups repeat a calculation already made with the same formula and context; the copies hold 19.2K cells.",
+   "object_label": "1 group; 1 duplicate line item plus one kept line item per group",
+   "implementation": [
+    "Prerequisites: equivalence validated for the group, the reason for the second object ruled out, the owner accepts.",
+    "Then: repoint each reader of the copy to the kept line item in a development copy, reconcile the outputs that read it, owner sign-off, remove the copy."
+   ],
+   "kind_label": "review candidate"
   },
   {
    "id": "F12",
@@ -964,8 +1146,8 @@
     "pages and views that show the copy under its own name",
     "access boundaries and reporting contracts that justify a separate object"
    ],
-   "next_step": "Start with the group holding the most cells: check what shows the copy, then point its readers at the kept line item.",
-   "keep_design": "Different access (DCA or selective access) on the two modules, a reporting contract on the copy's name, or a page that needs the copy's summary setting are all reasons to keep both.",
+   "next_step": "Validate equivalence and the reasons for separate objects in the largest group (access boundaries, a reporting contract on the copy's name, a page that shows it), then decide whether consolidation is appropriate.",
+   "keep_design": "Different access (DCA or selective access) on the two modules, a reporting contract on the copy's name, or a deliberately separate process are reasons to keep both. Summary methods already match within a group, so they do not explain the copy.",
    "importance": "low",
    "complexity": "medium",
    "evidence": [
@@ -985,8 +1167,15 @@
    ],
    "related": [],
    "footprint_cells": 4464,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "1 line items in 1 groups repeat a calculation already made with the same formula and context; the copies hold 4.5K cells.",
+   "object_label": "1 group; 1 duplicate line item plus one kept line item per group",
+   "implementation": [
+    "Prerequisites: equivalence validated for the group, the reason for the second object ruled out, the owner accepts.",
+    "Then: repoint each reader of the copy to the kept line item in a development copy, reconcile the outputs that read it, owner sign-off, remove the copy."
+   ],
+   "kind_label": "review candidate"
   },
   {
    "id": "F13",
@@ -1026,9 +1215,13 @@
     "A-SYSTEMS-FN"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "2 line items compute a text value, a FINDITEM, a text join or a per-item function (ITEM, PARENT, NAME, CODE) in a line item with many cells.",
+   "object_label": "2 objects",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F14",
@@ -1061,9 +1254,13 @@
     "F-DIVIDE-FN"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "1 formulas use DIVIDE().",
+   "object_label": "1 object",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F15",
@@ -1098,9 +1295,15 @@
     "F-MIXED-CLAUSE"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "1 formulas combine SUM with LOOKUP or SELECT.",
+   "object_label": "1 object",
+   "implementation": [
+    "Prerequisites: a development copy and a Calculation Effort reading before the change. Then split, reconcile values cell for cell, read effort again; keep the split only if it pays."
+   ],
+   "kind_label": "review candidate"
   },
   {
    "id": "F16",
@@ -1162,9 +1365,13 @@
     "A-SYSTEMS-FN"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "13 line items compute a text value, a FINDITEM, a text join or a per-item function (ITEM, PARENT, NAME, CODE) in a line item with many cells.",
+   "object_label": "13 objects",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F17",
@@ -1209,9 +1416,13 @@
     "F-HARDCODE"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "6 formulas contain numeric literals other than the usual structural ones (0, 1, 12, 100 and the like).",
+   "object_label": "6 objects",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F18",
@@ -1244,9 +1455,13 @@
     "A-SUBSIDIARY"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "1 line items are dimensioned differently from their module and are read by formulas.",
+   "object_label": "1 object",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F19",
@@ -1275,9 +1490,13 @@
     "A-LI-COUNT"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "`INP02 Opex Drivers` has 58 line items.",
+   "object_label": "1 object",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F20",
@@ -1296,7 +1515,7 @@
    "strength": "confirmed",
    "basis": "Line Items export.",
    "missing": [],
-   "next_step": "Confirm nothing is planned for them and delete.",
+   "next_step": "Confirm nothing is planned for them, then decide whether to remove them.",
    "keep_design": "A placeholder for planned work, if noted.",
    "importance": "low",
    "complexity": "low",
@@ -1306,9 +1525,13 @@
     "G-EMPTY-MODULE"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "1 modules have no line items.",
+   "object_label": "1 object",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F21",
@@ -1341,9 +1564,13 @@
     "F-LONG"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "1 formulas exceed 120 tokens.",
+   "object_label": "1 object",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F22",
@@ -1380,9 +1607,13 @@
     "F-SELECT-TIME"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "3 formulas select a specific time period or version with SELECT.",
+   "object_label": "3 objects",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F23",
@@ -1429,9 +1660,13 @@
     "F-DIVIDE-FN"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "8 formulas use DIVIDE().",
+   "object_label": "8 objects",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F24",
@@ -1473,9 +1708,13 @@
     "A-SYSTEMS-FN"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "3 line items compute a text value, a FINDITEM, a text join or a per-item function (ITEM, PARENT, NAME, CODE) in a line item with many cells.",
+   "object_label": "3 objects",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F25",
@@ -1514,9 +1753,13 @@
     "F-HARDCODE"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "3 formulas contain numeric literals other than the usual structural ones (0, 1, 12, 100 and the like).",
+   "object_label": "3 objects",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F26",
@@ -1549,9 +1792,13 @@
     "A-SUBSIDIARY"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "1 line items are dimensioned differently from their module and are read by formulas.",
+   "object_label": "1 object",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F27",
@@ -1584,9 +1831,13 @@
     "F-SELECT-TIME"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "1 formulas select a specific time period or version with SELECT.",
+   "object_label": "1 object",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F28",
@@ -1623,9 +1874,13 @@
     "F-DIVIDE-FN"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "3 formulas use DIVIDE().",
+   "object_label": "3 objects",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F29",
@@ -1662,9 +1917,13 @@
     "F-DIVIDE-FN"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "3 formulas use DIVIDE().",
+   "object_label": "3 objects",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F30",
@@ -1676,7 +1935,7 @@
     "zz Archive - 2021 Cost"
    ],
    "observed": "No formula outside these modules reads any of their line items and no export action reads them. Together they hold 13.4K cells. The five largest: `zz Archive - 2021 Cost`.",
-   "why": "Either a page, a saved view, a line item subset or an integration reads each of them, or nothing does. The exports cannot tell which; the footprint says which ones are worth the question first.",
+   "why": "Pages, saved views, subsets and integrations are not in the exports, so each module is either read there or by nothing. The footprint says which to ask about first.",
    "scope": "1 module, 3 line items",
    "benefit": "If no consumer is found: 13.4K cells as exported would no longer be held or measured. Per module in the table.",
    "benefit_kind": "conditional",
@@ -1688,8 +1947,8 @@
     "line item subsets that include line items of `each listed module` (COLLECT sources are not in the export)",
     "filters, access drivers, DCA and integration (CloudWorks, API) references"
    ],
-   "next_step": "Take the five largest. For each, list the pages, saved views and subsets that use it (page builder; Modules export's Used in Dashboards for classic dashboards). Where the answer is none, blank the formulas in a sandbox copy and wait one cycle before deleting.",
-   "keep_design": "A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. Modules with a twin still need the page check before the twin takes over.",
+   "next_step": "Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.",
+   "keep_design": "A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. A module containing matching line items is not a duplicate of the module they match until the unmatched line items and the consumers are accounted for.",
    "importance": "low",
    "complexity": "medium",
    "evidence": [
@@ -1706,8 +1965,16 @@
    ],
    "related": [],
    "footprint_cells": 13392,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "1 module holding 13.4K cells have no formula or export consumer in the exports.",
+   "object_label": "1 module, 3 line items",
+   "implementation": [
+    "Prerequisites: every consumer check returned none, retained data is not needed, and the model owner has accepted the recommendation.",
+    "Then: blank the formulas in a development copy, reconcile the outputs the owner names against production over a full cycle, obtain owner sign-off, and only then delete.",
+    "A module containing matching line items: repoint any page from the module to the matching line items first, and account for the unmatched line items separately."
+   ],
+   "kind_label": "review candidate"
   },
   {
    "id": "F31",
@@ -1720,7 +1987,7 @@
     "SYS02 Data Checks"
    ],
    "observed": "No formula outside these modules reads any of their line items and no export action reads them. Together they hold 360 cells and 0.0% of Caldergate Data Hub's measured calculation effort. The five largest: `SYS01 Time Settings`, `SYS02 Data Checks`.",
-   "why": "Either a page, a saved view, a line item subset or an integration reads each of them, or nothing does. The exports cannot tell which; the footprint says which ones are worth the question first.",
+   "why": "Pages, saved views, subsets and integrations are not in the exports, so each module is either read there or by nothing. The footprint says which to ask about first.",
    "scope": "2 modules, 10 line items",
    "benefit": "If no consumer is found: 360 cells as exported; 0.0% of Caldergate Data Hub's measured calculation effort would no longer be held or measured. Per module in the table.",
    "benefit_kind": "conditional",
@@ -1732,8 +1999,8 @@
     "line item subsets that include line items of `each listed module` (COLLECT sources are not in the export)",
     "filters, access drivers, DCA and integration (CloudWorks, API) references"
    ],
-   "next_step": "Take the five largest. For each, list the pages, saved views and subsets that use it (page builder; Modules export's Used in Dashboards for classic dashboards). Where the answer is none, blank the formulas in a sandbox copy and wait one cycle before deleting.",
-   "keep_design": "A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. Modules with a twin still need the page check before the twin takes over.",
+   "next_step": "Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.",
+   "keep_design": "A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. A module containing matching line items is not a duplicate of the module they match until the unmatched line items and the consumers are accounted for.",
    "importance": "low",
    "complexity": "medium",
    "evidence": [
@@ -1752,7 +2019,15 @@
    "related": [],
    "footprint_cells": 360,
    "footprint_effort": 0.01,
-   "counts_benefit": true
+   "counts_benefit": true,
+   "summary": "2 modules holding 360 cells and 0.0% of measured effort have no formula or export consumer in the exports.",
+   "object_label": "2 modules, 10 line items",
+   "implementation": [
+    "Prerequisites: every consumer check returned none, retained data is not needed, and the model owner has accepted the recommendation.",
+    "Then: blank the formulas in a development copy, reconcile the outputs the owner names against production over a full cycle, obtain owner sign-off, and only then delete.",
+    "A module containing matching line items: repoint any page from the module to the matching line items first, and account for the unmatched line items separately."
+   ],
+   "kind_label": "review candidate"
   },
   {
    "id": "F32",
@@ -1787,9 +2062,13 @@
     "A-SUMMARY-ON"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "1 number line items with 10,000 cells or more have a summary method set and no formula reader.",
+   "object_label": "1 object",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F33",
@@ -1802,7 +2081,7 @@
     "Import Customers from Salesforce",
     "Import Products from PIM file"
    ],
-   "observed": "Actions export snapshot: latest recorded run 2026-09-21. 2 imports and exports have no recorded run since 2025-09-26 (12 months before the snapshot), 0 have no recorded run at all, and 3 are not in any process.",
+   "observed": "Export date unknown. Latest recorded action run: 2026-09-21. 2 imports and exports have no recorded run since 2025-09-26 (12 months before the latest recorded run), 0 have no recorded run at all, and 3 are not in any process.",
    "why": "An action outside a process can still run from a page, the Actions pane or the API; a run date older than the window may be right for a quarterly or annual load. What the list gives is the set to ask about, not a verdict.",
    "scope": "3 actions",
    "benefit": "not quantified from the exports",
@@ -1830,9 +2109,13 @@
     "ACTIONS"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "Export date unknown.",
+   "object_label": "3 objects",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F34",
@@ -1925,9 +2208,13 @@
     "A-SUMMARY-ON"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "30 number line items with 10,000 cells or more have a summary method set and no formula reader.",
+   "object_label": "30 objects",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F35",
@@ -1942,7 +2229,7 @@
     "Import FX from Treasury file",
     "Import from Caldergate Hub v1 - Cost Centres"
    ],
-   "observed": "Actions export snapshot: latest recorded run 2026-09-08. 3 imports and exports have no recorded run since 2025-09-13 (12 months before the snapshot), 0 have no recorded run at all, and 5 are not in any process.",
+   "observed": "Export date unknown. Latest recorded action run: 2026-09-08. 3 imports and exports have no recorded run since 2025-09-13 (12 months before the latest recorded run), 0 have no recorded run at all, and 5 are not in any process.",
    "why": "An action outside a process can still run from a page, the Actions pane or the API; a run date older than the window may be right for a quarterly or annual load. What the list gives is the set to ask about, not a verdict.",
    "scope": "5 actions",
    "benefit": "not quantified from the exports",
@@ -1972,9 +2259,13 @@
     "ACTIONS"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "Export date unknown.",
+   "object_label": "5 objects",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F36",
@@ -2009,9 +2300,13 @@
     "A-SUMMARY-ON"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "1 number line items with 10,000 cells or more have a summary method set and no formula reader.",
+   "object_label": "1 object",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F37",
@@ -2024,7 +2319,7 @@
     "Export Leavers Report",
     "Import from Caldergate FP&A - Assumptions"
    ],
-   "observed": "Actions export snapshot: latest recorded run 2026-09-08. 2 imports and exports have no recorded run since 2025-09-13 (12 months before the snapshot), 0 have no recorded run at all, and 3 are not in any process.",
+   "observed": "Export date unknown. Latest recorded action run: 2026-09-08. 2 imports and exports have no recorded run since 2025-09-13 (12 months before the latest recorded run), 0 have no recorded run at all, and 3 are not in any process.",
    "why": "An action outside a process can still run from a page, the Actions pane or the API; a run date older than the window may be right for a quarterly or annual load. What the list gives is the set to ask about, not a verdict.",
    "scope": "3 actions",
    "benefit": "not quantified from the exports",
@@ -2052,9 +2347,13 @@
     "ACTIONS"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "Export date unknown.",
+   "object_label": "3 objects",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F38",
@@ -2097,9 +2396,13 @@
     "A-SUMMARY-ON"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "5 number line items with 10,000 cells or more have a summary method set and no formula reader.",
+   "object_label": "5 objects",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F39",
@@ -2110,7 +2413,7 @@
    "objects": [
     "Export Board Pack PDF Data"
    ],
-   "observed": "Actions export snapshot: latest recorded run 2026-09-08. 0 imports and exports have no recorded run since 2025-09-13 (12 months before the snapshot), 0 have no recorded run at all, and 1 are not in any process.",
+   "observed": "Export date unknown. Latest recorded action run: 2026-09-08. 0 imports and exports have no recorded run since 2025-09-13 (12 months before the latest recorded run), 0 have no recorded run at all, and 1 are not in any process.",
    "why": "An action outside a process can still run from a page, the Actions pane or the API; a run date older than the window may be right for a quarterly or annual load. What the list gives is the set to ask about, not a verdict.",
    "scope": "1 action",
    "benefit": "not quantified from the exports",
@@ -2136,9 +2439,13 @@
     "ACTIONS"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "Export date unknown.",
+   "object_label": "1 object",
+   "implementation": [],
+   "kind_label": "review candidate"
   },
   {
    "id": "F40",
@@ -2188,9 +2495,13 @@
     "DUP-CROSS"
    ],
    "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
+   "footprint_cells": null,
+   "footprint_effort": null,
+   "counts_benefit": true,
+   "summary": "8 line items appear in more than one model with the same name and the same formula tree.",
+   "object_label": "8 line item names",
+   "implementation": [],
+   "kind_label": "review candidate"
   }
  ],
  "models": [
