@@ -226,8 +226,8 @@
     "Import from Caldergate Hub v1 - Cost Centres",
     "Import FX from Treasury file",
     "Export Opex Drivers to Excel",
-    "Import Budget from Excel",
-    "Export Assumptions for Workforce"
+    "Export Assumptions for Workforce",
+    "Import Budget from Excel"
    ],
    "payoff": {
     "cells": 0,
@@ -260,8 +260,8 @@
     "| Caldergate FP&A | Import from Caldergate Hub v1 - Cost Centres | 2021-03-19 | no | SYS02 Cost Centre Attributes |",
     "| Caldergate FP&A | Import FX from Treasury file | 2023-11-02 | no | SYS05 FX Rates |",
     "| Caldergate FP&A | Export Opex Drivers to Excel | 2024-05-30 | no | INP02 Opex Drivers |",
-    "| Caldergate FP&A | Import Budget from Excel | recent | no | INP02 Opex Drivers |",
     "| Caldergate FP&A | Export Assumptions for Workforce | recent | no | SYS00 Model Settings |",
+    "| Caldergate FP&A | Import Budget from Excel | recent | no | INP02 Opex Drivers |",
     "| Workforce Planning | Import from Caldergate FP&A - Assumptions | 2022-08-17 | no | Inputs - Settings |",
     "| Workforce Planning | Export Leavers Report | 2024-12-19 | no | Calcs - Attrition |",
     "| Workforce Planning | Export Headcount by Department | recent | no | Reports - Headcount |",
@@ -714,43 +714,6 @@
   },
   {
    "id": "A15",
-   "kind": "retire",
-   "title": "Retire zz Archive - 2021 Cost, superseded by Calcs - Attrition",
-   "model": "Workforce Planning",
-   "objects": [
-    "zz Archive - 2021 Cost"
-   ],
-   "payoff": {
-    "cells": 13392,
-    "effort": 0.0,
-    "objects": 3
-   },
-   "touches": {
-    "readers": 0,
-    "exports": 0,
-    "downstream_models": 0,
-    "pages": "unknown"
-   },
-   "confidence": "check pages",
-   "why": "No formula outside zz Archive - 2021 Cost reads any of its 3 line items, and no export action reads it. 2 of its 3 calculated line items have a twin in Calcs - Attrition, which other formulas do read. It holds 13.4K cells, recalculated on every change. Module note: \"Old cost calc from go-live. Kept for reference.\"",
-   "steps": [
-    "List the pages and saved views that use zz Archive - 2021 Cost (Modules export: Used in Dashboards covers classic dashboards only; UX pages need the page builder).",
-    "Where a page reads zz Archive - 2021 Cost, repoint the card to the twin line item in Calcs - Attrition.",
-    "In a sandbox copy, blank every formula in zz Archive - 2021 Cost; open the pages listed in step 1.",
-    "Delete zz Archive - 2021 Cost."
-   ],
-   "verify": [
-    "Workspace size falls by about 13.4K cells.",
-    "Every page listed in step 1 opens without a blank card."
-   ],
-   "evidence": [
-    "Readers outside the module: 0. Exports reading it: 0. Twin module: Calcs - Attrition (2 matches)."
-   ],
-   "score": 0.908,
-   "rules": []
-  },
-  {
-   "id": "A16",
    "kind": "merge",
    "title": "Reconcile 3 pairs of formulas that differ in exactly one place",
    "model": "Workforce Planning",
@@ -793,7 +756,7 @@
    ]
   },
   {
-   "id": "A17",
+   "id": "A16",
    "kind": "fix",
    "title": "Split 1 formula that aggregate and look up in one bracket",
    "model": "Caldergate FP&A",
@@ -831,7 +794,7 @@
    ]
   },
   {
-   "id": "A18",
+   "id": "A17",
    "kind": "tidy",
    "title": "Delete 1 empty module",
    "model": "Caldergate FP&A",
@@ -866,7 +829,7 @@
    ]
   },
   {
-   "id": "A19",
+   "id": "A18",
    "kind": "merge",
    "title": "Merge 1 line item that repeat a calculation already made (1 group)",
    "model": "Caldergate FP&A",
@@ -908,7 +871,7 @@
    ]
   },
   {
-   "id": "A20",
+   "id": "A19",
    "kind": "merge",
    "title": "Merge 1 line item that repeat a calculation already made (1 group)",
    "model": "Workforce Planning",
@@ -950,7 +913,7 @@
    ]
   },
   {
-   "id": "A21",
+   "id": "A20",
    "kind": "dedupe",
    "title": "Give 8 calculations that exist in more than one model a single owner",
    "model": "Estate",
@@ -1003,7 +966,7 @@
    ]
   },
   {
-   "id": "A22",
+   "id": "A21",
    "kind": "tidy",
    "title": "Split INP02 Opex Drivers (58 line items)",
    "model": "Caldergate FP&A",
@@ -3551,8 +3514,8 @@
      "aliases": 0,
      "alias_cells": 0,
      "near": 3,
-     "superseded": 1,
-     "output_like": 8,
+     "superseded": 0,
+     "output_like": 9,
      "unknown_items": 3,
      "unknown_cells": 108
     }
@@ -3565,8 +3528,8 @@
      "aliases": 0,
      "alias_cells": 0,
      "near": 3,
-     "superseded": 1,
-     "output_like": 8,
+     "superseded": 0,
+     "output_like": 9,
      "unknown_items": 3,
      "unknown_cells": 108
     },
@@ -3628,20 +3591,8 @@
       "same_module": false
      }
     ],
-    "superseded": [
-     {
-      "module": "zz Archive - 2021 Cost",
-      "by": "Calcs - Attrition",
-      "matched": 2,
-      "of": 3,
-      "cells": 13392,
-      "effort": 0.0,
-      "imported_into": false,
-      "notes": "Old cost calc from go-live. Kept for reference.",
-      "line_items": 3
-     }
-    ],
-    "output_like_count": 8,
+    "superseded": [],
+    "output_like_count": 9,
     "unknown": [
      {
       "module": "Inputs - Calendar",

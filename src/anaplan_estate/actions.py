@@ -509,26 +509,104 @@ def heading(a: Action) -> str:
     return f"{a.id}. {a.title}"
 
 
+# Progressive disclosure: categories on the front page -> ranked table per category -> the action.
+CATEGORIES = [
+    ("retire",   "Retire what nothing reads",            "Modules and line items no formula, export or twin explains. Cells and calculation effort back, once the pages are checked."),
+    ("merge",    "Merge duplicate calculations",         "The same calculation made twice under different names, and near-twins that differ in one place."),
+    ("collapse", "Collapse copies and chains",           "Line items that only copy another, and pass-through chains. Readers can read the source."),
+    ("schedule", "Clean up imports and exports",         "Actions no process runs, or that have not run in a year. Document or delete."),
+    ("fix",      "Fix formulas that error or strain",    "Divisions with no zero guard, aggregate-and-lookup in one bracket, formulas the parser could not follow."),
+    ("refactor", "Move logic into inputs and mappings",  "Hard-coded constants and IF chains that are really tables. Replacement artefacts included."),
+    ("tidy",     "Tidy structure",                       "Subsidiary views, summaries left on, text and lookups in big modules, oversized and empty modules."),
+    ("dedupe",   "Give shared logic one owner",          "The same calculation in more than one model. Pick the owner; the others import it."),
+]
+CAT_LABEL = {k: t for k, t, _ in CATEGORIES}
+
+
+def cat_slug(kind: str) -> str:
+    return _slug(CAT_LABEL.get(kind, kind))
+
+
+def _cat_reclaims(acts: list[Action]) -> str:
+    cells = sum(a.payoff.get("cells", 0) for a in acts)
+    by_model = defaultdict(float)
+    for a in acts:
+        if a.payoff.get("effort"):
+            by_model[a.model] += a.payoff["effort"]
+    n_actions = sum(a.payoff.get("actions", 0) for a in acts)
+    objects = sum(a.payoff.get("objects", 0) for a in acts)
+    upto = "up to " if all(a.kind in ("refactor", "tidy", "fix") for a in acts) else ""
+    parts = []
+    if cells:
+        parts.append(f"{upto}{_c(cells)} cells")
+    if by_model:
+        top = sorted(by_model.items(), key=lambda kv: -kv[1])[:2]
+        parts.append(f"{upto}" + ", ".join(f"{v:.0f}% of {m}'s effort" for m, v in top))
+    if n_actions:
+        parts.append(_pl(n_actions, "action"))
+    if not parts:
+        parts.append(_pl(objects, "object"))
+    return "; ".join(parts)
+
+
+def by_category(acts: list[Action]) -> list[tuple[str, str, str, list[Action]]]:
+    """(kind, label, blurb, actions sorted by score desc) for every category that has actions."""
+    out = []
+    for kind, label, blurb in CATEGORIES:
+        xs = sorted((a for a in acts if a.kind == kind), key=lambda a: -a.score)
+        if xs:
+            out.append((kind, label, blurb, xs))
+    return out
+
+
+def render_summary(acts: list[Action]) -> list[str]:
+    """Front page: one row per category, biggest reclaim first."""
+    cats = by_category(acts)
+    cats.sort(key=lambda c: -sum(a.score for a in c[3]))
+    out = ["| Category | Actions | Estimated reclaim | Need a page check | What it covers |", "|---|---|---|---|---|"]
+    for kind, label, blurb, xs in cats:
+        pages = sum(1 for a in xs if a.confidence == "check pages")
+        out.append(f"| [{label}](#{cat_slug(kind)}) | {len(xs)} | {_cat_reclaims(xs)} | {pages or 'none'} | {blurb} |")
+    top = sorted(acts, key=lambda a: -a.score)[:5]
+    if top:
+        out += ["", "The five biggest single actions, across every category:", ""]
+        out += [f"{i}. [{a.title}](#{_slug(heading(a))}) ({a.model}; {_reclaims(a) or 'readability'})" for i, a in enumerate(top, 1)]
+    return out
+
+
 def render_list(acts: list[Action], limit: int = 40) -> list[str]:
     out = ["| # | Do this | Model | Reclaims | Touches | Exports can prove |", "|---|---|---|---|---|---|"]
     for a in acts[:limit]:
         out.append(f"| {a.id} | [{a.title}](#{_slug(heading(a))}) | {a.model} | {_reclaims(a)} | {_touches(a)} | {a.confidence} |")
     if len(acts) > limit:
-        out += ["", f"{len(acts) - limit} more, smaller, in [Actions in detail](#actions-in-detail)."]
+        out += ["", f"{len(acts) - limit} more, smaller, below."]
+    return out
+
+
+def render_action(a: Action, level: int = 3) -> list[str]:
+    h = "#" * level
+    out = [f"{h} {heading(a)}", "",
+           f"**{a.model}.** {a.why}", "",
+           f"| Reclaims | Touches | Exports can prove |", "|---|---|---|",
+           f"| {_reclaims(a) or 'nothing measurable; readability'} | {_touches(a)} | {a.confidence}: {CONFIDENCE[a.confidence]} |", "",
+           "**Steps**", ""]
+    out += [f"{i}. {s}" for i, s in enumerate(a.steps, 1)]
+    out += ["", "**Verify**", ""] + [f"- {v}" for v in a.verify]
+    if a.evidence:
+        out += ["", "**Evidence**", ""] + a.evidence
+    out.append("")
     return out
 
 
 def render_detail(acts: list[Action]) -> list[str]:
+    """Detail chapter: one section per category (ranked table, then each action), categories in front-page order."""
+    cats = by_category(acts)
+    cats.sort(key=lambda c: -sum(a.score for a in c[3]))
     out = []
-    for a in acts:
-        out += [f"## {heading(a)}", "",
-                f"**{a.model}.** {a.why}", "",
-                f"| Reclaims | Touches | Exports can prove |", "|---|---|---|",
-                f"| {_reclaims(a) or 'nothing measurable; readability'} | {_touches(a)} | {a.confidence}: {CONFIDENCE[a.confidence]} |", "",
-                "**Steps**", ""]
-        out += [f"{i}. {s}" for i, s in enumerate(a.steps, 1)]
-        out += ["", "**Verify**", ""] + [f"- {v}" for v in a.verify]
-        if a.evidence:
-            out += ["", "**Evidence**", ""] + a.evidence
+    for kind, label, blurb, xs in cats:
+        out += [f"## {label}", "", blurb + f" {len(xs)} action{'s' if len(xs) != 1 else ''}, biggest first; estimated reclaim {_cat_reclaims(xs)}.", ""]
+        out += render_list(xs, limit=len(xs))
         out.append("")
+        for a in xs:
+            out += render_action(a, level=3)
     return out

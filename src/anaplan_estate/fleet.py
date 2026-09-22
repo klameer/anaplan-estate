@@ -403,10 +403,10 @@ def render_markdown(er: EstateRun, max_patterns: int = 20) -> str:
            f"Generated {er.generated} from each model's Line Items and Actions exports. Deterministic; no opinion. "
            "Model-to-model links are inferred from import action names and say so.", "",
            "## What to do", "",
-           f"{len(er.actions)} actions, ranked by what each reclaims over what it touches. Each one says what the exports prove and what they cannot: "
-           "formulas, imports and exports are in the files; pages and saved views are not, so anything marked \"check pages\" needs a look at the UX first. "
-           "Click an action for the why, the steps, how to verify, and the evidence.", ""]
-    out += actionlist.render_list(er.actions)
+           f"{len(er.actions)} actions in {len(actionlist.by_category(er.actions))} categories, biggest reclaim first. Click a category for its actions ranked by impact, "
+           "and an action for the why, the steps, how to verify, and the evidence. Every action says what the exports prove and what they cannot: "
+           "formulas, imports and exports are in the files; pages and saved views are not, so anything that needs a page check says so.", ""]
+    out += actionlist.render_summary(er.actions)
     out += ["", "## The estate in one page", ""]
     out += [f"{i}. {h}" for i, h in enumerate(_headlines(er), 1)]
     if red_items:
@@ -418,8 +418,8 @@ def render_markdown(er: EstateRun, max_patterns: int = 20) -> str:
     out += _toc(er)
     out += ["", "A few words that carry weight here:", ""] + [f"- {g}" for g in GLOSSARY]
     out += ["", "# Actions in detail", "",
-            "Every action: why, in the words of the exports; the steps; how to prove it worked; and the evidence table. "
-            "Nothing here says whether the action is worth taking for this business. That is a review, and this is its evidence.", ""]
+            "One section per category, each a ranked table and then every action: why, in the words of the exports; the steps; how to prove it worked; and the evidence. "
+            "Nothing here says whether an action is worth taking for this business. That is a review, and this is its evidence.", ""]
     out += actionlist.render_detail(er.actions)
     out += ["", "# The estate", "",
            "## The estate at a glance", "",
