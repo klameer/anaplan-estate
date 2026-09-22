@@ -214,11 +214,11 @@ def analyse(m: Model, g: Graph, export_sources: set[str] = frozenset(), import_t
         if ck is None or _uses_collect(m.line_items[key].formula):
             continue
         sk, leaves = skeleton(c)
-        if len(leaves) >= 2:
+        if len(leaves) >= 4:                      # trivial shapes (A * k, A + B) pair with everything; not evidence of copy-and-tweak
             by_skel[(sk, ck)].append((key, leaves))
     seen = set()
     for (sk, ck), members in by_skel.items():
-        if len(members) < 2 or len(members) > 200:
+        if len(members) < 2 or len(members) > 60:  # a shape shared by more than 60 line items is a template, reported by the pattern clusters
             continue
         for i in range(len(members)):
             for j in range(i + 1, len(members)):

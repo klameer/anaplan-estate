@@ -1417,78 +1417,7 @@ Objects: `DAT01 P&L.COGS`, `DAT01 P&L.Depreciation`, `DAT01 P&L.EBIT`, `DAT01 P&
 | `DAT01 P&L.EBITDA` | SUM | 19.2K |
 | `DAT01 P&L.Staff Cost` | SUM | 19.2K |
 
-### F43. Formulas that differ in exactly one place
-
-Objects: `CAL03 Opex.Actual Opex`, `CAL03 Opex.Opex GBP`, `CAL02 Revenue.Gross Revenue`, `CAL01 Volumes.Sellable Units Prior Year`, `CAL02 Revenue.Revenue GBP`, `CAL07 P&L by Cost Centre.Opex Budget`
-
-| Importance | Evidence | Change complexity | Model |
-|---|---|---|---|
-| low | inferred | low | Caldergate FP&A |
-
-**Observed.** 6 pairs of line items in different modules share a formula skeleton and context and differ in one leaf: a constant, a reference or a list item.
-
-**Why it matters.** This is what copy, paste and tweak leaves behind. The difference may be exactly the point (a different rate, a different driver) or drift between two versions of one rule. The exports cannot say which.
-
-**Affected scope.** 6 pairs
-
-**Potential benefit.** not quantified from the exports
-
-**Evidence strength.** inferred: Structural comparison of parsed formulas; intent is not in the export.
-
-**Missing information.**
-
-- the reason for each difference (notes are mostly blank)
-
-**Next step.** Read the difference column for the largest pairs; where the difference is intended, put it in the line item name or a note.
-
-**When keeping the current design is reasonable.** A one-leaf difference is often the whole business rule. Neither side is presumed stale.
-
-**Evidence**
-
-| Line item | Near twin | The one difference | Formula A | Formula B |
-|---|---|---|---|---|
-| `CAL03 Opex.Actual Opex` | `CAL05 Opex OLD.Actual` | `SYS03 Account Attributes.Opex?` vs `SYS01 Time Settings.Actual?` | `IF 'SYS03 Account Attributes'.Opex? THEN 'DAT01 Actuals GL'.Amount ELSE 0` | `IF 'SYS01 Time Settings'.Actual? THEN 'DAT01 Actuals GL'.Amount ELSE 0` |
-| `CAL03 Opex.Opex GBP` | `CAL05 Opex OLD.Opex GBP` | `CAL03 Opex.Opex` vs `CAL05 Opex OLD.Opex` | `Opex * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS02 Cost Centre Attributes'.Currency]` | `Opex * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS02 Cost Centre Attributes'.Currency]` |
-| `CAL02 Revenue.Gross Revenue` | `CAL04 Margn.COGS` | `INP01 Volumes.Price` vs `INP06 Unit Costs.Landed Cost` | `'CAL01 Volumes'.Sellable Units * 'INP01 Volumes'.Price` | `'CAL01 Volumes'.Sellable Units * 'INP06 Unit Costs'.Landed Cost` |
-| `CAL01 Volumes.Sellable Units Prior Year` | `CAL02 Revenue.Revenue Prior Year` | `CAL01 Volumes.Sellable Units` vs `CAL02 Revenue.Revenue GBP` | `LAG(Sellable Units, 12, 0)` | `LAG(Revenue GBP, 12, 0)` |
-| `CAL02 Revenue.Revenue GBP` | `CAL04 Margn.Margin GBP` | `CAL02 Revenue.Net Revenue` vs `CAL04 Margn.Margin` | `Net Revenue * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS06 Region Attributes'.Currency]` | `Margin * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS06 Region Attributes'.Currency]` |
-| `CAL07 P&L by Cost Centre.Opex Budget` | `OUT02 Board Pack.Budget Revenue` | `CAL07 P&L by Cost Centre.Opex` vs `OUT01 Management Pack.Revenue` | `Opex[SELECT: VERSIONS.Budget]` | `'OUT01 Management Pack'.Revenue[SELECT: VERSIONS.Budget]` |
-
-### F44. Formulas that differ in exactly one place
-
-Objects: `Calcs - Attrition.Headcount`, `Calcs - Attrition.Leavers by Role`, `Calcs - Attrition.Leavers by Role`
-
-| Importance | Evidence | Change complexity | Model |
-|---|---|---|---|
-| low | inferred | low | Workforce Planning |
-
-**Observed.** 3 pairs of line items in different modules share a formula skeleton and context and differ in one leaf: a constant, a reference or a list item.
-
-**Why it matters.** This is what copy, paste and tweak leaves behind. The difference may be exactly the point (a different rate, a different driver) or drift between two versions of one rule. The exports cannot say which.
-
-**Affected scope.** 3 pairs
-
-**Potential benefit.** not quantified from the exports
-
-**Evidence strength.** inferred: Structural comparison of parsed formulas; intent is not in the export.
-
-**Missing information.**
-
-- the reason for each difference (notes are mostly blank)
-
-**Next step.** Read the difference column for the largest pairs; where the difference is intended, put it in the line item name or a note.
-
-**When keeping the current design is reasonable.** A one-leaf difference is often the whole business rule. Neither side is presumed stale.
-
-**Evidence**
-
-| Line item | Near twin | The one difference | Formula A | Formula B |
-|---|---|---|---|---|
-| `Calcs - Attrition.Headcount` | `zz Archive - 2021 Cost.Cost` | `Data - Employees.FTE` vs `Calcs - Cost.Total Cost` | `'Data - Employees'.FTE[SUM: 'Data - Employees'.Role]` | `'Calcs - Cost'.Total Cost[SUM: 'Data - Employees'.Role]` |
-| `Calcs - Attrition.Leavers by Role` | `zz Archive - 2021 Cost.Headcount` | `Calcs - Attrition.Leavers` vs `Data - Employees.FTE` | `Leavers[SUM: 'Data - Employees'.Role]` | `'Data - Employees'.FTE[SUM: 'Data - Employees'.Role]` |
-| `Calcs - Attrition.Leavers by Role` | `zz Archive - 2021 Cost.Cost` | `Calcs - Attrition.Leavers` vs `Calcs - Cost.Total Cost` | `Leavers[SUM: 'Data - Employees'.Role]` | `'Calcs - Cost'.Total Cost[SUM: 'Data - Employees'.Role]` |
-
-### F45. Same line item name and formula in more than one model
+### F43. Same line item name and formula in more than one model
 
 Objects: `COGS?`, `Current Period?`, `Employer NI`, `Group`, `Opex?`, `Revenue?`, `Sign`, `Working Days`
 
@@ -1724,9 +1653,7 @@ Objects: `Export Board Pack PDF Data`
 | F40 | Integration and operational review | Imports and exports with no recent recorded run or outside every process | Workforce Planning | low | partial | low | 0 | 0.0 |
 | F41 | Maintainability and consistency | Summary methods on large line items no formula reads | Board Reporting | low | partial | low | 0 | 0.0 |
 | F42 | Integration and operational review | Imports and exports with no recent recorded run or outside every process | Board Reporting | low | partial | low | 0 | 0.0 |
-| F43 | Maintainability and consistency | Formulas that differ in exactly one place | Caldergate FP&A | low | inferred | low | 0 | 0.0 |
-| F44 | Maintainability and consistency | Formulas that differ in exactly one place | Workforce Planning | low | inferred | low | 0 | 0.0 |
-| F45 | Maintainability and consistency | Same line item name and formula in more than one model | Estate | low | inferred | medium | 0 | 0.0 |
+| F43 | Maintainability and consistency | Same line item name and formula in more than one model | Estate | low | inferred | medium | 0 | 0.0 |
 
 ## Models and coverage
 

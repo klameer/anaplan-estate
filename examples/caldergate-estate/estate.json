@@ -9,7 +9,7 @@
   "line_items": 426,
   "calculated": 248,
   "cells": 144543801,
-  "findings": 45,
+  "findings": 43,
   "parse_rate": 1.0
  },
  "observations": [
@@ -258,9 +258,7 @@
     "F37",
     "F39",
     "F41",
-    "F43",
-    "F44",
-    "F45"
+    "F43"
    ]
   },
   {
@@ -2131,94 +2129,6 @@
   {
    "id": "F43",
    "area": "maintain",
-   "kind": "merge",
-   "title": "Formulas that differ in exactly one place",
-   "model": "Caldergate FP&A",
-   "objects": [
-    "CAL03 Opex.Actual Opex",
-    "CAL03 Opex.Opex GBP",
-    "CAL02 Revenue.Gross Revenue",
-    "CAL01 Volumes.Sellable Units Prior Year",
-    "CAL02 Revenue.Revenue GBP",
-    "CAL07 P&L by Cost Centre.Opex Budget"
-   ],
-   "observed": "6 pairs of line items in different modules share a formula skeleton and context and differ in one leaf: a constant, a reference or a list item.",
-   "why": "This is what copy, paste and tweak leaves behind. The difference may be exactly the point (a different rate, a different driver) or drift between two versions of one rule. The exports cannot say which.",
-   "scope": "6 pairs",
-   "benefit": "not quantified from the exports",
-   "benefit_kind": "none",
-   "strength": "inferred",
-   "basis": "Structural comparison of parsed formulas; intent is not in the export.",
-   "missing": [
-    "the reason for each difference (notes are mostly blank)"
-   ],
-   "next_step": "Read the difference column for the largest pairs; where the difference is intended, put it in the line item name or a note.",
-   "keep_design": "A one-leaf difference is often the whole business rule. Neither side is presumed stale.",
-   "importance": "low",
-   "complexity": "low",
-   "evidence": [
-    "| Line item | Near twin | The one difference | Formula A | Formula B |",
-    "|---|---|---|---|---|",
-    "| `CAL03 Opex.Actual Opex` | `CAL05 Opex OLD.Actual` | `SYS03 Account Attributes.Opex?` vs `SYS01 Time Settings.Actual?` | `IF 'SYS03 Account Attributes'.Opex? THEN 'DAT01 Actuals GL'.Amount ELSE 0` | `IF 'SYS01 Time Settings'.Actual? THEN 'DAT01 Actuals GL'.Amount ELSE 0` |",
-    "| `CAL03 Opex.Opex GBP` | `CAL05 Opex OLD.Opex GBP` | `CAL03 Opex.Opex` vs `CAL05 Opex OLD.Opex` | `Opex * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS02 Cost Centre Attributes'.Currency]` | `Opex * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS02 Cost Centre Attributes'.Currency]` |",
-    "| `CAL02 Revenue.Gross Revenue` | `CAL04 Margn.COGS` | `INP01 Volumes.Price` vs `INP06 Unit Costs.Landed Cost` | `'CAL01 Volumes'.Sellable Units * 'INP01 Volumes'.Price` | `'CAL01 Volumes'.Sellable Units * 'INP06 Unit Costs'.Landed Cost` |",
-    "| `CAL01 Volumes.Sellable Units Prior Year` | `CAL02 Revenue.Revenue Prior Year` | `CAL01 Volumes.Sellable Units` vs `CAL02 Revenue.Revenue GBP` | `LAG(Sellable Units, 12, 0)` | `LAG(Revenue GBP, 12, 0)` |",
-    "| `CAL02 Revenue.Revenue GBP` | `CAL04 Margn.Margin GBP` | `CAL02 Revenue.Net Revenue` vs `CAL04 Margn.Margin` | `Net Revenue * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS06 Region Attributes'.Currency]` | `Margin * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS06 Region Attributes'.Currency]` |",
-    "| `CAL07 P&L by Cost Centre.Opex Budget` | `OUT02 Board Pack.Budget Revenue` | `CAL07 P&L by Cost Centre.Opex` vs `OUT01 Management Pack.Revenue` | `Opex[SELECT: VERSIONS.Budget]` | `'OUT01 Management Pack'.Revenue[SELECT: VERSIONS.Budget]` |"
-   ],
-   "validation": [],
-   "rules": [
-    "REDUNDANT-NEAR"
-   ],
-   "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
-  },
-  {
-   "id": "F44",
-   "area": "maintain",
-   "kind": "merge",
-   "title": "Formulas that differ in exactly one place",
-   "model": "Workforce Planning",
-   "objects": [
-    "Calcs - Attrition.Headcount",
-    "Calcs - Attrition.Leavers by Role",
-    "Calcs - Attrition.Leavers by Role"
-   ],
-   "observed": "3 pairs of line items in different modules share a formula skeleton and context and differ in one leaf: a constant, a reference or a list item.",
-   "why": "This is what copy, paste and tweak leaves behind. The difference may be exactly the point (a different rate, a different driver) or drift between two versions of one rule. The exports cannot say which.",
-   "scope": "3 pairs",
-   "benefit": "not quantified from the exports",
-   "benefit_kind": "none",
-   "strength": "inferred",
-   "basis": "Structural comparison of parsed formulas; intent is not in the export.",
-   "missing": [
-    "the reason for each difference (notes are mostly blank)"
-   ],
-   "next_step": "Read the difference column for the largest pairs; where the difference is intended, put it in the line item name or a note.",
-   "keep_design": "A one-leaf difference is often the whole business rule. Neither side is presumed stale.",
-   "importance": "low",
-   "complexity": "low",
-   "evidence": [
-    "| Line item | Near twin | The one difference | Formula A | Formula B |",
-    "|---|---|---|---|---|",
-    "| `Calcs - Attrition.Headcount` | `zz Archive - 2021 Cost.Cost` | `Data - Employees.FTE` vs `Calcs - Cost.Total Cost` | `'Data - Employees'.FTE[SUM: 'Data - Employees'.Role]` | `'Calcs - Cost'.Total Cost[SUM: 'Data - Employees'.Role]` |",
-    "| `Calcs - Attrition.Leavers by Role` | `zz Archive - 2021 Cost.Headcount` | `Calcs - Attrition.Leavers` vs `Data - Employees.FTE` | `Leavers[SUM: 'Data - Employees'.Role]` | `'Data - Employees'.FTE[SUM: 'Data - Employees'.Role]` |",
-    "| `Calcs - Attrition.Leavers by Role` | `zz Archive - 2021 Cost.Cost` | `Calcs - Attrition.Leavers` vs `Calcs - Cost.Total Cost` | `Leavers[SUM: 'Data - Employees'.Role]` | `'Calcs - Cost'.Total Cost[SUM: 'Data - Employees'.Role]` |"
-   ],
-   "validation": [],
-   "rules": [
-    "REDUNDANT-NEAR"
-   ],
-   "related": [],
-   "footprint_cells": 0,
-   "footprint_effort": 0.0,
-   "counts_benefit": true
-  },
-  {
-   "id": "F45",
-   "area": "maintain",
    "kind": "dedupe",
    "title": "Same line item name and formula in more than one model",
    "model": "Estate",
@@ -3569,7 +3479,7 @@
      "exact_cells": 19152,
      "aliases": 14,
      "alias_cells": 268128,
-     "near": 6,
+     "near": 0,
      "same_text_groups": 0,
      "overlap": 0,
      "orphan_modules": 3,
@@ -3640,7 +3550,7 @@
      "exact_cells": 19152,
      "aliases": 14,
      "alias_cells": 268128,
-     "near": 6,
+     "near": 0,
      "same_text_groups": 0,
      "overlap": 0,
      "orphan_modules": 3,
@@ -3829,86 +3739,7 @@
       "exported": true
      }
     ],
-    "near": [
-     {
-      "a": "CAL03 Opex.Actual Opex",
-      "b": "CAL05 Opex OLD.Actual",
-      "differs": [
-       "SYS03 Account Attributes.Opex?",
-       "SYS01 Time Settings.Actual?"
-      ],
-      "skeleton": "(IF '?' THEN '?' ELSE ?)",
-      "cells": 5017824,
-      "same_module": false,
-      "formula_a": "IF 'SYS03 Account Attributes'.Opex? THEN 'DAT01 Actuals GL'.Amount ELSE 0",
-      "formula_b": "IF 'SYS01 Time Settings'.Actual? THEN 'DAT01 Actuals GL'.Amount ELSE 0"
-     },
-     {
-      "a": "CAL03 Opex.Opex GBP",
-      "b": "CAL05 Opex OLD.Opex GBP",
-      "differs": [
-       "CAL03 Opex.Opex",
-       "CAL05 Opex OLD.Opex"
-      ],
-      "skeleton": "('?' * '?'[LOOKUP: '?'])",
-      "cells": 5017824,
-      "same_module": false,
-      "formula_a": "Opex * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS02 Cost Centre Attributes'.Currency]",
-      "formula_b": "Opex * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS02 Cost Centre Attributes'.Currency]"
-     },
-     {
-      "a": "CAL02 Revenue.Gross Revenue",
-      "b": "CAL04 Margn.COGS",
-      "differs": [
-       "INP01 Volumes.Price",
-       "INP06 Unit Costs.Landed Cost"
-      ],
-      "skeleton": "('?' * '?')",
-      "cells": 36288,
-      "same_module": false,
-      "formula_a": "'CAL01 Volumes'.Sellable Units * 'INP01 Volumes'.Price",
-      "formula_b": "'CAL01 Volumes'.Sellable Units * 'INP06 Unit Costs'.Landed Cost"
-     },
-     {
-      "a": "CAL01 Volumes.Sellable Units Prior Year",
-      "b": "CAL02 Revenue.Revenue Prior Year",
-      "differs": [
-       "CAL01 Volumes.Sellable Units",
-       "CAL02 Revenue.Revenue GBP"
-      ],
-      "skeleton": "LAG('?', ?, ?)",
-      "cells": 36288,
-      "same_module": false,
-      "formula_a": "LAG(Sellable Units, 12, 0)",
-      "formula_b": "LAG(Revenue GBP, 12, 0)"
-     },
-     {
-      "a": "CAL02 Revenue.Revenue GBP",
-      "b": "CAL04 Margn.Margin GBP",
-      "differs": [
-       "CAL02 Revenue.Net Revenue",
-       "CAL04 Margn.Margin"
-      ],
-      "skeleton": "('?' * '?'[LOOKUP: '?'])",
-      "cells": 36288,
-      "same_module": false,
-      "formula_a": "Net Revenue * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS06 Region Attributes'.Currency]",
-      "formula_b": "Margin * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS06 Region Attributes'.Currency]"
-     },
-     {
-      "a": "CAL07 P&L by Cost Centre.Opex Budget",
-      "b": "OUT02 Board Pack.Budget Revenue",
-      "differs": [
-       "CAL07 P&L by Cost Centre.Opex",
-       "OUT01 Management Pack.Revenue"
-      ],
-      "skeleton": "'?'[SELECT: '?']",
-      "cells": 19152,
-      "same_module": false,
-      "formula_a": "Opex[SELECT: VERSIONS.Budget]",
-      "formula_b": "'OUT01 Management Pack'.Revenue[SELECT: VERSIONS.Budget]"
-     }
-    ],
+    "near": [],
     "same_text": [],
     "overlap": [],
     "orphan_modules": [
@@ -5878,7 +5709,7 @@
      "exact_cells": 4464,
      "aliases": 0,
      "alias_cells": 0,
-     "near": 3,
+     "near": 0,
      "same_text_groups": 0,
      "overlap": 0,
      "orphan_modules": 1,
@@ -5954,7 +5785,7 @@
      "exact_cells": 4464,
      "aliases": 0,
      "alias_cells": 0,
-     "near": 3,
+     "near": 0,
      "same_text_groups": 0,
      "overlap": 0,
      "orphan_modules": 1,
@@ -6016,47 +5847,7 @@
      }
     ],
     "aliases": [],
-    "near": [
-     {
-      "a": "Calcs - Attrition.Headcount",
-      "b": "zz Archive - 2021 Cost.Cost",
-      "differs": [
-       "Data - Employees.FTE",
-       "Calcs - Cost.Total Cost"
-      ],
-      "skeleton": "'?'[SUM: '?']",
-      "cells": 4464,
-      "same_module": false,
-      "formula_a": "'Data - Employees'.FTE[SUM: 'Data - Employees'.Role]",
-      "formula_b": "'Calcs - Cost'.Total Cost[SUM: 'Data - Employees'.Role]"
-     },
-     {
-      "a": "Calcs - Attrition.Leavers by Role",
-      "b": "zz Archive - 2021 Cost.Headcount",
-      "differs": [
-       "Calcs - Attrition.Leavers",
-       "Data - Employees.FTE"
-      ],
-      "skeleton": "'?'[SUM: '?']",
-      "cells": 4464,
-      "same_module": false,
-      "formula_a": "Leavers[SUM: 'Data - Employees'.Role]",
-      "formula_b": "'Data - Employees'.FTE[SUM: 'Data - Employees'.Role]"
-     },
-     {
-      "a": "Calcs - Attrition.Leavers by Role",
-      "b": "zz Archive - 2021 Cost.Cost",
-      "differs": [
-       "Calcs - Attrition.Leavers",
-       "Calcs - Cost.Total Cost"
-      ],
-      "skeleton": "'?'[SUM: '?']",
-      "cells": 4464,
-      "same_module": false,
-      "formula_a": "Leavers[SUM: 'Data - Employees'.Role]",
-      "formula_b": "'Calcs - Cost'.Total Cost[SUM: 'Data - Employees'.Role]"
-     }
-    ],
+    "near": [],
     "same_text": [],
     "overlap": [],
     "orphan_modules": [
