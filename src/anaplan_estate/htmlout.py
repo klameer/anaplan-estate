@@ -131,7 +131,10 @@ def md_to_html(md: str, title: str, css: str | None = None, logo_svg: str | None
     if mermaid:
         out.append('<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.1/mermaid.min.js"></script>'
                    '<script>if(window.mermaid){mermaid.initialize({startOnLoad:true,theme:document.documentElement.dataset.theme==="dark"||matchMedia("(prefers-color-scheme: dark)").matches?"dark":"neutral"})}</script>')
-    out.append('<script>addEventListener("beforeprint",()=>document.querySelectorAll("details").forEach(d=>d.open=true))</script><div class="page">')
+    out.append('<script>addEventListener("beforeprint",()=>document.querySelectorAll("details").forEach(d=>d.open=true));'
+               'function openTo(){var h=location.hash&&document.getElementById(decodeURIComponent(location.hash.slice(1)));if(!h)return;'
+               'var d=h.closest("details");while(d){d.open=true;d=d.parentElement&&d.parentElement.closest("details")}h.scrollIntoView()}'
+               'addEventListener("hashchange",openTo);addEventListener("DOMContentLoaded",openTo)</script><div class="page">')
     if logo_svg or brand:
         out.append('<div class="cover">' + (logo_svg or "") + (f'<div class="kicker">{html.escape(brand)}</div>' if brand else "") + "</div>")
     lines = md.split("\n")

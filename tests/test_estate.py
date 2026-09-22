@@ -62,3 +62,28 @@ def test_example_estate_finds_the_planted_faults():
                                                         ("Caldergate FP&A", "Board Reporting"), ("Caldergate Data Hub", "Workforce Planning")}
     assert {d["line_item"] for d in er.duplicates} >= {"Employer NI", "Working Days", "Current Period?"}
     assert not by["Workforce Planning"].facts["has_effort"]
+
+
+def test_example_estate_action_list():
+    er = fleet.run(EX)
+    acts = er.actions
+    assert acts and acts[0].title.startswith("Retire CAL05 Opex OLD")            # the dead module tops the list
+    assert acts[0].payoff["cells"] > 50_000_000 and acts[0].confidence == "check pages"
+    kinds = {a.kind for a in acts}
+    assert {"retire", "merge", "collapse", "fix", "refactor", "tidy", "schedule", "dedupe"} <= kinds
+    titles = " | ".join(a.title for a in acts)
+    for frag in ("mapping module", "hard-coded constant", "divisions that error on zero", "pass-through chain", "single owner", "imports and exports"):
+        assert frag in titles, frag
+    assert not any("1 groups" in a.title or "1 line items" in a.title for a in acts)   # plurals
+    assert all(a.steps and a.verify for a in acts)
+    md = fleet.render_markdown(er)
+    assert md.index("## What to do") < md.index("
+# Actions in detail
+") < md.index("
+# The estate
+")
+    fp = next(m for m in er.models if m.name == "Caldergate FP&A")
+    r = fp.redundancy.counts()
+    assert r["aliases"] >= 10 and r["superseded"] >= 1
+    # a downstream summary module is never called superseded by its own source
+    assert not any(s["module"] == "CAL06 Department Summary" and s["by"] for s in fp.redundancy.superseded)

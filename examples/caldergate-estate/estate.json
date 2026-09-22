@@ -1,5 +1,1044 @@
 {
  "generated": "2026-09-22",
+ "actions": [
+  {
+   "id": "A1",
+   "kind": "retire",
+   "title": "Retire CAL05 Opex OLD, superseded by CAL03 Opex",
+   "model": "Caldergate FP&A",
+   "objects": [
+    "CAL05 Opex OLD"
+   ],
+   "payoff": {
+    "cells": 70249536,
+    "effort": 50.78,
+    "objects": 14
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "unknown"
+   },
+   "confidence": "check pages",
+   "why": "No formula outside CAL05 Opex OLD reads any of its 14 line items, and no export action reads it. 2 of its 14 calculated line items have a twin in CAL03 Opex, which other formulas do read. It holds 70.2M cells and 50.78% of the model's calculation effort, recalculated on every change. Module note: \"Replaced by CAL03 in 2021. Keep until the FY22 audit is closed.\"",
+   "steps": [
+    "List the pages and saved views that use CAL05 Opex OLD (Modules export: Used in Dashboards covers classic dashboards only; UX pages need the page builder).",
+    "Where a page reads CAL05 Opex OLD, repoint the card to the twin line item in CAL03 Opex.",
+    "In a sandbox copy, blank every formula in CAL05 Opex OLD; open the pages listed in step 1.",
+    "Delete CAL05 Opex OLD."
+   ],
+   "verify": [
+    "Workspace size falls by about 70.2M cells. Calculation effort falls by about 50.78%.",
+    "Every page listed in step 1 opens without a blank card."
+   ],
+   "evidence": [
+    "Readers outside the module: 0. Exports reading it: 0. Twin module: CAL03 Opex (2 matches)."
+   ],
+   "score": 16.797,
+   "rules": []
+  },
+  {
+   "id": "A2",
+   "kind": "refactor",
+   "title": "Replace the 12-branch IF in CAL03 Opex.Forecast Opex with a mapping module",
+   "model": "Caldergate FP&A",
+   "objects": [
+    "CAL03 Opex.Forecast Opex"
+   ],
+   "payoff": {
+    "cells": 0,
+    "effort": 16.04,
+    "objects": 1
+   },
+   "touches": {
+    "readers": 1,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "n/a"
+   },
+   "confidence": "proven",
+   "why": "The formula is a lookup table written as 12 nested IFs over Accounts. Every branch is evaluated for every cell; this line item carries 16.04% of the model's calculation effort. The table below is the mapping the formula encodes, ready to load.",
+   "steps": [
+    "Create a module dimensioned by Accounts with one list-formatted line item (the driver) loaded from the table below.",
+    "Replace the formula with a single LOOKUP against that module.",
+    "The next new account is a row in the mapping, not a new branch."
+   ],
+   "verify": [
+    "Same values on every cell before and after (export the line item, diff).",
+    "Calculation effort of CAL03 Opex.Forecast Opex falls."
+   ],
+   "evidence": [
+    "| Accounts item | Value |",
+    "|---|---|",
+    "| 6100 Rent | `INP02 Opex Drivers.Rent` |",
+    "| 6110 Rates | `INP02 Opex Drivers.Business Rates` |",
+    "| 6120 Utilities | `INP02 Opex Drivers.Utilities` |",
+    "| 6200 Travel | `INP02 Opex Drivers.Travel` |",
+    "| 6210 Subsistence | `INP02 Opex Drivers.Subsistence` |",
+    "| 6300 Marketing | `INP02 Opex Drivers.Marketing Events` |",
+    "| 6310 Digital | `INP02 Opex Drivers.Marketing Digital` |",
+    "| 6400 Software | `INP02 Opex Drivers.Software Licences` |",
+    "| 6410 Hardware | `INP02 Opex Drivers.Hardware` |",
+    "| 6500 Professional Fees | `INP02 Opex Drivers.Consultancy` |",
+    "| 6510 Audit | `INP02 Opex Drivers.Audit Fees` |",
+    "| 6600 Recruitment | `INP02 Opex Drivers.Recruitment Fees` |"
+   ],
+   "score": 14.673,
+   "rules": [
+    "A-IF-COUNT"
+   ]
+  },
+  {
+   "id": "A3",
+   "kind": "merge",
+   "title": "Reconcile 6 pairs of formulas that differ in exactly one place",
+   "model": "Caldergate FP&A",
+   "objects": [
+    "CAL03 Opex.Actual Opex",
+    "CAL03 Opex.Opex GBP",
+    "CAL02 Revenue.Gross Revenue",
+    "CAL01 Volumes.Sellable Units Prior Year",
+    "CAL02 Revenue.Revenue GBP",
+    "CAL07 P&L by Cost Centre.Opex Budget"
+   ],
+   "payoff": {
+    "cells": 10163664,
+    "effort": 0,
+    "objects": 6
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "n/a"
+   },
+   "confidence": "judgment",
+   "why": "Same formula skeleton, same dimensions, one leaf differs: a constant, a reference or a list item. This is what copy, paste and tweak leaves behind. Either the difference is intended (then the name should say so) or one of the pair is the stale copy.",
+   "steps": [
+    "For each pair, read the difference column and decide: intended, or drift.",
+    "Intended: rename so the difference is in the name, or add a note.",
+    "Drift: fix the stale one, or merge as an exact duplicate."
+   ],
+   "verify": [
+    "Re-run this report: pairs that were drift are gone; pairs that were intended carry a note."
+   ],
+   "evidence": [
+    "| Line item | Near twin | The one difference | Cells |",
+    "|---|---|---|---|",
+    "| CAL03 Opex.Actual Opex | CAL05 Opex OLD.Actual | `SYS03 Account Attributes.Opex?` vs `SYS01 Time Settings.Actual?` | 5.0M |",
+    "| CAL03 Opex.Opex GBP | CAL05 Opex OLD.Opex GBP | `CAL03 Opex.Opex` vs `CAL05 Opex OLD.Opex` | 5.0M |",
+    "| CAL02 Revenue.Gross Revenue | CAL04 Margn.COGS | `INP01 Volumes.Price` vs `INP06 Unit Costs.Landed Cost` | 36.3K |",
+    "| CAL01 Volumes.Sellable Units Prior Year | CAL02 Revenue.Revenue Prior Year | `CAL01 Volumes.Sellable Units` vs `CAL02 Revenue.Revenue GBP` | 36.3K |",
+    "| CAL02 Revenue.Revenue GBP | CAL04 Margn.Margin GBP | `CAL02 Revenue.Net Revenue` vs `CAL04 Margn.Margin` | 36.3K |",
+    "| CAL07 P&L by Cost Centre.Opex Budget | OUT02 Board Pack.Budget Revenue | `CAL07 P&L by Cost Centre.Opex` vs `OUT01 Management Pack.Revenue` | 19.2K |"
+   ],
+   "score": 7.632,
+   "rules": [
+    "REDUNDANT-NEAR"
+   ]
+  },
+  {
+   "id": "A4",
+   "kind": "tidy",
+   "title": "Turn summaries off on 37 large line items no formula reads",
+   "model": "4 models",
+   "objects": [
+    "DAT05 CRM Pipeline.Weighted Pipeline",
+    "CAL01 Volumes.Volume Growth",
+    "CAL02 Revenue.Average Price",
+    "CAL02 Revenue.Revenue Growth",
+    "CAL02 Revenue.Revenue USD",
+    "CAL02 Revenue.Revenue per Unit",
+    "CAL02 Revenue.VAT",
+    "CAL03 Opex.Opex Variance"
+   ],
+   "payoff": {
+    "cells": 0,
+    "effort": 0,
+    "objects": 37
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "unknown"
+   },
+   "confidence": "check pages",
+   "why": "Summaries calculate on every parent of every dimension. Where no formula reads the line item, only a page could need the total.",
+   "steps": [
+    "For each, check whether a page shows it at a parent level.",
+    "If not, set Summary to None."
+   ],
+   "verify": [
+    "Model open time and calculation effort fall; no page shows a blank total."
+   ],
+   "evidence": [
+    "| Model | Line item | Summary | Cells |",
+    "|---|---|---|---|",
+    "| Caldergate Data Hub | DAT05 CRM Pipeline.Weighted Pipeline | SUM | 17.3K |",
+    "| Caldergate FP&A | CAL01 Volumes.Volume Growth | FORMULA | 36.3K |",
+    "| Caldergate FP&A | CAL02 Revenue.Average Price | FORMULA | 36.3K |",
+    "| Caldergate FP&A | CAL02 Revenue.Revenue Growth | FORMULA | 36.3K |",
+    "| Caldergate FP&A | CAL02 Revenue.Revenue USD | SUM | 36.3K |",
+    "| Caldergate FP&A | CAL02 Revenue.Revenue per Unit | FORMULA | 36.3K |",
+    "| Caldergate FP&A | CAL02 Revenue.VAT | SUM | 36.3K |",
+    "| Caldergate FP&A | CAL03 Opex.Opex Variance | SUM | 5.0M |",
+    "| Caldergate FP&A | CAL04 Margn.Margin % | FORMULA | 36.3K |",
+    "| Caldergate FP&A | CAL04 Margn.Margin GBP | SUM | 36.3K |",
+    "| Caldergate FP&A | CAL05 Opex OLD.Opex Cumulative | SUM | 5.0M |",
+    "| Caldergate FP&A | CAL05 Opex OLD.Opex Run Rate | SUM | 5.0M |",
+    "| Caldergate FP&A | CAL07 P&L by Cost Centre.EBIT | SUM | 19.2K |",
+    "| Caldergate FP&A | CAL07 P&L by Cost Centre.EBITDA Margin | FORMULA | 19.2K |",
+    "| Caldergate FP&A | CAL07 P&L by Cost Centre.Opex Variance to Budget | SUM | 19.2K |",
+    "| Caldergate FP&A | CAL10 Depreciation.NBV | SUM;time=CLOSING_BALANCE | 19.2K |",
+    "| Caldergate FP&A | DAT02 Actuals Volumes.Revenue Actual | SUM | 36.3K |",
+    "| Caldergate FP&A | INP02 Opex Drivers.Check | SUM | 19.2K |",
+    "| Caldergate FP&A | INP02 Opex Drivers.Driver Count | SUM | 19.2K |",
+    "| Caldergate FP&A | OUT01 Management Pack.Capex | SUM | 19.2K |",
+    "| Caldergate FP&A | OUT01 Management Pack.Depreciation | SUM | 19.2K |",
+    "| Caldergate FP&A | OUT01 Management Pack.EBITDA YTD | SUM | 19.2K |",
+    "| Caldergate FP&A | OUT01 Management Pack.Headcount | SUM | 19.2K |",
+    "| Caldergate FP&A | OUT01 Management Pack.Opex | SUM | 19.2K |",
+    "| Caldergate FP&A | OUT01 Management Pack.Phased Drivers | SUM | 19.2K |",
+    "| Caldergate FP&A | OUT01 Management Pack.Revenue YTD | SUM | 19.2K |",
+    "| Caldergate FP&A | OUT01 Management Pack.Staff Cost | SUM | 19.2K |",
+    "| Caldergate FP&A | OUT01 Management Pack.Total Cost | SUM | 19.2K |",
+    "| Caldergate FP&A | OUT02 Board Pack.EBITDA | SUM | 19.2K |",
+    "| Caldergate FP&A | OUT02 Board Pack.Old Budget Revenue | SUM | 19.2K |",
+    "| Caldergate FP&A | OUT02 Board Pack.Revenue Variance % | FORMULA | 19.2K |",
+    "| Workforce Planning | Calcs - Headcount by CC.Average Salary | FORMULA | 594K |",
+    "| Board Reporting | DAT01 P&L.COGS | SUM | 19.2K |",
+    "| Board Reporting | DAT01 P&L.Depreciation | SUM | 19.2K |",
+    "| Board Reporting | DAT01 P&L.EBIT | SUM | 19.2K |",
+    "| Board Reporting | DAT01 P&L.EBITDA | SUM | 19.2K |",
+    "| Board Reporting | DAT01 P&L.Staff Cost | SUM | 19.2K |"
+   ],
+   "score": 3.7,
+   "rules": [
+    "A-SUMMARY-ON"
+   ]
+  },
+  {
+   "id": "A5",
+   "kind": "schedule",
+   "title": "Retire or schedule 12 imports and exports that no process runs or that have not run in a year",
+   "model": "4 models",
+   "objects": [
+    "Import Products from PIM file",
+    "Export Pipeline for Sales Ops",
+    "Import Customers from Salesforce",
+    "Import from Caldergate Hub v1 - Cost Centres",
+    "Import FX from Treasury file",
+    "Export Opex Drivers to Excel",
+    "Export Assumptions for Workforce",
+    "Import Budget from Excel"
+   ],
+   "payoff": {
+    "cells": 0,
+    "effort": 0,
+    "objects": 0,
+    "actions": 12
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "n/a"
+   },
+   "confidence": "proven",
+   "why": "7 of them are both outside every process and stale. An action nobody schedules is either run by hand (document it) or dead (delete it). An import that was the only load into its target module takes the module with it; an import from a source that no longer exists (see external sources) is dead by definition.",
+   "steps": [
+    "For each action, ask the owner: run by hand, or forgotten?",
+    "Forgotten: delete the action; if it was the only import into its target module, that module joins the retire list.",
+    "Run by hand: put it in a process with a name that says when."
+   ],
+   "verify": [
+    "Actions export shows every import and export inside a process, each with a run date inside the window."
+   ],
+   "evidence": [
+    "| Model | Action | Last run | In a process | Target |",
+    "|---|---|---|---|---|",
+    "| Caldergate Data Hub | Import Products from PIM file | 2023-06-14 | no | DAT04 Product Master |",
+    "| Caldergate Data Hub | Export Pipeline for Sales Ops | 2025-02-11 | no | DAT05 CRM Pipeline |",
+    "| Caldergate Data Hub | Import Customers from Salesforce | recent | no | DAT07 Customer Master |",
+    "| Caldergate FP&A | Import from Caldergate Hub v1 - Cost Centres | 2021-03-19 | no | SYS02 Cost Centre Attributes |",
+    "| Caldergate FP&A | Import FX from Treasury file | 2023-11-02 | no | SYS05 FX Rates |",
+    "| Caldergate FP&A | Export Opex Drivers to Excel | 2024-05-30 | no | INP02 Opex Drivers |",
+    "| Caldergate FP&A | Export Assumptions for Workforce | recent | no | SYS00 Model Settings |",
+    "| Caldergate FP&A | Import Budget from Excel | recent | no | INP02 Opex Drivers |",
+    "| Workforce Planning | Import from Caldergate FP&A - Assumptions | 2022-08-17 | no | Inputs - Settings |",
+    "| Workforce Planning | Export Leavers Report | 2024-12-19 | no | Calcs - Attrition |",
+    "| Workforce Planning | Export Headcount by Department | recent | no | Reports - Headcount |",
+    "| Board Reporting | Export Board Pack PDF Data | recent | no | OUT01 Board Dashboard |"
+   ],
+   "score": 3.6,
+   "rules": []
+  },
+  {
+   "id": "A6",
+   "kind": "retire",
+   "title": "Confirm and retire 5 calculated line items that no formula, export or twin explains",
+   "model": "Caldergate FP&A",
+   "objects": [
+    "DAT01 Actuals GL",
+    "CAL03 Opex",
+    "CAL02 Revenue"
+   ],
+   "payoff": {
+    "cells": 15126048,
+    "effort": 10.04,
+    "objects": 5
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "unknown"
+   },
+   "confidence": "check pages",
+   "why": "Calculated, read by no formula, not exported, not in an output-style module, and not a twin of anything. Either a page reads them or nothing does. (30 other unreferenced line items look like page outputs by their module, format or time scale and are not listed here.)",
+   "steps": [
+    "For each module, list the pages that use it.",
+    "Where nothing does, set the formula blank in a sandbox and wait a cycle.",
+    "Delete what nobody missed."
+   ],
+   "verify": [
+    "Cell count falls by what was deleted.",
+    "Re-run this report: the unknown list shrinks to the ones a page needs."
+   ],
+   "evidence": [
+    "| Module | Line items with no reader | Cells | Effort |",
+    "|---|---|---|---|",
+    "| DAT01 Actuals GL | 2: Journal Cost Centre, Loaded? | 10.0M | 7.71% |",
+    "| CAL03 Opex | 1: Opex Variance | 5.0M | 2.31% |",
+    "| CAL02 Revenue | 2: Revenue USD, VAT | 72.6K | 0.02% |"
+   ],
+   "score": 3.501,
+   "rules": [
+    "G-UNUSED"
+   ]
+  },
+  {
+   "id": "A7",
+   "kind": "refactor",
+   "title": "Move 11 hard-coded constants into assumptions modules",
+   "model": "Caldergate FP&A, Workforce Planning",
+   "objects": [
+    "1.27",
+    "0.2",
+    "30",
+    "0.25",
+    "10",
+    "119",
+    "120",
+    "239"
+   ],
+   "payoff": {
+    "cells": 0,
+    "effort": 0,
+    "objects": 9
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "n/a"
+   },
+   "confidence": "proven",
+   "why": "Numbers inside formulas are assumptions nobody can see or change without a model builder. The same constant in more than one formula drifts.",
+   "steps": [
+    "Create (or reuse) a settings module per model with one line item per constant, named, with a note saying who owns it.",
+    "Replace each constant with the reference.",
+    "Tell the owner where the number now lives."
+   ],
+   "verify": [
+    "Search formulas for the constant: zero hits."
+   ],
+   "evidence": [
+    "| Constant | Used in | Suggested input |",
+    "|---|---|---|",
+    "| 0.1 | Workforce Planning: Calcs - Cost.Bonus, Workforce Planning: Calcs - Headcount by CC.Bonus % | Assumption 1 |",
+    "| 1.27 | Caldergate FP&A: CAL02 Revenue.Revenue USD | Assumption 2 |",
+    "| 0.2 | Caldergate FP&A: CAL02 Revenue.VAT | Assumption 3 |",
+    "| 30 | Caldergate FP&A: CAL08 Cash Flow.Debtors | Assumption 4 |",
+    "| 0.25 | Caldergate FP&A: CAL08 Cash Flow.Tax | Assumption 5 |",
+    "| 10 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 6 |",
+    "| 119 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 7 |",
+    "| 120 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 8 |",
+    "| 239 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 9 |",
+    "| 0.05 | Caldergate FP&A: INP03 Headcount.Pension | Assumption 10 |",
+    "| 11 | Workforce Planning: Calcs - Attrition.Annualised Attrition | Assumption 11 |"
+   ],
+   "score": 0.9,
+   "rules": [
+    "F-HARDCODE"
+   ]
+  },
+  {
+   "id": "A8",
+   "kind": "tidy",
+   "title": "Move 18 text and lookup line items out of large calculation modules",
+   "model": "3 models",
+   "objects": [
+    "DAT01 GL Transactions.Source System",
+    "DAT06 Sales Orders.Last Order Ref",
+    "DAT01 Actuals GL.Source Journal",
+    "DAT01 Actuals GL.Journal Cost Centre",
+    "CAL02 Revenue.Revenue Label",
+    "CAL02 Revenue.Revenue Label",
+    "CAL03 Opex.Forecast Opex",
+    "CAL05 Opex OLD.Fees Forecast"
+   ],
+   "payoff": {
+    "cells": 0,
+    "effort": 0,
+    "objects": 18
+   },
+   "touches": {
+    "readers": 11,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "n/a"
+   },
+   "confidence": "proven",
+   "why": "Text, FINDITEM, ITEM() and text joins in a multi-dimensional line item are computed once per cell. In a one-dimension system module they are computed once per list item.",
+   "steps": [
+    "Compute each once in a SYS module dimensioned by the list it depends on.",
+    "Reference it from the calculation module."
+   ],
+   "verify": [
+    "Calculation effort of the listed line items falls; cell count of TEXT line items falls."
+   ],
+   "evidence": [
+    "| Model | Line item | What | Cells |",
+    "|---|---|---|---|",
+    "| Caldergate Data Hub | DAT01 GL Transactions.Source System | Text-formatted line item | 1.3M |",
+    "| Caldergate Data Hub | DAT06 Sales Orders.Last Order Ref | Text-formatted line item | 726K |",
+    "| Caldergate FP&A | DAT01 Actuals GL.Source Journal | Text-formatted line item | 5.0M |",
+    "| Caldergate FP&A | DAT01 Actuals GL.Journal Cost Centre | FINDITEM in a large line item | 5.0M |",
+    "| Caldergate FP&A | CAL02 Revenue.Revenue Label | Text concatenation in a large line item | 36.3K |",
+    "| Caldergate FP&A | CAL02 Revenue.Revenue Label | Unchanging function in a calculation module | 36.3K |",
+    "| Caldergate FP&A | CAL03 Opex.Forecast Opex | Unchanging function in a calculation module | 5.0M |",
+    "| Caldergate FP&A | CAL05 Opex OLD.Fees Forecast | Unchanging function in a calculation module | 5.0M |",
+    "| Caldergate FP&A | CAL05 Opex OLD.Marketing Forecast | Unchanging function in a calculation module | 5.0M |",
+    "| Caldergate FP&A | CAL05 Opex OLD.Other Forecast | Unchanging function in a calculation module | 5.0M |",
+    "| Caldergate FP&A | CAL05 Opex OLD.Rates Forecast | Unchanging function in a calculation module | 5.0M |",
+    "| Caldergate FP&A | CAL05 Opex OLD.Rent Forecast | Unchanging function in a calculation module | 5.0M |",
+    "| Caldergate FP&A | CAL05 Opex OLD.Software Forecast | Unchanging function in a calculation module | 5.0M |",
+    "| Caldergate FP&A | CAL05 Opex OLD.Travel Forecast | Unchanging function in a calculation module | 5.0M |",
+    "| Caldergate FP&A | CAL05 Opex OLD.Utilities Forecast | Unchanging function in a calculation module | 5.0M |",
+    "| Workforce Planning | Data - Employees.Employee Name | Text-formatted line item | 66.6K |",
+    "| Workforce Planning | Data - Employees.Name and Role | Text-formatted line item | 66.6K |",
+    "| Workforce Planning | Data - Employees.Name and Role | Text concatenation in a large line item | 66.6K |"
+   ],
+   "score": 0.857,
+   "rules": [
+    "A-TEXT-FORMAT",
+    "A-FINDITEM",
+    "A-TEXT-JOIN",
+    "A-SYSTEMS-FN"
+   ]
+  },
+  {
+   "id": "A9",
+   "kind": "retire",
+   "title": "Find out what reads SYS01 Time: no formula or export reads it",
+   "model": "Board Reporting",
+   "objects": [
+    "SYS01 Time"
+   ],
+   "payoff": {
+    "cells": 72,
+    "effort": 2.8,
+    "objects": 2
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "unknown"
+   },
+   "confidence": "check pages",
+   "why": "No formula outside SYS01 Time reads any of its 2 line items, and no export action reads it. It holds 72 cells and 2.8% of the model's calculation effort, recalculated on every change.",
+   "steps": [
+    "List the pages and saved views that use SYS01 Time (Modules export: Used in Dashboards covers classic dashboards only; UX pages need the page builder).",
+    "Where a page reads SYS01 Time, decide whether the page is still used.",
+    "In a sandbox copy, blank every formula in SYS01 Time; open the pages listed in step 1.",
+    "Delete SYS01 Time."
+   ],
+   "verify": [
+    "Workspace size falls by about 72 cells. Calculation effort falls by about 2.8%.",
+    "Every page listed in step 1 opens without a blank card."
+   ],
+   "evidence": [
+    "Readers outside the module: 0. Exports reading it: 0."
+   ],
+   "score": 0.5,
+   "rules": []
+  },
+  {
+   "id": "A10",
+   "kind": "fix",
+   "title": "Guard 4 divisions that error on zero",
+   "model": "3 models",
+   "objects": [
+    "CAL02 Revenue.Revenue per Unit",
+    "Calcs - Attrition.Annualised Attrition",
+    "Calcs - Attrition.Attrition %",
+    "CAL01 KPIs.Revenue per FTE"
+   ],
+   "payoff": {
+    "cells": 0,
+    "effort": 0,
+    "objects": 4
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "n/a"
+   },
+   "confidence": "proven",
+   "why": "A / B shows an error cell when B is zero, and every summary above it shows an error too. DIVIDE() returns zero. The replacement formula is written out; paste it.",
+   "steps": [
+    "Paste the replacement formula from the table into each line item.",
+    "Where a zero denominator should show blank rather than zero, wrap in IF instead."
+   ],
+   "verify": [
+    "No error cells on the pages that show these line items at a total level."
+   ],
+   "evidence": [
+    "| Model | Line item | Replace with |",
+    "|---|---|---|",
+    "| Caldergate FP&A | CAL02 Revenue.Revenue per Unit | `DIVIDE(Net Revenue, CAL01 Volumes.Net Units)` |",
+    "| Workforce Planning | Calcs - Attrition.Annualised Attrition | `DIVIDE(MOVINGSUM(Leavers by Role, -11, 0), Headcount)` |",
+    "| Workforce Planning | Calcs - Attrition.Attrition % | `DIVIDE(Leavers by Role, Headcount)` |",
+    "| Board Reporting | CAL01 KPIs.Revenue per FTE | `DIVIDE(DAT02 Board Lines.Revenue, FTE)` |"
+   ],
+   "score": 0.4,
+   "rules": [
+    "F-DIVIDE"
+   ]
+  },
+  {
+   "id": "A11",
+   "kind": "merge",
+   "title": "Reconcile 3 pairs of formulas that differ in exactly one place",
+   "model": "Workforce Planning",
+   "objects": [
+    "Calcs - Attrition.Headcount",
+    "Calcs - Attrition.Leavers by Role",
+    "Calcs - Attrition.Leavers by Role"
+   ],
+   "payoff": {
+    "cells": 13392,
+    "effort": 0,
+    "objects": 3
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "n/a"
+   },
+   "confidence": "judgment",
+   "why": "Same formula skeleton, same dimensions, one leaf differs: a constant, a reference or a list item. This is what copy, paste and tweak leaves behind. Either the difference is intended (then the name should say so) or one of the pair is the stale copy.",
+   "steps": [
+    "For each pair, read the difference column and decide: intended, or drift.",
+    "Intended: rename so the difference is in the name, or add a note.",
+    "Drift: fix the stale one, or merge as an exact duplicate."
+   ],
+   "verify": [
+    "Re-run this report: pairs that were drift are gone; pairs that were intended carry a note."
+   ],
+   "evidence": [
+    "| Line item | Near twin | The one difference | Cells |",
+    "|---|---|---|---|",
+    "| Calcs - Attrition.Headcount | zz Archive - 2021 Cost.Cost | `Data - Employees.FTE` vs `Calcs - Cost.Total Cost` | 4.5K |",
+    "| Calcs - Attrition.Leavers by Role | zz Archive - 2021 Cost.Headcount | `Calcs - Attrition.Leavers` vs `Data - Employees.FTE` | 4.5K |",
+    "| Calcs - Attrition.Leavers by Role | zz Archive - 2021 Cost.Cost | `Calcs - Attrition.Leavers` vs `Calcs - Cost.Total Cost` | 4.5K |"
+   ],
+   "score": 0.309,
+   "rules": [
+    "REDUNDANT-NEAR"
+   ]
+  },
+  {
+   "id": "A12",
+   "kind": "collapse",
+   "title": "Collapse 15 line items that only copy another line item",
+   "model": "Caldergate FP&A",
+   "objects": [
+    "CAL07 P&L by Cost Centre.Depreciation",
+    "CAL11 Reporting Prep.Revenue",
+    "CAL11 Reporting Prep.EBITDA",
+    "CAL11 Reporting Prep.Opex",
+    "CAL11 Reporting Prep.Staff Cost",
+    "OUT01 Management Pack.Revenue",
+    "OUT01 Management Pack.EBITDA",
+    "OUT01 Management Pack.Opex"
+   ],
+   "payoff": {
+    "cells": 287280,
+    "effort": 0,
+    "objects": 15
+   },
+   "touches": {
+    "readers": 14,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "unknown"
+   },
+   "confidence": "check pages",
+   "why": "15 line items have the formula `B = A` with the same dimensions as A. Each stores a second copy of A: 287K cells. Readers of B can read A directly. Some exist to give a page a friendlier name; those are the ones to keep.",
+   "steps": [
+    "Repoint each reader of the alias to the target (readers column).",
+    "Keep an alias only where a page or export needs it under that name.",
+    "Delete the rest."
+   ],
+   "verify": [
+    "Cell count falls by up to 287K.",
+    "Re-run this report: the alias count falls to the ones kept on purpose."
+   ],
+   "evidence": [
+    "| Alias | Is just | Cells | Readers to repoint | Summary (alias / target) |",
+    "|---|---|---|---|---|",
+    "| CAL07 P&L by Cost Centre.Depreciation | CAL10 Depreciation.Charge | 19.2K | 1 | SUM / SUM |",
+    "| CAL11 Reporting Prep.Revenue | CAL07 P&L by Cost Centre.Revenue | 19.2K | 1 | SUM / SUM |",
+    "| CAL11 Reporting Prep.EBITDA | CAL07 P&L by Cost Centre.EBITDA | 19.2K | 1 | SUM / SUM |",
+    "| CAL11 Reporting Prep.Opex | CAL07 P&L by Cost Centre.Opex | 19.2K | 2 | SUM / SUM |",
+    "| CAL11 Reporting Prep.Staff Cost | CAL07 P&L by Cost Centre.Staff Cost | 19.2K | 2 | SUM / SUM |",
+    "| OUT01 Management Pack.Revenue | CAL11 Reporting Prep.Revenue | 19.2K | 4 | SUM / SUM |",
+    "| OUT01 Management Pack.EBITDA | CAL11 Reporting Prep.EBITDA | 19.2K | 2 | SUM / SUM |",
+    "| OUT01 Management Pack.Opex | CAL11 Reporting Prep.Opex | 19.2K | 0 | SUM / SUM |",
+    "| OUT01 Management Pack.Staff Cost | CAL11 Reporting Prep.Staff Cost | 19.2K | 0 | SUM / SUM |",
+    "| OUT01 Management Pack.Total Cost | CAL11 Reporting Prep.Total Cost | 19.2K | 0 | SUM / SUM |",
+    "| OUT01 Management Pack.Capex | INP04 Capex.Capex Spend | 19.2K | 0 | SUM / SUM |",
+    "| OUT01 Management Pack.Depreciation | CAL10 Depreciation.Charge | 19.2K | 0 | SUM / SUM |",
+    "| OUT01 Management Pack.Phased Drivers | CAL12 Driver Phasing.Total Phased | 19.2K | 0 | SUM / SUM |",
+    "| OUT02 Board Pack.Revenue | OUT01 Management Pack.Revenue | 19.2K | 1 | SUM / SUM |",
+    "| OUT02 Board Pack.EBITDA | OUT01 Management Pack.EBITDA | 19.2K | 0 | SUM / SUM |"
+   ],
+   "score": 0.23,
+   "rules": [
+    "REDUNDANT-ALIAS"
+   ]
+  },
+  {
+   "id": "A13",
+   "kind": "tidy",
+   "title": "Move 2 subsidiary-view line items into modules of their own dimensions",
+   "model": "Caldergate FP&A, Workforce Planning",
+   "objects": [
+    "CAL01 Volumes.Launched?",
+    "Calcs - Attrition.Leavers"
+   ],
+   "payoff": {
+    "cells": 0,
+    "effort": 0,
+    "objects": 2
+   },
+   "touches": {
+    "readers": 2,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "n/a"
+   },
+   "confidence": "proven",
+   "why": "A line item dimensioned differently from its module is a subsidiary view. Used in calculation, it hides a lookup and confuses the next builder. Anaplan's checklist: display only.",
+   "steps": [
+    "Create or find a module dimensioned as the line item is (usually a SYS module for that list).",
+    "Move the line item; repoint its readers."
+   ],
+   "verify": [
+    "Modules export: no calculation module has a line item whose Applies To differs from the module's."
+   ],
+   "evidence": [
+    "| Model | Line item | Applies to | Module applies to | Readers |",
+    "|---|---|---|---|---|",
+    "| Caldergate FP&A | CAL01 Volumes.Launched? | Products | Products, Regions | 1 |",
+    "| Workforce Planning | Calcs - Attrition.Leavers | Employees | Roles | 1 |"
+   ],
+   "score": 0.167,
+   "rules": [
+    "A-SUBSIDIARY"
+   ]
+  },
+  {
+   "id": "A14",
+   "kind": "collapse",
+   "title": "Shorten 4 pass-through chains",
+   "model": "Caldergate FP&A",
+   "objects": [
+    "OUT01 Management Pack.Opex",
+    "OUT01 Management Pack.Staff Cost",
+    "OUT02 Board Pack.Revenue",
+    "OUT02 Board Pack.EBITDA"
+   ],
+   "payoff": {
+    "cells": 153216,
+    "effort": 0,
+    "objects": 8
+   },
+   "touches": {
+    "readers": 4,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "unknown"
+   },
+   "confidence": "check pages",
+   "why": "A reads B reads C, each a pure copy. Every step recalculates on any change, and each intermediate is a stored copy. Anaplan's checklist: never.",
+   "steps": [
+    "Point each head at the line item at the end of its chain.",
+    "The intermediates then have no formula readers; treat them as aliases (previous action) and check pages before deleting."
+   ],
+   "verify": [
+    "Re-run this report: pass-through chains reach zero."
+   ],
+   "evidence": [
+    "| Head | Steps | Reads, in the end |",
+    "|---|---|---|",
+    "| OUT01 Management Pack.Opex | 4 | CAL03 Opex.Opex GBP |",
+    "| OUT01 Management Pack.Staff Cost | 4 | INP03 Headcount.Total Cost |",
+    "| OUT02 Board Pack.Revenue | 4 | CAL07 P&L by Cost Centre.Revenue |",
+    "| OUT02 Board Pack.EBITDA | 4 | CAL07 P&L by Cost Centre.EBITDA |"
+   ],
+   "score": 0.142,
+   "rules": [
+    "A-DAISY"
+   ]
+  },
+  {
+   "id": "A15",
+   "kind": "fix",
+   "title": "Split 1 formula that aggregate and look up in one bracket",
+   "model": "Caldergate FP&A",
+   "objects": [
+    "CAL06 Department Summary.Benchmark Opex"
+   ],
+   "payoff": {
+    "cells": 0,
+    "effort": 0,
+    "objects": 1
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "n/a"
+   },
+   "confidence": "proven",
+   "why": "SUM with LOOKUP or SELECT in one expression makes the engine build a large intermediate mapping. Anapedia: never combine them.",
+   "steps": [
+    "Aggregate into an intermediate line item first.",
+    "Look up from the intermediate."
+   ],
+   "verify": [
+    "Same values; calculation effort falls."
+   ],
+   "evidence": [
+    "| Model | Line item | Clause | Formula |",
+    "|---|---|---|---|",
+    "| Caldergate FP&A | CAL06 Department Summary.Benchmark Opex | LOOKUP+SUM | `'CAL03 Opex'.Opex GBP[SUM: 'SYS02 Cost Centre Attributes'.Department, LOOKUP: 'SYS09 Department Sett` |"
+   ],
+   "score": 0.1,
+   "rules": [
+    "F-MIXED-CLAUSE"
+   ]
+  },
+  {
+   "id": "A16",
+   "kind": "tidy",
+   "title": "Delete 1 empty module",
+   "model": "Caldergate FP&A",
+   "objects": [
+    "Caldergate FP&A: CAL09 Scenario Planning"
+   ],
+   "payoff": {
+    "cells": 0,
+    "effort": 0,
+    "objects": 1
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "n/a"
+   },
+   "confidence": "proven",
+   "why": "No line items. Usually a leftover from a build that moved on.",
+   "steps": [
+    "Delete."
+   ],
+   "verify": [
+    "Modules export: none with an empty Line Items column."
+   ],
+   "evidence": [
+    "Caldergate FP&A: CAL09 Scenario Planning"
+   ],
+   "score": 0.1,
+   "rules": [
+    "G-EMPTY-MODULE"
+   ]
+  },
+  {
+   "id": "A17",
+   "kind": "dedupe",
+   "title": "Give 8 calculations that exist in more than one model a single owner",
+   "model": "Estate",
+   "objects": [
+    "COGS?",
+    "Current Period?",
+    "Employer NI",
+    "Group",
+    "Opex?",
+    "Revenue?",
+    "Sign",
+    "Working Days"
+   ],
+   "payoff": {
+    "cells": 0,
+    "effort": 0,
+    "objects": 8
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 3,
+    "pages": "n/a"
+   },
+   "confidence": "judgment",
+   "why": "The same line item, same formula, in more than one model. A change in one must be repeated in the others, and one day it is not. Caldergate FP&A holds the most copies; where a feed already exists, it can own the value and the others import it.",
+   "steps": [
+    "Pick the owner per line item (usually the hub).",
+    "Add the line item to an export the other model already imports.",
+    "Replace the copy with the imported value."
+   ],
+   "verify": [
+    "Re-run this report: the cross-model duplicate list is empty or annotated."
+   ],
+   "evidence": [
+    "| Line item | Models | Formula |",
+    "|---|---|---|",
+    "| COGS? | Caldergate Data Hub, Caldergate FP&A | `(Account Type = Account Types.COGS)` |",
+    "| Current Period? | Caldergate Data Hub, Caldergate FP&A | `(ITEM(Time) = SYS00 Model Settings.Current Period)` |",
+    "| Employer NI | Caldergate FP&A, Workforce Planning | `(IF (Monthly Salary > NI Threshold) THEN ((Monthly Salary - NI Threshold) * NI R` |",
+    "| Group | Caldergate Data Hub, Caldergate FP&A | `PARENT(ITEM(Cost Centres))` |",
+    "| Opex? | Caldergate Data Hub, Caldergate FP&A | `(Account Type = Account Types.Opex)` |",
+    "| Revenue? | Caldergate Data Hub, Caldergate FP&A | `(Account Type = Account Types.Revenue)` |",
+    "| Sign | Caldergate Data Hub, Caldergate FP&A | `(IF 'Revenue?' THEN -1 ELSE 1)` |",
+    "| Working Days | Caldergate FP&A, Workforce Planning | `(Days in Month - Weekend Days - Bank Holidays)` |"
+   ],
+   "score": 0.08,
+   "rules": [
+    "DUP-CROSS"
+   ]
+  },
+  {
+   "id": "A18",
+   "kind": "collapse",
+   "title": "Collapse 4 line items that only copy another line item",
+   "model": "Board Reporting",
+   "objects": [
+    "OUT01 Board Dashboard.Revenue",
+    "OUT01 Board Dashboard.EBITDA",
+    "OUT01 Board Dashboard.Revenue per FTE",
+    "OUT01 Board Dashboard.Revenue Growth"
+   ],
+   "payoff": {
+    "cells": 576,
+    "effort": 0,
+    "objects": 4
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "unknown"
+   },
+   "confidence": "check pages",
+   "why": "4 line items have the formula `B = A` with the same dimensions as A. Each stores a second copy of A: 576 cells. Readers of B can read A directly. Some exist to give a page a friendlier name; those are the ones to keep.",
+   "steps": [
+    "Repoint each reader of the alias to the target (readers column).",
+    "Keep an alias only where a page or export needs it under that name.",
+    "Delete the rest."
+   ],
+   "verify": [
+    "Cell count falls by up to 576.",
+    "Re-run this report: the alias count falls to the ones kept on purpose."
+   ],
+   "evidence": [
+    "| Alias | Is just | Cells | Readers to repoint | Summary (alias / target) |",
+    "|---|---|---|---|---|",
+    "| OUT01 Board Dashboard.Revenue | DAT02 Board Lines.Revenue | 144 | 0 | SUM / SUM |",
+    "| OUT01 Board Dashboard.EBITDA | DAT02 Board Lines.EBITDA | 144 | 0 | SUM / SUM |",
+    "| OUT01 Board Dashboard.Revenue per FTE | CAL01 KPIs.Revenue per FTE | 144 | 0 | SUM / FORMULA |",
+    "| OUT01 Board Dashboard.Revenue Growth | CAL01 KPIs.Revenue Growth | 144 | 0 | SUM / FORMULA |"
+   ],
+   "score": 0.067,
+   "rules": [
+    "REDUNDANT-ALIAS"
+   ]
+  },
+  {
+   "id": "A19",
+   "kind": "retire",
+   "title": "Retire zz Archive - 2021 Cost, superseded by Calcs - Attrition",
+   "model": "Workforce Planning",
+   "objects": [
+    "zz Archive - 2021 Cost"
+   ],
+   "payoff": {
+    "cells": 13392,
+    "effort": 0.0,
+    "objects": 3
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "unknown"
+   },
+   "confidence": "check pages",
+   "why": "No formula outside zz Archive - 2021 Cost reads any of its 3 line items, and no export action reads it. 2 of its 3 calculated line items have a twin in Calcs - Attrition, which other formulas do read. It holds 13.4K cells, recalculated on every change. Module note: \"Old cost calc from go-live. Kept for reference.\"",
+   "steps": [
+    "List the pages and saved views that use zz Archive - 2021 Cost (Modules export: Used in Dashboards covers classic dashboards only; UX pages need the page builder).",
+    "Where a page reads zz Archive - 2021 Cost, repoint the card to the twin line item in Calcs - Attrition.",
+    "In a sandbox copy, blank every formula in zz Archive - 2021 Cost; open the pages listed in step 1.",
+    "Delete zz Archive - 2021 Cost."
+   ],
+   "verify": [
+    "Workspace size falls by about 13.4K cells.",
+    "Every page listed in step 1 opens without a blank card."
+   ],
+   "evidence": [
+    "Readers outside the module: 0. Exports reading it: 0. Twin module: Calcs - Attrition (2 matches)."
+   ],
+   "score": 0.052,
+   "rules": []
+  },
+  {
+   "id": "A20",
+   "kind": "merge",
+   "title": "Merge 1 line item that repeat a calculation already made (1 group)",
+   "model": "Caldergate FP&A",
+   "objects": [
+    "CAL07 P&L by Cost Centre.Depreciation"
+   ],
+   "payoff": {
+    "cells": 19152,
+    "effort": 0,
+    "objects": 1
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "unknown"
+   },
+   "confidence": "check pages",
+   "why": "1 calculated line items have the same resolved formula, dimensions, time scale and versions as another line item in the model. Each is computed and stored twice: 19.2K cells. The keeper in each group is the one most formulas already read.",
+   "steps": [
+    "For each group, keep the line item most formulas read (first column).",
+    "Repoint every formula that reads a duplicate to the keeper (the readers count is in the table).",
+    "Where the summary methods differ (last column), decide which one the pages need before merging; that is the one legitimate reason for two copies.",
+    "Check pages for the duplicates, then delete them."
+   ],
+   "verify": [
+    "Cell count falls by about 19.2K.",
+    "No page shows a blank; no export loses a column.",
+    "Re-run this report: the group count reaches zero."
+   ],
+   "evidence": [
+    "| Keep (most read) | Also computed as | Dimensions | Redundant cells | Summary methods |",
+    "|---|---|---|---|---|",
+    "| CAL07 P&L by Cost Centre.Depreciation | OUT01 Management Pack.Depreciation | Cost Centres | 19.2K | SUM |"
+   ],
+   "score": 0.019,
+   "rules": [
+    "REDUNDANT-EXACT"
+   ]
+  },
+  {
+   "id": "A21",
+   "kind": "merge",
+   "title": "Merge 1 line item that repeat a calculation already made (1 group)",
+   "model": "Workforce Planning",
+   "objects": [
+    "Calcs - Attrition.Headcount"
+   ],
+   "payoff": {
+    "cells": 4464,
+    "effort": 0,
+    "objects": 1
+   },
+   "touches": {
+    "readers": 1,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "unknown"
+   },
+   "confidence": "check pages",
+   "why": "1 calculated line items have the same resolved formula, dimensions, time scale and versions as another line item in the model. Each is computed and stored twice: 4.5K cells. The keeper in each group is the one most formulas already read.",
+   "steps": [
+    "For each group, keep the line item most formulas read (first column).",
+    "Repoint every formula that reads a duplicate to the keeper (the readers count is in the table).",
+    "Where the summary methods differ (last column), decide which one the pages need before merging; that is the one legitimate reason for two copies.",
+    "Check pages for the duplicates, then delete them."
+   ],
+   "verify": [
+    "Cell count falls by about 4.5K.",
+    "No page shows a blank; no export loses a column.",
+    "Re-run this report: the group count reaches zero."
+   ],
+   "evidence": [
+    "| Keep (most read) | Also computed as | Dimensions | Redundant cells | Summary methods |",
+    "|---|---|---|---|---|",
+    "| Calcs - Attrition.Headcount | zz Archive - 2021 Cost.Headcount | Roles | 4.5K | SUM |"
+   ],
+   "score": 0.017,
+   "rules": [
+    "REDUNDANT-EXACT"
+   ]
+  },
+  {
+   "id": "A22",
+   "kind": "tidy",
+   "title": "Split INP02 Opex Drivers (58 line items)",
+   "model": "Caldergate FP&A",
+   "objects": [
+    "INP02 Opex Drivers"
+   ],
+   "payoff": {
+    "cells": 0,
+    "effort": 0,
+    "objects": 1
+   },
+   "touches": {
+    "readers": 50,
+    "exports": 1,
+    "downstream_models": 0,
+    "pages": "unknown"
+   },
+   "confidence": "judgment",
+   "why": "Modules with many line items are slow to open and hard to read. Anaplan's checklist: no more than 50. Split by purpose, not by count.",
+   "steps": [
+    "Group the line items by what reads them (the graph gives the groups).",
+    "Move each group to a module named for its purpose; repoint readers."
+   ],
+   "verify": [
+    "No module over 50 line items."
+   ],
+   "evidence": [
+    "Readers outside the module to repoint: 50."
+   ],
+   "score": 0.013,
+   "rules": [
+    "A-LI-COUNT"
+   ]
+  }
+ ],
  "models": [
   {
    "name": "Caldergate Data Hub",
@@ -432,7 +1471,51 @@
        "Import Products from PIM file"
       ]
      }
+    },
+    "redundancy": {
+     "exact_groups": 0,
+     "exact_redundant": 0,
+     "exact_cells": 0,
+     "aliases": 0,
+     "alias_cells": 0,
+     "near": 0,
+     "superseded": 0,
+     "output_like": 17,
+     "unknown_items": 4,
+     "unknown_cells": 144
     }
+   },
+   "redundancy": {
+    "counts": {
+     "exact_groups": 0,
+     "exact_redundant": 0,
+     "exact_cells": 0,
+     "aliases": 0,
+     "alias_cells": 0,
+     "near": 0,
+     "superseded": 0,
+     "output_like": 17,
+     "unknown_items": 4,
+     "unknown_cells": 144
+    },
+    "exact": [],
+    "aliases": [],
+    "near": [],
+    "superseded": [],
+    "output_like_count": 17,
+    "unknown": [
+     {
+      "module": "SYS01 Time Settings",
+      "items": [
+       "Current Period?",
+       "Start of Month",
+       "End of Month",
+       "Days in Month"
+      ],
+      "cells": 144,
+      "effort": 0.0
+     }
+    ]
    },
    "patterns": [
     {
@@ -1016,7 +2099,369 @@
        "Import Budget from Excel"
       ]
      }
+    },
+    "redundancy": {
+     "exact_groups": 1,
+     "exact_redundant": 1,
+     "exact_cells": 19152,
+     "aliases": 15,
+     "alias_cells": 287280,
+     "near": 6,
+     "superseded": 1,
+     "output_like": 30,
+     "unknown_items": 24,
+     "unknown_cells": 15191216
     }
+   },
+   "redundancy": {
+    "counts": {
+     "exact_groups": 1,
+     "exact_redundant": 1,
+     "exact_cells": 19152,
+     "aliases": 15,
+     "alias_cells": 287280,
+     "near": 6,
+     "superseded": 1,
+     "output_like": 30,
+     "unknown_items": 24,
+     "unknown_cells": 15191216
+    },
+    "exact": [
+     {
+      "formula": "CAL10 Depreciation.Charge",
+      "dims": "Cost Centres",
+      "items": [
+       {
+        "key": "CAL07 P&L by Cost Centre.Depreciation",
+        "cells": 19152,
+        "summary": "SUM",
+        "readers": 1
+       },
+       {
+        "key": "OUT01 Management Pack.Depreciation",
+        "cells": 19152,
+        "summary": "SUM",
+        "readers": 0
+       }
+      ],
+      "redundant_cells": 19152,
+      "readers_to_repoint": 0
+     }
+    ],
+    "aliases": [
+     {
+      "item": "CAL07 P&L by Cost Centre.Depreciation",
+      "target": "CAL10 Depreciation.Charge",
+      "cells": 19152,
+      "readers": 1,
+      "summary": "SUM",
+      "target_summary": "SUM"
+     },
+     {
+      "item": "CAL11 Reporting Prep.Revenue",
+      "target": "CAL07 P&L by Cost Centre.Revenue",
+      "cells": 19152,
+      "readers": 1,
+      "summary": "SUM",
+      "target_summary": "SUM"
+     },
+     {
+      "item": "CAL11 Reporting Prep.EBITDA",
+      "target": "CAL07 P&L by Cost Centre.EBITDA",
+      "cells": 19152,
+      "readers": 1,
+      "summary": "SUM",
+      "target_summary": "SUM"
+     },
+     {
+      "item": "CAL11 Reporting Prep.Opex",
+      "target": "CAL07 P&L by Cost Centre.Opex",
+      "cells": 19152,
+      "readers": 2,
+      "summary": "SUM",
+      "target_summary": "SUM"
+     },
+     {
+      "item": "CAL11 Reporting Prep.Staff Cost",
+      "target": "CAL07 P&L by Cost Centre.Staff Cost",
+      "cells": 19152,
+      "readers": 2,
+      "summary": "SUM",
+      "target_summary": "SUM"
+     },
+     {
+      "item": "OUT01 Management Pack.Revenue",
+      "target": "CAL11 Reporting Prep.Revenue",
+      "cells": 19152,
+      "readers": 4,
+      "summary": "SUM",
+      "target_summary": "SUM"
+     },
+     {
+      "item": "OUT01 Management Pack.EBITDA",
+      "target": "CAL11 Reporting Prep.EBITDA",
+      "cells": 19152,
+      "readers": 2,
+      "summary": "SUM",
+      "target_summary": "SUM"
+     },
+     {
+      "item": "OUT01 Management Pack.Opex",
+      "target": "CAL11 Reporting Prep.Opex",
+      "cells": 19152,
+      "readers": 0,
+      "summary": "SUM",
+      "target_summary": "SUM"
+     },
+     {
+      "item": "OUT01 Management Pack.Staff Cost",
+      "target": "CAL11 Reporting Prep.Staff Cost",
+      "cells": 19152,
+      "readers": 0,
+      "summary": "SUM",
+      "target_summary": "SUM"
+     },
+     {
+      "item": "OUT01 Management Pack.Total Cost",
+      "target": "CAL11 Reporting Prep.Total Cost",
+      "cells": 19152,
+      "readers": 0,
+      "summary": "SUM",
+      "target_summary": "SUM"
+     },
+     {
+      "item": "OUT01 Management Pack.Capex",
+      "target": "INP04 Capex.Capex Spend",
+      "cells": 19152,
+      "readers": 0,
+      "summary": "SUM",
+      "target_summary": "SUM"
+     },
+     {
+      "item": "OUT01 Management Pack.Depreciation",
+      "target": "CAL10 Depreciation.Charge",
+      "cells": 19152,
+      "readers": 0,
+      "summary": "SUM",
+      "target_summary": "SUM"
+     },
+     {
+      "item": "OUT01 Management Pack.Phased Drivers",
+      "target": "CAL12 Driver Phasing.Total Phased",
+      "cells": 19152,
+      "readers": 0,
+      "summary": "SUM",
+      "target_summary": "SUM"
+     },
+     {
+      "item": "OUT02 Board Pack.Revenue",
+      "target": "OUT01 Management Pack.Revenue",
+      "cells": 19152,
+      "readers": 1,
+      "summary": "SUM",
+      "target_summary": "SUM"
+     },
+     {
+      "item": "OUT02 Board Pack.EBITDA",
+      "target": "OUT01 Management Pack.EBITDA",
+      "cells": 19152,
+      "readers": 0,
+      "summary": "SUM",
+      "target_summary": "SUM"
+     }
+    ],
+    "near": [
+     {
+      "a": "CAL03 Opex.Actual Opex",
+      "b": "CAL05 Opex OLD.Actual",
+      "differs": [
+       "SYS03 Account Attributes.Opex?",
+       "SYS01 Time Settings.Actual?"
+      ],
+      "skeleton": "(IF '?' THEN '?' ELSE ?)",
+      "cells": 5017824,
+      "same_module": false
+     },
+     {
+      "a": "CAL03 Opex.Opex GBP",
+      "b": "CAL05 Opex OLD.Opex GBP",
+      "differs": [
+       "CAL03 Opex.Opex",
+       "CAL05 Opex OLD.Opex"
+      ],
+      "skeleton": "('?' * '?'[LOOKUP: '?'])",
+      "cells": 5017824,
+      "same_module": false
+     },
+     {
+      "a": "CAL02 Revenue.Gross Revenue",
+      "b": "CAL04 Margn.COGS",
+      "differs": [
+       "INP01 Volumes.Price",
+       "INP06 Unit Costs.Landed Cost"
+      ],
+      "skeleton": "('?' * '?')",
+      "cells": 36288,
+      "same_module": false
+     },
+     {
+      "a": "CAL01 Volumes.Sellable Units Prior Year",
+      "b": "CAL02 Revenue.Revenue Prior Year",
+      "differs": [
+       "CAL01 Volumes.Sellable Units",
+       "CAL02 Revenue.Revenue GBP"
+      ],
+      "skeleton": "LAG('?', ?, ?)",
+      "cells": 36288,
+      "same_module": false
+     },
+     {
+      "a": "CAL02 Revenue.Revenue GBP",
+      "b": "CAL04 Margn.Margin GBP",
+      "differs": [
+       "CAL02 Revenue.Net Revenue",
+       "CAL04 Margn.Margin"
+      ],
+      "skeleton": "('?' * '?'[LOOKUP: '?'])",
+      "cells": 36288,
+      "same_module": false
+     },
+     {
+      "a": "CAL07 P&L by Cost Centre.Opex Budget",
+      "b": "OUT02 Board Pack.Budget Revenue",
+      "differs": [
+       "CAL07 P&L by Cost Centre.Opex",
+       "OUT01 Management Pack.Revenue"
+      ],
+      "skeleton": "'?'[SELECT: '?']",
+      "cells": 19152,
+      "same_module": false
+     }
+    ],
+    "superseded": [
+     {
+      "module": "CAL05 Opex OLD",
+      "by": "CAL03 Opex",
+      "matched": 2,
+      "of": 14,
+      "cells": 70249536,
+      "effort": 50.78,
+      "imported_into": false,
+      "notes": "Replaced by CAL03 in 2021. Keep until the FY22 audit is closed.",
+      "line_items": 14
+     }
+    ],
+    "output_like_count": 30,
+    "unknown": [
+     {
+      "module": "DAT01 Actuals GL",
+      "items": [
+       "Journal Cost Centre",
+       "Loaded?"
+      ],
+      "cells": 10035648,
+      "effort": 7.71
+     },
+     {
+      "module": "CAL03 Opex",
+      "items": [
+       "Opex Variance"
+      ],
+      "cells": 5017824,
+      "effort": 2.31
+     },
+     {
+      "module": "CAL02 Revenue",
+      "items": [
+       "Revenue USD",
+       "VAT"
+      ],
+      "cells": 72576,
+      "effort": 0.02
+     },
+     {
+      "module": "CAL04 Margn",
+      "items": [
+       "Margin GBP"
+      ],
+      "cells": 36288,
+      "effort": 0.07
+     },
+     {
+      "module": "CAL10 Depreciation",
+      "items": [
+       "NBV"
+      ],
+      "cells": 19152,
+      "effort": 0.02
+     },
+     {
+      "module": "CAL06 Department Summary",
+      "items": [
+       "Revenue",
+       "Benchmark Opex"
+      ],
+      "cells": 5184,
+      "effort": 0.0
+     },
+     {
+      "module": "SYS07 Launch Flags",
+      "items": [
+       "Months Since Launch"
+      ],
+      "cells": 1512,
+      "effort": 0.0
+     },
+     {
+      "module": "SYS05 FX Rates",
+      "items": [
+       "Rate Movement"
+      ],
+      "cells": 1152,
+      "effort": 0.0
+     },
+     {
+      "module": "SYS03 Account Attributes",
+      "items": [
+       "COGS?",
+       "Staff?",
+       "Sign"
+      ],
+      "cells": 786,
+      "effort": 0.0
+     },
+     {
+      "module": "CAL08 Cash Flow",
+      "items": [
+       "Cash Negative?"
+      ],
+      "cells": 576,
+      "effort": 0.0
+     },
+     {
+      "module": "SYS02 Cost Centre Attributes",
+      "items": [
+       "Group",
+       "Sales CC?"
+      ],
+      "cells": 266,
+      "effort": 0.0
+     },
+     {
+      "module": "SYS01 Time Settings",
+      "items": [
+       "Current Period?",
+       "Forecast?",
+       "Start of Month",
+       "End of Month",
+       "Working Days",
+       "Year",
+       "Period Number"
+      ],
+      "cells": 252,
+      "effort": 0.0
+     }
+    ]
    },
    "patterns": [
     {
@@ -2098,7 +3543,117 @@
        "Import from Caldergate FP&A - Assumptions"
       ]
      }
+    },
+    "redundancy": {
+     "exact_groups": 1,
+     "exact_redundant": 1,
+     "exact_cells": 4464,
+     "aliases": 0,
+     "alias_cells": 0,
+     "near": 3,
+     "superseded": 1,
+     "output_like": 8,
+     "unknown_items": 3,
+     "unknown_cells": 108
     }
+   },
+   "redundancy": {
+    "counts": {
+     "exact_groups": 1,
+     "exact_redundant": 1,
+     "exact_cells": 4464,
+     "aliases": 0,
+     "alias_cells": 0,
+     "near": 3,
+     "superseded": 1,
+     "output_like": 8,
+     "unknown_items": 3,
+     "unknown_cells": 108
+    },
+    "exact": [
+     {
+      "formula": "'Data - Employees'.FTE[SUM: 'Data - Employees'.Role]",
+      "dims": "Roles",
+      "items": [
+       {
+        "key": "Calcs - Attrition.Headcount",
+        "cells": 4464,
+        "summary": "SUM",
+        "readers": 2
+       },
+       {
+        "key": "zz Archive - 2021 Cost.Headcount",
+        "cells": 4464,
+        "summary": "SUM",
+        "readers": 1
+       }
+      ],
+      "redundant_cells": 4464,
+      "readers_to_repoint": 1
+     }
+    ],
+    "aliases": [],
+    "near": [
+     {
+      "a": "Calcs - Attrition.Headcount",
+      "b": "zz Archive - 2021 Cost.Cost",
+      "differs": [
+       "Data - Employees.FTE",
+       "Calcs - Cost.Total Cost"
+      ],
+      "skeleton": "'?'[SUM: '?']",
+      "cells": 4464,
+      "same_module": false
+     },
+     {
+      "a": "Calcs - Attrition.Leavers by Role",
+      "b": "zz Archive - 2021 Cost.Headcount",
+      "differs": [
+       "Calcs - Attrition.Leavers",
+       "Data - Employees.FTE"
+      ],
+      "skeleton": "'?'[SUM: '?']",
+      "cells": 4464,
+      "same_module": false
+     },
+     {
+      "a": "Calcs - Attrition.Leavers by Role",
+      "b": "zz Archive - 2021 Cost.Cost",
+      "differs": [
+       "Calcs - Attrition.Leavers",
+       "Calcs - Cost.Total Cost"
+      ],
+      "skeleton": "'?'[SUM: '?']",
+      "cells": 4464,
+      "same_module": false
+     }
+    ],
+    "superseded": [
+     {
+      "module": "zz Archive - 2021 Cost",
+      "by": "Calcs - Attrition",
+      "matched": 2,
+      "of": 3,
+      "cells": 13392,
+      "effort": 0.0,
+      "imported_into": false,
+      "notes": "Old cost calc from go-live. Kept for reference.",
+      "line_items": 3
+     }
+    ],
+    "output_like_count": 8,
+    "unknown": [
+     {
+      "module": "Inputs - Calendar",
+      "items": [
+       "Current Period?",
+       "Actual?",
+       "Working Days"
+      ],
+      "cells": 108,
+      "effort": 0.0
+     }
+    ]
    },
    "patterns": [
     {
@@ -2617,7 +4172,93 @@
        "Import from Workforce Planning - Headcount by Department"
       ]
      }
+    },
+    "redundancy": {
+     "exact_groups": 0,
+     "exact_redundant": 0,
+     "exact_cells": 0,
+     "aliases": 4,
+     "alias_cells": 576,
+     "near": 0,
+     "superseded": 1,
+     "output_like": 6,
+     "unknown_items": 1,
+     "unknown_cells": 144
     }
+   },
+   "redundancy": {
+    "counts": {
+     "exact_groups": 0,
+     "exact_redundant": 0,
+     "exact_cells": 0,
+     "aliases": 4,
+     "alias_cells": 576,
+     "near": 0,
+     "superseded": 1,
+     "output_like": 6,
+     "unknown_items": 1,
+     "unknown_cells": 144
+    },
+    "exact": [],
+    "aliases": [
+     {
+      "item": "OUT01 Board Dashboard.Revenue",
+      "target": "DAT02 Board Lines.Revenue",
+      "cells": 144,
+      "readers": 0,
+      "summary": "SUM",
+      "target_summary": "SUM"
+     },
+     {
+      "item": "OUT01 Board Dashboard.EBITDA",
+      "target": "DAT02 Board Lines.EBITDA",
+      "cells": 144,
+      "readers": 0,
+      "summary": "SUM",
+      "target_summary": "SUM"
+     },
+     {
+      "item": "OUT01 Board Dashboard.Revenue per FTE",
+      "target": "CAL01 KPIs.Revenue per FTE",
+      "cells": 144,
+      "readers": 0,
+      "summary": "SUM",
+      "target_summary": "FORMULA"
+     },
+     {
+      "item": "OUT01 Board Dashboard.Revenue Growth",
+      "target": "CAL01 KPIs.Revenue Growth",
+      "cells": 144,
+      "readers": 0,
+      "summary": "SUM",
+      "target_summary": "FORMULA"
+     }
+    ],
+    "near": [],
+    "superseded": [
+     {
+      "module": "SYS01 Time",
+      "by": null,
+      "matched": 0,
+      "of": 2,
+      "cells": 72,
+      "effort": 2.8,
+      "imported_into": false,
+      "notes": "",
+      "line_items": 2
+     }
+    ],
+    "output_like_count": 6,
+    "unknown": [
+     {
+      "module": "CAL01 KPIs",
+      "items": [
+       "Revenue YTD"
+      ],
+      "cells": 144,
+      "effort": 7.48
+     }
+    ]
    },
    "patterns": [
     {

@@ -32,6 +32,8 @@ from .graph import Graph, build_graph
 from .lint import lint, LintResult, RULES
 from .cluster import cluster, Cluster
 from .estate import Estate, load_actions, _split
+from . import redundancy as redund
+from . import actions as actionlist
 
 _FROM = re.compile(r"\bfrom\s+(.+?)(?:\s+(?:into|to)\b|\s+-\s|$)", re.I)
 _DIRNUM = re.compile(r"^\d+\s+")
@@ -49,6 +51,7 @@ class ModelRun:
     clusters: list[Cluster]
     actions: Estate
     facts: dict
+    redundancy: redund.Redundancy = field(default_factory=redund.Redundancy)
 
 
 @dataclass
@@ -59,10 +62,12 @@ class EstateRun:
     duplicates: list[dict]
     shared_dims: list[tuple[str, list[str]]]
     generated: str = field(default_factory=lambda: datetime.date.today().isoformat())
+    actions: list = field(default_factory=list)
 
     def to_dict(self):
         return {"generated": self.generated,
-                "models": [{"name": m.name, "folder": m.folder, "facts": m.facts,
+                "actions": [a.to_dict() for a in self.actions],
+                "models": [{"name": m.name, "folder": m.folder, "facts": m.facts, "redundancy": m.redundancy.to_dict(),
                             "patterns": [c.to_dict() for c in m.clusters],
                             "findings_by_rule": m.lint.counts["by_rule"]} for m in self.models],
                 "edges": self.edges, "external_sources": self.external,
@@ -197,7 +202,10 @@ def analyse(spec: dict, stale_months: int = 12, overrides: dict | None = None) -
         "has_modules_export": m.has_modules_export,
         "actions": _actions_facts(e, stale_months) if spec.get("actions") else None,
     }
-    return ModelRun(spec["name"], spec["folder"], m, g, lr, cl, e, facts)
+    red = redund.analyse(m, g, export_sources={a.target for a in e.actions.values() if a.kind == "export"},
+                         import_targets={a.target for a in e.actions.values() if a.kind == "import"})
+    facts["redundancy"] = red.counts()
+    return ModelRun(spec["name"], spec["folder"], m, g, lr, cl, e, facts, red)
 
 
 # ---------- across models ----------
@@ -281,7 +289,9 @@ def run(root: str | Path, aliases: dict[str, str] | None = None, stale_months: i
             s["name"] = names[s["name"]]
     models = [analyse(s, stale_months, overrides) for s in specs]
     edges, external = cross(models, aliases or {})
-    return EstateRun(models, edges, external, duplicates(models), shared_dimensions(models))
+    er = EstateRun(models, edges, external, duplicates(models), shared_dimensions(models))
+    er.actions = actionlist.build(er)
+    return er
 
 
 # ---------- rendering ----------
@@ -354,6 +364,8 @@ def _toc(er: EstateRun) -> list[str]:
         f = m.facts
         rows.append((m.name, f"{f['modules']} modules, {_n(f['line_items'])} line items, {_c(f['cells'])} cells. Where its calculation time goes, what everything depends on, its actions, and its patterns."))
     rows.append(("Procedures performed", "Every rule that ran and its source, so you know exactly what was and was not checked."))
+    rows.insert(0, ("Actions in detail", "One section per action: why, steps, verify, evidence."))
+    rows.insert(1, ("The estate", "One row per model, how the models connect, logic and dimensions shared across them."))
     out = ["| Section | What it tells you |", "|---|---|"]
     for t, d in rows:
         out.append(f"| [{t}](#{_slug(t)}) | {d} |")
@@ -385,17 +397,31 @@ def _c(x) -> str:
 
 
 def render_markdown(er: EstateRun, max_patterns: int = 20) -> str:
+    red_items = sum(m.facts["redundancy"]["exact_redundant"] + m.facts["redundancy"]["aliases"] for m in er.models)
+    red_cells = sum(m.facts["redundancy"]["exact_cells"] + m.facts["redundancy"]["alias_cells"] for m in er.models)
     out = [f"# Anaplan estate: {len(er.models)} model{'s' if len(er.models) != 1 else ''}", "",
            f"Generated {er.generated} from each model's Line Items and Actions exports. Deterministic; no opinion. "
            "Model-to-model links are inferred from import action names and say so.", "",
-           "## In one page", ""]
+           "## What to do", "",
+           f"{len(er.actions)} actions, ranked by what each reclaims over what it touches. Each one says what the exports prove and what they cannot: "
+           "formulas, imports and exports are in the files; pages and saved views are not, so anything marked \"check pages\" needs a look at the UX first. "
+           "Click an action for the why, the steps, how to verify, and the evidence.", ""]
+    out += actionlist.render_list(er.actions)
+    out += ["", "## The estate in one page", ""]
     out += [f"{i}. {h}" for i, h in enumerate(_headlines(er), 1)]
+    if red_items:
+        out.append(f"{len(_headlines(er)) + 1}. **{_n(red_items)} line items repeat a calculation already made in the same model** ({_c(red_cells)} cells stored twice): "
+                   "same resolved formula and dimensions under another name, or a plain copy of another line item. [Actions](#what-to-do)")
     out += ["", "## How to read this report", "",
-            "Two parts. The first four sections look across the estate. Then one chapter per model, all the same shape, so you can compare them. "
-            "The last section lists what was checked. In the HTML view each chapter is folded; open the one you came for.", ""]
+            "Three parts. The action list above and its detail chapter. Then the estate: how the models connect, what is shared, and one chapter per model, all the same shape, so you can compare them. "
+            "The last section lists what was checked. In the HTML view each chapter is folded; a link opens the one it points to.", ""]
     out += _toc(er)
     out += ["", "A few words that carry weight here:", ""] + [f"- {g}" for g in GLOSSARY]
-    out += ["",
+    out += ["", "# Actions in detail", "",
+            "Every action: why, in the words of the exports; the steps; how to prove it worked; and the evidence table. "
+            "Nothing here says whether the action is worth taking for this business. That is a review, and this is its evidence.", ""]
+    out += actionlist.render_detail(er.actions)
+    out += ["", "# The estate", "",
            "## The estate at a glance", "",
            "| Model | Modules | Line items | Calculated | Cells | Parse | Imports | Exports | Processes | Latest run | Patterns |",
            "|---|---|---|---|---|---|---|---|---|---|---|"]

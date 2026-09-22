@@ -6,8 +6,10 @@ conventions that do not agree, a leftover module, a formula nobody dares
 touch, and an import from a hub that no longer exists. Anyone who has
 taken over an Anaplan estate will recognise the shape.
 
-Everything below was put in deliberately. Run the report and check it
-found each one. Then run it on yours.
+Everything below was put in deliberately. Run the report: the first
+action on its front page should be the leftover module, and each row
+below should appear either as an action or inside one's evidence. Then
+run it on yours.
 
 ```
 anaplan-estate examples/caldergate-estate --out estate.md

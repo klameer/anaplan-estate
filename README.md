@@ -1,7 +1,8 @@
 # anaplan-estate
 
-A health report for a whole estate of Anaplan models, from two exports per
-model, run on your own machine. Nothing leaves it.
+An action report for a whole estate of Anaplan models, from two exports per
+model, run on your own machine. Nothing leaves it. It opens with what to do,
+ranked; the evidence sits behind each action.
 
 For each model it reports where the calculation time goes, what depends on
 what, what is unreferenced, circular or daisy-chained, which imports are
@@ -70,6 +71,17 @@ to rename; `--stale-months 12`; `--list` to see what would be analysed.
 
 ## What you get
 
+- **What to do**: the front page. Every action ranked by what it reclaims
+  (cells, calculation effort, dead actions) over what it touches (formulas
+  to repoint, exports, downstream models, pages). Each says what the
+  exports prove and what they cannot: pages and saved views are not in
+  any export, so an action that removes something is marked "check
+  pages". Click through for the why, the steps, how to verify, and the
+  evidence table.
+- **Redundant calculation**: line items that repeat a calculation already
+  made in the same model (same resolved formula and dimensions), plain
+  copies of another line item, near-twins that differ in one place, and
+  whole modules nothing reads.
 - **The estate at a glance**: one row per model, with parse rate.
 - **How the models connect**: an inferred feed graph (Mermaid) and the
   external sources named in imports.
