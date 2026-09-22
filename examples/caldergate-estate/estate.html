@@ -183,7 +183,7 @@ object: DAT08 Employee Master.Employee Id
 formula: CODE(ITEM(Employees))
 evidence: DAT08 Employee Master.Employee Id | 0.07% | 1.9K | CODE(ITEM(Employees))
 object: DAT03 Account Master.Sign
-object: IF Revenue? THEN -1 ELSE 1
+formula: IF Revenue? THEN -1 ELSE 1
 evidence: DAT03 Account Master.Sign | 0.03% | 262 | IF Revenue? THEN -1 ELSE 1
 object: DAT07 Customer Master.Region Code
 formula: CODE(Region)
@@ -267,16 +267,16 @@ object: DAT01 Actuals GL.Journal Cost Centre
 formula: FINDITEM(Cost Centres, Source Journal)
 evidence: DAT01 Actuals GL.Journal Cost Centre | 6.17% | 5.0M | FINDITEM(Cost Centres, Source Journal)
 object: CAL03 Opex.Opex
-object: IF &#x27;SYS01 Time Settings&#x27;.Actual? THEN Actual Opex ELSE Forecast Opex
+formula: IF &#x27;SYS01 Time Settings&#x27;.Actual? THEN Actual Opex ELSE Forecast Opex
 evidence: CAL03 Opex.Opex | 4.94% | 5.0M | IF &#x27;SYS01 Time Settings&#x27;.Actual? THEN Actual Opex ELSE Forecast Opex
 object: CAL05 Opex OLD.Opex
-object: IF &#x27;SYS01 Time Settings&#x27;.Actual? THEN Actual ELSE Forecast
+formula: IF &#x27;SYS01 Time Settings&#x27;.Actual? THEN Actual ELSE Forecast
 evidence: CAL05 Opex OLD.Opex | 4.94% | 5.0M | IF &#x27;SYS01 Time Settings&#x27;.Actual? THEN Actual ELSE Forecast
 object: CAL03 Opex.Actual Opex
-object: IF &#x27;SYS03 Account Attributes&#x27;.Opex? THEN &#x27;DAT01 Actuals GL&#x27;.Amount ELSE 0
+formula: IF &#x27;SYS03 Account Attributes&#x27;.Opex? THEN &#x27;DAT01 Actuals GL&#x27;.Amount ELSE 0
 evidence: CAL03 Opex.Actual Opex | 3.70% | 5.0M | IF &#x27;SYS03 Account Attributes&#x27;.Opex? THEN &#x27;DAT01 Actuals GL&#x27;.Amount ELSE 0
 object: CAL05 Opex OLD.Actual
-object: IF &#x27;SYS01 Time Settings&#x27;.Actual? THEN &#x27;DAT01 Actuals GL&#x27;.Amount ELSE 0
+formula: IF &#x27;SYS01 Time Settings&#x27;.Actual? THEN &#x27;DAT01 Actuals GL&#x27;.Amount ELSE 0
 evidence: CAL05 Opex OLD.Actual | 3.70% | 5.0M | IF &#x27;SYS01 Time Settings&#x27;.Actual? THEN &#x27;DAT01 Actuals GL&#x27;.Amount ELSE 0
 object: CAL05 Opex OLD.Opex Cumulative
 formula: CUMULATE(Opex GBP)

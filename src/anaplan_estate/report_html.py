@@ -289,7 +289,7 @@ def _badges(x: dict) -> str:
 def _index_text(x: dict) -> str:
     """Complete search text for one finding: every affected object, every evidence row and formula, explanatory text.
     One entry per line, prefixed by kind (object / formula / evidence / text) so a hit can say where it matched."""
-    formula_like = re.compile(r"[()\[\]+*/<>=]|IF|THEN")
+    formula_like = re.compile(r"[()\[\]+*/<>=]|\bIF\b|\bTHEN\b")
 
     def classify(inner: str) -> str:
         return ("formula: " if formula_like.search(inner) else "object: ") + inner
