@@ -1,8 +1,9 @@
 # anaplan-estate
 
-An action report for a whole estate of Anaplan models, from two exports per
-model, run on your own machine. Nothing leaves it. It opens with what to do,
-ranked; the evidence sits behind each action.
+Automated findings and candidate recommendations for a whole estate of
+Anaplan models, from the grid exports, run on your own machine. Nothing
+leaves it. Three levels: a summary with priority investigations, findings
+grouped by decision area, and the full reference with every formula.
 
 For each model it reports where the calculation time goes, what depends on
 what, what is unreferenced, circular or daisy-chained, which imports are
@@ -11,10 +12,13 @@ same design decision. Across models it infers which model feeds which
 from the import actions, finds logic duplicated between models, and
 lists the dimensions they share.
 
-Deterministic. No opinion. Every formula is parsed with
+Every formula is parsed with
 [anaplan-grammar](https://github.com/klameer/anaplan-grammar) and the
-dependency graph is checked against Anaplan's own Referenced By column,
-so the report tells you how much to trust it.
+dependency graph is checked against Anaplan's own Referenced By column, so
+the report says how far to trust it. Observations, hypotheses and
+recommendations are labelled apart; every finding carries its evidence
+strength, what the exports cannot tell, and when keeping the current
+design is reasonable.
 
 ## Try it first on the example estate
 
@@ -26,7 +30,7 @@ formula nobody dares touch, an import from a hub that no longer exists.
 git clone https://github.com/klameer/anaplan-estate
 cd anaplan-estate
 pip install -e .
-anaplan-estate examples/caldergate-estate --out estate.md --html estate.html
+anaplan-estate examples/caldergate-estate --out estate.md --html estate.html --csv register.csv
 ```
 
 Open `estate.html`. Then read
@@ -71,27 +75,27 @@ to rename; `--stale-months 12`; `--list` to see what would be analysed.
 
 ## What you get
 
-- **What to do**: the front page. Every action ranked by what it reclaims
-  (cells, calculation effort, dead actions) over what it touches (formulas
-  to repoint, exports, downstream models, pages). Each says what the
-  exports prove and what they cannot: pages and saved views are not in
-  any export, so an action that removes something is marked "check
-  pages". Click through for the why, the steps, how to verify, and the
-  evidence table.
-- **Redundant calculation**: line items that repeat a calculation already
-  made in the same model (same resolved formula and dimensions), plain
-  copies of another line item, near-twins that differ in one place, and
-  whole modules nothing reads.
-- **The estate at a glance**: one row per model, with parse rate.
-- **How the models connect**: an inferred feed graph (Mermaid) and the
-  external sources named in imports.
-- **Logic duplicated across models**: same line item, same formula tree.
-- Per model: where the calculation time goes (Anaplan's Calculation
-  Effort column, top line items and modules), largest modules by cells,
-  most depended-on line items, actions (orphans, stale, slowest), and
-  findings grouped into patterns.
-- **Procedures performed**: the rules run, so the report reads as
-  agreed-upon procedures, not an opinion.
+- **Summary**: scope and freshness, three or four observations computed
+  from the inputs, up to three priority investigations (observed, why it
+  matters, what to do next), the model map with feeds marked inferred,
+  and the coverage limitations that matter most.
+- **Findings by decision area**: capacity and performance, usage and
+  retirement, dependencies and change impact, maintainability and
+  consistency, integration and operations. Each finding: observed fact,
+  why it matters, affected scope, potential benefit (footprint,
+  conditional, or none), evidence strength and basis, missing
+  information, one next step, when keeping the design is reasonable,
+  expandable evidence with complete formulas, validation guidance.
+- **Reference**: findings register (downloadable CSV), per-model
+  statistics and coverage (files supplied, snapshot date, rules run and
+  skipped with reasons, confirmed vs inferred relationships, what is
+  missing), dependency evidence with Referenced By discrepancies by
+  cause, source-name candidates, shared dimensions, methodology with
+  documentation references, glossary.
+- **In the HTML**: search, filters (model, category, evidence, review
+  status), sorting, expand/collapse, review statuses kept in your
+  browser and exportable, a light print stylesheet with a summary-only
+  option. No external requests; all links are within the file.
 
 ## What should it show next?
 

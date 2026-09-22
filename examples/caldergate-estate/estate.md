@@ -1,188 +1,729 @@
 # Anaplan estate: 4 models
 
-Generated 2026-09-22 from each model's Line Items and Actions exports. Deterministic; no opinion. Model-to-model links are inferred from import action names and say so.
+Automated findings and candidate recommendations from each model's Line Items, Modules and Actions exports. Generated 2026-09-22.
 
-## What to do
+## Summary
 
-21 actions in 8 categories, biggest reclaim first. Click a category for its actions ranked by impact, and an action for the why, the steps, how to verify, and the evidence. Every action says what the exports prove and what they cannot: formulas, imports and exports are in the files; pages and saved views are not, so anything that needs a page check says so.
+This report reads 4 Anaplan models: 426 line items and 145M cells as exported. Inputs are the Line Items, Modules and Actions grid exports; the latest recorded action run across the files is 2026-09-21, the closest the exports come to a snapshot date. The analysis was generated on 2026-09-22. Everything below is an automated reading of those files: observations first, then candidate investigations, never a verdict on what the business needs.
 
-| Category | Actions | Estimated reclaim | Need a page check | What it covers |
-|---|---|---|---|---|
-| [Retire what nothing reads](#retire-what-nothing-reads) | 3 | 85.4M cells; 61% of Caldergate FP&A's effort, 3% of Board Reporting's effort | 3 | Modules and line items no formula, export or twin explains. Cells and calculation effort back, once the pages are checked. |
-| [Move logic into inputs and mappings](#move-logic-into-inputs-and-mappings) | 2 | up to 16% of Caldergate FP&A's effort | none | Hard-coded constants and IF chains that are really tables. Replacement artefacts included. |
-| [Tidy structure](#tidy-structure) | 5 | 59 objects | 1 | Subsidiary views, summaries left on, text and lookups in big modules, oversized and empty modules. |
-| [Collapse copies and chains](#collapse-copies-and-chains) | 3 | 441K cells | 3 | Line items that only copy another, and pass-through chains. Readers can read the source. |
-| [Clean up imports and exports](#clean-up-imports-and-exports) | 1 | 12 actions | none | Actions no process runs, or that have not run in a year. Document or delete. |
-| [Merge duplicate calculations](#merge-duplicate-calculations) | 4 | 23.6K cells | 2 | The same calculation made twice under different names, and near-twins that differ in one place. |
-| [Fix formulas that error or strain](#fix-formulas-that-error-or-strain) | 2 | 5 objects | none | Divisions with no zero guard, aggregate-and-lookup in one bracket, formulas the parser could not follow. |
-| [Give shared logic one owner](#give-shared-logic-one-owner) | 1 | 8 objects | none | The same calculation in more than one model. Pick the owner; the others import it. |
+What stands out is set out in the observations, and the three investigations that follow are where the evidence is strongest and the footprint largest. Each says what was observed, why it deserves attention, and what to do next. Where the exports cannot see a consumer, the finding says so and lists the checks that remain, because a module read only by a page is not spare.
 
-The five biggest single actions, across every category:
+Two limits shape everything here. The exports carry formulas, dimensions, actions and Anaplan's own Referenced By column, but not pages, saved views, line item subsets or integrations. And calculation effort is a measurement of where the engine spends time in one model, not a promise of what removal would save. Findings are labelled confirmed, partial or inferred on exactly that basis, and a benefit is stated only where the exports support it.
 
-1. [Retire CAL05 Opex OLD, superseded by CAL03 Opex](#a1-retire-cal05-opex-old-superseded-by-cal03-opex) (Caldergate FP&A; 70.2M cells, 50.8% effort)
-2. [Replace the 12-branch IF in CAL03 Opex.Forecast Opex with a mapping module](#a2-replace-the-12-branch-if-in-cal03-opex-forecast-opex-with-a-mapping-module) (Caldergate FP&A; up to 16.0% effort)
-3. [Confirm and retire 5 calculated line items that no formula, export or twin explains](#a3-confirm-and-retire-5-calculated-line-items-that-no-formula-export-or-twin-explains) (Caldergate FP&A; 15.1M cells, 10.0% effort)
-4. [Turn summaries off on 37 large line items no formula reads](#a4-turn-summaries-off-on-37-large-line-items-no-formula-reads) (4 models; 37 objects)
-5. [Retire or schedule 12 imports and exports that no process runs or that have not run in a year](#a5-retire-or-schedule-12-imports-and-exports-that-no-process-runs-or-that-have-not-run-in-a-year) (4 models; 12 actions)
+**Observations**
 
-## The estate in one page
+1. Caldergate FP&A holds 90% of the estate's 145M exported cells; its largest module, CAL05 Opex OLD, holds 70.2M on its own.
+2. In Caldergate FP&A, ten line items carry 68.0% of the measured calculation effort, led by CAL03 Opex.Forecast Opex at 16.0%. Effort shares are per model and depend on the engine (Classic at open, Polaris over ten minutes), which the export does not name.
+3. Caldergate Data Hub feeds Caldergate FP&A, Workforce Planning through 6 import actions; 6 feeds between models in all, inferred from import action names and not confirmed by any system table.
+4. 16 calculated line items repeat a calculation already made in the same model under another name, or copy another line item outright; the copies hold 292K cells. Some will exist for a page or an access boundary.
 
-1. **4 models, 426 line items, 145M cells.** Caldergate FP&A is 90% of the estate by cells; its largest module alone holds 70.2M (CAL05 Opex OLD). [Estate at a glance](#the-estate-at-a-glance)
-2. **Caldergate Data Hub is the hub.** It feeds Caldergate FP&A, Workforce Planning through 6 import actions; 6 feeds between models in all, read off the import action names. [How the models connect](#how-the-models-connect-inferred)
-3. **Outside data arrives from 7 named sources**, the busiest being NetSuite with 3 imports. [External sources](#how-the-models-connect-inferred)
-4. **Calculation time is concentrated.** In Caldergate FP&A, ten line items carry 68.0% of the model's effort; the single largest is CAL03 Opex.Forecast Opex at 16.0%. [Where the time goes](#caldergate-fp-a)
-5. **157 calculated line items feed nothing.** Caldergate FP&A has 77 of them: formulas that run on every recalculation and are read by no other formula. Some are outputs read by pages or exports, which the exports do not show. [Caldergate FP&A](#caldergate-fp-a)
-6. **7 imports and exports have not run inside the stale window, and 12 sit outside any process.** Either is a candidate for retirement, or a load nobody schedules. [Actions, per model](#caldergate-data-hub)
-7. **8 formulas are copied between models.** COGS? appears in Caldergate Data Hub, Caldergate FP&A with the same logic; a change to one must be repeated in the others. [Logic duplicated across models](#logic-duplicated-across-models)
-8. **1 circular reference**: 1 through a time offset (the opening-balance pattern, normal) and 0 without (a parser misread or a real fault).
-9. **94 rule findings collapse to 73 patterns.** A pattern is one decision copied across modules or line items; fix the template and the copies follow. None of this says whether a finding matters for this estate. That is a review, and this report is its evidence. [Procedures performed](#procedures-performed)
-10. **How far to trust the graph.** Every formula parsed. Our dependency edges agree with Anaplan's own Referenced By column at Caldergate Data Hub 100%, Caldergate FP&A 100%, Workforce Planning 100%, Board Reporting 100%; the gap is line-item subsets through COLLECT(), which the export does not describe.
-11. **21 line items repeat a calculation already made in the same model** (311K cells stored twice): same resolved formula and dimensions under another name, or a plain copy of another line item. [Actions](#what-to-do)
+**Priority investigations**
 
-## How to read this report
+- **Module with no consumer detected in the inspected dependency types** (Caldergate FP&A; [F1](#F1)). Observed: No formula outside `CAL05 Opex OLD` reads any of its 14 line items (14 calculated) and no export action reads it. Module note: "Replaced by CAL03 in 2021. Keep until the FY22 audit is closed.". Why: Either a page, view, subset or integration reads it, or nothing does. The exports cannot tell which; the footprint says whether it is worth finding out. Next: List the pages, saved views and subsets that use `CAL05 Opex OLD`; if none, blank the formulas in a sandbox copy and wait one cycle before deleting.
+- **IF chain that encodes a lookup table** (Caldergate FP&A; [F2](#F2)). Observed: 12 IF THEN ELSE in one formula. The branches map Accounts items to values; the table below is what the formula encodes. Why: Every branch is evaluated for every cell, and every new case is a formula edit. Anaplan's checklist: refactor above 10 IF conditions. This line item carries 16.0% of the model's measured effort. Next: Load the table into a mapping module and replace the chain with one LOOKUP; compare values before and after.
+- **Calculated line items with no consumer detected, outside output modules** (Caldergate FP&A; [F7](#F7)). Observed: 5 calculated line items in 3 modules are read by no formula, not exported, not in an output-style module and have no exact twin. Why: Each is computed and stored; if nothing reads it the footprint is spare. If a page reads it, it is an output that lives in a calculation module. Next: Take the largest module first; list its pages and views; blank one formula in a sandbox and wait a cycle.
 
-Three parts. The action list above and its detail chapter. Then the estate: how the models connect, what is shared, and one chapter per model, all the same shape, so you can compare them. The last section lists what was checked. In the HTML view each chapter is folded; a link opens the one it points to.
+**Coverage limitations**
 
-| Section | What it tells you |
-|---|---|
-| [Actions in detail](#actions-in-detail) | One section per action: why, steps, verify, evidence. |
-| [The estate](#the-estate) | One row per model, how the models connect, logic and dimensions shared across them. |
-| [The estate at a glance](#the-estate-at-a-glance) | One row per model. Size, how much of it is calculated, how many imports and processes, when it last ran. |
-| [How the models connect (inferred)](#how-the-models-connect-inferred) | Which model feeds which, read off the names of import actions, plus the outside systems those names mention. Inferred, and labelled so. |
-| [Logic duplicated across models](#logic-duplicated-across-models) | The same line item with the same formula in more than one model. One change, several places. |
-| [Dimensions shared across models](#dimensions-shared-across-models) | Lists that appear in more than one model. Where a hierarchy change ripples. |
-| [Caldergate Data Hub](#caldergate-data-hub) | 12 modules, 63 line items, 8.1M cells. Where its calculation time goes, what everything depends on, its actions, and its patterns. |
-| [Caldergate FP&A](#caldergate-fp-a) | 30 modules, 278 line items, 130M cells. Where its calculation time goes, what everything depends on, its actions, and its patterns. |
-| [Workforce Planning](#workforce-planning) | 9 modules, 55 line items, 6.3M cells. Where its calculation time goes, what everything depends on, its actions, and its patterns. |
-| [Board Reporting](#board-reporting) | 7 modules, 30 line items, 138K cells. Where its calculation time goes, what everything depends on, its actions, and its patterns. |
-| [Procedures performed](#procedures-performed) | Every rule that ran and its source, so you know exactly what was and was not checked. |
+- Pages, dashboards, saved views, line item subsets, filters, access drivers and integrations are not in any export. Every 'no consumer detected' finding carries the checks that remain.
+- No Calculation Effort figures for Workforce Planning.
+- The date the Line Items and Modules exports were taken is not in the files; the Actions export's latest recorded run is the closest thing to a snapshot date. The report generation date is not data freshness.
 
-A few words that carry weight here:
+**Model map (feeds inferred from import action names)**
 
-- **Cells** are what Anaplan bills for and what makes a model slow to open: every line item multiplied out over its dimensions and time. 10.9B means ten thousand million.
-- **Calculation effort** is Anaplan's own measure of where the engine spends its time, as a share of the model, exported from Blueprint. Ten line items usually carry most of it.
-- **Patterns** are findings grouped by the decision behind them. A formula copied into 96 month columns is one pattern, not 96 problems.
-- **Referenced By agreement** is our dependency graph checked against the column Anaplan exports. High means the graph can be trusted; the gap is explained where it appears.
-- **Inferred** means read off names, not off a system table. Anaplan does not export which model imports from which; the action names usually say.
+```mermaid
+flowchart LR
+  M0["Caldergate Data Hub (8.1M cells)"]
+  M1["Caldergate FP&A (130M cells)"]
+  M2["Workforce Planning (6.3M cells)"]
+  M3["Board Reporting (138K cells)"]
+  M0 -.->|5 inferred| M1
+  M1 -.->|2 inferred| M3
+  M2 -.->|1 inferred| M1
+  M0 -.->|1 inferred| M2
+  M1 -.->|1 inferred| M2
+  M2 -.->|1 inferred| M3
+```
 
-# Actions in detail
+Have a change planned in this area? Use the estate analysis service to investigate affected dependencies, review the evidence and develop a validation plan.
 
-One section per category, each a ranked table and then every action: why, in the words of the exports; the steps; how to prove it worked; and the evidence. Nothing here says whether an action is worth taking for this business. That is a review, and this is its evidence.
+# Findings
 
-## Retire what nothing reads
+## Potential capacity or performance improvements
 
-Modules and line items no formula, export or twin explains. Cells and calculation effort back, once the pages are checked. 3 actions, biggest first; estimated reclaim 85.4M cells; 61% of Caldergate FP&A's effort, 3% of Board Reporting's effort.
+Where cells and measured calculation effort concentrate, and what could be released if an investigation confirms it.
 
-| # | Do this | Model | Reclaims | Touches | Exports can prove |
-|---|---|---|---|---|---|
-| A1 | [Retire CAL05 Opex OLD, superseded by CAL03 Opex](#a1-retire-cal05-opex-old-superseded-by-cal03-opex) | Caldergate FP&A | 70.2M cells, 50.8% effort | pages: check | check pages |
-| A3 | [Confirm and retire 5 calculated line items that no formula, export or twin explains](#a3-confirm-and-retire-5-calculated-line-items-that-no-formula-export-or-twin-explains) | Caldergate FP&A | 15.1M cells, 10.0% effort | pages: check | check pages |
-| A8 | [Find out what reads SYS01 Time: no formula or export reads it](#a8-find-out-what-reads-sys01-time-no-formula-or-export-reads-it) | Board Reporting | 72 cells, 2.8% effort | pages: check | check pages |
+### F3. Where measured calculation effort concentrates
 
-### A1. Retire CAL05 Opex OLD, superseded by CAL03 Opex
+Objects: `DAT01 GL Transactions.Loaded?`, `CAL01 Volume Summary.Units`, `CAL01 Volume Summary.Revenue`, `CAL01 Volume Summary.Orders`, `DAT05 CRM Pipeline.Weighted Pipeline`, `CAL01 Volume Summary.Average Order Value`, `DAT08 Employee Master.Employee Id`, `DAT03 Account Master.Sign`, `DAT07 Customer Master.Region Code`, `DAT03 Account Master.Revenue?`
 
-**Caldergate FP&A.** No formula outside CAL05 Opex OLD reads any of its 14 line items, and no export action reads it. 2 of its 14 calculated line items have a twin in CAL03 Opex, which other formulas do read. It holds 70.2M cells and 50.78% of the model's calculation effort, recalculated on every change. Module note: "Replaced by CAL03 in 2021. Keep until the FY22 audit is closed."
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 70.2M cells, 50.8% effort | pages: check | check pages: Formulas, exports and imports are in the exports; pages and saved views are not. Check them before removing anything. |
-
-**Steps**
-
-1. List the pages and saved views that use CAL05 Opex OLD (Modules export: Used in Dashboards covers classic dashboards only; UX pages need the page builder).
-2. Where a page reads CAL05 Opex OLD, repoint the card to the twin line item in CAL03 Opex.
-3. In a sandbox copy, blank every formula in CAL05 Opex OLD; open the pages listed in step 1.
-4. Delete CAL05 Opex OLD.
-
-**Verify**
-
-- Workspace size falls by about 70.2M cells. Calculation effort falls by about 50.78%.
-- Every page listed in step 1 opens without a blank card.
-
-**Evidence**
-
-Readers outside the module: 0. Exports reading it: 0. Twin module: CAL03 Opex (2 matches).
-
-### A3. Confirm and retire 5 calculated line items that no formula, export or twin explains
-
-**Caldergate FP&A.** Calculated, read by no formula, not exported, not in an output-style module, and not a twin of anything. Either a page reads them or nothing does. (30 other unreferenced line items look like page outputs by their module, format or time scale and are not listed here.)
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 15.1M cells, 10.0% effort | pages: check | check pages: Formulas, exports and imports are in the exports; pages and saved views are not. Check them before removing anything. |
-
-**Steps**
-
-1. For each module, list the pages that use it.
-2. Where nothing does, set the formula blank in a sandbox and wait a cycle.
-3. Delete what nobody missed.
-
-**Verify**
-
-- Cell count falls by what was deleted.
-- Re-run this report: the unknown list shrinks to the ones a page needs.
-
-**Evidence**
-
-| Module | Line items with no reader | Cells | Effort |
+| Importance | Evidence | Change complexity | Model |
 |---|---|---|---|
-| DAT01 Actuals GL | 2: Journal Cost Centre, Loaded? | 10.0M | 7.71% |
-| CAL03 Opex | 1: Opex Variance | 5.0M | 2.31% |
-| CAL02 Revenue | 2: Revenue USD, VAT | 72.6K | 0.02% |
+| medium | confirmed | medium | Caldergate Data Hub |
 
-### A8. Find out what reads SYS01 Time: no formula or export reads it
+**Observed.** Ten line items carry 99.9% of Caldergate Data Hub's measured calculation effort; the largest is `DAT01 GL Transactions.Loaded?` at 88.3%.
 
-**Board Reporting.** No formula outside SYS01 Time reads any of its 2 line items, and no export action reads it. It holds 72 cells and 2.8% of the model's calculation effort, recalculated on every change.
+**Why it matters.** Effort is where a redesign would show. Effort shares are Anaplan's Calculation Effort column for this model only. The engine is not in the export: Classic measures across the whole model at open, Polaris over the last ten minutes. A share of effort is not a promise of faster recalculation after removal.
 
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 72 cells, 2.8% effort | pages: check | check pages: Formulas, exports and imports are in the exports; pages and saved views are not. Check them before removing anything. |
+**Affected scope.** top 20 line items by effort
 
-**Steps**
+**Potential benefit.** Observed footprint only; no reduction is claimed.
 
-1. List the pages and saved views that use SYS01 Time (Modules export: Used in Dashboards covers classic dashboards only; UX pages need the page builder).
-2. Where a page reads SYS01 Time, decide whether the page is still used.
-3. In a sandbox copy, blank every formula in SYS01 Time; open the pages listed in step 1.
-4. Delete SYS01 Time.
+**Evidence strength.** confirmed: Anaplan's Calculation Effort column as exported.
 
-**Verify**
+**Missing information.**
 
-- Workspace size falls by about 72 cells. Calculation effort falls by about 2.8%.
-- Every page listed in step 1 opens without a blank card.
+- engine (Classic or Polaris)
+- when the measurement was taken
+
+**Next step.** Read the formulas of the top five; each other finding that names one of them is the place to start.
+
+**When keeping the current design is reasonable.** High effort in the line item that does the model's main job is expected.
 
 **Evidence**
 
-Readers outside the module: 0. Exports reading it: 0.
+| Line item | Effort share | Cells | Formula |
+|---|---|---|---|
+| `DAT01 GL Transactions.Loaded?` | 88.35% | 1.3M | `Journal Count > 0` |
+| `CAL01 Volume Summary.Units` | 2.88% | 9.1K | `'DAT06 Sales Orders'.Units[SUM: 'DAT07 Customer Master'.Region]` |
+| `CAL01 Volume Summary.Revenue` | 2.88% | 9.1K | `'DAT06 Sales Orders'.Order Revenue[SUM: 'DAT07 Customer Master'.Region]` |
+| `CAL01 Volume Summary.Orders` | 2.88% | 9.1K | `'DAT06 Sales Orders'.Order Count[SUM: 'DAT07 Customer Master'.Region]` |
+| `DAT05 CRM Pipeline.Weighted Pipeline` | 1.83% | 17.3K | `Open Pipeline * Probability` |
+| `CAL01 Volume Summary.Average Order Value` | 0.96% | 9.1K | `DIVIDE(Revenue, Orders)` |
+| `DAT08 Employee Master.Employee Id` | 0.07% | 1.9K | `CODE(ITEM(Employees))` |
+| `DAT03 Account Master.Sign` | 0.03% | 262 | `IF Revenue? THEN -1 ELSE 1` |
+| `DAT07 Customer Master.Region Code` | 0.03% | 480 | `CODE(Region)` |
+| `DAT03 Account Master.Revenue?` | 0.02% | 262 | `Account Type = Account Types.Revenue` |
+| `DAT03 Account Master.Opex?` | 0.02% | 262 | `Account Type = Account Types.Opex` |
+| `DAT03 Account Master.COGS?` | 0.02% | 262 | `Account Type = Account Types.COGS` |
+| `DAT07 Customer Master.Customer Code` | 0.02% | 480 | `CODE(ITEM(Customers))` |
+| `DAT03 Account Master.Account Code` | 0.01% | 262 | `CODE(ITEM(Accounts))` |
+| `SYS02 Data Checks.Check Message` | 0.01% | 36 | `IF Within Tolerance? THEN "OK" ELSE "GL and orders differ by " & TEXT(Difference)` |
 
-## Move logic into inputs and mappings
+By module: `DAT01 GL Transactions` 88.3%, `CAL01 Volume Summary` 9.6%, `DAT05 CRM Pipeline` 1.8%, `DAT03 Account Master` 0.1%, `DAT08 Employee Master` 0.1%, `DAT07 Customer Master` 0.1%, `SYS02 Data Checks` 0.0%
 
-Hard-coded constants and IF chains that are really tables. Replacement artefacts included. 2 actions, biggest first; estimated reclaim up to 16% of Caldergate FP&A's effort.
+### F5. Where measured calculation effort concentrates
 
-| # | Do this | Model | Reclaims | Touches | Exports can prove |
-|---|---|---|---|---|---|
-| A2 | [Replace the 12-branch IF in CAL03 Opex.Forecast Opex with a mapping module](#a2-replace-the-12-branch-if-in-cal03-opex-forecast-opex-with-a-mapping-module) | Caldergate FP&A | up to 16.0% effort | 1 formula | proven |
-| A7 | [Move 11 hard-coded constants into assumptions modules](#a7-move-11-hard-coded-constants-into-assumptions-modules) | Caldergate FP&A, Workforce Planning | 9 objects | nothing in the exports | proven |
+Objects: `CAL03 Opex.Forecast Opex`, `CAL03 Opex.Opex GBP`, `CAL05 Opex OLD.Opex GBP`, `CAL05 Opex OLD.Forecast`, `DAT01 Actuals GL.Journal Cost Centre`, `CAL03 Opex.Opex`, `CAL05 Opex OLD.Opex`, `CAL03 Opex.Actual Opex`, `CAL05 Opex OLD.Actual`, `CAL05 Opex OLD.Opex Cumulative`
 
-### A2. Replace the 12-branch IF in CAL03 Opex.Forecast Opex with a mapping module
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| medium | confirmed | medium | Caldergate FP&A |
 
-**Caldergate FP&A.** The formula is a lookup table written as 12 nested IFs over Accounts. Every branch is evaluated for every cell; this line item carries 16.04% of the model's calculation effort. The table below is the mapping the formula encodes, ready to load.
+**Observed.** Ten line items carry 68.0% of Caldergate FP&A's measured calculation effort; the largest is `CAL03 Opex.Forecast Opex` at 16.0%.
 
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| up to 16.0% effort | 1 formula | proven: Everything this action touches is in the exports. |
+**Why it matters.** Effort is where a redesign would show. Effort shares are Anaplan's Calculation Effort column for this model only. The engine is not in the export: Classic measures across the whole model at open, Polaris over the last ten minutes. A share of effort is not a promise of faster recalculation after removal.
 
-**Steps**
+**Affected scope.** top 20 line items by effort
 
-1. Create a module dimensioned by Accounts with one list-formatted line item (the driver) loaded from the table below.
-2. Replace the formula with a single LOOKUP against that module.
-3. The next new account is a row in the mapping, not a new branch.
+**Potential benefit.** Observed footprint only; no reduction is claimed.
 
-**Verify**
+**Evidence strength.** confirmed: Anaplan's Calculation Effort column as exported.
 
-- Same values on every cell before and after (export the line item, diff).
-- Calculation effort of CAL03 Opex.Forecast Opex falls.
+**Missing information.**
+
+- engine (Classic or Polaris)
+- when the measurement was taken
+
+**Next step.** Read the formulas of the top five; each other finding that names one of them is the place to start.
+
+**When keeping the current design is reasonable.** High effort in the line item that does the model's main job is expected.
 
 **Evidence**
+
+| Line item | Effort share | Cells | Formula |
+|---|---|---|---|
+| `CAL03 Opex.Forecast Opex` | 16.04% | 5.0M | `IF ITEM(Accounts) = Accounts.'6100 Rent' THEN 'INP02 Opex Drivers'.Rent ELSE IF ITEM(Accounts) = Accounts.'6110 Rates' THEN 'INP02 Opex Drivers'.Business Rates ELSE IF ITEM(Accounts) = Accounts.'6120 Utilities' THEN 'INP02 Opex Drivers'.Utilities ELSE IF ITEM(Accounts) = Accounts.'6200 Travel' THEN 'INP02 Opex Drivers'.Travel ELSE IF ITEM(Accounts) = Accounts.'6210 Subsistence' THEN 'INP02 Opex Drivers'.Subsistence ELSE IF ITEM(Accounts) = Accounts.'6300 Marketing' THEN 'INP02 Opex Drivers'.Marketing Events ELSE IF ITEM(Accounts) = Accounts.'6310 Digital' THEN 'INP02 Opex Drivers'.Marketing Digital ELSE IF ITEM(Accounts) = Accounts.'6400 Software' THEN 'INP02 Opex Drivers'.Software Licences ELSE IF ITEM(Accounts) = Accounts.'6410 Hardware' THEN 'INP02 Opex Drivers'.Hardware ELSE IF ITEM(Accounts) = Accounts.'6500 Professional Fees' THEN 'INP02 Opex Drivers'.Consultancy ELSE IF ITEM(Accounts) = Accounts.'6510 Audit' THEN 'INP02 Opex Drivers'.Audit Fees ELSE IF ITEM(Accounts) = Accounts.'6600 Recruitment' THEN 'INP02 Opex Drivers'.Recruitment Fees ELSE 0` |
+| `CAL03 Opex.Opex GBP` | 9.26% | 5.0M | `Opex * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS02 Cost Centre Attributes'.Currency]` |
+| `CAL05 Opex OLD.Opex GBP` | 9.26% | 5.0M | `Opex * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS02 Cost Centre Attributes'.Currency]` |
+| `CAL05 Opex OLD.Forecast` | 6.94% | 5.0M | `Rent Forecast + Rates Forecast + Utilities Forecast + Travel Forecast + Marketing Forecast + Software Forecast + Fees Forecast + Other Forecast` |
+| `DAT01 Actuals GL.Journal Cost Centre` | 6.17% | 5.0M | `FINDITEM(Cost Centres, Source Journal)` |
+| `CAL03 Opex.Opex` | 4.94% | 5.0M | `IF 'SYS01 Time Settings'.Actual? THEN Actual Opex ELSE Forecast Opex` |
+| `CAL05 Opex OLD.Opex` | 4.94% | 5.0M | `IF 'SYS01 Time Settings'.Actual? THEN Actual ELSE Forecast` |
+| `CAL03 Opex.Actual Opex` | 3.70% | 5.0M | `IF 'SYS03 Account Attributes'.Opex? THEN 'DAT01 Actuals GL'.Amount ELSE 0` |
+| `CAL05 Opex OLD.Actual` | 3.70% | 5.0M | `IF 'SYS01 Time Settings'.Actual? THEN 'DAT01 Actuals GL'.Amount ELSE 0` |
+| `CAL05 Opex OLD.Opex Cumulative` | 3.09% | 5.0M | `CUMULATE(Opex GBP)` |
+| `CAL05 Opex OLD.Opex Run Rate` | 3.09% | 5.0M | `MOVINGSUM(Opex GBP, -2, 0) / 3` |
+| `CAL05 Opex OLD.Rent Forecast` | 2.47% | 5.0M | `IF ITEM(Accounts) = Accounts.'6100 Rent' THEN 'INP02 Opex Drivers'.Rent ELSE 0` |
+| `CAL05 Opex OLD.Rates Forecast` | 2.47% | 5.0M | `IF ITEM(Accounts) = Accounts.'6110 Rates' THEN 'INP02 Opex Drivers'.Business Rates ELSE 0` |
+| `CAL05 Opex OLD.Utilities Forecast` | 2.47% | 5.0M | `IF ITEM(Accounts) = Accounts.'6120 Utilities' THEN 'INP02 Opex Drivers'.Utilities ELSE 0` |
+| `CAL05 Opex OLD.Travel Forecast` | 2.47% | 5.0M | `IF ITEM(Accounts) = Accounts.'6200 Travel' THEN 'INP02 Opex Drivers'.Travel ELSE 0` |
+| `CAL05 Opex OLD.Marketing Forecast` | 2.47% | 5.0M | `IF ITEM(Accounts) = Accounts.'6300 Marketing' THEN 'INP02 Opex Drivers'.Marketing Events ELSE 0` |
+| `CAL05 Opex OLD.Software Forecast` | 2.47% | 5.0M | `IF ITEM(Accounts) = Accounts.'6400 Software' THEN 'INP02 Opex Drivers'.Software Licences ELSE 0` |
+| `CAL05 Opex OLD.Fees Forecast` | 2.47% | 5.0M | `IF ITEM(Accounts) = Accounts.'6500 Professional Fees' THEN 'INP02 Opex Drivers'.Consultancy ELSE 0` |
+| `CAL05 Opex OLD.Other Forecast` | 2.47% | 5.0M | `IF ITEM(Accounts) = Accounts.'6900 Other' THEN 'INP02 Opex Drivers'.Other Opex ELSE 0` |
+| `CAL03 Opex.Opex Variance` | 2.31% | 5.0M | `Opex GBP - Opex Prior Year` |
+
+By module: `CAL05 Opex OLD` 50.8%, `CAL03 Opex` 37.8%, `DAT01 Actuals GL` 7.7%, `INP03 Headcount` 2.1%, `CAL12 Driver Phasing` 0.4%, `INP02 Opex Drivers` 0.3%, `CAL02 Revenue` 0.2%, `CAL01 Volumes` 0.1%, `CAL07 P&L by Cost Centre` 0.1%, `CAL04 Margn` 0.1%
+
+### F6. Where measured calculation effort concentrates
+
+Objects: `CAL01 KPIs.Revenue per FTE`, `CAL01 KPIs.Opex Ratio`, `CAL01 KPIs.Revenue Growth`, `CAL01 KPIs.EBITDA Margin`, `CAL01 KPIs.FTE`, `CAL01 KPIs.Revenue Prior Year`, `CAL01 KPIs.Revenue YTD`, `OUT01 Board Dashboard.Revenue`, `OUT01 Board Dashboard.EBITDA`, `OUT01 Board Dashboard.Revenue per FTE`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| medium | confirmed | medium | Board Reporting |
+
+**Observed.** Ten line items carry 89.7% of Board Reporting's measured calculation effort; the largest is `CAL01 KPIs.Revenue per FTE` at 11.2%.
+
+**Why it matters.** Effort is where a redesign would show. Effort shares are Anaplan's Calculation Effort column for this model only. The engine is not in the export: Classic measures across the whole model at open, Polaris over the last ten minutes. A share of effort is not a promise of faster recalculation after removal.
+
+**Affected scope.** top 20 line items by effort
+
+**Potential benefit.** Observed footprint only; no reduction is claimed.
+
+**Evidence strength.** confirmed: Anaplan's Calculation Effort column as exported.
+
+**Missing information.**
+
+- engine (Classic or Polaris)
+- when the measurement was taken
+
+**Next step.** Read the formulas of the top five; each other finding that names one of them is the place to start.
+
+**When keeping the current design is reasonable.** High effort in the line item that does the model's main job is expected.
+
+**Evidence**
+
+| Line item | Effort share | Cells | Formula |
+|---|---|---|---|
+| `CAL01 KPIs.Revenue per FTE` | 11.21% | 144 | `'DAT02 Board Lines'.Revenue / FTE` |
+| `CAL01 KPIs.Opex Ratio` | 11.21% | 144 | `DIVIDE('DAT01 P&L'.Opex, 'DAT01 P&L'.Revenue)` |
+| `CAL01 KPIs.Revenue Growth` | 11.21% | 144 | `DIVIDE('DAT02 Board Lines'.Revenue - Revenue Prior Year, Revenue Prior Year)` |
+| `CAL01 KPIs.EBITDA Margin` | 11.21% | 144 | `DIVIDE('DAT02 Board Lines'.EBITDA, 'DAT02 Board Lines'.Revenue)` |
+| `CAL01 KPIs.FTE` | 7.48% | 144 | `'DAT03 Headcount'.FTE` |
+| `CAL01 KPIs.Revenue Prior Year` | 7.48% | 144 | `LAG('DAT02 Board Lines'.Revenue, 12, 0)` |
+| `CAL01 KPIs.Revenue YTD` | 7.48% | 144 | `YEARTODATE('DAT02 Board Lines'.Revenue)` |
+| `OUT01 Board Dashboard.Revenue` | 7.48% | 144 | `'DAT02 Board Lines'.Revenue` |
+| `OUT01 Board Dashboard.EBITDA` | 7.48% | 144 | `'DAT02 Board Lines'.EBITDA` |
+| `OUT01 Board Dashboard.Revenue per FTE` | 7.48% | 144 | `'CAL01 KPIs'.Revenue per FTE` |
+| `OUT01 Board Dashboard.Revenue Growth` | 7.48% | 144 | `'CAL01 KPIs'.Revenue Growth` |
+| `SYS01 Time.Current Period?` | 1.87% | 36 | `ITEM(Time) = 'SYS00 Settings'.Current Period` |
+| `SYS01 Time.Period Label` | 0.93% | 36 | `NAME(ITEM(Time))` |
+
+By module: `CAL01 KPIs` 67.3%, `OUT01 Board Dashboard` 29.9%, `SYS01 Time` 2.8%
+
+### F13. Text, FINDITEM and per-item functions in large multi-dimensional line items
+
+Objects: `DAT01 GL Transactions.Source System`, `DAT06 Sales Orders.Last Order Ref`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | confirmed | low | Caldergate Data Hub |
+
+**Observed.** 2 line items compute a text value, a FINDITEM, a text join or a per-item function (ITEM, PARENT, NAME, CODE) in a line item with many cells.
+
+**Why it matters.** Computed once per cell here; computed once per list item in a one-dimension system module. Anaplan's checklist recommends the system module.
+
+**Affected scope.** 2 line items
+
+**Potential benefit.** Observed footprint only; improvement would be measured after the change.
+
+**Evidence strength.** confirmed: Parsed function calls and exported cell counts.
+
+**Missing information.**
+
+- measured effort after the change
+
+**Next step.** Start with the largest by cells; compute it once in a SYS module dimensioned by the list it depends on.
+
+**When keeping the current design is reasonable.** A small line item, or one that genuinely varies per cell, is fine where it is.
+
+**Evidence**
+
+| Line item | What | Cells | Effort share | Formula |
+|---|---|---|---|---|
+| `DAT01 GL Transactions.Source System` | Text-formatted line item | 1.3M | 0.00% | `` |
+| `DAT06 Sales Orders.Last Order Ref` | Text-formatted line item | 726K | 0.00% | `` |
+
+### F15. SUM combined with LOOKUP or SELECT in one formula
+
+Objects: `CAL06 Department Summary.Benchmark Opex`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | confirmed | low | Caldergate FP&A |
+
+**Observed.** 1 formulas combine SUM with LOOKUP or SELECT. Anaplan's documentation: "Never use SUM and LOOKUP in the same formula. This can lead to extremely long calculation times." and "Never combine SUM and SELECT in the same formula."
+
+**Why it matters.** The documented concern is calculation time. Whether splitting a particular formula helps is not guaranteed; the documented approach is one line item to aggregate and another to look up or select from it.
+
+**Affected scope.** 1 formula; together 0.0% of Caldergate FP&A's measured effort
+
+**Potential benefit.** Observed: the listed effort shares. Improvement would have to be measured after the change.
+
+**Evidence strength.** confirmed: Parsed clause kinds per formula; official guidance quoted.
+
+**Missing information.**
+
+- measured effort after a trial split
+
+**Next step.** Take the formula with the largest effort share; split it in a sandbox copy; compare Calculation Effort before and after.
+
+**When keeping the current design is reasonable.** A formula with a small effort share that reads clearly can stay as it is; the guidance targets calculation time, not style.
+
+**Evidence**
+
+| Line item | Combination | Effort share | Formula |
+|---|---|---|---|
+| `CAL06 Department Summary.Benchmark Opex` | SUM with LOOKUP in one formula (in the same bracket) | 0.00% | `'CAL03 Opex'.Opex GBP[SUM: 'SYS02 Cost Centre Attributes'.Department, LOOKUP: 'SYS09 Department Settings'.Benchmark Account]` |
+
+### F16. Text, FINDITEM and per-item functions in large multi-dimensional line items
+
+Objects: `DAT01 Actuals GL.Source Journal`, `DAT01 Actuals GL.Journal Cost Centre`, `CAL02 Revenue.Revenue Label`, `CAL02 Revenue.Revenue Label`, `CAL03 Opex.Forecast Opex`, `CAL05 Opex OLD.Fees Forecast`, `CAL05 Opex OLD.Marketing Forecast`, `CAL05 Opex OLD.Other Forecast`, `CAL05 Opex OLD.Rates Forecast`, `CAL05 Opex OLD.Rent Forecast`, `CAL05 Opex OLD.Software Forecast`, `CAL05 Opex OLD.Travel Forecast`, `CAL05 Opex OLD.Utilities Forecast`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | confirmed | low | Caldergate FP&A |
+
+**Observed.** 13 line items compute a text value, a FINDITEM, a text join or a per-item function (ITEM, PARENT, NAME, CODE) in a line item with many cells.
+
+**Why it matters.** Computed once per cell here; computed once per list item in a one-dimension system module. Anaplan's checklist recommends the system module.
+
+**Affected scope.** 13 line items
+
+**Potential benefit.** Observed footprint only; improvement would be measured after the change.
+
+**Evidence strength.** confirmed: Parsed function calls and exported cell counts.
+
+**Missing information.**
+
+- measured effort after the change
+
+**Next step.** Start with the largest by cells; compute it once in a SYS module dimensioned by the list it depends on.
+
+**When keeping the current design is reasonable.** A small line item, or one that genuinely varies per cell, is fine where it is.
+
+**Evidence**
+
+| Line item | What | Cells | Effort share | Formula |
+|---|---|---|---|---|
+| `DAT01 Actuals GL.Source Journal` | Text-formatted line item | 5.0M | 0.00% | `` |
+| `DAT01 Actuals GL.Journal Cost Centre` | FINDITEM in a large line item | 5.0M | 6.17% | `FINDITEM(Cost Centres, Source Journal)` |
+| `CAL02 Revenue.Revenue Label` | Text concatenation in a large line item | 36.3K | 0.01% | `NAME(ITEM(Products)) & " / " & NAME(ITEM(Regions))` |
+| `CAL02 Revenue.Revenue Label` | Unchanging function in a calculation module | 36.3K | 0.01% | `NAME(ITEM(Products)) & " / " & NAME(ITEM(Regions))` |
+| `CAL03 Opex.Forecast Opex` | Unchanging function in a calculation module | 5.0M | 16.04% | `IF ITEM(Accounts) = Accounts.'6100 Rent' THEN 'INP02 Opex Drivers'.Rent ELSE IF ITEM(Accounts) = Accounts.'6110 Rates' THEN 'INP02 Opex Drivers'.Business Rates ELSE IF ITEM(Accounts) = Accounts.'6120 Utilities' THEN 'INP02 Opex Drivers'.Utilities ELSE IF ITEM(Accounts) = Accounts.'6200 Travel' THEN 'INP02 Opex Drivers'.Travel ELSE IF ITEM(Accounts) = Accounts.'6210 Subsistence' THEN 'INP02 Opex Drivers'.Subsistence ELSE IF ITEM(Accounts) = Accounts.'6300 Marketing' THEN 'INP02 Opex Drivers'.Marketing Events ELSE IF ITEM(Accounts) = Accounts.'6310 Digital' THEN 'INP02 Opex Drivers'.Marketing Digital ELSE IF ITEM(Accounts) = Accounts.'6400 Software' THEN 'INP02 Opex Drivers'.Software Licences ELSE IF ITEM(Accounts) = Accounts.'6410 Hardware' THEN 'INP02 Opex Drivers'.Hardware ELSE IF ITEM(Accounts) = Accounts.'6500 Professional Fees' THEN 'INP02 Opex Drivers'.Consultancy ELSE IF ITEM(Accounts) = Accounts.'6510 Audit' THEN 'INP02 Opex Drivers'.Audit Fees ELSE IF ITEM(Accounts) = Accounts.'6600 Recruitment' THEN 'INP02 Opex Drivers'.Recruitment Fees ELSE 0` |
+| `CAL05 Opex OLD.Fees Forecast` | Unchanging function in a calculation module | 5.0M | 2.47% | `IF ITEM(Accounts) = Accounts.'6500 Professional Fees' THEN 'INP02 Opex Drivers'.Consultancy ELSE 0` |
+| `CAL05 Opex OLD.Marketing Forecast` | Unchanging function in a calculation module | 5.0M | 2.47% | `IF ITEM(Accounts) = Accounts.'6300 Marketing' THEN 'INP02 Opex Drivers'.Marketing Events ELSE 0` |
+| `CAL05 Opex OLD.Other Forecast` | Unchanging function in a calculation module | 5.0M | 2.47% | `IF ITEM(Accounts) = Accounts.'6900 Other' THEN 'INP02 Opex Drivers'.Other Opex ELSE 0` |
+| `CAL05 Opex OLD.Rates Forecast` | Unchanging function in a calculation module | 5.0M | 2.47% | `IF ITEM(Accounts) = Accounts.'6110 Rates' THEN 'INP02 Opex Drivers'.Business Rates ELSE 0` |
+| `CAL05 Opex OLD.Rent Forecast` | Unchanging function in a calculation module | 5.0M | 2.47% | `IF ITEM(Accounts) = Accounts.'6100 Rent' THEN 'INP02 Opex Drivers'.Rent ELSE 0` |
+| `CAL05 Opex OLD.Software Forecast` | Unchanging function in a calculation module | 5.0M | 2.47% | `IF ITEM(Accounts) = Accounts.'6400 Software' THEN 'INP02 Opex Drivers'.Software Licences ELSE 0` |
+| `CAL05 Opex OLD.Travel Forecast` | Unchanging function in a calculation module | 5.0M | 2.47% | `IF ITEM(Accounts) = Accounts.'6200 Travel' THEN 'INP02 Opex Drivers'.Travel ELSE 0` |
+| `CAL05 Opex OLD.Utilities Forecast` | Unchanging function in a calculation module | 5.0M | 2.47% | `IF ITEM(Accounts) = Accounts.'6120 Utilities' THEN 'INP02 Opex Drivers'.Utilities ELSE 0` |
+
+### F24. Text, FINDITEM and per-item functions in large multi-dimensional line items
+
+Objects: `Data - Employees.Employee Name`, `Data - Employees.Name and Role`, `Data - Employees.Name and Role`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | confirmed | low | Workforce Planning |
+
+**Observed.** 3 line items compute a text value, a FINDITEM, a text join or a per-item function (ITEM, PARENT, NAME, CODE) in a line item with many cells.
+
+**Why it matters.** Computed once per cell here; computed once per list item in a one-dimension system module. Anaplan's checklist recommends the system module.
+
+**Affected scope.** 3 line items
+
+**Potential benefit.** Observed footprint only; improvement would be measured after the change.
+
+**Evidence strength.** confirmed: Parsed function calls and exported cell counts.
+
+**Missing information.**
+
+- measured effort after the change
+
+**Next step.** Start with the largest by cells; compute it once in a SYS module dimensioned by the list it depends on.
+
+**When keeping the current design is reasonable.** A small line item, or one that genuinely varies per cell, is fine where it is.
+
+**Evidence**
+
+| Line item | What | Cells | Effort share | Formula |
+|---|---|---|---|---|
+| `Data - Employees.Employee Name` | Text-formatted line item | 66.6K | n/a | `` |
+| `Data - Employees.Name and Role` | Text-formatted line item | 66.6K | n/a | `Employee Name & " (" & NAME(Role) & ")"` |
+| `Data - Employees.Name and Role` | Text concatenation in a large line item | 66.6K | n/a | `Employee Name & " (" & NAME(Role) & ")"` |
+
+## Usage and retirement investigations
+
+Objects with no consumer detected in the inspected dependency types. Pages, saved views and subsets are not in the exports, so each carries outstanding checks.
+
+### F1. Module with no consumer detected in the inspected dependency types
+
+Objects: `CAL05 Opex OLD`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| high | partial | medium | Caldergate FP&A |
+
+**Observed.** No formula outside `CAL05 Opex OLD` reads any of its 14 line items (14 calculated) and no export action reads it. Module note: "Replaced by CAL03 in 2021. Keep until the FY22 audit is closed.".
+
+**Why it matters.** Either a page, view, subset or integration reads it, or nothing does. The exports cannot tell which; the footprint says whether it is worth finding out.
+
+**Affected scope.** 1 module, 14 line items
+
+**Potential benefit.** If no consumer is found: 70.2M cells as exported; 50.8% of Caldergate FP&A's measured calculation effort would no longer be held or measured.
+
+**Evidence strength.** partial: No formula consumer detected in the inspected types (parsed formula references, checked against Referenced By); no export action reads the module. Dependency coverage for Caldergate FP&A: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
+
+**Missing information.**
+
+- UX pages and classic dashboards that show `CAL05 Opex OLD` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)
+- saved views on `CAL05 Opex OLD`: another model can import from a saved view without any export action existing here
+- line item subsets that include line items of `CAL05 Opex OLD` (COLLECT sources are not in the export)
+- filters, access drivers, DCA and integration (CloudWorks, API) references
+
+**Next step.** List the pages, saved views and subsets that use `CAL05 Opex OLD`; if none, blank the formulas in a sandbox copy and wait one cycle before deleting.
+
+**When keeping the current design is reasonable.** A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job even with no formula reader. Retained data in an import target may be needed for history.
+
+**Validation**
+
+- After removal, the Line Items export no longer lists `CAL05 Opex OLD`; workspace size falls by about the module's cells; every page listed in the check opens without a blank card.
+
+### F7. Calculated line items with no consumer detected, outside output modules
+
+Objects: `DAT01 Actuals GL`, `CAL03 Opex`, `CAL02 Revenue`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| medium | partial | medium | Caldergate FP&A |
+
+**Observed.** 5 calculated line items in 3 modules are read by no formula, not exported, not in an output-style module and have no exact twin.
+
+**Why it matters.** Each is computed and stored; if nothing reads it the footprint is spare. If a page reads it, it is an output that lives in a calculation module.
+
+**Affected scope.** 5 line items in 3 modules
+
+**Potential benefit.** If no consumer is found: 15.1M cells as exported; 10.0% of Caldergate FP&A's measured calculation effort.
+
+**Evidence strength.** partial: Parsed references and export actions only. Dependency coverage for Caldergate FP&A: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
+
+**Missing information.**
+
+- pages, saved views, line item subsets and integrations for each listed module
+- the 29 unreferenced line items that look like outputs by module name, format or time scale are not listed here
+
+**Next step.** Take the largest module first; list its pages and views; blank one formula in a sandbox and wait a cycle.
+
+**When keeping the current design is reasonable.** A line item read only by a page is not spare. A calculation kept for audit or reconciliation can be right to keep even if nothing reads it now.
+
+**Evidence**
+
+| Module | Line items with no formula consumer | Cells | Effort share |
+|---|---|---|---|
+| `DAT01 Actuals GL` | `Journal Cost Centre`, `Loaded?` | 10.0M | 7.7% |
+| `CAL03 Opex` | `Opex Variance` | 5.0M | 2.3% |
+| `CAL02 Revenue` | `Revenue USD`, `VAT` | 72.6K | 0.0% |
+
+**Validation**
+
+- Re-run this report after removal: the list shrinks to the line items a page needs.
+
+### F8. Module with no consumer detected in the inspected dependency types
+
+Objects: `SYS01 Time`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| medium | partial | medium | Board Reporting |
+
+**Observed.** No formula outside `SYS01 Time` reads any of its 2 line items (2 calculated) and no export action reads it.
+
+**Why it matters.** Either a page, view, subset or integration reads it, or nothing does. The exports cannot tell which; the footprint says whether it is worth finding out.
+
+**Affected scope.** 1 module, 2 line items
+
+**Potential benefit.** If no consumer is found: 72 cells as exported; 2.8% of Board Reporting's measured calculation effort would no longer be held or measured.
+
+**Evidence strength.** partial: No formula consumer detected in the inspected types (parsed formula references, checked against Referenced By); no export action reads the module. Dependency coverage for Board Reporting: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
+
+**Missing information.**
+
+- UX pages and classic dashboards that show `SYS01 Time` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)
+- saved views on `SYS01 Time`: another model can import from a saved view without any export action existing here
+- line item subsets that include line items of `SYS01 Time` (COLLECT sources are not in the export)
+- filters, access drivers, DCA and integration (CloudWorks, API) references
+
+**Next step.** List the pages, saved views and subsets that use `SYS01 Time`; if none, blank the formulas in a sandbox copy and wait one cycle before deleting.
+
+**When keeping the current design is reasonable.** A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job even with no formula reader. Retained data in an import target may be needed for history.
+
+**Validation**
+
+- After removal, the Line Items export no longer lists `SYS01 Time`; workspace size falls by about the module's cells; every page listed in the check opens without a blank card.
+
+### F30. Module with no consumer detected in the inspected dependency types
+
+Objects: `CAL06 Department Summary`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | partial | medium | Caldergate FP&A |
+
+**Observed.** No formula outside `CAL06 Department Summary` reads any of its 6 line items (6 calculated) and no export action reads it.
+
+**Why it matters.** Either a page, view, subset or integration reads it, or nothing does. The exports cannot tell which; the footprint says whether it is worth finding out.
+
+**Affected scope.** 1 module, 6 line items
+
+**Potential benefit.** If no consumer is found: 15.6K cells as exported would no longer be held or measured.
+
+**Evidence strength.** partial: No formula consumer detected in the inspected types (parsed formula references, checked against Referenced By); no export action reads the module. Dependency coverage for Caldergate FP&A: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
+
+**Missing information.**
+
+- UX pages and classic dashboards that show `CAL06 Department Summary` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)
+- saved views on `CAL06 Department Summary`: another model can import from a saved view without any export action existing here
+- line item subsets that include line items of `CAL06 Department Summary` (COLLECT sources are not in the export)
+- filters, access drivers, DCA and integration (CloudWorks, API) references
+
+**Next step.** List the pages, saved views and subsets that use `CAL06 Department Summary`; if none, blank the formulas in a sandbox copy and wait one cycle before deleting.
+
+**When keeping the current design is reasonable.** A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job even with no formula reader. Retained data in an import target may be needed for history.
+
+**Validation**
+
+- After removal, the Line Items export no longer lists `CAL06 Department Summary`; workspace size falls by about the module's cells; every page listed in the check opens without a blank card.
+
+### F31. Module with no consumer detected in the inspected dependency types
+
+Objects: `zz Archive - 2021 Cost`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | partial | medium | Workforce Planning |
+
+**Observed.** No formula outside `zz Archive - 2021 Cost` reads any of its 3 line items (3 calculated) and no export action reads it. Module note: "Old cost calc from go-live. Kept for reference.".
+
+**Why it matters.** Either a page, view, subset or integration reads it, or nothing does. The exports cannot tell which; the footprint says whether it is worth finding out.
+
+**Affected scope.** 1 module, 3 line items
+
+**Potential benefit.** If no consumer is found: 13.4K cells as exported would no longer be held or measured.
+
+**Evidence strength.** partial: No formula consumer detected in the inspected types (parsed formula references, checked against Referenced By); no export action reads the module. Dependency coverage for Workforce Planning: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
+
+**Missing information.**
+
+- UX pages and classic dashboards that show `zz Archive - 2021 Cost` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)
+- saved views on `zz Archive - 2021 Cost`: another model can import from a saved view without any export action existing here
+- line item subsets that include line items of `zz Archive - 2021 Cost` (COLLECT sources are not in the export)
+- filters, access drivers, DCA and integration (CloudWorks, API) references
+
+**Next step.** List the pages, saved views and subsets that use `zz Archive - 2021 Cost`; if none, blank the formulas in a sandbox copy and wait one cycle before deleting.
+
+**When keeping the current design is reasonable.** A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job even with no formula reader. Retained data in an import target may be needed for history.
+
+**Validation**
+
+- After removal, the Line Items export no longer lists `zz Archive - 2021 Cost`; workspace size falls by about the module's cells; every page listed in the check opens without a blank card.
+
+### F32. Module with no consumer detected in the inspected dependency types
+
+Objects: `CAL08 Cash Flow`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | partial | medium | Caldergate FP&A |
+
+**Observed.** No formula outside `CAL08 Cash Flow` reads any of its 10 line items (10 calculated) and no export action reads it.
+
+**Why it matters.** Either a page, view, subset or integration reads it, or nothing does. The exports cannot tell which; the footprint says whether it is worth finding out.
+
+**Affected scope.** 1 module, 10 line items
+
+**Potential benefit.** If no consumer is found: 5.8K cells as exported would no longer be held or measured.
+
+**Evidence strength.** partial: No formula consumer detected in the inspected types (parsed formula references, checked against Referenced By); no export action reads the module. Dependency coverage for Caldergate FP&A: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
+
+**Missing information.**
+
+- UX pages and classic dashboards that show `CAL08 Cash Flow` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)
+- saved views on `CAL08 Cash Flow`: another model can import from a saved view without any export action existing here
+- line item subsets that include line items of `CAL08 Cash Flow` (COLLECT sources are not in the export)
+- filters, access drivers, DCA and integration (CloudWorks, API) references
+
+**Next step.** List the pages, saved views and subsets that use `CAL08 Cash Flow`; if none, blank the formulas in a sandbox copy and wait one cycle before deleting.
+
+**When keeping the current design is reasonable.** A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job even with no formula reader. Retained data in an import target may be needed for history.
+
+**Validation**
+
+- After removal, the Line Items export no longer lists `CAL08 Cash Flow`; workspace size falls by about the module's cells; every page listed in the check opens without a blank card.
+
+### F33. Module with no consumer detected in the inspected dependency types
+
+Objects: `SYS02 Data Checks`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | partial | medium | Caldergate Data Hub |
+
+**Observed.** No formula outside `SYS02 Data Checks` reads any of its 5 line items (5 calculated) and no export action reads it. Module note: "Reconciliation flags read by the load dashboard.".
+
+**Why it matters.** Either a page, view, subset or integration reads it, or nothing does. The exports cannot tell which; the footprint says whether it is worth finding out.
+
+**Affected scope.** 1 module, 5 line items
+
+**Potential benefit.** If no consumer is found: 180 cells as exported; 0.0% of Caldergate Data Hub's measured calculation effort would no longer be held or measured.
+
+**Evidence strength.** partial: No formula consumer detected in the inspected types (parsed formula references, checked against Referenced By); no export action reads the module. Dependency coverage for Caldergate Data Hub: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
+
+**Missing information.**
+
+- UX pages and classic dashboards that show `SYS02 Data Checks` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)
+- saved views on `SYS02 Data Checks`: another model can import from a saved view without any export action existing here
+- line item subsets that include line items of `SYS02 Data Checks` (COLLECT sources are not in the export)
+- filters, access drivers, DCA and integration (CloudWorks, API) references
+
+**Next step.** List the pages, saved views and subsets that use `SYS02 Data Checks`; if none, blank the formulas in a sandbox copy and wait one cycle before deleting.
+
+**When keeping the current design is reasonable.** A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job even with no formula reader. Retained data in an import target may be needed for history.
+
+**Validation**
+
+- After removal, the Line Items export no longer lists `SYS02 Data Checks`; workspace size falls by about the module's cells; every page listed in the check opens without a blank card.
+
+### F34. Module with no consumer detected in the inspected dependency types
+
+Objects: `SYS01 Time Settings`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | partial | medium | Caldergate Data Hub |
+
+**Observed.** No formula outside `SYS01 Time Settings` reads any of its 5 line items (5 calculated) and no export action reads it. Module note: "Standard time flags. Built Mar 2019.".
+
+**Why it matters.** Either a page, view, subset or integration reads it, or nothing does. The exports cannot tell which; the footprint says whether it is worth finding out.
+
+**Affected scope.** 1 module, 5 line items
+
+**Potential benefit.** If no consumer is found: 180 cells as exported would no longer be held or measured.
+
+**Evidence strength.** partial: No formula consumer detected in the inspected types (parsed formula references, checked against Referenced By); no export action reads the module. Dependency coverage for Caldergate Data Hub: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
+
+**Missing information.**
+
+- UX pages and classic dashboards that show `SYS01 Time Settings` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)
+- saved views on `SYS01 Time Settings`: another model can import from a saved view without any export action existing here
+- line item subsets that include line items of `SYS01 Time Settings` (COLLECT sources are not in the export)
+- filters, access drivers, DCA and integration (CloudWorks, API) references
+
+**Next step.** List the pages, saved views and subsets that use `SYS01 Time Settings`; if none, blank the formulas in a sandbox copy and wait one cycle before deleting.
+
+**When keeping the current design is reasonable.** A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job even with no formula reader. Retained data in an import target may be needed for history.
+
+**Validation**
+
+- After removal, the Line Items export no longer lists `SYS01 Time Settings`; workspace size falls by about the module's cells; every page listed in the check opens without a blank card.
+
+## Dependencies and change impact
+
+Where a change spreads widest: hubs, chains, cross-model feeds.
+
+### F4. Line items with the widest change impact
+
+Objects: `SYS01 Time Settings.Actual?`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| medium | confirmed | low | Caldergate FP&A |
+
+**Observed.** 1 line items are read directly by 25 or more formulas.
+
+**Why it matters.** A change to any of these moves numbers across the model. Not a fault: a fact for change control and for choosing what to test after a release.
+
+**Affected scope.** 1 line item
+
+**Potential benefit.** not applicable
+
+**Evidence strength.** confirmed: Parsed references, checked against Referenced By.
+
+**Missing information.**
+
+- page and export consumers, which widen the impact further
+
+**Next step.** Include these in the change-impact check for every release that touches them.
+
+**When keeping the current design is reasonable.** Hubs are by design; the action is awareness, not change.
+
+**Evidence**
+
+| Line item | Direct readers | Downstream (transitive) | Modules downstream |
+|---|---|---|---|
+| `SYS01 Time Settings.Actual?` | 36 | 101 | 13 |
+
+### F10. Pass-through chains
+
+Objects: `OUT01 Management Pack.Opex`, `OUT01 Management Pack.Staff Cost`, `OUT02 Board Pack.Revenue`, `OUT02 Board Pack.EBITDA`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | confirmed | low | Caldergate FP&A |
+
+**Observed.** 4 chains where A copies B copies C. Intermediate line items hold 153K cells.
+
+**Why it matters.** Each step is a stored copy and a place a change of source must be repeated. Anaplan's checklist advises against chains. An intermediate can also be a deliberate interface: a reporting layer, a security boundary, a stable import source for another model.
+
+**Affected scope.** 4 chains
+
+**Potential benefit.** Footprint of the intermediates: 153K cells.
+
+**Evidence strength.** confirmed: Single-reference formulas in sequence.
+
+**Missing information.**
+
+- whether an intermediate is read by a page, a view or another model's import
+
+**Next step.** For each chain, ask what each intermediate is for; where the answer is nothing, point the head at the end.
+
+**When keeping the current design is reasonable.** A pass-through that is an interface (OUT module read by pages, source of an export, access boundary) should stay.
+
+**Evidence**
+
+| Head | Steps | Reads, in the end | Intermediates |
+|---|---|---|---|
+| `OUT01 Management Pack.Opex` | 4 | `CAL03 Opex.Opex GBP` | `CAL11 Reporting Prep.Opex`, `CAL07 P&L by Cost Centre.Opex` |
+| `OUT01 Management Pack.Staff Cost` | 4 | `INP03 Headcount.Total Cost` | `CAL11 Reporting Prep.Staff Cost`, `CAL07 P&L by Cost Centre.Staff Cost` |
+| `OUT02 Board Pack.Revenue` | 4 | `CAL07 P&L by Cost Centre.Revenue` | `OUT01 Management Pack.Revenue`, `CAL11 Reporting Prep.Revenue` |
+| `OUT02 Board Pack.EBITDA` | 4 | `CAL07 P&L by Cost Centre.EBITDA` | `OUT01 Management Pack.EBITDA`, `CAL11 Reporting Prep.EBITDA` |
+
+## Maintainability and consistency
+
+Repeated logic, hard-coded assumptions, long formulas, structure that the next builder has to decode.
+
+### F2. IF chain that encodes a lookup table
+
+Objects: `CAL03 Opex.Forecast Opex`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| medium | confirmed | medium | Caldergate FP&A |
+
+**Observed.** 12 IF THEN ELSE in one formula. The branches map Accounts items to values; the table below is what the formula encodes.
+
+**Why it matters.** Every branch is evaluated for every cell, and every new case is a formula edit. Anaplan's checklist: refactor above 10 IF conditions. This line item carries 16.0% of the model's measured effort.
+
+**Affected scope.** 1 line item; 1 reader
+
+**Potential benefit.** Observed effort share only; improvement would be measured after the change.
+
+**Evidence strength.** confirmed: Parsed formula.
+
+**Missing information.**
+
+- whether the mapping is stable enough to hold in a module
+
+**Next step.** Load the table into a mapping module and replace the chain with one LOOKUP; compare values before and after.
+
+**When keeping the current design is reasonable.** A short, stable chain that a finance user can read may be clearer than a mapping module.
+
+**Evidence**
+
+Formula: `IF ITEM(Accounts) = Accounts.'6100 Rent' THEN 'INP02 Opex Drivers'.Rent ELSE IF ITEM(Accounts) = Accounts.'6110 Rates' THEN 'INP02 Opex Drivers'.Business Rates ELSE IF ITEM(Accounts) = Accounts.'6120 Utilities' THEN 'INP02 Opex Drivers'.Utilities ELSE IF ITEM(Accounts) = Accounts.'6200 Travel' THEN 'INP02 Opex Drivers'.Travel ELSE IF ITEM(Accounts) = Accounts.'6210 Subsistence' THEN 'INP02 Opex Drivers'.Subsistence ELSE IF ITEM(Accounts) = Accounts.'6300 Marketing' THEN 'INP02 Opex Drivers'.Marketing Events ELSE IF ITEM(Accounts) = Accounts.'6310 Digital' THEN 'INP02 Opex Drivers'.Marketing Digital ELSE IF ITEM(Accounts) = Accounts.'6400 Software' THEN 'INP02 Opex Drivers'.Software Licences ELSE IF ITEM(Accounts) = Accounts.'6410 Hardware' THEN 'INP02 Opex Drivers'.Hardware ELSE IF ITEM(Accounts) = Accounts.'6500 Professional Fees' THEN 'INP02 Opex Drivers'.Consultancy ELSE IF ITEM(Accounts) = Accounts.'6510 Audit' THEN 'INP02 Opex Drivers'.Audit Fees ELSE IF ITEM(Accounts) = Accounts.'6600 Recruitment' THEN 'INP02 Opex Drivers'.Recruitment Fees ELSE 0`
 
 | Accounts item | Value |
 |---|---|
@@ -199,1011 +740,1116 @@ Hard-coded constants and IF chains that are really tables. Replacement artefacts
 | 6510 Audit | `INP02 Opex Drivers.Audit Fees` |
 | 6600 Recruitment | `INP02 Opex Drivers.Recruitment Fees` |
 
-### A7. Move 11 hard-coded constants into assumptions modules
+**Validation**
 
-**Caldergate FP&A, Workforce Planning.** Numbers inside formulas are assumptions nobody can see or change without a model builder. The same constant in more than one formula drifts.
+- Export the line item before and after; every cell equal.
 
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 9 objects | nothing in the exports | proven: Everything this action touches is in the exports. |
+### F9. Line items that only copy another line item
 
-**Steps**
+Objects: `CAL07 P&L by Cost Centre.Depreciation`, `CAL11 Reporting Prep.Revenue`, `CAL11 Reporting Prep.EBITDA`, `CAL11 Reporting Prep.Opex`, `CAL11 Reporting Prep.Staff Cost`, `OUT01 Management Pack.Revenue`, `OUT01 Management Pack.EBITDA`, `OUT01 Management Pack.Opex`, `OUT01 Management Pack.Staff Cost`, `OUT01 Management Pack.Total Cost`, `OUT01 Management Pack.Depreciation`, `OUT01 Management Pack.Phased Drivers`, `OUT02 Board Pack.Revenue`, `OUT02 Board Pack.EBITDA`
 
-1. Create (or reuse) a settings module per model with one line item per constant, named, with a note saying who owns it.
-2. Replace each constant with the reference.
-3. Tell the owner where the number now lives.
-
-**Verify**
-
-- Search formulas for the constant: zero hits.
-
-**Evidence**
-
-| Constant | Used in | Suggested input |
-|---|---|---|
-| 0.1 | Workforce Planning: Calcs - Cost.Bonus, Workforce Planning: Calcs - Headcount by CC.Bonus % | Assumption 1 |
-| 1.27 | Caldergate FP&A: CAL02 Revenue.Revenue USD | Assumption 2 |
-| 0.2 | Caldergate FP&A: CAL02 Revenue.VAT | Assumption 3 |
-| 30 | Caldergate FP&A: CAL08 Cash Flow.Debtors | Assumption 4 |
-| 0.25 | Caldergate FP&A: CAL08 Cash Flow.Tax | Assumption 5 |
-| 10 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 6 |
-| 119 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 7 |
-| 120 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 8 |
-| 239 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 9 |
-| 0.05 | Caldergate FP&A: INP03 Headcount.Pension | Assumption 10 |
-| 11 | Workforce Planning: Calcs - Attrition.Annualised Attrition | Assumption 11 |
-
-## Tidy structure
-
-Subsidiary views, summaries left on, text and lookups in big modules, oversized and empty modules. 5 actions, biggest first; estimated reclaim 59 objects.
-
-| # | Do this | Model | Reclaims | Touches | Exports can prove |
-|---|---|---|---|---|---|
-| A4 | [Turn summaries off on 37 large line items no formula reads](#a4-turn-summaries-off-on-37-large-line-items-no-formula-reads) | 4 models | 37 objects | pages: check | check pages |
-| A6 | [Move 18 text and lookup line items out of large calculation modules](#a6-move-18-text-and-lookup-line-items-out-of-large-calculation-modules) | 3 models | 18 objects | 11 formulas | proven |
-| A12 | [Move 2 subsidiary-view line items into modules of their own dimensions](#a12-move-2-subsidiary-view-line-items-into-modules-of-their-own-dimensions) | Caldergate FP&A, Workforce Planning | 2 objects | 2 formulas | proven |
-| A17 | [Delete 1 empty module](#a17-delete-1-empty-module) | Caldergate FP&A | 1 object | nothing in the exports | proven |
-| A21 | [Split INP02 Opex Drivers (58 line items)](#a21-split-inp02-opex-drivers-58-line-items) | Caldergate FP&A | 1 object | 50 formulas, 1 export, pages: check | judgment |
-
-### A4. Turn summaries off on 37 large line items no formula reads
-
-**4 models.** Summaries calculate on every parent of every dimension. Where no formula reads the line item, only a page could need the total.
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 37 objects | pages: check | check pages: Formulas, exports and imports are in the exports; pages and saved views are not. Check them before removing anything. |
-
-**Steps**
-
-1. For each, check whether a page shows it at a parent level.
-2. If not, set Summary to None.
-
-**Verify**
-
-- Model open time and calculation effort fall; no page shows a blank total.
-
-**Evidence**
-
-| Model | Line item | Summary | Cells |
+| Importance | Evidence | Change complexity | Model |
 |---|---|---|---|
-| Caldergate Data Hub | DAT05 CRM Pipeline.Weighted Pipeline | SUM | 17.3K |
-| Caldergate FP&A | CAL01 Volumes.Volume Growth | FORMULA | 36.3K |
-| Caldergate FP&A | CAL02 Revenue.Average Price | FORMULA | 36.3K |
-| Caldergate FP&A | CAL02 Revenue.Revenue Growth | FORMULA | 36.3K |
-| Caldergate FP&A | CAL02 Revenue.Revenue USD | SUM | 36.3K |
-| Caldergate FP&A | CAL02 Revenue.Revenue per Unit | FORMULA | 36.3K |
-| Caldergate FP&A | CAL02 Revenue.VAT | SUM | 36.3K |
-| Caldergate FP&A | CAL03 Opex.Opex Variance | SUM | 5.0M |
-| Caldergate FP&A | CAL04 Margn.Margin % | FORMULA | 36.3K |
-| Caldergate FP&A | CAL04 Margn.Margin GBP | SUM | 36.3K |
-| Caldergate FP&A | CAL05 Opex OLD.Opex Cumulative | SUM | 5.0M |
-| Caldergate FP&A | CAL05 Opex OLD.Opex Run Rate | SUM | 5.0M |
-| Caldergate FP&A | CAL07 P&L by Cost Centre.EBIT | SUM | 19.2K |
-| Caldergate FP&A | CAL07 P&L by Cost Centre.EBITDA Margin | FORMULA | 19.2K |
-| Caldergate FP&A | CAL07 P&L by Cost Centre.Opex Variance to Budget | SUM | 19.2K |
-| Caldergate FP&A | CAL10 Depreciation.NBV | SUM;time=CLOSING_BALANCE | 19.2K |
-| Caldergate FP&A | DAT02 Actuals Volumes.Revenue Actual | SUM | 36.3K |
-| Caldergate FP&A | INP02 Opex Drivers.Check | SUM | 19.2K |
-| Caldergate FP&A | INP02 Opex Drivers.Driver Count | SUM | 19.2K |
-| Caldergate FP&A | OUT01 Management Pack.Capex | SUM | 19.2K |
-| Caldergate FP&A | OUT01 Management Pack.Depreciation | SUM | 19.2K |
-| Caldergate FP&A | OUT01 Management Pack.EBITDA YTD | SUM | 19.2K |
-| Caldergate FP&A | OUT01 Management Pack.Headcount | SUM | 19.2K |
-| Caldergate FP&A | OUT01 Management Pack.Opex | SUM | 19.2K |
-| Caldergate FP&A | OUT01 Management Pack.Phased Drivers | SUM | 19.2K |
-| Caldergate FP&A | OUT01 Management Pack.Revenue YTD | SUM | 19.2K |
-| Caldergate FP&A | OUT01 Management Pack.Staff Cost | SUM | 19.2K |
-| Caldergate FP&A | OUT01 Management Pack.Total Cost | SUM | 19.2K |
-| Caldergate FP&A | OUT02 Board Pack.EBITDA | SUM | 19.2K |
-| Caldergate FP&A | OUT02 Board Pack.Old Budget Revenue | SUM | 19.2K |
-| Caldergate FP&A | OUT02 Board Pack.Revenue Variance % | FORMULA | 19.2K |
-| Workforce Planning | Calcs - Headcount by CC.Average Salary | FORMULA | 594K |
-| Board Reporting | DAT01 P&L.COGS | SUM | 19.2K |
-| Board Reporting | DAT01 P&L.Depreciation | SUM | 19.2K |
-| Board Reporting | DAT01 P&L.EBIT | SUM | 19.2K |
-| Board Reporting | DAT01 P&L.EBITDA | SUM | 19.2K |
-| Board Reporting | DAT01 P&L.Staff Cost | SUM | 19.2K |
+| low | confirmed | low | Caldergate FP&A |
 
-### A6. Move 18 text and lookup line items out of large calculation modules
+**Observed.** 14 line items have the formula `B = A` with the same context as A. Together they hold 268K cells.
 
-**3 models.** Text, FINDITEM, ITEM() and text joins in a multi-dimensional line item are computed once per cell. In a one-dimension system module they are computed once per list item.
+**Why it matters.** A copy gives a page a friendlier name, moves a value into a module with different access, or provides a stable name for an export. Where none of those applies, its readers could read the source.
 
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 18 objects | 11 formulas | proven: Everything this action touches is in the exports. |
+**Affected scope.** 14 line items; 14 formulas read them
 
-**Steps**
+**Potential benefit.** Footprint of the copies: 268K cells. Released only for copies without a page, export or access reason.
 
-1. Compute each once in a SYS module dimensioned by the list it depends on.
-2. Reference it from the calculation module.
+**Evidence strength.** confirmed: Single-reference formulas with identical context.
 
-**Verify**
+**Missing information.**
 
-- Calculation effort of the listed line items falls; cell count of TEXT line items falls.
+- pages that show the alias under its name
+- exports and views that read the alias module (the 'module exported' column shows export actions only)
+
+**Next step.** Sort by cells; for the largest, check what shows it; point readers at the source where nothing does.
+
+**When keeping the current design is reasonable.** An alias that is an interface (a reporting name, an export column, an access boundary) is a good alias.
 
 **Evidence**
 
-| Model | Line item | What | Cells |
+| Alias | Copies | Cells | Readers to repoint | Summary (alias / source) | Module exported |
+|---|---|---|---|---|---|
+| `CAL07 P&L by Cost Centre.Depreciation` | `CAL10 Depreciation.Charge` | 19.2K | 1 | SUM / SUM | yes |
+| `CAL11 Reporting Prep.Revenue` | `CAL07 P&L by Cost Centre.Revenue` | 19.2K | 1 | SUM / SUM | no |
+| `CAL11 Reporting Prep.EBITDA` | `CAL07 P&L by Cost Centre.EBITDA` | 19.2K | 1 | SUM / SUM | no |
+| `CAL11 Reporting Prep.Opex` | `CAL07 P&L by Cost Centre.Opex` | 19.2K | 2 | SUM / SUM | no |
+| `CAL11 Reporting Prep.Staff Cost` | `CAL07 P&L by Cost Centre.Staff Cost` | 19.2K | 2 | SUM / SUM | no |
+| `OUT01 Management Pack.Revenue` | `CAL11 Reporting Prep.Revenue` | 19.2K | 4 | SUM / SUM | no |
+| `OUT01 Management Pack.EBITDA` | `CAL11 Reporting Prep.EBITDA` | 19.2K | 2 | SUM / SUM | no |
+| `OUT01 Management Pack.Opex` | `CAL11 Reporting Prep.Opex` | 19.2K | 0 | SUM / SUM | no |
+| `OUT01 Management Pack.Staff Cost` | `CAL11 Reporting Prep.Staff Cost` | 19.2K | 0 | SUM / SUM | no |
+| `OUT01 Management Pack.Total Cost` | `CAL11 Reporting Prep.Total Cost` | 19.2K | 0 | SUM / SUM | no |
+| `OUT01 Management Pack.Depreciation` | `CAL10 Depreciation.Charge` | 19.2K | 0 | SUM / SUM | no |
+| `OUT01 Management Pack.Phased Drivers` | `CAL12 Driver Phasing.Total Phased` | 19.2K | 0 | SUM / SUM | no |
+| `OUT02 Board Pack.Revenue` | `OUT01 Management Pack.Revenue` | 19.2K | 1 | SUM / SUM | yes |
+| `OUT02 Board Pack.EBITDA` | `OUT01 Management Pack.EBITDA` | 19.2K | 0 | SUM / SUM | yes |
+
+**Validation**
+
+- Re-run this report: aliases that remain are the ones kept on purpose.
+
+### F11. Same calculation made more than once under different names
+
+Objects: `CAL07 P&L by Cost Centre.Depreciation`
+
+| Importance | Evidence | Change complexity | Model |
 |---|---|---|---|
-| Caldergate Data Hub | DAT01 GL Transactions.Source System | Text-formatted line item | 1.3M |
-| Caldergate Data Hub | DAT06 Sales Orders.Last Order Ref | Text-formatted line item | 726K |
-| Caldergate FP&A | DAT01 Actuals GL.Source Journal | Text-formatted line item | 5.0M |
-| Caldergate FP&A | DAT01 Actuals GL.Journal Cost Centre | FINDITEM in a large line item | 5.0M |
-| Caldergate FP&A | CAL02 Revenue.Revenue Label | Text concatenation in a large line item | 36.3K |
-| Caldergate FP&A | CAL02 Revenue.Revenue Label | Unchanging function in a calculation module | 36.3K |
-| Caldergate FP&A | CAL03 Opex.Forecast Opex | Unchanging function in a calculation module | 5.0M |
-| Caldergate FP&A | CAL05 Opex OLD.Fees Forecast | Unchanging function in a calculation module | 5.0M |
-| Caldergate FP&A | CAL05 Opex OLD.Marketing Forecast | Unchanging function in a calculation module | 5.0M |
-| Caldergate FP&A | CAL05 Opex OLD.Other Forecast | Unchanging function in a calculation module | 5.0M |
-| Caldergate FP&A | CAL05 Opex OLD.Rates Forecast | Unchanging function in a calculation module | 5.0M |
-| Caldergate FP&A | CAL05 Opex OLD.Rent Forecast | Unchanging function in a calculation module | 5.0M |
-| Caldergate FP&A | CAL05 Opex OLD.Software Forecast | Unchanging function in a calculation module | 5.0M |
-| Caldergate FP&A | CAL05 Opex OLD.Travel Forecast | Unchanging function in a calculation module | 5.0M |
-| Caldergate FP&A | CAL05 Opex OLD.Utilities Forecast | Unchanging function in a calculation module | 5.0M |
-| Workforce Planning | Data - Employees.Employee Name | Text-formatted line item | 66.6K |
-| Workforce Planning | Data - Employees.Name and Role | Text-formatted line item | 66.6K |
-| Workforce Planning | Data - Employees.Name and Role | Text concatenation in a large line item | 66.6K |
+| low | confirmed | medium | Caldergate FP&A |
 
-### A12. Move 2 subsidiary-view line items into modules of their own dimensions
+**Observed.** 1 calculated line items in 1 groups have the same resolved formula and the same context (dimensions, time scale, time range, versions, data type, summary, formula scope) as another line item in the model. Together the copies hold 19.2K cells.
 
-**Caldergate FP&A, Workforce Planning.** A line item dimensioned differently from its module is a subsidiary view. Used in calculation, it hides a lookup and confuses the next builder. Anaplan's checklist: display only.
+**Why it matters.** Two copies of one calculation drift apart when one is changed. Where a page or process needs the second name, the copy is doing a job; where it does not, readers can share one.
 
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 2 objects | 2 formulas | proven: Everything this action touches is in the exports. |
+**Affected scope.** 1 line item in 1 group; 0 formulas would be re-pointed
 
-**Steps**
+**Potential benefit.** Footprint of the copies: 19.2K cells. Released only for copies that no page, view or process needs.
 
-1. Create or find a module dimensioned as the line item is (usually a SYS module for that list).
-2. Move the line item; repoint its readers.
+**Evidence strength.** confirmed: Resolved formula text and every context field agree; COLLECT() formulas and items with blank context are excluded and listed separately.
 
-**Verify**
+**Missing information.**
 
-- Modules export: no calculation module has a line item whose Applies To differs from the module's.
+- pages and views that show the copy under its own name
+- access boundaries and reporting contracts that justify a separate object
+
+**Next step.** Start with the group holding the most cells: check what shows the copy, then point its readers at the kept line item.
+
+**When keeping the current design is reasonable.** Different access (DCA or selective access) on the two modules, a reporting contract on the copy's name, or a page that needs the copy's summary setting are all reasons to keep both.
 
 **Evidence**
 
-| Model | Line item | Applies to | Module applies to | Readers |
-|---|---|---|---|---|
-| Caldergate FP&A | CAL01 Volumes.Launched? | Products | Products, Regions | 1 |
-| Workforce Planning | Calcs - Attrition.Leavers | Employees | Roles | 1 |
-
-### A17. Delete 1 empty module
-
-**Caldergate FP&A.** No line items. Usually a leftover from a build that moved on.
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 1 object | nothing in the exports | proven: Everything this action touches is in the exports. |
-
-**Steps**
-
-1. Delete.
-
-**Verify**
-
-- Modules export: none with an empty Line Items column.
-
-**Evidence**
-
-Caldergate FP&A: CAL09 Scenario Planning
-
-### A21. Split INP02 Opex Drivers (58 line items)
-
-**Caldergate FP&A.** Modules with many line items are slow to open and hard to read. Anaplan's checklist: no more than 50. Split by purpose, not by count.
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 1 object | 50 formulas, 1 export, pages: check | judgment: The exports show the shape; whether the change is right needs someone who knows the model. |
-
-**Steps**
-
-1. Group the line items by what reads them (the graph gives the groups).
-2. Move each group to a module named for its purpose; repoint readers.
-
-**Verify**
-
-- No module over 50 line items.
-
-**Evidence**
-
-Readers outside the module to repoint: 50.
-
-## Collapse copies and chains
-
-Line items that only copy another, and pass-through chains. Readers can read the source. 3 actions, biggest first; estimated reclaim 441K cells.
-
-| # | Do this | Model | Reclaims | Touches | Exports can prove |
+| Kept (most read) | Also computed as | Context | Summary methods | Redundant cells | Readers to repoint |
 |---|---|---|---|---|---|
-| A10 | [Collapse 15 line items that only copy another line item](#a10-collapse-15-line-items-that-only-copy-another-line-item) | Caldergate FP&A | 287K cells | 14 formulas, pages: check | check pages |
-| A11 | [Shorten 4 pass-through chains](#a11-shorten-4-pass-through-chains) | Caldergate FP&A | 153K cells | 4 formulas, pages: check | check pages |
-| A14 | [Collapse 4 line items that only copy another line item](#a14-collapse-4-line-items-that-only-copy-another-line-item) | Board Reporting | 576 cells | pages: check | check pages |
+| `CAL07 P&L by Cost Centre.Depreciation` | `OUT01 Management Pack.Depreciation` | Cost Centres; Month; All; NUMBER | SUM | 19.2K | 0 |
 
-### A10. Collapse 15 line items that only copy another line item
+Formulas (one per group):
 
-**Caldergate FP&A.** 15 line items have the formula `B = A` with the same dimensions as A. Each stores a second copy of A: 287K cells. Readers of B can read A directly. Some exist to give a page a friendlier name; those are the ones to keep.
+- `CAL07 P&L by Cost Centre.Depreciation`: `CAL10 Depreciation.Charge`
 
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 287K cells | 14 formulas, pages: check | check pages: Formulas, exports and imports are in the exports; pages and saved views are not. Check them before removing anything. |
+**Validation**
 
-**Steps**
+- Re-run this report: the group count falls; no page shows a blank; no export loses a column.
 
-1. Repoint each reader of the alias to the target (readers column).
-2. Keep an alias only where a page or export needs it under that name.
-3. Delete the rest.
+### F12. Same calculation made more than once under different names
 
-**Verify**
+Objects: `Calcs - Attrition.Headcount`
 
-- Cell count falls by up to 287K.
-- Re-run this report: the alias count falls to the ones kept on purpose.
-
-**Evidence**
-
-| Alias | Is just | Cells | Readers to repoint | Summary (alias / target) |
-|---|---|---|---|---|
-| CAL07 P&L by Cost Centre.Depreciation | CAL10 Depreciation.Charge | 19.2K | 1 | SUM / SUM |
-| CAL11 Reporting Prep.Revenue | CAL07 P&L by Cost Centre.Revenue | 19.2K | 1 | SUM / SUM |
-| CAL11 Reporting Prep.EBITDA | CAL07 P&L by Cost Centre.EBITDA | 19.2K | 1 | SUM / SUM |
-| CAL11 Reporting Prep.Opex | CAL07 P&L by Cost Centre.Opex | 19.2K | 2 | SUM / SUM |
-| CAL11 Reporting Prep.Staff Cost | CAL07 P&L by Cost Centre.Staff Cost | 19.2K | 2 | SUM / SUM |
-| OUT01 Management Pack.Revenue | CAL11 Reporting Prep.Revenue | 19.2K | 4 | SUM / SUM |
-| OUT01 Management Pack.EBITDA | CAL11 Reporting Prep.EBITDA | 19.2K | 2 | SUM / SUM |
-| OUT01 Management Pack.Opex | CAL11 Reporting Prep.Opex | 19.2K | 0 | SUM / SUM |
-| OUT01 Management Pack.Staff Cost | CAL11 Reporting Prep.Staff Cost | 19.2K | 0 | SUM / SUM |
-| OUT01 Management Pack.Total Cost | CAL11 Reporting Prep.Total Cost | 19.2K | 0 | SUM / SUM |
-| OUT01 Management Pack.Capex | INP04 Capex.Capex Spend | 19.2K | 0 | SUM / SUM |
-| OUT01 Management Pack.Depreciation | CAL10 Depreciation.Charge | 19.2K | 0 | SUM / SUM |
-| OUT01 Management Pack.Phased Drivers | CAL12 Driver Phasing.Total Phased | 19.2K | 0 | SUM / SUM |
-| OUT02 Board Pack.Revenue | OUT01 Management Pack.Revenue | 19.2K | 1 | SUM / SUM |
-| OUT02 Board Pack.EBITDA | OUT01 Management Pack.EBITDA | 19.2K | 0 | SUM / SUM |
-
-### A11. Shorten 4 pass-through chains
-
-**Caldergate FP&A.** A reads B reads C, each a pure copy. Every step recalculates on any change, and each intermediate is a stored copy. Anaplan's checklist: never.
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 153K cells | 4 formulas, pages: check | check pages: Formulas, exports and imports are in the exports; pages and saved views are not. Check them before removing anything. |
-
-**Steps**
-
-1. Point each head at the line item at the end of its chain.
-2. The intermediates then have no formula readers; treat them as aliases (previous action) and check pages before deleting.
-
-**Verify**
-
-- Re-run this report: pass-through chains reach zero.
-
-**Evidence**
-
-| Head | Steps | Reads, in the end |
-|---|---|---|
-| OUT01 Management Pack.Opex | 4 | CAL03 Opex.Opex GBP |
-| OUT01 Management Pack.Staff Cost | 4 | INP03 Headcount.Total Cost |
-| OUT02 Board Pack.Revenue | 4 | CAL07 P&L by Cost Centre.Revenue |
-| OUT02 Board Pack.EBITDA | 4 | CAL07 P&L by Cost Centre.EBITDA |
-
-### A14. Collapse 4 line items that only copy another line item
-
-**Board Reporting.** 4 line items have the formula `B = A` with the same dimensions as A. Each stores a second copy of A: 576 cells. Readers of B can read A directly. Some exist to give a page a friendlier name; those are the ones to keep.
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 576 cells | pages: check | check pages: Formulas, exports and imports are in the exports; pages and saved views are not. Check them before removing anything. |
-
-**Steps**
-
-1. Repoint each reader of the alias to the target (readers column).
-2. Keep an alias only where a page or export needs it under that name.
-3. Delete the rest.
-
-**Verify**
-
-- Cell count falls by up to 576.
-- Re-run this report: the alias count falls to the ones kept on purpose.
-
-**Evidence**
-
-| Alias | Is just | Cells | Readers to repoint | Summary (alias / target) |
-|---|---|---|---|---|
-| OUT01 Board Dashboard.Revenue | DAT02 Board Lines.Revenue | 144 | 0 | SUM / SUM |
-| OUT01 Board Dashboard.EBITDA | DAT02 Board Lines.EBITDA | 144 | 0 | SUM / SUM |
-| OUT01 Board Dashboard.Revenue per FTE | CAL01 KPIs.Revenue per FTE | 144 | 0 | SUM / FORMULA |
-| OUT01 Board Dashboard.Revenue Growth | CAL01 KPIs.Revenue Growth | 144 | 0 | SUM / FORMULA |
-
-## Clean up imports and exports
-
-Actions no process runs, or that have not run in a year. Document or delete. 1 action, biggest first; estimated reclaim 12 actions.
-
-| # | Do this | Model | Reclaims | Touches | Exports can prove |
-|---|---|---|---|---|---|
-| A5 | [Retire or schedule 12 imports and exports that no process runs or that have not run in a year](#a5-retire-or-schedule-12-imports-and-exports-that-no-process-runs-or-that-have-not-run-in-a-year) | 4 models | 12 actions | nothing in the exports | proven |
-
-### A5. Retire or schedule 12 imports and exports that no process runs or that have not run in a year
-
-**4 models.** 7 of them are both outside every process and stale. An action nobody schedules is either run by hand (document it) or dead (delete it). An import that was the only load into its target module takes the module with it; an import from a source that no longer exists (see external sources) is dead by definition.
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 12 actions | nothing in the exports | proven: Everything this action touches is in the exports. |
-
-**Steps**
-
-1. For each action, ask the owner: run by hand, or forgotten?
-2. Forgotten: delete the action; if it was the only import into its target module, that module joins the retire list.
-3. Run by hand: put it in a process with a name that says when.
-
-**Verify**
-
-- Actions export shows every import and export inside a process, each with a run date inside the window.
-
-**Evidence**
-
-| Model | Action | Last run | In a process | Target |
-|---|---|---|---|---|
-| Caldergate Data Hub | Import Products from PIM file | 2023-06-14 | no | DAT04 Product Master |
-| Caldergate Data Hub | Export Pipeline for Sales Ops | 2025-02-11 | no | DAT05 CRM Pipeline |
-| Caldergate Data Hub | Import Customers from Salesforce | recent | no | DAT07 Customer Master |
-| Caldergate FP&A | Import from Caldergate Hub v1 - Cost Centres | 2021-03-19 | no | SYS02 Cost Centre Attributes |
-| Caldergate FP&A | Import FX from Treasury file | 2023-11-02 | no | SYS05 FX Rates |
-| Caldergate FP&A | Export Opex Drivers to Excel | 2024-05-30 | no | INP02 Opex Drivers |
-| Caldergate FP&A | Export Assumptions for Workforce | recent | no | SYS00 Model Settings |
-| Caldergate FP&A | Import Budget from Excel | recent | no | INP02 Opex Drivers |
-| Workforce Planning | Import from Caldergate FP&A - Assumptions | 2022-08-17 | no | Inputs - Settings |
-| Workforce Planning | Export Leavers Report | 2024-12-19 | no | Calcs - Attrition |
-| Workforce Planning | Export Headcount by Department | recent | no | Reports - Headcount |
-| Board Reporting | Export Board Pack PDF Data | recent | no | OUT01 Board Dashboard |
-
-## Merge duplicate calculations
-
-The same calculation made twice under different names, and near-twins that differ in one place. 4 actions, biggest first; estimated reclaim 23.6K cells.
-
-| # | Do this | Model | Reclaims | Touches | Exports can prove |
-|---|---|---|---|---|---|
-| A13 | [Reconcile 6 pairs of formulas that differ in exactly one place](#a13-reconcile-6-pairs-of-formulas-that-differ-in-exactly-one-place) | Caldergate FP&A | 6 objects | nothing in the exports | judgment |
-| A15 | [Reconcile 3 pairs of formulas that differ in exactly one place](#a15-reconcile-3-pairs-of-formulas-that-differ-in-exactly-one-place) | Workforce Planning | 3 objects | nothing in the exports | judgment |
-| A18 | [Merge 1 line item that repeat a calculation already made (1 group)](#a18-merge-1-line-item-that-repeat-a-calculation-already-made-1-group) | Caldergate FP&A | 19.2K cells | pages: check | check pages |
-| A19 | [Merge 1 line item that repeat a calculation already made (1 group)](#a19-merge-1-line-item-that-repeat-a-calculation-already-made-1-group) | Workforce Planning | 4.5K cells | 1 formula, pages: check | check pages |
-
-### A13. Reconcile 6 pairs of formulas that differ in exactly one place
-
-**Caldergate FP&A.** Same formula skeleton, same dimensions, one leaf differs: a constant, a reference or a list item. This is what copy, paste and tweak leaves behind. Either the difference is intended (then the name should say so) or one of the pair is the stale copy.
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 6 objects | nothing in the exports | judgment: The exports show the shape; whether the change is right needs someone who knows the model. |
-
-**Steps**
-
-1. For each pair, read the difference column and decide: intended, or drift.
-2. Intended: rename so the difference is in the name, or add a note.
-3. Drift: fix the stale one, or merge as an exact duplicate.
-
-**Verify**
-
-- Re-run this report: pairs that were drift are gone; pairs that were intended carry a note.
-
-**Evidence**
-
-| Line item | Near twin | The one difference | Cells |
+| Importance | Evidence | Change complexity | Model |
 |---|---|---|---|
-| CAL03 Opex.Actual Opex | CAL05 Opex OLD.Actual | `SYS03 Account Attributes.Opex?` vs `SYS01 Time Settings.Actual?` | 5.0M |
-| CAL03 Opex.Opex GBP | CAL05 Opex OLD.Opex GBP | `CAL03 Opex.Opex` vs `CAL05 Opex OLD.Opex` | 5.0M |
-| CAL02 Revenue.Gross Revenue | CAL04 Margn.COGS | `INP01 Volumes.Price` vs `INP06 Unit Costs.Landed Cost` | 36.3K |
-| CAL01 Volumes.Sellable Units Prior Year | CAL02 Revenue.Revenue Prior Year | `CAL01 Volumes.Sellable Units` vs `CAL02 Revenue.Revenue GBP` | 36.3K |
-| CAL02 Revenue.Revenue GBP | CAL04 Margn.Margin GBP | `CAL02 Revenue.Net Revenue` vs `CAL04 Margn.Margin` | 36.3K |
-| CAL07 P&L by Cost Centre.Opex Budget | OUT02 Board Pack.Budget Revenue | `CAL07 P&L by Cost Centre.Opex` vs `OUT01 Management Pack.Revenue` | 19.2K |
+| low | confirmed | medium | Workforce Planning |
 
-### A15. Reconcile 3 pairs of formulas that differ in exactly one place
+**Observed.** 1 calculated line items in 1 groups have the same resolved formula and the same context (dimensions, time scale, time range, versions, data type, summary, formula scope) as another line item in the model. Together the copies hold 4.5K cells.
 
-**Workforce Planning.** Same formula skeleton, same dimensions, one leaf differs: a constant, a reference or a list item. This is what copy, paste and tweak leaves behind. Either the difference is intended (then the name should say so) or one of the pair is the stale copy.
+**Why it matters.** Two copies of one calculation drift apart when one is changed. Where a page or process needs the second name, the copy is doing a job; where it does not, readers can share one.
 
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 3 objects | nothing in the exports | judgment: The exports show the shape; whether the change is right needs someone who knows the model. |
+**Affected scope.** 1 line item in 1 group; 1 formulas would be re-pointed
 
-**Steps**
+**Potential benefit.** Footprint of the copies: 4.5K cells. Released only for copies that no page, view or process needs.
 
-1. For each pair, read the difference column and decide: intended, or drift.
-2. Intended: rename so the difference is in the name, or add a note.
-3. Drift: fix the stale one, or merge as an exact duplicate.
+**Evidence strength.** confirmed: Resolved formula text and every context field agree; COLLECT() formulas and items with blank context are excluded and listed separately.
 
-**Verify**
+**Missing information.**
 
-- Re-run this report: pairs that were drift are gone; pairs that were intended carry a note.
+- pages and views that show the copy under its own name
+- access boundaries and reporting contracts that justify a separate object
+
+**Next step.** Start with the group holding the most cells: check what shows the copy, then point its readers at the kept line item.
+
+**When keeping the current design is reasonable.** Different access (DCA or selective access) on the two modules, a reporting contract on the copy's name, or a page that needs the copy's summary setting are all reasons to keep both.
 
 **Evidence**
 
-| Line item | Near twin | The one difference | Cells |
-|---|---|---|---|
-| Calcs - Attrition.Headcount | zz Archive - 2021 Cost.Cost | `Data - Employees.FTE` vs `Calcs - Cost.Total Cost` | 4.5K |
-| Calcs - Attrition.Leavers by Role | zz Archive - 2021 Cost.Headcount | `Calcs - Attrition.Leavers` vs `Data - Employees.FTE` | 4.5K |
-| Calcs - Attrition.Leavers by Role | zz Archive - 2021 Cost.Cost | `Calcs - Attrition.Leavers` vs `Calcs - Cost.Total Cost` | 4.5K |
-
-### A18. Merge 1 line item that repeat a calculation already made (1 group)
-
-**Caldergate FP&A.** 1 calculated line items have the same resolved formula, dimensions, time scale and versions as another line item in the model. Each is computed and stored twice: 19.2K cells. The keeper in each group is the one most formulas already read.
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 19.2K cells | pages: check | check pages: Formulas, exports and imports are in the exports; pages and saved views are not. Check them before removing anything. |
-
-**Steps**
-
-1. For each group, keep the line item most formulas read (first column).
-2. Repoint every formula that reads a duplicate to the keeper (the readers count is in the table).
-3. Where the summary methods differ (last column), decide which one the pages need before merging; that is the one legitimate reason for two copies.
-4. Check pages for the duplicates, then delete them.
-
-**Verify**
-
-- Cell count falls by about 19.2K.
-- No page shows a blank; no export loses a column.
-- Re-run this report: the group count reaches zero.
-
-**Evidence**
-
-| Keep (most read) | Also computed as | Dimensions | Redundant cells | Summary methods |
-|---|---|---|---|---|
-| CAL07 P&L by Cost Centre.Depreciation | OUT01 Management Pack.Depreciation | Cost Centres | 19.2K | SUM |
-
-### A19. Merge 1 line item that repeat a calculation already made (1 group)
-
-**Workforce Planning.** 1 calculated line items have the same resolved formula, dimensions, time scale and versions as another line item in the model. Each is computed and stored twice: 4.5K cells. The keeper in each group is the one most formulas already read.
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 4.5K cells | 1 formula, pages: check | check pages: Formulas, exports and imports are in the exports; pages and saved views are not. Check them before removing anything. |
-
-**Steps**
-
-1. For each group, keep the line item most formulas read (first column).
-2. Repoint every formula that reads a duplicate to the keeper (the readers count is in the table).
-3. Where the summary methods differ (last column), decide which one the pages need before merging; that is the one legitimate reason for two copies.
-4. Check pages for the duplicates, then delete them.
-
-**Verify**
-
-- Cell count falls by about 4.5K.
-- No page shows a blank; no export loses a column.
-- Re-run this report: the group count reaches zero.
-
-**Evidence**
-
-| Keep (most read) | Also computed as | Dimensions | Redundant cells | Summary methods |
-|---|---|---|---|---|
-| Calcs - Attrition.Headcount | zz Archive - 2021 Cost.Headcount | Roles | 4.5K | SUM |
-
-## Fix formulas that error or strain
-
-Divisions with no zero guard, aggregate-and-lookup in one bracket, formulas the parser could not follow. 2 actions, biggest first; estimated reclaim 5 objects.
-
-| # | Do this | Model | Reclaims | Touches | Exports can prove |
+| Kept (most read) | Also computed as | Context | Summary methods | Redundant cells | Readers to repoint |
 |---|---|---|---|---|---|
-| A9 | [Guard 4 divisions that error on zero](#a9-guard-4-divisions-that-error-on-zero) | 3 models | 4 objects | nothing in the exports | proven |
-| A16 | [Split 1 formula that aggregate and look up in one bracket](#a16-split-1-formula-that-aggregate-and-look-up-in-one-bracket) | Caldergate FP&A | 1 object | nothing in the exports | proven |
+| `Calcs - Attrition.Headcount` | `zz Archive - 2021 Cost.Headcount` | Roles; Month; All; NUMBER | SUM | 4.5K | 1 |
 
-### A9. Guard 4 divisions that error on zero
+Formulas (one per group):
 
-**3 models.** A / B shows an error cell when B is zero, and every summary above it shows an error too. DIVIDE() returns zero. The replacement formula is written out; paste it.
+- `Calcs - Attrition.Headcount`: `'Data - Employees'.FTE[SUM: 'Data - Employees'.Role]`
 
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 4 objects | nothing in the exports | proven: Everything this action touches is in the exports. |
+**Validation**
 
-**Steps**
+- Re-run this report: the group count falls; no page shows a blank; no export loses a column.
 
-1. Paste the replacement formula from the table into each line item.
-2. Where a zero denominator should show blank rather than zero, wrap in IF instead.
+### F14. DIVIDE() where a zero divisor shows Infinity
 
-**Verify**
+Objects: `CAL01 Volume Summary.Average Order Value`
 
-- No error cells on the pages that show these line items at a total level.
-
-**Evidence**
-
-| Model | Line item | Replace with |
-|---|---|---|
-| Caldergate FP&A | CAL02 Revenue.Revenue per Unit | `DIVIDE(Net Revenue, CAL01 Volumes.Net Units)` |
-| Workforce Planning | Calcs - Attrition.Annualised Attrition | `DIVIDE(MOVINGSUM(Leavers by Role, -11, 0), Headcount)` |
-| Workforce Planning | Calcs - Attrition.Attrition % | `DIVIDE(Leavers by Role, Headcount)` |
-| Board Reporting | CAL01 KPIs.Revenue per FTE | `DIVIDE(DAT02 Board Lines.Revenue, FTE)` |
-
-### A16. Split 1 formula that aggregate and look up in one bracket
-
-**Caldergate FP&A.** SUM with LOOKUP or SELECT in one expression makes the engine build a large intermediate mapping. Anapedia: never combine them.
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 1 object | nothing in the exports | proven: Everything this action touches is in the exports. |
-
-**Steps**
-
-1. Aggregate into an intermediate line item first.
-2. Look up from the intermediate.
-
-**Verify**
-
-- Same values; calculation effort falls.
-
-**Evidence**
-
-| Model | Line item | Clause | Formula |
+| Importance | Evidence | Change complexity | Model |
 |---|---|---|---|
-| Caldergate FP&A | CAL06 Department Summary.Benchmark Opex | LOOKUP+SUM | `'CAL03 Opex'.Opex GBP[SUM: 'SYS02 Cost Centre Attributes'.Department, LOOKUP: 'SYS09 Department Sett` |
+| low | confirmed | low | Caldergate Data Hub |
 
-## Give shared logic one owner
+**Observed.** 1 formulas use DIVIDE(). Anaplan's documentation: "If the divisor is zero, the operator returns zero as the result (the DIVIDE function returns Infinity)." and "DIVIDE(50,0) returns Infinity; DIVIDE(-45,0) returns -Infinity."
 
-The same calculation in more than one model. Pick the owner; the others import it. 1 action, biggest first; estimated reclaim 8 objects.
+**Why it matters.** Neither behaviour is an error. Where a divisor can be zero, the page shows Infinity or NaN with DIVIDE() and zero with /. This is a display decision for the owner, not a defect.
 
-| # | Do this | Model | Reclaims | Touches | Exports can prove |
-|---|---|---|---|---|---|
-| A20 | [Give 8 calculations that exist in more than one model a single owner](#a20-give-8-calculations-that-exist-in-more-than-one-model-a-single-owner) | Estate | 8 objects | 3 models | judgment |
+**Affected scope.** 1 formula
 
-### A20. Give 8 calculations that exist in more than one model a single owner
+**Potential benefit.** not applicable
 
-**Estate.** The same line item, same formula, in more than one model. A change in one must be repeated in the others, and one day it is not. Caldergate FP&A holds the most copies; where a feed already exists, it can own the value and the others import it.
+**Evidence strength.** confirmed: Official documentation, consulted 2026-09-22; function calls parsed.
 
-| Reclaims | Touches | Exports can prove |
+**Next step.** Confirm for each whether Infinity or NaN is acceptable on the pages that show it; no change is needed where it is.
+
+**When keeping the current design is reasonable.** DIVIDE() is the right choice where a zero result would be misleading and Infinity signals a data gap.
+
+**Evidence**
+
+| Line item | Formula |
+|---|---|
+| `CAL01 Volume Summary.Average Order Value` | `DIVIDE(Revenue, Orders)` |
+
+### F17. Numeric literals inside formulas
+
+Objects: `CAL02 Revenue.Revenue USD`, `CAL02 Revenue.VAT`, `CAL08 Cash Flow.Debtors`, `CAL08 Cash Flow.Tax`, `CAL10 Depreciation.Charge`, `INP03 Headcount.Pension`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | confirmed | low | Caldergate FP&A |
+
+**Observed.** 6 formulas contain numeric literals other than the usual structural ones (0, 1, 12, 100 and the like). Most repeated: 1.27 (1), 0.2 (1), 30 (1), 0.25 (1), 10 (1).
+
+**Why it matters.** A literal that is an assumption (a rate, a threshold, a conversion) cannot be seen or changed without a builder. The same literal can mean different things in different formulas, so each occurrence needs its own reading before anything is shared.
+
+**Affected scope.** 6 formulas
+
+**Potential benefit.** not quantified from the exports
+
+**Evidence strength.** confirmed: Parsed numeric leaves.
+
+**Missing information.**
+
+- the meaning of each literal
+
+**Next step.** Read the formulas with the most repeated literal; where a literal is a business assumption, give it a named input with a note.
+
+**When keeping the current design is reasonable.** Structural numbers (months in a year, a unit conversion fixed by definition) are fine inline. Unrelated occurrences of the same value must not share one input.
+
+**Evidence**
+
+| Line item | Constants | Formula |
 |---|---|---|
-| 8 objects | 3 models | judgment: The exports show the shape; whether the change is right needs someone who knows the model. |
+| `CAL02 Revenue.Revenue USD` | 1.27 | `Revenue GBP * 1.27` |
+| `CAL02 Revenue.VAT` | 0.2 | `Net Revenue * 0.2` |
+| `CAL08 Cash Flow.Debtors` | 30 | `Revenue * 'INP05 Balance Sheet Drivers'.Debtor Days / 30` |
+| `CAL08 Cash Flow.Tax` | 0.25 | `IF EBITDA > 0 THEN EBITDA * 0.25 ELSE 0` |
+| `CAL10 Depreciation.Charge` | 10, 119, 120, 239 | `IF ISBLANK('INP04 Capex'.Asset Class) THEN 0 ELSE IF 'INP04 Capex'.Useful Life Years = 3 THEN MOVINGSUM('INP04 Capex'.Capex Spend, -35, 0) / 36 ELSE IF 'INP04 Capex'.Useful Life Years = 5 THEN MOVINGSUM('INP04 Capex'.Capex Spend, -59, 0) / 60 ELSE IF 'INP04 Capex'.Useful Life Years = 7 THEN MOVINGSUM('INP04 Capex'.Capex Spend, -83, 0) / 84 ELSE IF 'INP04 Capex'.Useful Life Years = 10 THEN MOVINGSUM('INP04 Capex'.Capex Spend, -119, 0) / 120 ELSE IF 'INP04 Capex'.Useful Life Years > 10 THEN MOVINGSUM('INP04 Capex'.Capex Spend, -239, 0) / 240 ELSE 'INP04 Capex'.Capex Spend / 12` |
+| `INP03 Headcount.Pension` | 0.05 | `Monthly Salary * 0.05` |
 
-**Steps**
+### F18. Subsidiary views used in calculation
 
-1. Pick the owner per line item (usually the hub).
-2. Add the line item to an export the other model already imports.
-3. Replace the copy with the imported value.
+Objects: `CAL01 Volumes.Launched?`
 
-**Verify**
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | confirmed | medium | Caldergate FP&A |
 
-- Re-run this report: the cross-model duplicate list is empty or annotated.
+**Observed.** 1 line items are dimensioned differently from their module and are read by formulas.
+
+**Why it matters.** The line item's dimensions are not visible at module level, so a reader can misjudge what a reference returns, and the engine maps between the two dimension sets on every read. Anaplan's checklist: display and export only.
+
+**Affected scope.** 1 line item; 1 readers
+
+**Potential benefit.** not quantified from the exports
+
+**Evidence strength.** confirmed: Line item Applies To versus module Applies To (Modules export).
+
+**Next step.** For each, decide whether a module dimensioned as the line item is would make its readers clearer.
+
+**When keeping the current design is reasonable.** A single small flag in an otherwise consistent module can be the least confusing option.
+
+**Evidence**
+
+| Line item | Applies to | Module applies to | Readers |
+|---|---|---|---|
+| `CAL01 Volumes.Launched?` | Products | Products, Regions | 1 |
+
+### F19. Module with more than 50 line items
+
+Objects: `INP02 Opex Drivers`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | confirmed | medium | Caldergate FP&A |
+
+**Observed.** `INP02 Opex Drivers` has 58 line items.
+
+**Why it matters.** Anaplan's checklist suggests reviewing modules above 50: many line items can mean mixed purposes. It can also be a deliberate input grid that users know.
+
+**Affected scope.** 1 module; 50 readers outside it; 1 export
+
+**Potential benefit.** not quantified from the exports
+
+**Evidence strength.** confirmed: Line item count.
+
+**Next step.** Group the line items by what reads them; if the groups have different purposes, consider a split. Reducing the count is not the goal.
+
+**When keeping the current design is reasonable.** A module users open as one grid is easier to keep as one grid.
+
+### F20. Modules with no line items
+
+Objects: `CAL09 Scenario Planning`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | confirmed | low | Caldergate FP&A |
+
+**Observed.** 1 modules have no line items.
+
+**Why it matters.** Usually a leftover from a build that moved on.
+
+**Affected scope.** 1 module
+
+**Potential benefit.** not applicable
+
+**Evidence strength.** confirmed: Line Items export.
+
+**Next step.** Confirm nothing is planned for them and delete.
+
+**When keeping the current design is reasonable.** A placeholder for planned work, if noted.
+
+### F21. Very long formulas
+
+Objects: `CAL03 Opex.Forecast Opex`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | confirmed | medium | Caldergate FP&A |
+
+**Observed.** 1 formulas exceed 120 tokens.
+
+**Why it matters.** Hard to review and to test. Anaplan's checklist: a formula should be explainable in one sentence.
+
+**Affected scope.** 1 formula
+
+**Potential benefit.** not quantified from the exports
+
+**Evidence strength.** confirmed: Token count.
+
+**Next step.** Add a note to each explaining what it does; split only where a named intermediate would help a reader.
+
+**When keeping the current design is reasonable.** A long formula that is correct, documented and rarely touched is a known quantity; splitting it has its own risk.
+
+**Evidence**
+
+| Line item | Tokens | Formula |
+|---|---|---|
+| `CAL03 Opex.Forecast Opex` | 133 | `IF ITEM(Accounts) = Accounts.'6100 Rent' THEN 'INP02 Opex Drivers'.Rent ELSE IF ITEM(Accounts) = Accounts.'6110 Rates' THEN 'INP02 Opex Drivers'.Business Rates ELSE IF ITEM(Accounts) = Accounts.'6120 Utilities' THEN 'INP02 Opex Drivers'.Utilities ELSE IF ITEM(Accounts) = Accounts.'6200 Travel' THEN 'INP02 Opex Drivers'.Travel ELSE IF ITEM(Accounts) = Accounts.'6210 Subsistence' THEN 'INP02 Opex Drivers'.Subsistence ELSE IF ITEM(Accounts) = Accounts.'6300 Marketing' THEN 'INP02 Opex Drivers'.Marketing Events ELSE IF ITEM(Accounts) = Accounts.'6310 Digital' THEN 'INP02 Opex Drivers'.Marketing Digital ELSE IF ITEM(Accounts) = Accounts.'6400 Software' THEN 'INP02 Opex Drivers'.Software Licences ELSE IF ITEM(Accounts) = Accounts.'6410 Hardware' THEN 'INP02 Opex Drivers'.Hardware ELSE IF ITEM(Accounts) = Accounts.'6500 Professional Fees' THEN 'INP02 Opex Drivers'.Consultancy ELSE IF ITEM(Accounts) = Accounts.'6510 Audit' THEN 'INP02 Opex Drivers'.Audit Fees ELSE IF ITEM(Accounts) = Accounts.'6600 Recruitment' THEN 'INP02 Opex Drivers'.Recruitment Fees ELSE 0` |
+
+### F22. Hard-coded time period or version selections
+
+Objects: `CAL07 P&L by Cost Centre.Opex Budget`, `OUT02 Board Pack.Budget Revenue`, `OUT02 Board Pack.Old Budget Revenue`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | confirmed | low | Caldergate FP&A |
+
+**Observed.** 3 formulas select a specific time period or version with SELECT.
+
+**Why it matters.** Anaplan's SELECT page: "We don't recommend the use of the SELECT function in conjunction with non-generic time periods.." The hard-coded element must be revisited when the timescale or versions change.
+
+**Affected scope.** 3 formulas
+
+**Potential benefit.** not quantified from the exports
+
+**Evidence strength.** confirmed: Parsed SELECT clauses.
+
+**Next step.** Where the period is a moving concept (current year, prior year), hold it in a time-formatted line item and use LOOKUP.
+
+**When keeping the current design is reasonable.** A fixed historical period (a base year that never moves) is legitimately hard-coded.
+
+**Evidence**
+
+| Line item | Selection | Formula |
+|---|---|---|
+| `CAL07 P&L by Cost Centre.Opex Budget` | SELECT: VERSIONS.Budget | `Opex[SELECT: VERSIONS.Budget]` |
+| `OUT02 Board Pack.Budget Revenue` | SELECT: VERSIONS.Budget | `'OUT01 Management Pack'.Revenue[SELECT: VERSIONS.Budget]` |
+| `OUT02 Board Pack.Old Budget Revenue` | SELECT: VERSIONS.Budget v2 DO NOT USE | `'OUT01 Management Pack'.Revenue[SELECT: VERSIONS.'Budget v2 DO NOT USE']` |
+
+### F23. DIVIDE() where a zero divisor shows Infinity
+
+Objects: `CAL01 Volumes.Volume Growth`, `CAL02 Revenue.Average Price`, `CAL02 Revenue.Revenue Growth`, `CAL04 Margn.Margin %`, `CAL06 Department Summary.Cost per FTE`, `CAL07 P&L by Cost Centre.EBITDA Margin`, `OUT02 Board Pack.Revenue Variance %`, `SYS05 FX Rates.Rate Movement`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | confirmed | low | Caldergate FP&A |
+
+**Observed.** 8 formulas use DIVIDE(). Anaplan's documentation: "If the divisor is zero, the operator returns zero as the result (the DIVIDE function returns Infinity)." and "DIVIDE(50,0) returns Infinity; DIVIDE(-45,0) returns -Infinity."
+
+**Why it matters.** Neither behaviour is an error. Where a divisor can be zero, the page shows Infinity or NaN with DIVIDE() and zero with /. This is a display decision for the owner, not a defect.
+
+**Affected scope.** 8 formulas
+
+**Potential benefit.** not applicable
+
+**Evidence strength.** confirmed: Official documentation, consulted 2026-09-22; function calls parsed.
+
+**Next step.** Confirm for each whether Infinity or NaN is acceptable on the pages that show it; no change is needed where it is.
+
+**When keeping the current design is reasonable.** DIVIDE() is the right choice where a zero result would be misleading and Infinity signals a data gap.
+
+**Evidence**
+
+| Line item | Formula |
+|---|---|
+| `CAL01 Volumes.Volume Growth` | `DIVIDE(Sellable Units - Sellable Units Prior Year, Sellable Units Prior Year)` |
+| `CAL02 Revenue.Average Price` | `DIVIDE(Net Revenue, 'CAL01 Volumes'.Net Units)` |
+| `CAL02 Revenue.Revenue Growth` | `DIVIDE(Revenue GBP - Revenue Prior Year, Revenue Prior Year)` |
+| `CAL04 Margn.Margin %` | `DIVIDE(Margin, 'CAL02 Revenue'.Net Revenue)` |
+| `CAL06 Department Summary.Cost per FTE` | `DIVIDE(Opex + Staff Cost, FTE)` |
+| `CAL07 P&L by Cost Centre.EBITDA Margin` | `DIVIDE(EBITDA, Revenue)` |
+| `OUT02 Board Pack.Revenue Variance %` | `DIVIDE(Revenue Variance, Budget Revenue)` |
+| `SYS05 FX Rates.Rate Movement` | `DIVIDE(Rate to GBP - Rate to GBP Prior, Rate to GBP Prior)` |
+
+### F25. Numeric literals inside formulas
+
+Objects: `Calcs - Attrition.Annualised Attrition`, `Calcs - Cost.Bonus`, `Calcs - Headcount by CC.Bonus %`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | confirmed | low | Workforce Planning |
+
+**Observed.** 3 formulas contain numeric literals other than the usual structural ones (0, 1, 12, 100 and the like). Most repeated: 0.1 (2), 11 (1).
+
+**Why it matters.** A literal that is an assumption (a rate, a threshold, a conversion) cannot be seen or changed without a builder. The same literal can mean different things in different formulas, so each occurrence needs its own reading before anything is shared.
+
+**Affected scope.** 3 formulas
+
+**Potential benefit.** not quantified from the exports
+
+**Evidence strength.** confirmed: Parsed numeric leaves.
+
+**Missing information.**
+
+- the meaning of each literal
+
+**Next step.** Read the formulas with the most repeated literal; where a literal is a business assumption, give it a named input with a note.
+
+**When keeping the current design is reasonable.** Structural numbers (months in a year, a unit conversion fixed by definition) are fine inline. Unrelated occurrences of the same value must not share one input.
+
+**Evidence**
+
+| Line item | Constants | Formula |
+|---|---|---|
+| `Calcs - Attrition.Annualised Attrition` | 11 | `MOVINGSUM(Leavers by Role, -11, 0) / Headcount` |
+| `Calcs - Cost.Bonus` | 0.1 | `Inflated Salary * 0.1` |
+| `Calcs - Headcount by CC.Bonus %` | 0.1 | `0.1` |
+
+### F26. Subsidiary views used in calculation
+
+Objects: `Calcs - Attrition.Leavers`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | confirmed | medium | Workforce Planning |
+
+**Observed.** 1 line items are dimensioned differently from their module and are read by formulas.
+
+**Why it matters.** The line item's dimensions are not visible at module level, so a reader can misjudge what a reference returns, and the engine maps between the two dimension sets on every read. Anaplan's checklist: display and export only.
+
+**Affected scope.** 1 line item; 1 readers
+
+**Potential benefit.** not quantified from the exports
+
+**Evidence strength.** confirmed: Line item Applies To versus module Applies To (Modules export).
+
+**Next step.** For each, decide whether a module dimensioned as the line item is would make its readers clearer.
+
+**When keeping the current design is reasonable.** A single small flag in an otherwise consistent module can be the least confusing option.
+
+**Evidence**
+
+| Line item | Applies to | Module applies to | Readers |
+|---|---|---|---|
+| `Calcs - Attrition.Leavers` | Employees | Roles | 1 |
+
+### F27. Hard-coded time period or version selections
+
+Objects: `Reports - Headcount.FTE Budget`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | confirmed | low | Workforce Planning |
+
+**Observed.** 1 formulas select a specific time period or version with SELECT.
+
+**Why it matters.** Anaplan's SELECT page: "We don't recommend the use of the SELECT function in conjunction with non-generic time periods.." The hard-coded element must be revisited when the timescale or versions change.
+
+**Affected scope.** 1 formula
+
+**Potential benefit.** not quantified from the exports
+
+**Evidence strength.** confirmed: Parsed SELECT clauses.
+
+**Next step.** Where the period is a moving concept (current year, prior year), hold it in a time-formatted line item and use LOOKUP.
+
+**When keeping the current design is reasonable.** A fixed historical period (a base year that never moves) is legitimately hard-coded.
+
+**Evidence**
+
+| Line item | Selection | Formula |
+|---|---|---|
+| `Reports - Headcount.FTE Budget` | SELECT: VERSIONS.Budget | `FTE[SELECT: VERSIONS.Budget]` |
+
+### F28. DIVIDE() where a zero divisor shows Infinity
+
+Objects: `Calcs - Headcount by CC.Average Salary`, `Reports - Headcount.Cost per FTE`, `zz Archive - 2021 Cost.Cost per Head`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | confirmed | low | Workforce Planning |
+
+**Observed.** 3 formulas use DIVIDE(). Anaplan's documentation: "If the divisor is zero, the operator returns zero as the result (the DIVIDE function returns Infinity)." and "DIVIDE(50,0) returns Infinity; DIVIDE(-45,0) returns -Infinity."
+
+**Why it matters.** Neither behaviour is an error. Where a divisor can be zero, the page shows Infinity or NaN with DIVIDE() and zero with /. This is a display decision for the owner, not a defect.
+
+**Affected scope.** 3 formulas
+
+**Potential benefit.** not applicable
+
+**Evidence strength.** confirmed: Official documentation, consulted 2026-09-22; function calls parsed.
+
+**Next step.** Confirm for each whether Infinity or NaN is acceptable on the pages that show it; no change is needed where it is.
+
+**When keeping the current design is reasonable.** DIVIDE() is the right choice where a zero result would be misleading and Infinity signals a data gap.
+
+**Evidence**
+
+| Line item | Formula |
+|---|---|
+| `Calcs - Headcount by CC.Average Salary` | `DIVIDE(Salary, FTE)` |
+| `Reports - Headcount.Cost per FTE` | `DIVIDE(Total Cost, FTE)` |
+| `zz Archive - 2021 Cost.Cost per Head` | `DIVIDE(Cost, Headcount)` |
+
+### F29. DIVIDE() where a zero divisor shows Infinity
+
+Objects: `CAL01 KPIs.EBITDA Margin`, `CAL01 KPIs.Opex Ratio`, `CAL01 KPIs.Revenue Growth`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | confirmed | low | Board Reporting |
+
+**Observed.** 3 formulas use DIVIDE(). Anaplan's documentation: "If the divisor is zero, the operator returns zero as the result (the DIVIDE function returns Infinity)." and "DIVIDE(50,0) returns Infinity; DIVIDE(-45,0) returns -Infinity."
+
+**Why it matters.** Neither behaviour is an error. Where a divisor can be zero, the page shows Infinity or NaN with DIVIDE() and zero with /. This is a display decision for the owner, not a defect.
+
+**Affected scope.** 3 formulas
+
+**Potential benefit.** not applicable
+
+**Evidence strength.** confirmed: Official documentation, consulted 2026-09-22; function calls parsed.
+
+**Next step.** Confirm for each whether Infinity or NaN is acceptable on the pages that show it; no change is needed where it is.
+
+**When keeping the current design is reasonable.** DIVIDE() is the right choice where a zero result would be misleading and Infinity signals a data gap.
+
+**Evidence**
+
+| Line item | Formula |
+|---|---|
+| `CAL01 KPIs.EBITDA Margin` | `DIVIDE('DAT02 Board Lines'.EBITDA, 'DAT02 Board Lines'.Revenue)` |
+| `CAL01 KPIs.Opex Ratio` | `DIVIDE('DAT01 P&L'.Opex, 'DAT01 P&L'.Revenue)` |
+| `CAL01 KPIs.Revenue Growth` | `DIVIDE('DAT02 Board Lines'.Revenue - Revenue Prior Year, Revenue Prior Year)` |
+
+### F35. Summary methods on large line items no formula reads
+
+Objects: `DAT05 CRM Pipeline.Weighted Pipeline`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | partial | low | Caldergate Data Hub |
+
+**Observed.** 1 number line items with 10,000 cells or more have a summary method set and no formula reader.
+
+**Why it matters.** Summaries are calculated on every parent of every dimension. Only a page or export could need the totals; the exports cannot show whether one does.
+
+**Affected scope.** 1 line item
+
+**Potential benefit.** not quantified from the exports
+
+**Evidence strength.** partial: Summary column and parsed references; pages not in the export.
+
+**Missing information.**
+
+- pages and exports that show totals for each line item
+
+**Next step.** Check the largest ones on their pages; where no total is shown, set the summary to None.
+
+**When keeping the current design is reasonable.** A total a page shows is the reason the summary is on.
+
+**Evidence**
+
+| Line item | Summary | Cells |
+|---|---|---|
+| `DAT05 CRM Pipeline.Weighted Pipeline` | SUM | 17.3K |
+
+### F37. Summary methods on large line items no formula reads
+
+Objects: `CAL01 Volumes.Volume Growth`, `CAL02 Revenue.Average Price`, `CAL02 Revenue.Revenue Growth`, `CAL02 Revenue.Revenue USD`, `CAL02 Revenue.Revenue per Unit`, `CAL02 Revenue.VAT`, `CAL03 Opex.Opex Variance`, `CAL04 Margn.Margin %`, `CAL04 Margn.Margin GBP`, `CAL05 Opex OLD.Opex Cumulative`, `CAL05 Opex OLD.Opex Run Rate`, `CAL07 P&L by Cost Centre.EBIT`, `CAL07 P&L by Cost Centre.EBITDA Margin`, `CAL07 P&L by Cost Centre.Opex Variance to Budget`, `CAL10 Depreciation.NBV`, `DAT02 Actuals Volumes.Revenue Actual`, `INP02 Opex Drivers.Check`, `INP02 Opex Drivers.Driver Count`, `OUT01 Management Pack.Capex`, `OUT01 Management Pack.Depreciation`, `OUT01 Management Pack.EBITDA YTD`, `OUT01 Management Pack.Headcount`, `OUT01 Management Pack.Opex`, `OUT01 Management Pack.Phased Drivers`, `OUT01 Management Pack.Revenue YTD`, `OUT01 Management Pack.Staff Cost`, `OUT01 Management Pack.Total Cost`, `OUT02 Board Pack.EBITDA`, `OUT02 Board Pack.Old Budget Revenue`, `OUT02 Board Pack.Revenue Variance %`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | partial | low | Caldergate FP&A |
+
+**Observed.** 30 number line items with 10,000 cells or more have a summary method set and no formula reader.
+
+**Why it matters.** Summaries are calculated on every parent of every dimension. Only a page or export could need the totals; the exports cannot show whether one does.
+
+**Affected scope.** 30 line items
+
+**Potential benefit.** not quantified from the exports
+
+**Evidence strength.** partial: Summary column and parsed references; pages not in the export.
+
+**Missing information.**
+
+- pages and exports that show totals for each line item
+
+**Next step.** Check the largest ones on their pages; where no total is shown, set the summary to None.
+
+**When keeping the current design is reasonable.** A total a page shows is the reason the summary is on.
+
+**Evidence**
+
+| Line item | Summary | Cells |
+|---|---|---|
+| `CAL01 Volumes.Volume Growth` | FORMULA | 36.3K |
+| `CAL02 Revenue.Average Price` | FORMULA | 36.3K |
+| `CAL02 Revenue.Revenue Growth` | FORMULA | 36.3K |
+| `CAL02 Revenue.Revenue USD` | SUM | 36.3K |
+| `CAL02 Revenue.Revenue per Unit` | FORMULA | 36.3K |
+| `CAL02 Revenue.VAT` | SUM | 36.3K |
+| `CAL03 Opex.Opex Variance` | SUM | 5.0M |
+| `CAL04 Margn.Margin %` | FORMULA | 36.3K |
+| `CAL04 Margn.Margin GBP` | SUM | 36.3K |
+| `CAL05 Opex OLD.Opex Cumulative` | SUM | 5.0M |
+| `CAL05 Opex OLD.Opex Run Rate` | SUM | 5.0M |
+| `CAL07 P&L by Cost Centre.EBIT` | SUM | 19.2K |
+| `CAL07 P&L by Cost Centre.EBITDA Margin` | FORMULA | 19.2K |
+| `CAL07 P&L by Cost Centre.Opex Variance to Budget` | SUM | 19.2K |
+| `CAL10 Depreciation.NBV` | SUM;time=CLOSING_BALANCE | 19.2K |
+| `DAT02 Actuals Volumes.Revenue Actual` | SUM | 36.3K |
+| `INP02 Opex Drivers.Check` | SUM | 19.2K |
+| `INP02 Opex Drivers.Driver Count` | SUM | 19.2K |
+| `OUT01 Management Pack.Capex` | SUM | 19.2K |
+| `OUT01 Management Pack.Depreciation` | SUM | 19.2K |
+| `OUT01 Management Pack.EBITDA YTD` | SUM | 19.2K |
+| `OUT01 Management Pack.Headcount` | SUM | 19.2K |
+| `OUT01 Management Pack.Opex` | SUM | 19.2K |
+| `OUT01 Management Pack.Phased Drivers` | SUM | 19.2K |
+| `OUT01 Management Pack.Revenue YTD` | SUM | 19.2K |
+| `OUT01 Management Pack.Staff Cost` | SUM | 19.2K |
+| `OUT01 Management Pack.Total Cost` | SUM | 19.2K |
+| `OUT02 Board Pack.EBITDA` | SUM | 19.2K |
+| `OUT02 Board Pack.Old Budget Revenue` | SUM | 19.2K |
+| `OUT02 Board Pack.Revenue Variance %` | FORMULA | 19.2K |
+
+### F39. Summary methods on large line items no formula reads
+
+Objects: `Calcs - Headcount by CC.Average Salary`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | partial | low | Workforce Planning |
+
+**Observed.** 1 number line items with 10,000 cells or more have a summary method set and no formula reader.
+
+**Why it matters.** Summaries are calculated on every parent of every dimension. Only a page or export could need the totals; the exports cannot show whether one does.
+
+**Affected scope.** 1 line item
+
+**Potential benefit.** not quantified from the exports
+
+**Evidence strength.** partial: Summary column and parsed references; pages not in the export.
+
+**Missing information.**
+
+- pages and exports that show totals for each line item
+
+**Next step.** Check the largest ones on their pages; where no total is shown, set the summary to None.
+
+**When keeping the current design is reasonable.** A total a page shows is the reason the summary is on.
+
+**Evidence**
+
+| Line item | Summary | Cells |
+|---|---|---|
+| `Calcs - Headcount by CC.Average Salary` | FORMULA | 594K |
+
+### F41. Summary methods on large line items no formula reads
+
+Objects: `DAT01 P&L.COGS`, `DAT01 P&L.Depreciation`, `DAT01 P&L.EBIT`, `DAT01 P&L.EBITDA`, `DAT01 P&L.Staff Cost`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | partial | low | Board Reporting |
+
+**Observed.** 5 number line items with 10,000 cells or more have a summary method set and no formula reader.
+
+**Why it matters.** Summaries are calculated on every parent of every dimension. Only a page or export could need the totals; the exports cannot show whether one does.
+
+**Affected scope.** 5 line items
+
+**Potential benefit.** not quantified from the exports
+
+**Evidence strength.** partial: Summary column and parsed references; pages not in the export.
+
+**Missing information.**
+
+- pages and exports that show totals for each line item
+
+**Next step.** Check the largest ones on their pages; where no total is shown, set the summary to None.
+
+**When keeping the current design is reasonable.** A total a page shows is the reason the summary is on.
+
+**Evidence**
+
+| Line item | Summary | Cells |
+|---|---|---|
+| `DAT01 P&L.COGS` | SUM | 19.2K |
+| `DAT01 P&L.Depreciation` | SUM | 19.2K |
+| `DAT01 P&L.EBIT` | SUM | 19.2K |
+| `DAT01 P&L.EBITDA` | SUM | 19.2K |
+| `DAT01 P&L.Staff Cost` | SUM | 19.2K |
+
+### F43. Formulas that differ in exactly one place
+
+Objects: `CAL03 Opex.Actual Opex`, `CAL03 Opex.Opex GBP`, `CAL02 Revenue.Gross Revenue`, `CAL01 Volumes.Sellable Units Prior Year`, `CAL02 Revenue.Revenue GBP`, `CAL07 P&L by Cost Centre.Opex Budget`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | inferred | low | Caldergate FP&A |
+
+**Observed.** 6 pairs of line items in different modules share a formula skeleton and context and differ in one leaf: a constant, a reference or a list item.
+
+**Why it matters.** This is what copy, paste and tweak leaves behind. The difference may be exactly the point (a different rate, a different driver) or drift between two versions of one rule. The exports cannot say which.
+
+**Affected scope.** 6 pairs
+
+**Potential benefit.** not quantified from the exports
+
+**Evidence strength.** inferred: Structural comparison of parsed formulas; intent is not in the export.
+
+**Missing information.**
+
+- the reason for each difference (notes are mostly blank)
+
+**Next step.** Read the difference column for the largest pairs; where the difference is intended, put it in the line item name or a note.
+
+**When keeping the current design is reasonable.** A one-leaf difference is often the whole business rule. Neither side is presumed stale.
+
+**Evidence**
+
+| Line item | Near twin | The one difference | Formula A | Formula B |
+|---|---|---|---|---|
+| `CAL03 Opex.Actual Opex` | `CAL05 Opex OLD.Actual` | `SYS03 Account Attributes.Opex?` vs `SYS01 Time Settings.Actual?` | `IF 'SYS03 Account Attributes'.Opex? THEN 'DAT01 Actuals GL'.Amount ELSE 0` | `IF 'SYS01 Time Settings'.Actual? THEN 'DAT01 Actuals GL'.Amount ELSE 0` |
+| `CAL03 Opex.Opex GBP` | `CAL05 Opex OLD.Opex GBP` | `CAL03 Opex.Opex` vs `CAL05 Opex OLD.Opex` | `Opex * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS02 Cost Centre Attributes'.Currency]` | `Opex * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS02 Cost Centre Attributes'.Currency]` |
+| `CAL02 Revenue.Gross Revenue` | `CAL04 Margn.COGS` | `INP01 Volumes.Price` vs `INP06 Unit Costs.Landed Cost` | `'CAL01 Volumes'.Sellable Units * 'INP01 Volumes'.Price` | `'CAL01 Volumes'.Sellable Units * 'INP06 Unit Costs'.Landed Cost` |
+| `CAL01 Volumes.Sellable Units Prior Year` | `CAL02 Revenue.Revenue Prior Year` | `CAL01 Volumes.Sellable Units` vs `CAL02 Revenue.Revenue GBP` | `LAG(Sellable Units, 12, 0)` | `LAG(Revenue GBP, 12, 0)` |
+| `CAL02 Revenue.Revenue GBP` | `CAL04 Margn.Margin GBP` | `CAL02 Revenue.Net Revenue` vs `CAL04 Margn.Margin` | `Net Revenue * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS06 Region Attributes'.Currency]` | `Margin * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS06 Region Attributes'.Currency]` |
+| `CAL07 P&L by Cost Centre.Opex Budget` | `OUT02 Board Pack.Budget Revenue` | `CAL07 P&L by Cost Centre.Opex` vs `OUT01 Management Pack.Revenue` | `Opex[SELECT: VERSIONS.Budget]` | `'OUT01 Management Pack'.Revenue[SELECT: VERSIONS.Budget]` |
+
+### F44. Formulas that differ in exactly one place
+
+Objects: `Calcs - Attrition.Headcount`, `Calcs - Attrition.Leavers by Role`, `Calcs - Attrition.Leavers by Role`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | inferred | low | Workforce Planning |
+
+**Observed.** 3 pairs of line items in different modules share a formula skeleton and context and differ in one leaf: a constant, a reference or a list item.
+
+**Why it matters.** This is what copy, paste and tweak leaves behind. The difference may be exactly the point (a different rate, a different driver) or drift between two versions of one rule. The exports cannot say which.
+
+**Affected scope.** 3 pairs
+
+**Potential benefit.** not quantified from the exports
+
+**Evidence strength.** inferred: Structural comparison of parsed formulas; intent is not in the export.
+
+**Missing information.**
+
+- the reason for each difference (notes are mostly blank)
+
+**Next step.** Read the difference column for the largest pairs; where the difference is intended, put it in the line item name or a note.
+
+**When keeping the current design is reasonable.** A one-leaf difference is often the whole business rule. Neither side is presumed stale.
+
+**Evidence**
+
+| Line item | Near twin | The one difference | Formula A | Formula B |
+|---|---|---|---|---|
+| `Calcs - Attrition.Headcount` | `zz Archive - 2021 Cost.Cost` | `Data - Employees.FTE` vs `Calcs - Cost.Total Cost` | `'Data - Employees'.FTE[SUM: 'Data - Employees'.Role]` | `'Calcs - Cost'.Total Cost[SUM: 'Data - Employees'.Role]` |
+| `Calcs - Attrition.Leavers by Role` | `zz Archive - 2021 Cost.Headcount` | `Calcs - Attrition.Leavers` vs `Data - Employees.FTE` | `Leavers[SUM: 'Data - Employees'.Role]` | `'Data - Employees'.FTE[SUM: 'Data - Employees'.Role]` |
+| `Calcs - Attrition.Leavers by Role` | `zz Archive - 2021 Cost.Cost` | `Calcs - Attrition.Leavers` vs `Calcs - Cost.Total Cost` | `Leavers[SUM: 'Data - Employees'.Role]` | `'Calcs - Cost'.Total Cost[SUM: 'Data - Employees'.Role]` |
+
+### F45. Same line item name and formula in more than one model
+
+Objects: `COGS?`, `Current Period?`, `Employer NI`, `Group`, `Opex?`, `Revenue?`, `Sign`, `Working Days`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | inferred | medium | Estate |
+
+**Observed.** 8 line items appear in more than one model with the same name and the same formula tree.
+
+**Why it matters.** The same text can operate on different local data (a filter over a local list, a local rate), so identical formulas are not automatically one calculation. Where they are one calculation, a change must be made in each copy.
+
+**Affected scope.** 8 line items across 3 models
+
+**Potential benefit.** not quantified from the exports
+
+**Evidence strength.** inferred: Name and formula text only; the referenced objects live in different models.
+
+**Missing information.**
+
+- whether the referenced lists and modules hold the same data in each model
+- which model is the source of truth for each
+
+**Next step.** Pick the copies that are genuinely one rule and record where it is owned; leave local filters and formatting where they are.
+
+**When keeping the current design is reasonable.** A rule that must be evaluated locally in each model (a filter, a format, a local flag) is right to repeat.
 
 **Evidence**
 
 | Line item | Models | Formula |
 |---|---|---|
-| COGS? | Caldergate Data Hub, Caldergate FP&A | `(Account Type = Account Types.COGS)` |
-| Current Period? | Caldergate Data Hub, Caldergate FP&A | `(ITEM(Time) = SYS00 Model Settings.Current Period)` |
-| Employer NI | Caldergate FP&A, Workforce Planning | `(IF (Monthly Salary > NI Threshold) THEN ((Monthly Salary - NI Threshold) * NI R` |
-| Group | Caldergate Data Hub, Caldergate FP&A | `PARENT(ITEM(Cost Centres))` |
-| Opex? | Caldergate Data Hub, Caldergate FP&A | `(Account Type = Account Types.Opex)` |
-| Revenue? | Caldergate Data Hub, Caldergate FP&A | `(Account Type = Account Types.Revenue)` |
-| Sign | Caldergate Data Hub, Caldergate FP&A | `(IF 'Revenue?' THEN -1 ELSE 1)` |
-| Working Days | Caldergate FP&A, Workforce Planning | `(Days in Month - Weekend Days - Bank Holidays)` |
+| `COGS?` | Caldergate Data Hub, Caldergate FP&A | `(Account Type = Account Types.COGS)` |
+| `Current Period?` | Caldergate Data Hub, Caldergate FP&A | `(ITEM(Time) = SYS00 Model Settings.Current Period)` |
+| `Employer NI` | Caldergate FP&A, Workforce Planning | `(IF (Monthly Salary > NI Threshold) THEN ((Monthly Salary - NI Threshold) * NI Rate) ELSE 0)` |
+| `Group` | Caldergate Data Hub, Caldergate FP&A | `PARENT(ITEM(Cost Centres))` |
+| `Opex?` | Caldergate Data Hub, Caldergate FP&A | `(Account Type = Account Types.Opex)` |
+| `Revenue?` | Caldergate Data Hub, Caldergate FP&A | `(Account Type = Account Types.Revenue)` |
+| `Sign` | Caldergate Data Hub, Caldergate FP&A | `(IF 'Revenue?' THEN -1 ELSE 1)` |
+| `Working Days` | Caldergate FP&A, Workforce Planning | `(Days in Month - Weekend Days - Bank Holidays)` |
 
+## Integration and operational review
 
-# The estate
+Imports, exports and processes: what runs, what has no recorded run, what feeds what.
 
-## The estate at a glance
+### F36. Imports and exports with no recent recorded run or outside every process
 
-| Model | Modules | Line items | Calculated | Cells | Parse | Imports | Exports | Processes | Latest run | Patterns |
-|---|---|---|---|---|---|---|---|---|---|---|
-| Caldergate Data Hub | 12 | 63 | 28 | 8.1M | 100.0% | 8 | 6 | 14 | 2026-09-21 | 5 |
-| Caldergate FP&A | 30 | 278 | 171 | 130M | 100.0% | 10 | 4 | 15 | 2026-09-08 | 51 |
-| Workforce Planning | 9 | 55 | 36 | 6.3M | 100.0% | 3 | 3 | 5 | 2026-09-08 | 14 |
-| Board Reporting | 7 | 30 | 13 | 138K | 100.0% | 3 | 1 | 4 | 2026-09-08 | 3 |
+Objects: `Export Pipeline for Sales Ops`, `Import Customers from Salesforce`, `Import Products from PIM file`
 
-## How the models connect (inferred)
-
-| From | To | Import actions | Into (sample) | Named as |
-|---|---|---|---|---|
-| Caldergate Data Hub | Caldergate FP&A | 5 | DAT01 Actuals GL, DAT02 Actuals Volumes, SYS02 Cost Centre Attributes, SYS04 Product Attributes | Caldergate Data Hub |
-| Caldergate FP&A | Board Reporting | 2 | DAT01 P&L, DAT02 Board Lines | Caldergate FP&A |
-| Workforce Planning | Caldergate FP&A | 1 | INP03 Headcount | Workforce Planning |
-| Caldergate Data Hub | Workforce Planning | 1 | Data - Cost Centre Map | Caldergate Data Hub |
-| Caldergate FP&A | Workforce Planning | 1 | Inputs - Settings | Caldergate FP&A |
-| Workforce Planning | Board Reporting | 1 | DAT03 Headcount | Workforce Planning |
-
-```mermaid
-flowchart LR
-  M0["Caldergate Data Hub"]
-  M1["Caldergate FP&A"]
-  M2["Workforce Planning"]
-  M3["Board Reporting"]
-  M0 -->|5| M1
-  M1 -->|2| M3
-  M2 -->|1| M1
-  M0 -->|1| M2
-  M1 -->|1| M2
-  M2 -->|1| M3
-```
-
-External sources named in import actions (not a model in this set):
-
-- **NetSuite**: 3 action(s), e.g. Caldergate Data Hub: Import GL from NetSuite
-- **Salesforce**: 3 action(s), e.g. Caldergate Data Hub: Import Orders from Salesforce
-- **Workday**: 2 action(s), e.g. Caldergate Data Hub: Import Employees from Workday
-- **PIM file**: 1 action(s), e.g. Caldergate Data Hub: Import Products from PIM file
-- **Treasury file**: 1 action(s), e.g. Caldergate FP&A: Import FX from Treasury file
-- **Caldergate Hub v1**: 1 action(s), e.g. Caldergate FP&A: Import from Caldergate Hub v1 - Cost Centres
-- **Excel**: 1 action(s), e.g. Caldergate FP&A: Import Budget from Excel
-
-## Logic duplicated across models
-
-Same line item name with the same formula tree in more than one model. One change must be made in each.
-
-| Line item | Models | Copies | Formula |
+| Importance | Evidence | Change complexity | Model |
 |---|---|---|---|
-| COGS? | Caldergate Data Hub, Caldergate FP&A | 2 | `(Account Type = Account Types.COGS)` |
-| Current Period? | Caldergate Data Hub, Caldergate FP&A | 2 | `(ITEM(Time) = SYS00 Model Settings.Current Period)` |
-| Employer NI | Caldergate FP&A, Workforce Planning | 2 | `(IF (Monthly Salary > NI Threshold) THEN ((Monthly Salary - NI Threshold) * NI Rate) ELSE ` |
-| Group | Caldergate Data Hub, Caldergate FP&A | 2 | `PARENT(ITEM(Cost Centres))` |
-| Opex? | Caldergate Data Hub, Caldergate FP&A | 2 | `(Account Type = Account Types.Opex)` |
-| Revenue? | Caldergate Data Hub, Caldergate FP&A | 2 | `(Account Type = Account Types.Revenue)` |
-| Sign | Caldergate Data Hub, Caldergate FP&A | 2 | `(IF 'Revenue?' THEN -1 ELSE 1)` |
-| Working Days | Caldergate FP&A, Workforce Planning | 2 | `(Days in Month - Weekend Days - Bank Holidays)` |
+| low | partial | low | Caldergate Data Hub |
+
+**Observed.** Actions export snapshot: latest recorded run 2026-09-21. 2 imports and exports have no recorded run since 2025-09-26 (12 months before the snapshot), 0 have no recorded run at all, and 3 are not in any process.
+
+**Why it matters.** An action outside a process can still run from a page, the Actions pane or the API; a run date older than the window may be right for a quarterly or annual load. What the list gives is the set to ask about, not a verdict.
+
+**Affected scope.** 3 actions
+
+**Potential benefit.** not quantified from the exports
+
+**Evidence strength.** partial: Actions export: most recent run per action, process membership. Workspace administrators can run both import and export actions from the Actions pane; add them to a page in the user experience; any user can run import or export actions via the Anaplan Integrations API.
+
+**Missing information.**
+
+- how each action is triggered (page, API, CloudWorks, by hand)
+- the expected frequency of each load
+- run history beyond the most recent run
+
+**Next step.** For each action with no recorded run in the window, ask the owner how and how often it runs; document the answer in the action's notes.
+
+**When keeping the current design is reasonable.** Year-end loads, ad-hoc reloads and API-driven actions legitimately show no recent run and no process. Retiring an import does not by itself justify removing its target module or the data it loaded.
+
+**Evidence**
+
+| Action | Kind | Most recent recorded run | In a process | Target or source |
+|---|---|---|---|---|
+| `Import Products from PIM file` | import | 2023-06-14 | no | `DAT04 Product Master` |
+| `Export Pipeline for Sales Ops` | export | 2025-02-11 | no | `DAT05 CRM Pipeline` |
+| `Import Customers from Salesforce` | import | 2026-08-30 | no | `DAT07 Customer Master` |
+
+### F38. Imports and exports with no recent recorded run or outside every process
+
+Objects: `Export Assumptions for Workforce`, `Export Opex Drivers to Excel`, `Import Budget from Excel`, `Import FX from Treasury file`, `Import from Caldergate Hub v1 - Cost Centres`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | partial | low | Caldergate FP&A |
+
+**Observed.** Actions export snapshot: latest recorded run 2026-09-08. 3 imports and exports have no recorded run since 2025-09-13 (12 months before the snapshot), 0 have no recorded run at all, and 5 are not in any process.
+
+**Why it matters.** An action outside a process can still run from a page, the Actions pane or the API; a run date older than the window may be right for a quarterly or annual load. What the list gives is the set to ask about, not a verdict.
+
+**Affected scope.** 5 actions
+
+**Potential benefit.** not quantified from the exports
+
+**Evidence strength.** partial: Actions export: most recent run per action, process membership. Workspace administrators can run both import and export actions from the Actions pane; add them to a page in the user experience; any user can run import or export actions via the Anaplan Integrations API.
+
+**Missing information.**
+
+- how each action is triggered (page, API, CloudWorks, by hand)
+- the expected frequency of each load
+- run history beyond the most recent run
+
+**Next step.** For each action with no recorded run in the window, ask the owner how and how often it runs; document the answer in the action's notes.
+
+**When keeping the current design is reasonable.** Year-end loads, ad-hoc reloads and API-driven actions legitimately show no recent run and no process. Retiring an import does not by itself justify removing its target module or the data it loaded.
+
+**Evidence**
+
+| Action | Kind | Most recent recorded run | In a process | Target or source |
+|---|---|---|---|---|
+| `Import from Caldergate Hub v1 - Cost Centres` | import | 2021-03-19 | no | `SYS02 Cost Centre Attributes` |
+| `Import FX from Treasury file` | import | 2023-11-02 | no | `SYS05 FX Rates` |
+| `Export Opex Drivers to Excel` | export | 2024-05-30 | no | `INP02 Opex Drivers` |
+| `Import Budget from Excel` | import | 2025-11-20 | no | `INP02 Opex Drivers` |
+| `Export Assumptions for Workforce` | export | 2026-09-05 | no | `SYS00 Model Settings` |
+
+### F40. Imports and exports with no recent recorded run or outside every process
+
+Objects: `Export Headcount by Department`, `Export Leavers Report`, `Import from Caldergate FP&A - Assumptions`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | partial | low | Workforce Planning |
+
+**Observed.** Actions export snapshot: latest recorded run 2026-09-08. 2 imports and exports have no recorded run since 2025-09-13 (12 months before the snapshot), 0 have no recorded run at all, and 3 are not in any process.
+
+**Why it matters.** An action outside a process can still run from a page, the Actions pane or the API; a run date older than the window may be right for a quarterly or annual load. What the list gives is the set to ask about, not a verdict.
+
+**Affected scope.** 3 actions
+
+**Potential benefit.** not quantified from the exports
+
+**Evidence strength.** partial: Actions export: most recent run per action, process membership. Workspace administrators can run both import and export actions from the Actions pane; add them to a page in the user experience; any user can run import or export actions via the Anaplan Integrations API.
+
+**Missing information.**
+
+- how each action is triggered (page, API, CloudWorks, by hand)
+- the expected frequency of each load
+- run history beyond the most recent run
+
+**Next step.** For each action with no recorded run in the window, ask the owner how and how often it runs; document the answer in the action's notes.
+
+**When keeping the current design is reasonable.** Year-end loads, ad-hoc reloads and API-driven actions legitimately show no recent run and no process. Retiring an import does not by itself justify removing its target module or the data it loaded.
+
+**Evidence**
+
+| Action | Kind | Most recent recorded run | In a process | Target or source |
+|---|---|---|---|---|
+| `Import from Caldergate FP&A - Assumptions` | import | 2022-08-17 | no | `Inputs - Settings` |
+| `Export Leavers Report` | export | 2024-12-19 | no | `Calcs - Attrition` |
+| `Export Headcount by Department` | export | 2026-09-08 | no | `Reports - Headcount` |
+
+### F42. Imports and exports with no recent recorded run or outside every process
+
+Objects: `Export Board Pack PDF Data`
+
+| Importance | Evidence | Change complexity | Model |
+|---|---|---|---|
+| low | partial | low | Board Reporting |
+
+**Observed.** Actions export snapshot: latest recorded run 2026-09-08. 0 imports and exports have no recorded run since 2025-09-13 (12 months before the snapshot), 0 have no recorded run at all, and 1 are not in any process.
+
+**Why it matters.** An action outside a process can still run from a page, the Actions pane or the API; a run date older than the window may be right for a quarterly or annual load. What the list gives is the set to ask about, not a verdict.
+
+**Affected scope.** 1 action
+
+**Potential benefit.** not quantified from the exports
+
+**Evidence strength.** partial: Actions export: most recent run per action, process membership. Workspace administrators can run both import and export actions from the Actions pane; add them to a page in the user experience; any user can run import or export actions via the Anaplan Integrations API.
+
+**Missing information.**
+
+- how each action is triggered (page, API, CloudWorks, by hand)
+- the expected frequency of each load
+- run history beyond the most recent run
+
+**Next step.** For each action with no recorded run in the window, ask the owner how and how often it runs; document the answer in the action's notes.
+
+**When keeping the current design is reasonable.** Year-end loads, ad-hoc reloads and API-driven actions legitimately show no recent run and no process. Retiring an import does not by itself justify removing its target module or the data it loaded.
+
+**Evidence**
+
+| Action | Kind | Most recent recorded run | In a process | Target or source |
+|---|---|---|---|---|
+| `Export Board Pack PDF Data` | export | 2026-09-08 | no | `OUT01 Board Dashboard` |
+
+# Reference
+
+## Findings register
+
+| ID | Area | Title | Model | Importance | Evidence | Complexity | Footprint cells | Effort share |
+|---|---|---|---|---|---|---|---|---|
+| F1 | Usage and retirement investigations | Module with no consumer detected in the inspected dependency types | Caldergate FP&A | high | partial | medium | 70.2M | 50.78 |
+| F2 | Maintainability and consistency | IF chain that encodes a lookup table | Caldergate FP&A | medium | confirmed | medium | 0 | 16.04 |
+| F3 | Potential capacity or performance improvements | Where measured calculation effort concentrates | Caldergate Data Hub | medium | confirmed | medium | 0 | 0.0 |
+| F4 | Dependencies and change impact | Line items with the widest change impact | Caldergate FP&A | medium | confirmed | low | 0 | 0.0 |
+| F5 | Potential capacity or performance improvements | Where measured calculation effort concentrates | Caldergate FP&A | medium | confirmed | medium | 0 | 0.0 |
+| F6 | Potential capacity or performance improvements | Where measured calculation effort concentrates | Board Reporting | medium | confirmed | medium | 0 | 0.0 |
+| F7 | Usage and retirement investigations | Calculated line items with no consumer detected, outside output modules | Caldergate FP&A | medium | partial | medium | 15.1M | 10.04 |
+| F8 | Usage and retirement investigations | Module with no consumer detected in the inspected dependency types | Board Reporting | medium | partial | medium | 72 | 2.8 |
+| F9 | Maintainability and consistency | Line items that only copy another line item | Caldergate FP&A | low | confirmed | low | 268K | 0.0 |
+| F10 | Dependencies and change impact | Pass-through chains | Caldergate FP&A | low | confirmed | low | 153K | 0.0 |
+| F11 | Maintainability and consistency | Same calculation made more than once under different names | Caldergate FP&A | low | confirmed | medium | 19.2K | 0.0 |
+| F12 | Maintainability and consistency | Same calculation made more than once under different names | Workforce Planning | low | confirmed | medium | 4.5K | 0.0 |
+| F13 | Potential capacity or performance improvements | Text, FINDITEM and per-item functions in large multi-dimensional line items | Caldergate Data Hub | low | confirmed | low | 0 | 0.0 |
+| F14 | Maintainability and consistency | DIVIDE() where a zero divisor shows Infinity | Caldergate Data Hub | low | confirmed | low | 0 | 0.0 |
+| F15 | Potential capacity or performance improvements | SUM combined with LOOKUP or SELECT in one formula | Caldergate FP&A | low | confirmed | low | 0 | 0.0 |
+| F16 | Potential capacity or performance improvements | Text, FINDITEM and per-item functions in large multi-dimensional line items | Caldergate FP&A | low | confirmed | low | 0 | 0.0 |
+| F17 | Maintainability and consistency | Numeric literals inside formulas | Caldergate FP&A | low | confirmed | low | 0 | 0.0 |
+| F18 | Maintainability and consistency | Subsidiary views used in calculation | Caldergate FP&A | low | confirmed | medium | 0 | 0.0 |
+| F19 | Maintainability and consistency | Module with more than 50 line items | Caldergate FP&A | low | confirmed | medium | 0 | 0.0 |
+| F20 | Maintainability and consistency | Modules with no line items | Caldergate FP&A | low | confirmed | low | 0 | 0.0 |
+| F21 | Maintainability and consistency | Very long formulas | Caldergate FP&A | low | confirmed | medium | 0 | 0.0 |
+| F22 | Maintainability and consistency | Hard-coded time period or version selections | Caldergate FP&A | low | confirmed | low | 0 | 0.0 |
+| F23 | Maintainability and consistency | DIVIDE() where a zero divisor shows Infinity | Caldergate FP&A | low | confirmed | low | 0 | 0.0 |
+| F24 | Potential capacity or performance improvements | Text, FINDITEM and per-item functions in large multi-dimensional line items | Workforce Planning | low | confirmed | low | 0 | 0.0 |
+| F25 | Maintainability and consistency | Numeric literals inside formulas | Workforce Planning | low | confirmed | low | 0 | 0.0 |
+| F26 | Maintainability and consistency | Subsidiary views used in calculation | Workforce Planning | low | confirmed | medium | 0 | 0.0 |
+| F27 | Maintainability and consistency | Hard-coded time period or version selections | Workforce Planning | low | confirmed | low | 0 | 0.0 |
+| F28 | Maintainability and consistency | DIVIDE() where a zero divisor shows Infinity | Workforce Planning | low | confirmed | low | 0 | 0.0 |
+| F29 | Maintainability and consistency | DIVIDE() where a zero divisor shows Infinity | Board Reporting | low | confirmed | low | 0 | 0.0 |
+| F30 | Usage and retirement investigations | Module with no consumer detected in the inspected dependency types | Caldergate FP&A | low | partial | medium | 15.6K | 0.0 |
+| F31 | Usage and retirement investigations | Module with no consumer detected in the inspected dependency types | Workforce Planning | low | partial | medium | 13.4K | 0.0 |
+| F32 | Usage and retirement investigations | Module with no consumer detected in the inspected dependency types | Caldergate FP&A | low | partial | medium | 5.8K | 0.0 |
+| F33 | Usage and retirement investigations | Module with no consumer detected in the inspected dependency types | Caldergate Data Hub | low | partial | medium | 180 | 0.01 |
+| F34 | Usage and retirement investigations | Module with no consumer detected in the inspected dependency types | Caldergate Data Hub | low | partial | medium | 180 | 0.0 |
+| F35 | Maintainability and consistency | Summary methods on large line items no formula reads | Caldergate Data Hub | low | partial | low | 0 | 0.0 |
+| F36 | Integration and operational review | Imports and exports with no recent recorded run or outside every process | Caldergate Data Hub | low | partial | low | 0 | 0.0 |
+| F37 | Maintainability and consistency | Summary methods on large line items no formula reads | Caldergate FP&A | low | partial | low | 0 | 0.0 |
+| F38 | Integration and operational review | Imports and exports with no recent recorded run or outside every process | Caldergate FP&A | low | partial | low | 0 | 0.0 |
+| F39 | Maintainability and consistency | Summary methods on large line items no formula reads | Workforce Planning | low | partial | low | 0 | 0.0 |
+| F40 | Integration and operational review | Imports and exports with no recent recorded run or outside every process | Workforce Planning | low | partial | low | 0 | 0.0 |
+| F41 | Maintainability and consistency | Summary methods on large line items no formula reads | Board Reporting | low | partial | low | 0 | 0.0 |
+| F42 | Integration and operational review | Imports and exports with no recent recorded run or outside every process | Board Reporting | low | partial | low | 0 | 0.0 |
+| F43 | Maintainability and consistency | Formulas that differ in exactly one place | Caldergate FP&A | low | inferred | low | 0 | 0.0 |
+| F44 | Maintainability and consistency | Formulas that differ in exactly one place | Workforce Planning | low | inferred | low | 0 | 0.0 |
+| F45 | Maintainability and consistency | Same line item name and formula in more than one model | Estate | low | inferred | medium | 0 | 0.0 |
+
+## Models and coverage
+
+### Caldergate Data Hub
+
+| | |
+|---|---|
+| Files supplied | line_items, modules, actions |
+| Actions snapshot (latest recorded run) | 2026-09-21 |
+| Modules / line items / calculated | 12 / 63 / 28 |
+| Cells as exported | 8,060,698 |
+| Formulas parsed | 100.00% (0 not parsed) |
+| Referenced By agreement | 1.0 (edges present in both the parsed graph and Anaplan's Referenced By, over edges present in either) |
+| Anaplan-only edges by cause | {} |
+| Rules run | A-LI-COUNT, A-SUMMARY-ON, A-TEXT-FORMAT, A-SUBSIDIARY, A-DAISY, A-IF-COUNT, A-SYSTEMS-FN, A-TEXT-JOIN, A-FINDITEM, F-MIXED-CLAUSE, F-SELECT-TIME, F-HARDCODE, F-LONG, F-DIVIDE-FN, F-PARSE, G-CYCLE, G-UNUSED, G-HUB, G-EMPTY-MODULE, H-NOTES |
+| Rules skipped or limited | none |
+| Confirmed from metadata | formula references (parsed from Formula); Referenced By (Anaplan's column, used as the check); module dimensions and notes (Modules export); import target modules and export source modules (Action column); process membership and most recent run per action |
+| Inferred from names | model-to-model feeds, from the words after 'from' in import action names; external source names, from the same words |
+| Missing | pages, dashboards and saved views (no export exists); line item subset membership (COLLECT sources); filters, access drivers and DCA usage; CloudWorks, API and integration schedules; engine (Classic or Polaris): not in any export; cell counts of summary levels (as exported); the date the Line Items and Modules exports were taken (not in the file) |
+
+### Caldergate FP&A
+
+| | |
+|---|---|
+| Files supplied | line_items, modules, actions |
+| Actions snapshot (latest recorded run) | 2026-09-08 |
+| Modules / line items / calculated | 30 / 278 / 171 |
+| Cells as exported | 130,001,662 |
+| Formulas parsed | 100.00% (0 not parsed) |
+| Referenced By agreement | 1.0 (edges present in both the parsed graph and Anaplan's Referenced By, over edges present in either) |
+| Anaplan-only edges by cause | {} |
+| Rules run | A-LI-COUNT, A-SUMMARY-ON, A-TEXT-FORMAT, A-SUBSIDIARY, A-DAISY, A-IF-COUNT, A-SYSTEMS-FN, A-TEXT-JOIN, A-FINDITEM, F-MIXED-CLAUSE, F-SELECT-TIME, F-HARDCODE, F-LONG, F-DIVIDE-FN, F-PARSE, G-CYCLE, G-UNUSED, G-HUB, G-EMPTY-MODULE, H-NOTES |
+| Rules skipped or limited | none |
+| Confirmed from metadata | formula references (parsed from Formula); Referenced By (Anaplan's column, used as the check); module dimensions and notes (Modules export); import target modules and export source modules (Action column); process membership and most recent run per action |
+| Inferred from names | model-to-model feeds, from the words after 'from' in import action names; external source names, from the same words |
+| Missing | pages, dashboards and saved views (no export exists); line item subset membership (COLLECT sources); filters, access drivers and DCA usage; CloudWorks, API and integration schedules; engine (Classic or Polaris): not in any export; cell counts of summary levels (as exported); the date the Line Items and Modules exports were taken (not in the file) |
+
+### Workforce Planning
+
+| | |
+|---|---|
+| Files supplied | line_items, modules, actions |
+| Actions snapshot (latest recorded run) | 2026-09-08 |
+| Modules / line items / calculated | 9 / 55 / 36 |
+| Cells as exported | 6,343,559 |
+| Formulas parsed | 100.00% (0 not parsed) |
+| Referenced By agreement | 1.0 (edges present in both the parsed graph and Anaplan's Referenced By, over edges present in either) |
+| Anaplan-only edges by cause | {} |
+| Rules run | A-LI-COUNT, A-SUMMARY-ON, A-TEXT-FORMAT, A-SUBSIDIARY, A-DAISY, A-IF-COUNT, A-SYSTEMS-FN, A-TEXT-JOIN, A-FINDITEM, F-MIXED-CLAUSE, F-SELECT-TIME, F-HARDCODE, F-LONG, F-DIVIDE-FN, F-PARSE, G-CYCLE, G-UNUSED, G-HUB, G-EMPTY-MODULE, H-NOTES |
+| Rules skipped or limited | effort: Calculation Effort column absent or blank: no effort figures for this model |
+| Confirmed from metadata | formula references (parsed from Formula); Referenced By (Anaplan's column, used as the check); module dimensions and notes (Modules export); import target modules and export source modules (Action column); process membership and most recent run per action |
+| Inferred from names | model-to-model feeds, from the words after 'from' in import action names; external source names, from the same words |
+| Missing | pages, dashboards and saved views (no export exists); line item subset membership (COLLECT sources); filters, access drivers and DCA usage; CloudWorks, API and integration schedules; engine (Classic or Polaris): not in any export; cell counts of summary levels (as exported); the date the Line Items and Modules exports were taken (not in the file) |
+
+### Board Reporting
+
+| | |
+|---|---|
+| Files supplied | line_items, modules, actions |
+| Actions snapshot (latest recorded run) | 2026-09-08 |
+| Modules / line items / calculated | 7 / 30 / 13 |
+| Cells as exported | 137,882 |
+| Formulas parsed | 100.00% (0 not parsed) |
+| Referenced By agreement | 1.0 (edges present in both the parsed graph and Anaplan's Referenced By, over edges present in either) |
+| Anaplan-only edges by cause | {} |
+| Rules run | A-LI-COUNT, A-SUMMARY-ON, A-TEXT-FORMAT, A-SUBSIDIARY, A-DAISY, A-IF-COUNT, A-SYSTEMS-FN, A-TEXT-JOIN, A-FINDITEM, F-MIXED-CLAUSE, F-SELECT-TIME, F-HARDCODE, F-LONG, F-DIVIDE-FN, F-PARSE, G-CYCLE, G-UNUSED, G-HUB, G-EMPTY-MODULE, H-NOTES |
+| Rules skipped or limited | none |
+| Confirmed from metadata | formula references (parsed from Formula); Referenced By (Anaplan's column, used as the check); module dimensions and notes (Modules export); import target modules and export source modules (Action column); process membership and most recent run per action |
+| Inferred from names | model-to-model feeds, from the words after 'from' in import action names; external source names, from the same words |
+| Missing | pages, dashboards and saved views (no export exists); line item subset membership (COLLECT sources); filters, access drivers and DCA usage; CloudWorks, API and integration schedules; engine (Classic or Polaris): not in any export; cell counts of summary levels (as exported); the date the Line Items and Modules exports were taken (not in the file) |
+
+## Source-name candidates (from import action names)
+
+- NetSuite: 3 action(s), e.g. Caldergate Data Hub: Import GL from NetSuite
+- Salesforce: 3 action(s), e.g. Caldergate Data Hub: Import Orders from Salesforce
+- Workday: 2 action(s), e.g. Caldergate Data Hub: Import Employees from Workday
+- PIM file: 1 action(s), e.g. Caldergate Data Hub: Import Products from PIM file
+- Treasury file: 1 action(s), e.g. Caldergate FP&A: Import FX from Treasury file
+- Caldergate Hub v1: 1 action(s), e.g. Caldergate FP&A: Import from Caldergate Hub v1 - Cost Centres
+- Excel: 1 action(s), e.g. Caldergate FP&A: Import Budget from Excel
 
 ## Dimensions shared across models
 
 Cost Centres (4), Departments (3), Accounts (2), Employees (2), Products (2), Regions (2), Roles (2)
 
----
+## Methodology
 
-# Caldergate Data Hub
-
-| | |
-|---|---|
-| Modules | 12 |
-| Line items | 63 (28 calculated, 35 input) |
-| Cells (as exported) | 8.1M (8,060,698) |
-| Dimensions | 6 |
-| Formulas parsed | 100.00% (0 failed) |
-| References | 24 line-item edges, 5 module edges |
-| Agreement with Anaplan's Referenced By | 1.0 (ours only 0, Anaplan only 0; Anaplan-only edges are mostly line-item subsets via COLLECT(), which the export does not describe) |
-| Circular references | 0 (0 through a time offset, 0 without) |
-| Pass-through chains | 0 |
-| Calculated but unreferenced | 46 |
-| Line items with notes | 0% |
-| Inputs used | Line Items + Modules + Actions; rules skipped: none |
-
-## Where the calculation time goes (top 10 line items = 99.9% of the model's effort)
-
-| Line item | Effort | Cells | Formula |
-|---|---|---|---|
-| DAT01 GL Transactions.Loaded? | 88.35% | 1.3M | `Journal Count > 0` |
-| CAL01 Volume Summary.Units | 2.88% | 9.1K | `'DAT06 Sales Orders'.Units[SUM: 'DAT07 Customer Master'.Region]` |
-| CAL01 Volume Summary.Revenue | 2.88% | 9.1K | `'DAT06 Sales Orders'.Order Revenue[SUM: 'DAT07 Customer Master'.Region]` |
-| CAL01 Volume Summary.Orders | 2.88% | 9.1K | `'DAT06 Sales Orders'.Order Count[SUM: 'DAT07 Customer Master'.Region]` |
-| DAT05 CRM Pipeline.Weighted Pipeline | 1.83% | 17.3K | `Open Pipeline * Probability` |
-| CAL01 Volume Summary.Average Order Value | 0.96% | 9.1K | `DIVIDE(Revenue, Orders)` |
-| DAT08 Employee Master.Employee Id | 0.07% | 1.9K | `CODE(ITEM(Employees))` |
-| DAT03 Account Master.Sign | 0.03% | 262 | `IF Revenue? THEN -1 ELSE 1` |
-| DAT07 Customer Master.Region Code | 0.03% | 480 | `CODE(Region)` |
-| DAT03 Account Master.Revenue? | 0.02% | 262 | `Account Type = Account Types.Revenue` |
-| DAT03 Account Master.Opex? | 0.02% | 262 | `Account Type = Account Types.Opex` |
-| DAT03 Account Master.COGS? | 0.02% | 262 | `Account Type = Account Types.COGS` |
-| DAT07 Customer Master.Customer Code | 0.02% | 480 | `CODE(ITEM(Customers))` |
-| DAT03 Account Master.Account Code | 0.01% | 262 | `CODE(ITEM(Accounts))` |
-| SYS02 Data Checks.Check Message | 0.01% | 36 | `IF Within Tolerance? THEN "OK" ELSE "GL and orders differ by " & TEXT(Difference` |
-
-By module: DAT01 GL Transactions 88.3%, CAL01 Volume Summary 9.6%, DAT05 CRM Pipeline 1.8%, DAT03 Account Master 0.1%, DAT08 Employee Master 0.1%, DAT07 Customer Master 0.1%, SYS02 Data Checks 0.0%
-
-## Largest modules by cells
-
-| Module | Cells | Share |
-|---|---|---|
-| DAT01 GL Transactions | 5.0M | 62.3% |
-| DAT06 Sales Orders | 2.9M | 36.0% |
-| DAT05 CRM Pipeline | 86.4K | 1.1% |
-| CAL01 Volume Summary | 36.3K | 0.5% |
-| DAT08 Employee Master | 11.1K | 0.1% |
-| DAT07 Customer Master | 2.4K | 0.0% |
-| DAT03 Account Master | 1.8K | 0.0% |
-| DAT02 Cost Centre Master | 1.2K | 0.0% |
-
-## Most depended-on line items
-
-| Line item | Direct dependents |
-|---|---|
-| DAT07 Customer Master.Region | 4 |
-| DAT03 Account Master.Account Type | 3 |
-| DAT06 Sales Orders.Order Revenue | 2 |
-| SYS02 Data Checks.Difference | 2 |
-| SYS00 Model Settings.Current Period | 1 |
-| DAT01 GL Transactions.Journal Count | 1 |
-| DAT03 Account Master.Revenue? | 1 |
-| DAT05 CRM Pipeline.Open Pipeline | 1 |
-
-## Actions
-
-8 imports, 6 exports, 14 processes. Latest run 2026-09-21; stale = not run since 2025-09-26.
-
-- Imports not in any process: 3 (e.g. Import Products from PIM file, Import Customers from Salesforce, Export Pipeline for Sales Ops)
-- Stale or never-run imports and exports: 2 (e.g. Import Products from PIM file [2023-06-14], Export Pipeline for Sales Ops [2025-02-11])
-- Slowest actions: Import GL from NetSuite 39s, Export GL to FP&A 10s, Import Employees from Workday 8s, Import Orders from Salesforce 2s, Import Customers from Salesforce 2s
-- Most imported-into: DAT01 GL Transactions (1), DAT06 Sales Orders (1), DAT05 CRM Pipeline (1), DAT02 Cost Centre Master (1), DAT03 Account Master (1), DAT08 Employee Master (1)
-
-## Patterns (5 findings in 5 patterns)
-
-| Severity | Rule | Pattern | Count | Example | Fix |
+| Rule | Severity | Source | Description | Planual | Documentation |
 |---|---|---|---|---|---|
-| minor | A-SUMMARY-ON | DAT05 CRM Pipeline.Weighted Pipeline | 1 | DAT05 CRM Pipeline.Weighted Pipeline: summary SUM, referenced by no formula | Set summary to None unless a view needs the total. |
-| minor | A-TEXT-FORMAT | DAT01 GL Transactions.Source System | 1 | DAT01 GL Transactions.Source System: TEXT with 1,254,456 cells | Use a list-formatted item or move text to a system module. |
-| minor | A-TEXT-FORMAT | DAT06 Sales Orders.Last Order Ref | 1 | DAT06 Sales Orders.Last Order Ref: TEXT with 725,760 cells | Use a list-formatted item or move text to a system module. |
-| info | G-UNUSED | DAT01 GL Transactions.Loaded? | 1 | DAT01 GL Transactions.Loaded?: calculated, 1,254,456 cells, referenced by no formula | Check views and exports; remove if unused. |
-| info | H-NOTES | (model) | 1 | (model): 8 of 12 modules have no notes; largest: DAT06 Sales Orders, DAT05 CRM  | Add a one-line purpose note to each module, largest first. |
+| A-LI-COUNT More than 50 line items in a module | minor | ANAPLAN | Anaplan's checklist suggests reviewing modules with more than 50 line items. Many line items can be a sign of mixed purposes; it can also be a deliberate, well-understood input grid. Prompts a review, not a target. | 2.01-12 Group formulas with like dimensionality, 2.02-18 Break up formulas |  |
+| A-SUMMARY-ON Summary method on where a formula suggests it is not needed | minor | ANAPLAN | Summaries calculate on every parent; turn them off unless a parent value is used. Flags large number line items with a summary that no formula references. | 2.01-10 Avoid summary methods unless strictly required, 2.03-01 Keep summary options off by default |  |
+| A-TEXT-FORMAT Text-formatted line item | minor | ANAPLAN | Text line items use more memory and cannot aggregate. Anaplan's checklist: minimise; prefer list-formatted items. | 2.03-02 Avoid using TEXT formats |  |
+| A-SUBSIDIARY Subsidiary view on a calculation line item | major | ANAPLAN | A line item whose Applies To differs from its module's is a subsidiary view. The concern: its dimensions are not visible at module level, so readers and the next builder can misjudge what a reference returns, and the engine maps between the two dimension sets on every read. Anaplan's checklist: display and export only. | 2.01-06 Avoid using Subsidiary views |  |
+| A-DAISY Daisy-chain formula | major | ANAPLAN | A references B references C where each is a pure copy. Each step is a stored copy of the same values, and a change of source needs every step re-pointed. A pass-through can also be a deliberate interface (a reporting contract, a security boundary, a stable import source). Anaplan's checklist advises against chains. | 2.02-19 Avoid daisy-chaining when writing formulas |  |
+| A-IF-COUNT Formula with more than 10 IF THEN ELSE | major | ANAPLAN | Anaplan's checklist: refactor above 10 IF conditions; use a LOOKUP or Boolean flag line items. | 2.02-01 Nested IFs, 2.02-02 Fewer than 12 expressions in a formula |  |
+| A-SYSTEMS-FN Unchanging function in a calculation module | minor | ANAPLAN | PARENT(), text joins, START(), CURRENTPERIODSTART() produce values that do not change per cell; Anaplan's checklist: compute once in a systems module. | 2.01-08 Create a system module for all key lists, 2.01-09 Use Lookup or Constants modules |  |
+| A-TEXT-JOIN Text concatenation in a large line item | minor | ANAPLAN | Anaplan's checklist: combining text strings takes memory; restructure into systems modules. | 2.02-04 Concatenate text strings with caution, 2.02-05 Create joins in the smallest hierarchy |  |
+| A-FINDITEM FINDITEM in a large line item | minor | ANAPLAN | Anaplan's checklist: FINDITEM is expensive; minimise and null-check first. | 2.02-15 Avoid using FINDITEM on blank values |  |
+| F-MIXED-CLAUSE SUM with LOOKUP or SELECT in the same formula | major | FORMULA | Anaplan's LOOKUP page: never use SUM and LOOKUP in the same formula; the SELECT page: never combine SUM and SELECT in the same formula, create two line items. LOOKUP together with SELECT is not covered by that guidance and is not flagged here. Whether splitting helps a given formula is not guaranteed; it is the documented starting point. | 2.02-08 Avoid combining SUM and LOOKUP, 2.02-14 Avoid using SELECT | [LOOKUP](https://help.anaplan.com/lookup-f8baa402-606d-4764-a349-d8003fa383be), [SELECT](https://help.anaplan.com/select-2ca3148d-466e-44bd-830e-7e5cf3ac8d08) |
+| F-SELECT-TIME SELECT on a specific time period or version | minor | FORMULA | Anaplan's SELECT page: not recommended with non-generic time periods, because the hard-coded element has to be revisited when the timescale changes. Version selections are listed for the same reason. | 2.02-12 Do not hardcode references to list members, 2.02-14 Avoid using SELECT | [SELECT](https://help.anaplan.com/select-2ca3148d-466e-44bd-830e-7e5cf3ac8d08) |
+| F-HARDCODE Hard-coded constant in a formula | minor | FORMULA | Numbers inside formulas may be assumptions (a rate, a threshold) that belong in a named input line item. The same literal can mean different things in different formulas; each occurrence needs its own reading. | 2.01-09 Use Lookup or Constants modules, 2.02-12 Do not hardcode references to list members |  |
+| F-LONG Very long formula | minor | FORMULA | Anaplan's checklist: a formula should be explainable in one sentence. | 2.02-02 Fewer than 12 expressions in a formula, 2.02-18 Break up formulas |  |
+| F-DIVIDE-FN DIVIDE() used: Infinity on a zero divisor | info | FORMULA | Anaplan's operator page: the / operator returns zero when the divisor is zero, and the DIVIDE function returns Infinity (DIVIDE(-45,0) returns -Infinity). Neither is an error. Listed so the owner can confirm which display is intended where a divisor can be zero; ordinary division with / needs no guard. |  | [Operators and constants](https://help.anaplan.com/operators-and-constants-f1c2ec15-34af-4ebe-8114-530cf7c9f3bc), [DIVIDE](https://help.anaplan.com/divide-254b1b2b-aa78-4ecf-a21a-e066d1accd9a) |
+| F-PARSE Formula not parsed (analysis limitation) | info | FORMULA | The parser did not follow this formula, so its references are missing from the dependency graph. This is a limitation of the analysis, not evidence of a model defect. |  |  |
+| G-CYCLE Circular reference | info | GRAPH | Line items that depend on each other at the line-item level. Anaplan rejects a direct circular reference at formula entry, so a real cycle always passes through a time or version offset (PREVIOUS, LAG, OFFSET, CUMULATE, PREVIOUSVERSION): an opening balance from last period's closing balance. Reported as info to confirm it is intended. A cycle with NO such function cannot exist in Anaplan; if one appears, the parser has misread a reference and it is reported as critical. |  |  |
+| G-UNUSED No consumers detected within the inspected dependency types | info | GRAPH | Calculated, and no formula in the export references it. Consumers the exports do not show: pages and dashboards, saved views (including views another model imports), line item subsets, filters, access drivers, actions and integrations. Not the same as unused. |  |  |
+| G-HUB Hub line item | info | GRAPH | Referenced by many line items; a change here has a wide blast radius. Not a fault, a fact for reviewers. |  |  |
+| G-EMPTY-MODULE Module with no line items | minor | GRAPH | Empty modules are usually leftovers. |  |  |
+| H-NOTES Modules without notes | info | GRAPH | Documentation coverage. One finding per model: how many modules carry no notes, and the largest of them. |  |  |
+| REDUNDANT-EXACT Same calculation under different names | info | GRAPH | Same resolved formula and same context (dimensions, time scale, time range, versions, data type, summary, formula scope). COLLECT() and blank-context rows excluded. |  | [COLLECT](https://help.anaplan.com/collect-887a0bce-034b-4a0b-9e5f-262ec2f47e35) |
+| REDUNDANT-ALIAS Line item that only copies another | info | GRAPH | Formula is a single reference to a line item with identical context. |  |  |
+| REDUNDANT-NEAR Formulas that differ in one leaf | info | GRAPH | Same skeleton and context; one constant, reference or list item differs. May be intentional. |  |  |
+| REDUNDANT-SAME-TEXT Identical text, unresolved context | info | GRAPH | Not compared: COLLECT() or blank metadata. |  |  |
+| ACTIONS Imports and exports: recorded runs and process membership | info | ACTIONS | Most recent recorded run per action relative to the export's latest run; process membership. Not a verdict on use. |  | [Imports and exports as actions](https://help.anaplan.com/imports-and-exports-as-actions-b945e7f1-71c8-42ce-82ec-0987edd28bea) |
+| EFFORT Calculation Effort concentration | info | ANAPLAN | Anaplan's per-line-item share, as exported, per model. | 2.03-07 Review the calculation effort | [Configure line items](https://help.anaplan.com/configure-line-items-e7de33be-6345-4ecc-a517-c3265ff6d04a) |
+| DUP-CROSS Same name and formula in more than one model | info | GRAPH | Formula tree equality across models; local data may differ. |  |  |
 
----
+## Glossary
 
-# Caldergate FP&A
-
-| | |
-|---|---|
-| Modules | 30 |
-| Line items | 278 (171 calculated, 107 input) |
-| Cells (as exported) | 130M (130,001,662) |
-| Dimensions | 9 |
-| Formulas parsed | 100.00% (0 failed) |
-| References | 384 line-item edges, 54 module edges |
-| Agreement with Anaplan's Referenced By | 1.0 (ours only 0, Anaplan only 0; Anaplan-only edges are mostly line-item subsets via COLLECT(), which the export does not describe) |
-| Circular references | 1 (1 through a time offset, 0 without) |
-| Pass-through chains | 4 |
-| Calculated but unreferenced | 77 |
-| Line items with notes | 3% |
-| Inputs used | Line Items + Modules + Actions; rules skipped: none |
-
-## Where the calculation time goes (top 10 line items = 68.0% of the model's effort)
-
-| Line item | Effort | Cells | Formula |
-|---|---|---|---|
-| CAL03 Opex.Forecast Opex | 16.04% | 5.0M | `IF ITEM(Accounts) = Accounts.'6100 Rent' THEN 'INP02 Opex Drivers'.Rent ELSE IF ` |
-| CAL03 Opex.Opex GBP | 9.26% | 5.0M | `Opex * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS02 Cost Centre Attributes'.Curre` |
-| CAL05 Opex OLD.Opex GBP | 9.26% | 5.0M | `Opex * 'SYS05 FX Rates'.Rate to GBP[LOOKUP: 'SYS02 Cost Centre Attributes'.Curre` |
-| CAL05 Opex OLD.Forecast | 6.94% | 5.0M | `Rent Forecast + Rates Forecast + Utilities Forecast + Travel Forecast + Marketin` |
-| DAT01 Actuals GL.Journal Cost Centre | 6.17% | 5.0M | `FINDITEM(Cost Centres, Source Journal)` |
-| CAL03 Opex.Opex | 4.94% | 5.0M | `IF 'SYS01 Time Settings'.Actual? THEN Actual Opex ELSE Forecast Opex` |
-| CAL05 Opex OLD.Opex | 4.94% | 5.0M | `IF 'SYS01 Time Settings'.Actual? THEN Actual ELSE Forecast` |
-| CAL03 Opex.Actual Opex | 3.70% | 5.0M | `IF 'SYS03 Account Attributes'.Opex? THEN 'DAT01 Actuals GL'.Amount ELSE 0` |
-| CAL05 Opex OLD.Actual | 3.70% | 5.0M | `IF 'SYS01 Time Settings'.Actual? THEN 'DAT01 Actuals GL'.Amount ELSE 0` |
-| CAL05 Opex OLD.Opex Cumulative | 3.09% | 5.0M | `CUMULATE(Opex GBP)` |
-| CAL05 Opex OLD.Opex Run Rate | 3.09% | 5.0M | `MOVINGSUM(Opex GBP, -2, 0) / 3` |
-| CAL05 Opex OLD.Rent Forecast | 2.47% | 5.0M | `IF ITEM(Accounts) = Accounts.'6100 Rent' THEN 'INP02 Opex Drivers'.Rent ELSE 0` |
-| CAL05 Opex OLD.Rates Forecast | 2.47% | 5.0M | `IF ITEM(Accounts) = Accounts.'6110 Rates' THEN 'INP02 Opex Drivers'.Business Rat` |
-| CAL05 Opex OLD.Utilities Forecast | 2.47% | 5.0M | `IF ITEM(Accounts) = Accounts.'6120 Utilities' THEN 'INP02 Opex Drivers'.Utilitie` |
-| CAL05 Opex OLD.Travel Forecast | 2.47% | 5.0M | `IF ITEM(Accounts) = Accounts.'6200 Travel' THEN 'INP02 Opex Drivers'.Travel ELSE` |
-
-By module: CAL05 Opex OLD 50.8%, CAL03 Opex 37.8%, DAT01 Actuals GL 7.7%, INP03 Headcount 2.1%, CAL12 Driver Phasing 0.4%, INP02 Opex Drivers 0.3%, CAL02 Revenue 0.2%, CAL01 Volumes 0.1%
-
-## Largest modules by cells
-
-| Module | Cells | Share |
-|---|---|---|
-| CAL05 Opex OLD | 70.2M | 54.0% |
-| CAL03 Opex | 30.1M | 23.2% |
-| DAT01 Actuals GL | 20.1M | 15.4% |
-| INP03 Headcount | 5.9M | 4.6% |
-| INP02 Opex Drivers | 1.1M | 0.9% |
-| CAL12 Driver Phasing | 594K | 0.5% |
-| CAL02 Revenue | 435K | 0.3% |
-| INP01 Volumes | 254K | 0.2% |
-
-## Most depended-on line items
-
-| Line item | Direct dependents |
-|---|---|
-| SYS01 Time Settings.Actual? | 36 |
-| SYS02 Cost Centre Attributes.Department | 6 |
-| SYS05 FX Rates.Rate to GBP | 6 |
-| CAL02 Revenue.Net Revenue | 6 |
-| INP02 Opex Drivers.Rent | 5 |
-| INP02 Opex Drivers.Business Rates | 5 |
-| INP02 Opex Drivers.Utilities | 5 |
-| INP02 Opex Drivers.Travel | 5 |
-
-## Actions
-
-10 imports, 4 exports, 15 processes. Latest run 2026-09-08; stale = not run since 2025-09-13.
-
-- Imports not in any process: 5 (e.g. Import FX from Treasury file, Import from Caldergate Hub v1 - Cost Centres, Import Budget from Excel, Export Assumptions for Workforce)
-- Stale or never-run imports and exports: 3 (e.g. Import FX from Treasury file [2023-11-02], Import from Caldergate Hub v1 - Cost Centres [2021-03-19], Export Opex Drivers to Excel [2024-05-30])
-- Slowest actions: Import from Caldergate Data Hub - GL Actuals 58s, Import from Workforce Planning - Headcount Cost 8s, Import Budget from Excel 4s, Export Board Pack 3s, Import from Caldergate Data Hub - Volumes 3s
-- Most imported-into: SYS02 Cost Centre Attributes (2), DAT01 Actuals GL (1), DAT02 Actuals Volumes (1), SYS04 Product Attributes (1), SYS03 Account Attributes (1), INP03 Headcount (1)
-
-## Patterns (68 findings in 51 patterns)
-
-| Severity | Rule | Pattern | Count | Example | Fix |
-|---|---|---|---|---|---|
-| major | A-DAISY | OUT01 Management Pack.Opex | 1 | OUT01 Management Pack.Opex: 4-step pass-through chain ending at CAL03 Opex.Opex GBP | Reference CAL03 Opex.Opex GBP directly. |
-| major | A-DAISY | OUT01 Management Pack.Staff Cost | 1 | OUT01 Management Pack.Staff Cost: 4-step pass-through chain ending at INP03 Headcount.Total Cost | Reference INP03 Headcount.Total Cost directly. |
-| major | A-DAISY | OUT02 Board Pack.EBITDA | 1 | OUT02 Board Pack.EBITDA: 4-step pass-through chain ending at CAL07 P&L by Cost Centre.EBITDA | Reference CAL07 P&L by Cost Centre.EBITDA directly. |
-| major | A-DAISY | OUT02 Board Pack.Revenue | 1 | OUT02 Board Pack.Revenue: 4-step pass-through chain ending at CAL07 P&L by Cost Centre.Revenue | Reference CAL07 P&L by Cost Centre.Revenue directly. |
-| major | A-IF-COUNT | CAL03 Opex.Forecast Opex | 1 | CAL03 Opex.Forecast Opex: 12 IF THEN ELSE in one formula | Split conditions into Boolean line items or use a mapping module with  |
-| major | A-LI-COUNT | INP02 Opex Drivers | 1 | INP02 Opex Drivers: 58 line items | Split into modules by purpose (DISCO). |
-| major | A-SUBSIDIARY | CAL01 Volumes.Launched? | 1 | CAL01 Volumes.Launched?: applies to Products in a module on Products, Regions; used by 1 formul | Move to a module dimensioned as the line item is. |
-| major | F-DIVIDE | CAL02 Revenue.Revenue per Unit | 1 | CAL02 Revenue.Revenue per Unit: unguarded / by a line item | Use DIVIDE(a, b) or IF b <> 0 THEN a / b ELSE 0. |
-| major | F-MIXED-CLAUSE | CAL06 Department Summary.Benchmark Opex | 1 | CAL06 Department Summary.Benchmark Opex: [LOOKUP + SUM] in one bracket | Split into two line items: aggregate first, then look up. |
-| minor | A-SUMMARY-ON | OUT01 Management Pack (9 line items) | 9 | OUT01 Management Pack.Capex: summary SUM, referenced by no formula | Set summary to None unless a view needs the total. |
-| minor | A-SYSTEMS-FN | CAL05 Opex OLD (8 line items) | 8 | CAL05 Opex OLD.Fees Forecast: ITEM in a 5,017,824-cell line item | Compute in a single-dimension systems module and reference it. |
-| minor | A-SUMMARY-ON | CAL02 Revenue (3 line items) | 3 | CAL02 Revenue.Average Price: summary FORMULA, referenced by no formula | Set summary to None unless a view needs the total. |
-| minor | A-FINDITEM | DAT01 Actuals GL.Journal Cost Centre | 1 | DAT01 Actuals GL.Journal Cost Centre: FINDITEM in a 5,017,824-cell line item | Map once in a systems module. |
-| minor | A-SUMMARY-ON | CAL01 Volumes.Volume Growth | 1 | CAL01 Volumes.Volume Growth: summary FORMULA, referenced by no formula | Set summary to None unless a view needs the total. |
-| minor | A-SUMMARY-ON | CAL02 Revenue.Revenue USD | 1 | CAL02 Revenue.Revenue USD: summary SUM, referenced by no formula | Set summary to None unless a view needs the total. |
-| minor | A-SUMMARY-ON | CAL02 Revenue.VAT | 1 | CAL02 Revenue.VAT: summary SUM, referenced by no formula | Set summary to None unless a view needs the total. |
-| minor | A-SUMMARY-ON | CAL03 Opex.Opex Variance | 1 | CAL03 Opex.Opex Variance: summary SUM, referenced by no formula | Set summary to None unless a view needs the total. |
-| minor | A-SUMMARY-ON | CAL04 Margn.Margin % | 1 | CAL04 Margn.Margin %: summary FORMULA, referenced by no formula | Set summary to None unless a view needs the total. |
-| minor | A-SUMMARY-ON | CAL04 Margn.Margin GBP | 1 | CAL04 Margn.Margin GBP: summary SUM, referenced by no formula | Set summary to None unless a view needs the total. |
-| minor | A-SUMMARY-ON | CAL05 Opex OLD.Opex Cumulative | 1 | CAL05 Opex OLD.Opex Cumulative: summary SUM, referenced by no formula | Set summary to None unless a view needs the total. |
-| | | ... 31 more patterns | | | |
-
----
-
-# Workforce Planning
-
-| | |
-|---|---|
-| Modules | 9 |
-| Line items | 55 (36 calculated, 19 input) |
-| Cells (as exported) | 6.3M (6,343,559) |
-| Dimensions | 4 |
-| Formulas parsed | 100.00% (0 failed) |
-| References | 64 line-item edges, 11 module edges |
-| Agreement with Anaplan's Referenced By | 1.0 (ours only 0, Anaplan only 0; Anaplan-only edges are mostly line-item subsets via COLLECT(), which the export does not describe) |
-| Circular references | 0 (0 through a time offset, 0 without) |
-| Pass-through chains | 0 |
-| Calculated but unreferenced | 14 |
-| Line items with notes | 2% |
-| Inputs used | Line Items + Modules + Actions; rules skipped: none |
-
-_No Calculation Effort column in this export (Blueprint > Calculation Effort, Classic engine, from March 2025)._
-
-## Largest modules by cells
-
-| Module | Cells | Share |
-|---|---|---|
-| Calcs - Headcount by CC | 3.0M | 46.8% |
-| Calcs - Cost | 2.4M | 37.8% |
-| Data - Employees | 666K | 10.5% |
-| Calcs - Attrition | 284K | 4.5% |
-| zz Archive - 2021 Cost | 13.4K | 0.2% |
-| Reports - Headcount | 13.0K | 0.2% |
-| Data - Cost Centre Map | 532 | 0.0% |
-| Inputs - Calendar | 252 | 0.0% |
-
-## Most depended-on line items
-
-| Line item | Direct dependents |
-|---|---|
-| Data - Employees.Role | 8 |
-| Calcs - Cost.Inflated Salary | 4 |
-| Data - Employees.FTE | 3 |
-| Data - Employees.Cost Centre | 3 |
-| Reports - Headcount.FTE | 3 |
-| Data - Employees.End Date | 2 |
-| Calcs - Cost.Monthly Salary | 2 |
-| Calcs - Cost.Total Cost | 2 |
-
-## Actions
-
-3 imports, 3 exports, 5 processes. Latest run 2026-09-08; stale = not run since 2025-09-13.
-
-- Imports not in any process: 3 (e.g. Import from Caldergate FP&A - Assumptions, Export Headcount by Department, Export Leavers Report)
-- Stale or never-run imports and exports: 2 (e.g. Import from Caldergate FP&A - Assumptions [2022-08-17], Export Leavers Report [2024-12-19])
-- Slowest actions: Import Employees from Workday 22s, Export Headcount Cost to FP&A 4s, Import from Caldergate Data Hub - Cost Centre Map 0s, Export Headcount by Department 0s, Export Leavers Report 0s
-- Most imported-into: Data - Employees (1), Data - Cost Centre Map (1), Inputs - Settings (1)
-
-## Patterns (14 findings in 14 patterns)
-
-| Severity | Rule | Pattern | Count | Example | Fix |
-|---|---|---|---|---|---|
-| major | A-SUBSIDIARY | Calcs - Attrition.Leavers | 1 | Calcs - Attrition.Leavers: applies to Employees in a module on Roles; used by 1 formulas | Move to a module dimensioned as the line item is. |
-| major | F-DIVIDE | Calcs - Attrition.Annualised Attrition | 1 | Calcs - Attrition.Annualised Attrition: unguarded / by a line item | Use DIVIDE(a, b) or IF b <> 0 THEN a / b ELSE 0. |
-| major | F-DIVIDE | Calcs - Attrition.Attrition % | 1 | Calcs - Attrition.Attrition %: unguarded / by a line item | Use DIVIDE(a, b) or IF b <> 0 THEN a / b ELSE 0. |
-| minor | A-SUMMARY-ON | Calcs - Headcount by CC.Average Salary | 1 | Calcs - Headcount by CC.Average Salary: summary FORMULA, referenced by no formula | Set summary to None unless a view needs the total. |
-| minor | A-TEXT-FORMAT | Data - Employees.Employee Name | 1 | Data - Employees.Employee Name: TEXT with 66,600 cells | Use a list-formatted item or move text to a system module. |
-| minor | A-TEXT-FORMAT | Data - Employees.Name and Role | 1 | Data - Employees.Name and Role: TEXT with 66,600 cells | Use a list-formatted item or move text to a system module. |
-| minor | A-TEXT-JOIN | Data - Employees.Name and Role | 1 | Data - Employees.Name and Role: & in a 66,600-cell line item | Build the text once in a systems module. |
-| minor | F-HARDCODE | Calcs - Attrition.Annualised Attrition | 1 | Calcs - Attrition.Annualised Attrition: constants 11 | Move to an input line item with a name and a note. |
-| minor | F-HARDCODE | Calcs - Cost.Bonus | 1 | Calcs - Cost.Bonus: constants 0.1 | Move to an input line item with a name and a note. |
-| minor | F-HARDCODE | Calcs - Headcount by CC.Bonus % | 1 | Calcs - Headcount by CC.Bonus %: constants 0.1 | Move to an input line item with a name and a note. |
-| info | G-UNUSED | Calcs - Headcount by CC.Average Salary | 1 | Calcs - Headcount by CC.Average Salary: calculated, 593,712 cells, referenced by no formula | Check views and exports; remove if unused. |
-| info | G-UNUSED | Calcs - Headcount by CC.Bonus % | 1 | Calcs - Headcount by CC.Bonus %: calculated, 593,712 cells, referenced by no formula | Check views and exports; remove if unused. |
-| info | G-UNUSED | Data - Employees.Name and Role | 1 | Data - Employees.Name and Role: calculated, 66,600 cells, referenced by no formula | Check views and exports; remove if unused. |
-| info | H-NOTES | (model) | 1 | (model): 5 of 9 modules have no notes; largest: Calcs - Cost, Calcs - Attrition | Add a one-line purpose note to each module, largest first. |
-
----
-
-# Board Reporting
-
-| | |
-|---|---|
-| Modules | 7 |
-| Line items | 30 (13 calculated, 17 input) |
-| Cells (as exported) | 138K (137,882) |
-| Dimensions | 2 |
-| Formulas parsed | 100.00% (0 failed) |
-| References | 16 line-item edges, 6 module edges |
-| Agreement with Anaplan's Referenced By | 1.0 (ours only 0, Anaplan only 0; Anaplan-only edges are mostly line-item subsets via COLLECT(), which the export does not describe) |
-| Circular references | 0 (0 through a time offset, 0 without) |
-| Pass-through chains | 0 |
-| Calculated but unreferenced | 20 |
-| Line items with notes | 0% |
-| Inputs used | Line Items + Modules + Actions; rules skipped: none |
-
-## Where the calculation time goes (top 10 line items = 89.7% of the model's effort)
-
-| Line item | Effort | Cells | Formula |
-|---|---|---|---|
-| CAL01 KPIs.Revenue per FTE | 11.21% | 144 | `'DAT02 Board Lines'.Revenue / FTE` |
-| CAL01 KPIs.Opex Ratio | 11.21% | 144 | `DIVIDE('DAT01 P&L'.Opex, 'DAT01 P&L'.Revenue)` |
-| CAL01 KPIs.Revenue Growth | 11.21% | 144 | `DIVIDE('DAT02 Board Lines'.Revenue - Revenue Prior Year, Revenue Prior Year)` |
-| CAL01 KPIs.EBITDA Margin | 11.21% | 144 | `DIVIDE('DAT02 Board Lines'.EBITDA, 'DAT02 Board Lines'.Revenue)` |
-| CAL01 KPIs.FTE | 7.48% | 144 | `'DAT03 Headcount'.FTE` |
-| CAL01 KPIs.Revenue Prior Year | 7.48% | 144 | `LAG('DAT02 Board Lines'.Revenue, 12, 0)` |
-| CAL01 KPIs.Revenue YTD | 7.48% | 144 | `YEARTODATE('DAT02 Board Lines'.Revenue)` |
-| OUT01 Board Dashboard.Revenue | 7.48% | 144 | `'DAT02 Board Lines'.Revenue` |
-| OUT01 Board Dashboard.EBITDA | 7.48% | 144 | `'DAT02 Board Lines'.EBITDA` |
-| OUT01 Board Dashboard.Revenue per FTE | 7.48% | 144 | `'CAL01 KPIs'.Revenue per FTE` |
-| OUT01 Board Dashboard.Revenue Growth | 7.48% | 144 | `'CAL01 KPIs'.Revenue Growth` |
-| SYS01 Time.Current Period? | 1.87% | 36 | `ITEM(Time) = 'SYS00 Settings'.Current Period` |
-| SYS01 Time.Period Label | 0.93% | 36 | `NAME(ITEM(Time))` |
-
-By module: CAL01 KPIs 67.3%, OUT01 Board Dashboard 29.9%, SYS01 Time 2.8%
-
-## Largest modules by cells
-
-| Module | Cells | Share |
-|---|---|---|
-| DAT01 P&L | 134K | 97.2% |
-| DAT03 Headcount | 1.3K | 0.9% |
-| CAL01 KPIs | 1.0K | 0.7% |
-| OUT01 Board Dashboard | 864 | 0.6% |
-| DAT02 Board Lines | 576 | 0.4% |
-| SYS01 Time | 72 | 0.1% |
-| SYS00 Settings | 2 | 0.0% |
-
-## Most depended-on line items
-
-| Line item | Direct dependents |
-|---|---|
-| DAT02 Board Lines.Revenue | 6 |
-| DAT02 Board Lines.EBITDA | 2 |
-| SYS00 Settings.Current Period | 1 |
-| DAT03 Headcount.FTE | 1 |
-| CAL01 KPIs.FTE | 1 |
-| DAT01 P&L.Opex | 1 |
-| DAT01 P&L.Revenue | 1 |
-| CAL01 KPIs.Revenue Prior Year | 1 |
-
-## Actions
-
-3 imports, 1 exports, 4 processes. Latest run 2026-09-08; stale = not run since 2025-09-13.
-
-- Imports not in any process: 1 (e.g. Export Board Pack PDF Data)
-- Stale or never-run imports and exports: 0
-- Slowest actions: Import from Caldergate FP&A - P&L by Cost Centre 3s, Import from Caldergate FP&A - Board Pack 1s, Import from Workforce Planning - Headcount by Department 0s, Export Board Pack PDF Data 0s
-- Most imported-into: DAT01 P&L (1), DAT02 Board Lines (1), DAT03 Headcount (1)
-
-## Patterns (7 findings in 3 patterns)
-
-| Severity | Rule | Pattern | Count | Example | Fix |
-|---|---|---|---|---|---|
-| major | F-DIVIDE | CAL01 KPIs.Revenue per FTE | 1 | CAL01 KPIs.Revenue per FTE: unguarded / by a line item | Use DIVIDE(a, b) or IF b <> 0 THEN a / b ELSE 0. |
-| minor | A-SUMMARY-ON | DAT01 P&L (5 line items) | 5 | DAT01 P&L.COGS: summary SUM, referenced by no formula | Set summary to None unless a view needs the total. |
-| info | H-NOTES | (model) | 1 | (model): 5 of 7 modules have no notes; largest: DAT03 Headcount, CAL01 KPIs, OU | Add a one-line purpose note to each module, largest first. |
-
-## Procedures performed
-
-Every formula parsed with anaplan-grammar; dependency graph built from the parse trees and checked against Anaplan's Referenced By column; rules below run where the inputs allow; findings grouped into patterns. No opinion is expressed; nothing here says whether a finding matters for this model.
-
-| Rule | Severity | Source | Description |
-|---|---|---|---|
-| A-LI-COUNT More than 50 line items in a module | major | ANAPLAN | Modules with many line items are slow to open and hard to maintain. Anaplan's checklist: no more than 50. |
-| A-SUMMARY-ON Summary method on where a formula suggests it is not needed | minor | ANAPLAN | Summaries calculate on every parent; turn them off unless a parent value is used. Flags large number line item |
-| A-TEXT-FORMAT Text-formatted line item | minor | ANAPLAN | Text line items use more memory and cannot aggregate. Anaplan's checklist: minimise; prefer list-formatted ite |
-| A-SUBSIDIARY Subsidiary view on a calculation line item | major | ANAPLAN | A line item whose Applies To differs from its module's is a subsidiary view. Anaplan's checklist: display and  |
-| A-DAISY Daisy-chain formula | major | ANAPLAN | A references B references C where each is a pure pass-through; the whole sequence recalculates on any change.  |
-| A-IF-COUNT Formula with more than 10 IF THEN ELSE | major | ANAPLAN | Anaplan's checklist: refactor above 10 IF conditions; use a LOOKUP or Boolean flag line items. |
-| A-SYSTEMS-FN Unchanging function in a calculation module | minor | ANAPLAN | PARENT(), text joins, START(), CURRENTPERIODSTART() produce values that do not change per cell; Anaplan's chec |
-| A-TEXT-JOIN Text concatenation in a large line item | minor | ANAPLAN | Anaplan's checklist: combining text strings takes memory; restructure into systems modules. |
-| A-FINDITEM FINDITEM in a large line item | minor | ANAPLAN | Anaplan's checklist: FINDITEM is expensive; minimise and null-check first. |
-| F-MIXED-CLAUSE SUM and LOOKUP (or SELECT) in one bracket | major | FORMULA | Anapedia: never combine SUM with LOOKUP or SELECT in the same expression; the engine builds a large intermedia |
-| F-HARDCODE Hard-coded constant in a formula | minor | FORMULA | Numbers other than 0, 1, 100, 12 inside formulas are assumptions that belong in an input line item. |
-| F-LONG Very long formula | minor | FORMULA | Anaplan's checklist: a formula should be explainable in one sentence. |
-| F-DIVIDE Division with no zero guard | major | FORMULA | A / B errors when B is zero; the summary then shows an error too. Use DIVIDE() or guard with IF. |
-| F-PARSE Formula does not parse | critical | FORMULA | The parser rejected this formula; either the grammar has a gap or the export is corrupt. |
-| G-CYCLE Circular reference | info | GRAPH | Line items that depend on each other at the line-item level. Anaplan rejects a direct circular reference at fo |
-| G-UNUSED Line item with a formula that nothing references | info | GRAPH | Not used by any formula. May be used by a view, export or dashboard, which the exports do not show; confirm be |
-| G-HUB Hub line item | info | GRAPH | Referenced by many line items; a change here has a wide blast radius. Not a fault, a fact for reviewers. |
-| G-EMPTY-MODULE Module with no line items | minor | GRAPH | Empty modules are usually leftovers. |
-| H-NOTES Modules without notes | info | GRAPH | Documentation coverage. One finding per model: how many modules carry no notes, and the largest of them. |
+- **Cells.** Every line item multiplied out over its dimensions and time, as the export counts them. Workspace size and model open time follow cells; contractual cost does not follow from cells alone.
+- **Calculation effort.** Anaplan's own measure of where the engine spends its time, per line item, as a share of one model. Classic measures the whole model at open; Polaris measures a rolling ten-minute window. The exports do not say which engine produced the column, and shares are never added across models.
+- **No consumer detected.** No formula in the export references the object and no export action reads its module. Pages, saved views, line item subsets, filters, access drivers and integrations are not in the exports and can hold consumers. Not the same as unused.
+- **Referenced By agreement.** Edges present in both the parsed dependency graph and Anaplan's Referenced By column, over edges present in either. High means the graph can be trusted for change impact; discrepancies are listed by cause.
+- **Inferred.** Read off names, not off a system table. Model-to-model feeds come from the words after 'from' in import action names; the same words give the source-name candidates.
+- **Footprint.** What objects occupy now. A conditional benefit is what would be released if an investigation confirms they can go. A measured improvement needs a before-and-after reading in the model; this report contains none.
+- **Evidence strength.** Confirmed: everything relied on is in the exports. Partial: formulas and actions are, pages and subsets are not. Inferred: rests on names or on a comparison the exports cannot fully resolve.

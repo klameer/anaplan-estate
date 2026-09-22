@@ -26,6 +26,9 @@ class LineItem:
     applies_to: tuple[str, ...] = ()
     time_scale: str = ""
     versions: str = ""
+    time_range: str = ""
+    formula_scope: str = ""
+    format_raw: str = ""
     summary: str = ""
     cell_count: int = 0
     referenced_by_raw: str = ""
@@ -142,6 +145,7 @@ def load_line_items(path: str | Path, model: Model) -> None:
                 module=module, name=name, formula=formula, format_type=_fmt(fmt),
                 applies_to=_split_applies(row.get("Applies To", "")),
                 time_scale=row.get("Time Scale", ""), versions=row.get("Versions", ""),
+                time_range=row.get("Time Range", "") or "", formula_scope=row.get("Formula Scope", "") or "", format_raw=fmt or "",
                 summary=_summary(row.get("Summary") or ""), cell_count=_int(row.get("Cell Count", "0")),
                 referenced_by_raw=row.get("Referenced By", "") or "", notes=row.get("Notes", "") or "",
                 calc_effort=_pct(row.get("Calculation Effort", "")),

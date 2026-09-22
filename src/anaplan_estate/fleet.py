@@ -33,7 +33,7 @@ from .lint import lint, LintResult, RULES
 from .cluster import cluster, Cluster
 from .estate import Estate, load_actions, _split
 from . import redundancy as redund
-from . import actions as actionlist
+from . import findings as findlist
 
 _FROM = re.compile(r"\bfrom\s+(.+?)(?:\s+(?:into|to)\b|\s+-\s|$)", re.I)
 _DIRNUM = re.compile(r"^\d+\s+")
@@ -63,10 +63,11 @@ class EstateRun:
     shared_dims: list[tuple[str, list[str]]]
     generated: str = field(default_factory=lambda: datetime.date.today().isoformat())
     actions: list = field(default_factory=list)
+    findings: list = field(default_factory=list)
 
     def to_dict(self):
         return {"generated": self.generated,
-                "actions": [a.to_dict() for a in self.actions],
+                "findings": [a.to_dict() for a in self.findings],
                 "models": [{"name": m.name, "folder": m.folder, "facts": m.facts, "redundancy": m.redundancy.to_dict(),
                             "patterns": [c.to_dict() for c in m.clusters],
                             "findings_by_rule": m.lint.counts["by_rule"]} for m in self.models],
@@ -105,10 +106,23 @@ def discover(root: str | Path) -> list[dict]:
 # ---------- per model ----------
 
 def _ref_check(m: Model, g: Graph) -> dict:
-    """Our edges vs Anaplan's Referenced By column. Anaplan's column is the
-    reverse index (who uses me); ours is g.rev. Counts agree / ours-only /
-    anaplan-only, over line items that have either."""
+    """Dependency completeness, checked against Anaplan's own Referenced By column.
+
+    For every line item with at least one edge on either side: Anaplan's set = the
+    line items its Referenced By column names; ours = the line items whose parsed
+    formula references it (g.rev). agreement = |both| / |either|, i.e. edges present
+    in both over edges present in at least one. Not the same as parse rate: a formula
+    can parse and still miss an edge the platform knows about.
+
+    Anaplan-only edges are classified by the referencing formula:
+      collect    the referencing line item uses COLLECT(): the platform records the
+                 line item subset relationship, which the export does not describe
+      unparsed   the referencing formula did not parse
+      other      unexplained; listed for investigation
+    Ours-only edges are references the platform did not list (usually a name that
+    resolves to a line item here but is a list or property in the model)."""
     agree = ours_only = theirs_only = 0
+    why = Counter(); examples = {"collect": [], "unparsed": [], "other": [], "ours_only": []}
     for k, li in m.line_items.items():
         if li.is_header:
             continue
@@ -118,7 +132,6 @@ def _ref_check(m: Model, g: Graph) -> dict:
                 mod, _, name = ref.partition(".")
                 theirs.add((mod.strip("'"), name.strip("'")))
             else:
-                # bare name = same module; a bare MODULE name means "used as a driver", not a formula edge
                 r = ref.strip("'")
                 if (li.module, r) in m.line_items:
                     theirs.add((li.module, r))
@@ -126,12 +139,32 @@ def _ref_check(m: Model, g: Graph) -> dict:
         if not theirs and not ours:
             continue
         agree += len(theirs & ours); ours_only += len(ours - theirs); theirs_only += len(theirs - ours)
+        for t in theirs - ours:
+            src = m.line_items.get(t)
+            cls = "collect" if src and "COLLECT" in src.formula.upper() else "unparsed" if t in g.parse_errors else "other"
+            why[cls] += 1
+            if len(examples[cls]) < 12:
+                examples[cls].append(f"{t[0]}.{t[1]} -> {k[0]}.{k[1]}")
+        for t in ours - theirs:
+            if len(examples["ours_only"]) < 12:
+                examples["ours_only"].append(f"{t[0]}.{t[1]} -> {k[0]}.{k[1]}")
     tot = agree + ours_only + theirs_only
     return {"agree": agree, "ours_only": ours_only, "anaplan_only": theirs_only,
-            "agreement": round(agree / tot, 3) if tot else None}
+            "agreement": round(agree / tot, 3) if tot else None,
+            "definition": "edges present in both the parsed graph and Anaplan's Referenced By, over edges present in either",
+            "anaplan_only_by_cause": dict(why), "examples": examples}
+
+
+GENERIC_SOURCE_WORDS = {"hierarchy", "import", "export", "list", "module", "data", "file", "csv", "model", "the", "all", "new", "old", "current", "prior"}
 
 
 def _actions_facts(e: Estate, stale_months: int) -> dict:
+    """Facts from the Actions export. The export carries each action's most recent run
+    ('Start Date and Time'), whatever triggered it (process, page, Actions pane or API).
+    The latest run date in the file is the closest thing to a snapshot date the export
+    gives. 'No recorded run since <cutoff>' is relative to that snapshot; it is not
+    proof of non-use (expected frequency and the snapshot age matter). An action outside
+    every process can still be run from a page, the Actions pane or the API."""
     acts = list(e.actions.values())
     dated = [a for a in acts if a.last_run]
     latest = max((a.last_run for a in dated), default="")
@@ -146,21 +179,29 @@ def _actions_facts(e: Estate, stale_months: int) -> dict:
     imports = [a for a in acts if a.kind == "import"]
     exports = [a for a in acts if a.kind == "export"]
     by_target = Counter(a.target for a in imports if a.target)
-    orphans = [a.name for a in imports + exports if a.name not in in_proc and not a.processes]
-    stale = [(a.name, a.last_run[:10] or "never") for a in imports + exports if not a.last_run or (cutoff and a.last_run[:10] < cutoff)]
+    not_in_process = [a.name for a in imports + exports if a.name not in in_proc and not a.processes]
+    never_recorded = [a.name for a in imports + exports if not a.last_run]
+    no_recent_run = [(a.name, a.last_run[:10]) for a in imports + exports if a.last_run and cutoff and a.last_run[:10] < cutoff]
     slow = sorted(((a.name, a.duration_ms) for a in acts if a.duration_ms), key=lambda x: -x[1])[:10]
     sources = defaultdict(list)
     for a in imports:
         mm = _FROM.search(a.name)
         if mm:
-            sources[mm.group(1).strip()].append(a.name)
+            phrase = mm.group(1).strip()
+            if phrase.lower() in GENERIC_SOURCE_WORDS or len(phrase) < 3:
+                continue
+            sources[phrase].append(a.name)
     return {"actions": len(acts), "imports": len(imports), "exports": len(exports), "processes": len(e.processes),
-            "latest_run": latest[:10], "stale_cutoff": cutoff,
-            "imports_by_target": by_target.most_common(20),
-            "process_steps": sorted(((p.name, len(p.steps)) for p in e.processes.values()), key=lambda x: -x[1])[:15],
-            "orphans": orphans[:40], "orphan_count": len(orphans),
-            "stale": stale[:40], "stale_count": len(stale), "slow": slow,
-            "sources": {k: v for k, v in sources.items()}}
+            "latest_run": latest[:10], "snapshot": latest[:10], "stale_cutoff": cutoff, "stale_months": stale_months,
+            "imports_by_target": by_target.most_common(),
+            "import_targets": sorted({a.target for a in imports if a.target}), "export_sources": sorted({a.target for a in exports if a.target}),
+            "process_steps": sorted(((p.name, len(p.steps)) for p in e.processes.values()), key=lambda x: -x[1]),
+            "not_in_process": not_in_process, "not_in_process_count": len(not_in_process),
+            "never_recorded": never_recorded, "no_recent_run": no_recent_run, "no_recent_run_count": len(no_recent_run) + len(never_recorded),
+            # kept for readers of the old keys
+            "orphans": not_in_process, "orphan_count": len(not_in_process),
+            "stale": no_recent_run + [(n, "no recorded run") for n in never_recorded], "stale_count": len(no_recent_run) + len(never_recorded),
+            "slow": slow, "sources": {k: v for k, v in sources.items()}}
 
 
 def analyse(spec: dict, stale_months: int = 12, overrides: dict | None = None) -> ModelRun:
@@ -205,7 +246,35 @@ def analyse(spec: dict, stale_months: int = 12, overrides: dict | None = None) -
     red = redund.analyse(m, g, export_sources={a.target for a in e.actions.values() if a.kind == "export"},
                          import_targets={a.target for a in e.actions.values() if a.kind == "import"})
     facts["redundancy"] = red.counts()
+    facts["coverage"] = _coverage(spec, m, g, lr, facts)
     return ModelRun(spec["name"], spec["folder"], m, g, lr, cl, e, facts, red)
+
+
+def _coverage(spec: dict, m: Model, g: Graph, lr: LintResult, facts: dict) -> dict:
+    """What was supplied, what ran, what was skipped and why, what is confirmed vs inferred, what is missing."""
+    files = {"line_items": Path(spec["line_items"]).name, "modules": Path(spec["modules"]).name if spec.get("modules") else None,
+             "actions": Path(spec["actions"]).name if spec.get("actions") else None}
+    skipped = []
+    if not m.has_modules_export:
+        skipped += [(r, "needs the Modules export (module-level Applies To and Notes)") for r in NEEDS_MODULES]
+    if not spec.get("actions"):
+        skipped.append(("actions", "no Actions export: imports, exports, processes, run dates and model-to-model feeds not analysed"))
+    if not facts["has_effort"]:
+        skipped.append(("effort", "Calculation Effort column absent or blank: no effort figures for this model"))
+    run = [r for r in lr.rules_run if r not in {x for x, _ in skipped}]
+    confirmed = ["formula references (parsed from Formula)", "Referenced By (Anaplan's column, used as the check)"]
+    if m.has_modules_export:
+        confirmed.append("module dimensions and notes (Modules export)")
+    if spec.get("actions"):
+        confirmed += ["import target modules and export source modules (Action column)", "process membership and most recent run per action"]
+    inferred = ["model-to-model feeds, from the words after 'from' in import action names", "external source names, from the same words"] if spec.get("actions") else []
+    missing = ["pages, dashboards and saved views (no export exists)", "line item subset membership (COLLECT sources)", "filters, access drivers and DCA usage",
+               "CloudWorks, API and integration schedules", "engine (Classic or Polaris): not in any export", "cell counts of summary levels (as exported)",
+               "the date the Line Items and Modules exports were taken (not in the file)"]
+    return {"files": files, "snapshot_actions": (facts.get("actions") or {}).get("snapshot", ""), "rules_run": run, "rules_skipped": skipped,
+            "confirmed": confirmed, "inferred": inferred, "missing": missing,
+            "parse_rate": facts["parse_rate"], "referenced_by_agreement": facts["referenced_by_check"]["agreement"],
+            "unresolved_context": facts["redundancy"]["unresolved_context"]}
 
 
 # ---------- across models ----------
@@ -243,7 +312,7 @@ def cross(models: list[ModelRun], aliases: dict[str, str]) -> tuple[list[dict], 
                 external[phrase].extend(f"{m.name}: {a}" for a in acts)
     out = []
     for e in edges.values():
-        e["phrases"] = sorted(e["phrases"]); e["targets"] = e["targets"][:12]; e["basis"] = "inferred from import action names"
+        e["phrases"] = sorted(e["phrases"]); e["targets"] = e["targets"]; e["basis"] = "inferred from import action names"; e["confirmed"] = False
         out.append(e)
     out.sort(key=lambda e: -e["actions"])
     return out, dict(external)
@@ -290,219 +359,13 @@ def run(root: str | Path, aliases: dict[str, str] | None = None, stale_months: i
     models = [analyse(s, stale_months, overrides) for s in specs]
     edges, external = cross(models, aliases or {})
     er = EstateRun(models, edges, external, duplicates(models), shared_dimensions(models))
-    er.actions = actionlist.build(er)
+    er.findings = findlist.build(er)
+    er.actions = er.findings
     return er
 
 
 # ---------- rendering ----------
 
-def _slug(t: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "-", t.lower()).strip("-")
-
-
-def _headlines(er: EstateRun) -> list[str]:
-    """The report in ten sentences, each computed from the facts and each
-    pointing at the section that shows the working. Plain words, no verdicts."""
-    ms = er.models
-    big = max(ms, key=lambda m: m.facts["cells"])
-    total_cells = sum(m.facts["cells"] for m in ms)
-    total_li = sum(m.facts["line_items"] for m in ms)
-    h = []
-    top_mod = big.facts["cells_by_module"][0] if big.facts["cells_by_module"] else ("", 0, 0)
-    h.append(f"**{len(ms)} models, {_n(total_li)} line items, {_c(total_cells)} cells.** {big.name} is {round(100 * big.facts['cells'] / total_cells) if total_cells else 0}% of the estate by cells; "
-             f"its largest module alone holds {_c(top_mod[1])} ({top_mod[0]}). [Estate at a glance](#the-estate-at-a-glance)")
-    if er.edges:
-        feeders = Counter()
-        for e in er.edges:
-            feeders[e["from"]] += e["actions"]
-        hub, n = feeders.most_common(1)[0]
-        h.append(f"**{hub} is the hub.** It feeds {', '.join(e['to'] for e in er.edges if e['from'] == hub)} through {n} import actions; "
-                 f"{len(er.edges)} feeds between models in all, read off the import action names. [How the models connect](#how-the-models-connect-inferred)")
-    if er.external:
-        top = sorted(er.external.items(), key=lambda kv: -len(kv[1]))[0]
-        h.append(f"**Outside data arrives from {len(er.external)} named sources**, the busiest being {top[0]} with {len(top[1])} imports. [External sources](#how-the-models-connect-inferred)")
-    eff = [m for m in ms if m.facts["has_effort"]]
-    if eff:
-        w = max(eff, key=lambda m: m.facts["cells"])
-        top = w.facts["effort_top"][0]
-        h.append(f"**Calculation time is concentrated.** In {w.name}, ten line items carry {w.facts['effort_top10_share']}% of the model's effort; the single largest is {top[0]} at {top[1]:.1f}%. "
-                 f"[Where the time goes](#{_slug(w.name)})")
-    unref = sum(m.facts["unreferenced"] for m in ms)
-    if unref:
-        w = max(ms, key=lambda m: m.facts["unreferenced"])
-        h.append(f"**{_n(unref)} calculated line items feed nothing.** {w.name} has {_n(w.facts['unreferenced'])} of them: formulas that run on every recalculation and are read by no other formula. "
-                 f"Some are outputs read by pages or exports, which the exports do not show. [{w.name}](#{_slug(w.name)})")
-    stale = sum((m.facts["actions"] or {}).get("stale_count", 0) for m in ms)
-    orph = sum((m.facts["actions"] or {}).get("orphan_count", 0) for m in ms)
-    if stale or orph:
-        h.append(f"**{stale} imports and exports have not run inside the stale window, and {orph} sit outside any process.** Either is a candidate for retirement, or a load nobody schedules. "
-                 f"[Actions, per model](#{_slug(ms[0].name)})")
-    if er.duplicates:
-        d = er.duplicates[0]
-        h.append(f"**{len(er.duplicates)} formulas are copied between models.** {d['line_item']} appears in {', '.join(d['models'])} with the same logic; a change to one must be repeated in the others. "
-                 f"[Logic duplicated across models](#logic-duplicated-across-models)")
-    faults = sum(m.facts["cycles_fault"] for m in ms); bal = sum(m.facts["cycles_balance"] for m in ms)
-    if faults or bal:
-        h.append(f"**{bal + faults} circular reference{'s' if bal + faults != 1 else ''}**: {bal} through a time offset (the opening-balance pattern, normal) and {faults} without (a parser misread or a real fault).")
-    pats = sum(m.facts["patterns"] for m in ms); finds = sum(m.facts["findings"] for m in ms)
-    h.append(f"**{_n(finds)} rule findings collapse to {pats} patterns.** A pattern is one decision copied across modules or line items; fix the template and the copies follow. "
-             f"None of this says whether a finding matters for this estate. That is a review, and this report is its evidence. [Procedures performed](#procedures-performed)")
-    agree = [(m.name, m.facts["referenced_by_check"]["agreement"]) for m in ms if m.facts["referenced_by_check"]["agreement"] is not None]
-    if agree:
-        h.append("**How far to trust the graph.** Every formula parsed. Our dependency edges agree with Anaplan's own Referenced By column at "
-                 + ", ".join(f"{n} {a:.0%}" for n, a in agree)
-                 + "; the gap is line-item subsets through COLLECT(), which the export does not describe.")
-    return h
-
-
-def _toc(er: EstateRun) -> list[str]:
-    rows = [("The estate at a glance", "One row per model. Size, how much of it is calculated, how many imports and processes, when it last ran."),
-            ("How the models connect (inferred)", "Which model feeds which, read off the names of import actions, plus the outside systems those names mention. Inferred, and labelled so."),
-            ("Logic duplicated across models", "The same line item with the same formula in more than one model. One change, several places."),
-            ("Dimensions shared across models", "Lists that appear in more than one model. Where a hierarchy change ripples.")]
-    for m in er.models:
-        f = m.facts
-        rows.append((m.name, f"{f['modules']} modules, {_n(f['line_items'])} line items, {_c(f['cells'])} cells. Where its calculation time goes, what everything depends on, its actions, and its patterns."))
-    rows.append(("Procedures performed", "Every rule that ran and its source, so you know exactly what was and was not checked."))
-    rows.insert(0, ("Actions in detail", "One section per action: why, steps, verify, evidence."))
-    rows.insert(1, ("The estate", "One row per model, how the models connect, logic and dimensions shared across them."))
-    out = ["| Section | What it tells you |", "|---|---|"]
-    for t, d in rows:
-        out.append(f"| [{t}](#{_slug(t)}) | {d} |")
-    return out
-
-
-GLOSSARY = [
-    "**Cells** are what Anaplan bills for and what makes a model slow to open: every line item multiplied out over its dimensions and time. 10.9B means ten thousand million.",
-    "**Calculation effort** is Anaplan's own measure of where the engine spends its time, as a share of the model, exported from Blueprint. Ten line items usually carry most of it.",
-    "**Patterns** are findings grouped by the decision behind them. A formula copied into 96 month columns is one pattern, not 96 problems.",
-    "**Referenced By agreement** is our dependency graph checked against the column Anaplan exports. High means the graph can be trusted; the gap is explained where it appears.",
-    "**Inferred** means read off names, not off a system table. Anaplan does not export which model imports from which; the action names usually say.",
-]
-
-
-def _n(x):
-    return f"{x:,}" if isinstance(x, int) else str(x)
-
-
-def _c(x) -> str:
-    """Compact scale for cell counts: 10.9B, 222M, 8.9M, 720. Exact values stay in the JSON."""
-    if not isinstance(x, (int, float)):
-        return str(x)
-    for div, suf in ((1e9, "B"), (1e6, "M"), (1e3, "K")):
-        if abs(x) >= div:
-            v = x / div
-            return f"{v:.0f}{suf}" if v >= 100 else f"{v:.1f}{suf}"
-    return f"{x:,}"
-
-
-def render_markdown(er: EstateRun, max_patterns: int = 20) -> str:
-    red_items = sum(m.facts["redundancy"]["exact_redundant"] + m.facts["redundancy"]["aliases"] for m in er.models)
-    red_cells = sum(m.facts["redundancy"]["exact_cells"] + m.facts["redundancy"]["alias_cells"] for m in er.models)
-    out = [f"# Anaplan estate: {len(er.models)} model{'s' if len(er.models) != 1 else ''}", "",
-           f"Generated {er.generated} from each model's Line Items and Actions exports. Deterministic; no opinion. "
-           "Model-to-model links are inferred from import action names and say so.", "",
-           "## What to do", "",
-           f"{len(er.actions)} actions in {len(actionlist.by_category(er.actions))} categories, biggest reclaim first. Click a category for its actions ranked by impact, "
-           "and an action for the why, the steps, how to verify, and the evidence. Every action says what the exports prove and what they cannot: "
-           "formulas, imports and exports are in the files; pages and saved views are not, so anything that needs a page check says so.", ""]
-    out += actionlist.render_summary(er.actions)
-    out += ["", "## The estate in one page", ""]
-    out += [f"{i}. {h}" for i, h in enumerate(_headlines(er), 1)]
-    if red_items:
-        out.append(f"{len(_headlines(er)) + 1}. **{_n(red_items)} line items repeat a calculation already made in the same model** ({_c(red_cells)} cells stored twice): "
-                   "same resolved formula and dimensions under another name, or a plain copy of another line item. [Actions](#what-to-do)")
-    out += ["", "## How to read this report", "",
-            "Three parts. The action list above and its detail chapter. Then the estate: how the models connect, what is shared, and one chapter per model, all the same shape, so you can compare them. "
-            "The last section lists what was checked. In the HTML view each chapter is folded; a link opens the one it points to.", ""]
-    out += _toc(er)
-    out += ["", "A few words that carry weight here:", ""] + [f"- {g}" for g in GLOSSARY]
-    out += ["", "# Actions in detail", "",
-            "One section per category, each a ranked table and then every action: why, in the words of the exports; the steps; how to prove it worked; and the evidence. "
-            "Nothing here says whether an action is worth taking for this business. That is a review, and this is its evidence.", ""]
-    out += actionlist.render_detail(er.actions)
-    out += ["", "# The estate", "",
-           "## The estate at a glance", "",
-           "| Model | Modules | Line items | Calculated | Cells | Parse | Imports | Exports | Processes | Latest run | Patterns |",
-           "|---|---|---|---|---|---|---|---|---|---|---|"]
-    for m in er.models:
-        f = m.facts; a = f["actions"] or {}
-        out.append(f"| {m.name} | {f['modules']} | {_n(f['line_items'])} | {_n(f['calculated'])} | {_c(f['cells'])} | {f['parse_rate']:.1%} | "
-                   f"{a.get('imports', '')} | {a.get('exports', '')} | {a.get('processes', '')} | {a.get('latest_run', '')} | {f['patterns']} |")
-    out += ["", "## How the models connect (inferred)", ""]
-    if er.edges:
-        out += ["| From | To | Import actions | Into (sample) | Named as |", "|---|---|---|---|---|"]
-        for e in er.edges:
-            out.append(f"| {e['from']} | {e['to']} | {e['actions']} | {', '.join(e['targets'][:4])} | {', '.join(e['phrases'][:3])} |")
-        out += ["", "```mermaid", "flowchart LR"]
-        ids = {m.name: f"M{i}" for i, m in enumerate(er.models)}
-        for m in er.models:
-            out.append(f"  {ids[m.name]}[\"{m.name}\"]")
-        for e in er.edges:
-            out.append(f"  {ids[e['from']]} -->|{e['actions']}| {ids[e['to']]}")
-        out.append("```")
-    else:
-        out.append("No import action names matched another model in the set.")
-    if er.external:
-        out += ["", "External sources named in import actions (not a model in this set):", ""]
-        for src, acts in sorted(er.external.items(), key=lambda kv: -len(kv[1]))[:25]:
-            out.append(f"- **{src}**: {len(acts)} action(s), e.g. {acts[0]}")
-    if er.duplicates:
-        out += ["", "## Logic duplicated across models", "",
-                "Same line item name with the same formula tree in more than one model. One change must be made in each.", "",
-                "| Line item | Models | Copies | Formula |", "|---|---|---|---|"]
-        for d in er.duplicates[:25]:
-            out.append(f"| {d['line_item']} | {', '.join(d['models'])} | {d['copies']} | `{d['formula'][:90]}` |")
-    if er.shared_dims:
-        out += ["", "## Dimensions shared across models", "", ", ".join(f"{d} ({len(ms)})" for d, ms in er.shared_dims[:40])]
-    for m in er.models:
-        out += ["", "---", "", *_render_model(m, max_patterns)]
-    out += ["", "## Procedures performed", "",
-            "Every formula parsed with anaplan-grammar; dependency graph built from the parse trees and checked against Anaplan's Referenced By column; "
-            "rules below run where the inputs allow; findings grouped into patterns. No opinion is expressed; nothing here says whether a finding matters for this model.", "",
-            "| Rule | Severity | Source | Description |", "|---|---|---|---|"]
-    for rid, r in RULES.items():
-        out.append(f"| {rid} {r.title} | {r.severity} | {r.source} | {r.description[:110]} |")
-    return "\n".join(out)
-
-
-def _render_model(m: ModelRun, max_patterns: int) -> list[str]:
-    f = m.facts; a = f["actions"]
-    out = [f"# {m.name}", "",
-           f"| | |", "|---|---|",
-           f"| Modules | {f['modules']} |", f"| Line items | {_n(f['line_items'])} ({_n(f['calculated'])} calculated, {_n(f['inputs'])} input) |",
-           f"| Cells (as exported) | {_c(f['cells'])} ({_n(f['cells'])}) |", f"| Dimensions | {len(f['dimensions'])} |",
-           f"| Formulas parsed | {f['parse_rate']:.2%} ({f['parse_errors']} failed) |",
-           f"| References | {_n(f['edges'])} line-item edges, {_n(f['module_edges'])} module edges |",
-           f"| Agreement with Anaplan's Referenced By | {f['referenced_by_check']['agreement']} (ours only {f['referenced_by_check']['ours_only']}, Anaplan only {f['referenced_by_check']['anaplan_only']}; "
-           f"Anaplan-only edges are mostly line-item subsets via COLLECT(), which the export does not describe) |",
-           f"| Circular references | {f['cycles']} ({f['cycles_balance']} through a time offset, {f['cycles_fault']} without) |",
-           f"| Pass-through chains | {f['daisy_chains']} |", f"| Calculated but unreferenced | {_n(f['unreferenced'])} |",
-           f"| Line items with notes | {f['notes_coverage']:.0%} |",
-           f"| Inputs used | Line Items{' + Modules' if f['has_modules_export'] else ''}{' + Actions' if a else ''}; rules skipped: {', '.join(f['rules_skipped']) or 'none'} |"]
-    if f["has_effort"]:
-        out += ["", f"## Where the calculation time goes (top 10 line items = {f['effort_top10_share']}% of the model's effort)", "",
-                "| Line item | Effort | Cells | Formula |", "|---|---|---|---|"]
-        for name, eff, cells, formula in f["effort_top"][:15]:
-            out.append(f"| {name} | {eff:.2f}% | {_c(cells)} | `{formula[:80]}` |")
-        out += ["", "By module: " + ", ".join(f"{n} {v:.1f}%" for n, v in f["effort_by_module"][:8])]
-    else:
-        out += ["", "_No Calculation Effort column in this export (Blueprint > Calculation Effort, Classic engine, from March 2025)._"]
-    out += ["", "## Largest modules by cells", "", "| Module | Cells | Share |", "|---|---|---|"]
-    for n, c, p in f["cells_by_module"][:8]:
-        out.append(f"| {n} | {_c(c)} | {p}% |")
-    out += ["", "## Most depended-on line items", "", "| Line item | Direct dependents |", "|---|---|"]
-    for n, c in f["hubs"][:8]:
-        out.append(f"| {n} | {c} |")
-    if a:
-        out += ["", "## Actions", "",
-                f"{a['imports']} imports, {a['exports']} exports, {a['processes']} processes. Latest run {a['latest_run'] or 'unknown'}; "
-                f"stale = not run since {a['stale_cutoff'] or 'n/a'}.", "",
-                f"- Imports not in any process: {a['orphan_count']}" + (f" (e.g. {', '.join(a['orphans'][:4])})" if a["orphans"] else ""),
-                f"- Stale or never-run imports and exports: {a['stale_count']}" + (f" (e.g. {', '.join(f'{n} [{d}]' for n, d in a['stale'][:4])})" if a["stale"] else ""),
-                "- Slowest actions: " + ", ".join(f"{n} {ms / 1000:.0f}s" for n, ms in a["slow"][:5]),
-                "- Most imported-into: " + ", ".join(f"{t} ({n})" for t, n in a["imports_by_target"][:6])]
-    out += ["", f"## Patterns ({f['findings']} findings in {f['patterns']} patterns)", ""]
-    from .cluster import render_markdown as rc
-    out.append(rc(m.clusters, max_rows=max_patterns))
-    return out
+def render_markdown(er: EstateRun, max_patterns: int = 0) -> str:
+    from . import report
+    return report.render_markdown(er)

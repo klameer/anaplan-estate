@@ -47,6 +47,7 @@ class Rule:
     fn: object
     thresholds: dict = field(default_factory=dict)
     planual: tuple[str, ...] = ()      # Planual rule ids this rule rests on (support.anaplan.com Planual, chapter 2 Classic)
+    docs: tuple[str, ...] = ()         # keys into DOCS: official help pages this rule rests on
 
 
 RULES: dict[str, Rule] = {}
@@ -65,9 +66,28 @@ PLANUAL = {
 }
 
 
-def rule(id, title, severity, source, description, planual=(), **thresholds):
+# Official Anaplan documentation consulted 2026-09-22 (help.anaplan.com). Quoted where a rule rests on it.
+DOCS = {
+    "operators": ("Operators and constants", "https://help.anaplan.com/operators-and-constants-f1c2ec15-34af-4ebe-8114-530cf7c9f3bc",
+                  "If the divisor is zero, the operator returns zero as the result (the DIVIDE function returns Infinity)."),
+    "divide": ("DIVIDE", "https://help.anaplan.com/divide-254b1b2b-aa78-4ecf-a21a-e066d1accd9a",
+               "DIVIDE(50,0) returns Infinity; DIVIDE(-45,0) returns -Infinity."),
+    "lookup": ("LOOKUP", "https://help.anaplan.com/lookup-f8baa402-606d-4764-a349-d8003fa383be",
+               "Never use SUM and LOOKUP in the same formula. This can lead to extremely long calculation times."),
+    "select": ("SELECT", "https://help.anaplan.com/select-2ca3148d-466e-44bd-830e-7e5cf3ac8d08",
+               "Never combine SUM and SELECT in the same formula. Create two separate line items. We don't recommend the use of the SELECT function in conjunction with non-generic time periods."),
+    "collect": ("COLLECT", "https://help.anaplan.com/collect-887a0bce-034b-4a0b-9e5f-262ec2f47e35",
+                "The source modules must contain the line items in the line item subset used in the result module. The result module must have a line item subset as a dimension."),
+    "line-items": ("Configure line items", "https://help.anaplan.com/configure-line-items-e7de33be-6345-4ecc-a517-c3265ff6d04a",
+                   "Calculation Effort: a percentage that represents the calculation effort of the line item. Classic: measured across the entire model when the model opens. Polaris: against the total effort of all line items over the last 10 minutes."),
+    "actions": ("Imports and exports as actions", "https://help.anaplan.com/imports-and-exports-as-actions-b945e7f1-71c8-42ce-82ec-0987edd28bea",
+                "Workspace administrators can run both import and export actions from the Actions pane; add them to a page in the user experience; any user can run import or export actions via the Anaplan Integrations API."),
+}
+
+
+def rule(id, title, severity, source, description, planual=(), docs=(), **thresholds):
     def deco(fn):
-        RULES[id] = Rule(id, title, severity, source, description, fn, thresholds, tuple(planual))
+        RULES[id] = Rule(id, title, severity, source, description, fn, thresholds, tuple(planual), tuple(docs))
         return fn
     return deco
 
@@ -134,13 +154,13 @@ def _token_count(formula: str) -> int:
 
 # ---------- rules ----------
 
-@rule("A-LI-COUNT", "More than 50 line items in a module", "major", "ANAPLAN",
-      "Modules with many line items are slow to open and hard to maintain. Anaplan's checklist: no more than 50.", planual=("2.01-12", "2.02-18",), max_line_items=50)
+@rule("A-LI-COUNT", "More than 50 line items in a module", "minor", "ANAPLAN",
+      "Anaplan's checklist suggests reviewing modules with more than 50 line items. Many line items can be a sign of mixed purposes; it can also be a deliberate, well-understood input grid. Prompts a review, not a target.", planual=("2.01-12", "2.02-18",), max_line_items=50)
 def r_li_count(m: Model, g: Graph, t):
     for name, mod in m.modules.items():
         n = sum(1 for li in m.by_module(name) if not li.is_header)
         if n > t["max_line_items"]:
-            yield Finding("A-LI-COUNT", "major", name, None, f"{n} line items", "Split into modules by purpose (DISCO).", "ANAPLAN", str(n))
+            yield Finding("A-LI-COUNT", "minor", name, None, f"{n} line items", "Review whether the module serves more than one purpose; split only where readers would benefit.", "ANAPLAN", str(n))
 
 
 @rule("A-SUMMARY-ON", "Summary method on where a formula suggests it is not needed", "minor", "ANAPLAN",
@@ -150,7 +170,7 @@ def r_summary(m: Model, g: Graph, t):
         if li.is_header or li.format_type != "NUMBER" or li.cell_count < t["min_cells"]:
             continue
         if li.summary and li.summary.split(";")[0] not in ("NONE", "", "-") and not g.rev.get(k):
-            yield Finding("A-SUMMARY-ON", "minor", li.module, li.name, f"summary {li.summary}, referenced by no formula", "Set summary to None unless a view needs the total.", "ANAPLAN", li.summary)
+            yield Finding("A-SUMMARY-ON", "minor", li.module, li.name, f"summary {li.summary}, referenced by no formula", "Check whether a page or export needs the totals before changing the summary method.", "ANAPLAN", li.summary)
 
 
 @rule("A-TEXT-FORMAT", "Text-formatted line item", "minor", "ANAPLAN",
@@ -162,7 +182,7 @@ def r_text(m: Model, g: Graph, t):
 
 
 @rule("A-SUBSIDIARY", "Subsidiary view on a calculation line item", "major", "ANAPLAN",
-      "A line item whose Applies To differs from its module's is a subsidiary view. Anaplan's checklist: display and export only, never calculation data.", planual=("2.01-06",))
+      "A line item whose Applies To differs from its module's is a subsidiary view. The concern: its dimensions are not visible at module level, so readers and the next builder can misjudge what a reference returns, and the engine maps between the two dimension sets on every read. Anaplan's checklist: display and export only.", planual=("2.01-06",))
 def r_subsidiary(m: Model, g: Graph, t):
     if not m.has_modules_export:
         return
@@ -173,16 +193,16 @@ def r_subsidiary(m: Model, g: Graph, t):
         if set(li.applies_to) != set(mod.applies_to) and li.formula and g.rev.get(k):
             yield Finding("A-SUBSIDIARY", "major", li.module, li.name,
                           f"applies to {', '.join(li.applies_to)} in a module on {', '.join(mod.applies_to)}; used by {len(g.rev[k])} formulas",
-                          "Move to a module dimensioned as the line item is.", "ANAPLAN", str(len(g.rev[k])))
+                          "Consider a module dimensioned as the line item is, if the readers would be clearer for it.", "ANAPLAN", str(len(g.rev[k])))
 
 
 @rule("A-DAISY", "Daisy-chain formula", "major", "ANAPLAN",
-      "A references B references C where each is a pure pass-through; the whole sequence recalculates on any change. Anaplan's checklist: never.", planual=("2.02-19",), min_len=3)
+      "A references B references C where each is a pure copy. Each step is a stored copy of the same values, and a change of source needs every step re-pointed. A pass-through can also be a deliberate interface (a reporting contract, a security boundary, a stable import source). Anaplan's checklist advises against chains.", planual=("2.02-19",), min_len=3)
 def r_daisy(m: Model, g: Graph, t):
     for chain in g.daisy_chains(min_len=t["min_len"]):
         a, b = chain[0], chain[-1]
         yield Finding("A-DAISY", "major", a[0], a[1], f"{len(chain)}-step pass-through chain ending at {b[0]}.{b[1]}",
-                      f"Reference {b[0]}.{b[1]} directly.", "ANAPLAN", str(len(chain)))
+                      f"Consider referencing {b[0]}.{b[1]} directly, unless an intermediate exists as an interface.", "ANAPLAN", str(len(chain)))
 
 
 @rule("A-IF-COUNT", "Formula with more than 10 IF THEN ELSE", "major", "ANAPLAN",
@@ -239,22 +259,49 @@ def r_finditem(m: Model, g: Graph, t):
             yield Finding("A-FINDITEM", "minor", li.module, li.name, f"FINDITEM in a {li.cell_count:,}-cell line item", "Map once in a systems module.", "ANAPLAN", str(li.cell_count))
 
 
-@rule("F-MIXED-CLAUSE", "SUM and LOOKUP (or SELECT) in one bracket", "major", "FORMULA",
-      "Anapedia: never combine SUM with LOOKUP or SELECT in the same expression; the engine builds a large intermediate mapping.", planual=("2.02-08", "2.02-14",))
+@rule("F-MIXED-CLAUSE", "SUM with LOOKUP or SELECT in the same formula", "major", "FORMULA",
+      "Anaplan's LOOKUP page: never use SUM and LOOKUP in the same formula; the SELECT page: never combine SUM and SELECT in the same formula, create two line items. "
+      "LOOKUP together with SELECT is not covered by that guidance and is not flagged here. Whether splitting helps a given formula is not guaranteed; it is the documented starting point.",
+      planual=("2.02-08", "2.02-14",), docs=("lookup", "select"))
 def r_mixed(m: Model, g: Graph, t):
-    bad = {("LOOKUP", "SUM"), ("SELECT", "SUM"), ("LOOKUP", "SELECT")}
     for li in m.line_items.values():
         ast = _ast(li)
         if ast is None:
             continue
-        for kinds in _clause_kinds(ast):
-            if len(kinds) >= 2 and any(set(b) <= set(kinds) for b in bad):
-                yield Finding("F-MIXED-CLAUSE", "major", li.module, li.name, f"[{' + '.join(kinds)}] in one bracket", "Split into two line items: aggregate first, then look up.", "FORMULA", "+".join(kinds))
-                break
+        kinds = set()
+        for ks in _clause_kinds(ast):
+            kinds.update(ks)
+        if "SUM" in kinds and ("LOOKUP" in kinds or "SELECT" in kinds):
+            with_ = "+".join(k for k in ("LOOKUP", "SELECT") if k in kinds)
+            same_bracket = any(len(ks) >= 2 and "SUM" in ks for ks in _clause_kinds(ast))
+            yield Finding("F-MIXED-CLAUSE", "major", li.module, li.name,
+                          f"SUM with {with_} in one formula" + (" (in the same bracket)" if same_bracket else " (separate brackets)"),
+                          "Documented approach: aggregate in one line item, then look up or select from it in another. Confirm on this model before and after.", "FORMULA", f"SUM+{with_}")
+
+
+@rule("F-SELECT-TIME", "SELECT on a specific time period or version", "minor", "FORMULA",
+      "Anaplan's SELECT page: not recommended with non-generic time periods, because the hard-coded element has to be revisited when the timescale changes. Version selections are listed for the same reason.",
+      planual=("2.02-12", "2.02-14",), docs=("select",))
+def r_select_time(m: Model, g: Graph, t):
+    for li in m.line_items.values():
+        ast = _ast(li)
+        if ast is None:
+            continue
+        sel = []
+        for n in _walk(ast):
+            if n.get("t") == "clause":
+                for c in n["clauses"]:
+                    if c.get("k") == "SELECT":
+                        p = c.get("m", {}).get("path", []) if isinstance(c.get("m"), dict) else []
+                        if p and p[0].upper() in ("TIME", "VERSIONS", "VERSION"):
+                            sel.append(".".join(p))
+        if sel:
+            yield Finding("F-SELECT-TIME", "minor", li.module, li.name, "SELECT: " + ", ".join(sorted(set(sel))[:4]),
+                          "Check whether a time-formatted or version-formatted line item and LOOKUP would remove the hard-coded period.", "FORMULA", str(len(set(sel))))
 
 
 @rule("F-HARDCODE", "Hard-coded constant in a formula", "minor", "FORMULA",
-      "Numbers other than 0, 1, 100, 12 inside formulas are assumptions that belong in an input line item.", planual=("2.01-09", "2.02-12",), ignore=("0", "1", "100", "12", "1000", "1000000", "2", "3", "4", "-1", "0.5"))
+      "Numbers inside formulas may be assumptions (a rate, a threshold) that belong in a named input line item. The same literal can mean different things in different formulas; each occurrence needs its own reading.", planual=("2.01-09", "2.02-12",), ignore=("0", "1", "100", "12", "1000", "1000000", "2", "3", "4", "-1", "0.5"))
 def r_hardcode(m: Model, g: Graph, t):
     for li in m.line_items.values():
         ast = _ast(li)
@@ -265,7 +312,7 @@ def r_hardcode(m: Model, g: Graph, t):
         arg_nums = {a["v"] for n in _walk(ast) if n.get("t") == "call" for a in n["args"] if a.get("t") == "num"}
         nums = [v for v in nums if v not in arg_nums]
         if nums:
-            yield Finding("F-HARDCODE", "minor", li.module, li.name, f"constants {', '.join(sorted(set(nums))[:4])}", "Move to an input line item with a name and a note.", "FORMULA", ",".join(sorted(set(nums))[:4]))
+            yield Finding("F-HARDCODE", "minor", li.module, li.name, f"constants {', '.join(sorted(set(nums))[:4])}", "Decide whether the number is an assumption; if so, give it a named input line item and a note.", "FORMULA", ",".join(sorted(set(nums))[:4]))
 
 
 @rule("F-LONG", "Very long formula", "minor", "FORMULA",
@@ -279,24 +326,24 @@ def r_long(m: Model, g: Graph, t):
             yield Finding("F-LONG", "minor", li.module, li.name, f"{n} tokens", "Break into named intermediate line items.", "FORMULA", str(n))
 
 
-@rule("F-DIVIDE", "Division with no zero guard", "major", "FORMULA",
-      "A / B errors when B is zero; the summary then shows an error too. Use DIVIDE() or guard with IF.")
-def r_divide(m: Model, g: Graph, t):
+@rule("F-DIVIDE-FN", "DIVIDE() used: Infinity on a zero divisor", "info", "FORMULA",
+      "Anaplan's operator page: the / operator returns zero when the divisor is zero, and the DIVIDE function returns Infinity (DIVIDE(-45,0) returns -Infinity). "
+      "Neither is an error. Listed so the owner can confirm which display is intended where a divisor can be zero; ordinary division with / needs no guard.",
+      docs=("operators", "divide"))
+def r_divide_fn(m: Model, g: Graph, t):
     for li in m.line_items.values():
         ast = _ast(li)
         if ast is None:
             continue
-        has_div = any(n.get("t") == "bin" and n["op"] == "/" and n["r"].get("t") != "num" for n in _walk(ast))
-        guarded = _if_count(ast) > 0 or "DIVIDE" in _calls(ast)
-        if has_div and not guarded:
-            yield Finding("F-DIVIDE", "major", li.module, li.name, "unguarded / by a line item", "Use DIVIDE(a, b) or IF b <> 0 THEN a / b ELSE 0.", "FORMULA")
+        if "DIVIDE" in _calls(ast):
+            yield Finding("F-DIVIDE-FN", "info", li.module, li.name, "DIVIDE() present", "Confirm that Infinity or NaN is acceptable where the divisor is zero; if a zero is wanted, / gives it.", "FORMULA")
 
 
-@rule("F-PARSE", "Formula does not parse", "critical", "FORMULA",
-      "The parser rejected this formula; either the grammar has a gap or the export is corrupt.")
+@rule("F-PARSE", "Formula not parsed (analysis limitation)", "info", "FORMULA",
+      "The parser did not follow this formula, so its references are missing from the dependency graph. This is a limitation of the analysis, not evidence of a model defect.")
 def r_parse(m: Model, g: Graph, t):
     for k, err in g.parse_errors.items():
-        yield Finding("F-PARSE", "critical", k[0], k[1], err[:120], "Report the formula shape.", "FORMULA")
+        yield Finding("F-PARSE", "info", k[0], k[1], err[:120], "Treat dependency counts touching this line item as incomplete.", "FORMULA")
 
 
 TIME_OFFSET_FNS = ("PREVIOUS", "NEXT", "LAG", "LEAD", "OFFSET", "CUMULATE", "DECUMULATE", "MOVINGSUM",
@@ -321,17 +368,17 @@ def r_cycle(m: Model, g: Graph, t):
             yield Finding("G-CYCLE", "info", a[0], a[1], f"balance pattern via {'/'.join(sorted(fns))}: {names}",
                           "Confirm the opening/closing pattern is intended.", "GRAPH", str(len(comp)))
         else:
-            yield Finding("G-CYCLE", "critical", a[0], a[1], f"cycle with no time offset: {names}",
-                          "Anaplan would reject this; the parser has misread a reference. Report the formulas.", "GRAPH", str(len(comp)))
+            yield Finding("G-CYCLE", "info", a[0], a[1], f"cycle with no time offset: {names}",
+                          "Anaplan rejects direct circular references, so this is most likely a reference the parser misread: an analysis limitation.", "GRAPH", str(len(comp)))
 
 
-@rule("G-UNUSED", "Line item with a formula that nothing references", "info", "GRAPH",
-      "Not used by any formula. May be used by a view, export or dashboard, which the exports do not show; confirm before removing.", min_cells=50000)
+@rule("G-UNUSED", "No consumers detected within the inspected dependency types", "info", "GRAPH",
+      "Calculated, and no formula in the export references it. Consumers the exports do not show: pages and dashboards, saved views (including views another model imports), line item subsets, filters, access drivers, actions and integrations. Not the same as unused.", min_cells=50000)
 def r_unused(m: Model, g: Graph, t):
     for k in g.unused():
         li = m.line_items[k]
         if li.formula and li.cell_count >= t["min_cells"]:
-            yield Finding("G-UNUSED", "info", li.module, li.name, f"calculated, {li.cell_count:,} cells, referenced by no formula", "Check views and exports; remove if unused.", "GRAPH", str(li.cell_count))
+            yield Finding("G-UNUSED", "info", li.module, li.name, f"calculated, {li.cell_count:,} cells, no formula consumer detected", "Check pages, saved views, line item subsets and integrations before treating as unused.", "GRAPH", str(li.cell_count))
 
 
 @rule("G-HUB", "Hub line item", "info", "GRAPH",
@@ -340,7 +387,7 @@ def r_hub(m: Model, g: Graph, t):
     for k, n in g.hubs(50):
         if n >= t["min_dependents"]:
             imp = g.impact(k)
-            yield Finding("G-HUB", "info", k[0], k[1], f"{n} direct dependents, {len(imp)} downstream across {len({x[0] for x in imp})} modules", "Cover in every release test.", "GRAPH", str(n))
+            yield Finding("G-HUB", "info", k[0], k[1], f"{n} direct dependents, {len(imp)} downstream across {len({x[0] for x in imp})} modules", "Include in change-impact checks.", "GRAPH", str(n))
 
 
 @rule("G-EMPTY-MODULE", "Module with no line items", "minor", "GRAPH",

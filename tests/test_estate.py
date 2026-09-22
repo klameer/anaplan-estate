@@ -20,7 +20,7 @@ def test_estate_run_edges_duplicates_actions():
     assert er.duplicates and er.duplicates[0]["line_item"] == "Current Period?"
     hr = next(m for m in er.models if m.name == "Caldergate HR")
     a = hr.facts["actions"]
-    assert a["orphan_count"] == 1 and a["stale_count"] == 1          # Import Open Roles.csv: no process, never run
+    assert a["not_in_process_count"] == 1 and a["no_recent_run_count"] == 1          # Import Open Roles.csv: no process, no recorded run
     assert hr.facts["has_effort"] and hr.facts["effort_top"][0][0] == "CAL01 Headcount Cost.Cost"
     pl = next(m for m in er.models if m.name == "Caldergate Planning")
     assert pl.facts["actions"]["stale_count"] == 1                    # FX import last run 2024
@@ -32,11 +32,12 @@ def test_estate_run_edges_duplicates_actions():
 def test_render_and_cli(tmp_path, capsys):
     er = fleet.run(FX)
     md = fleet.render_markdown(er)
-    for h in ("# Anaplan estate: 2 models", "How the models connect", "flowchart LR", "Logic duplicated", "## Procedures performed", "# Caldergate HR", "Where the calculation time goes"):
+    for h in ("# Anaplan estate: 2 models", "## Summary", "flowchart LR", "## Findings register", "## Methodology", "### Caldergate HR", "Rules skipped or limited"):
         assert h in md
-    main([str(FX), "--out", str(tmp_path / "e.md"), "--json", str(tmp_path / "e.json")])
+    main([str(FX), "--out", str(tmp_path / "e.md"), "--json", str(tmp_path / "e.json"), "--html", str(tmp_path / "e.html"), "--csv", str(tmp_path / "e.csv")])
     j = json.loads((tmp_path / "e.json").read_text(encoding="utf-8"))
-    assert j["edges"][0]["to"] == "Caldergate HR"
+    assert j["map"]["edges"][0]["to"] == "Caldergate HR" and j["map"]["edges"][0]["confirmed"] is False
+    assert (tmp_path / "e.html").stat().st_size > 10000 and (tmp_path / "e.csv").read_text(encoding="utf-8").startswith("id,area,title")
     main([str(FX), "--list"]); assert "Caldergate HR" in capsys.readouterr().out
 
 
@@ -50,13 +51,14 @@ def test_example_estate_finds_the_planted_faults():
     assert set(by) == {"Caldergate Data Hub", "Caldergate FP&A", "Workforce Planning", "Board Reporting"}
     assert all(m.facts["parse_rate"] == 1.0 for m in er.models)
     fp = by["Caldergate FP&A"].lint.counts["by_rule"]
-    for rule in ("A-LI-COUNT", "A-IF-COUNT", "F-LONG", "F-HARDCODE", "F-DIVIDE", "F-MIXED-CLAUSE", "A-DAISY", "G-CYCLE",
+    for rule in ("A-LI-COUNT", "A-IF-COUNT", "F-LONG", "F-HARDCODE", "F-DIVIDE-FN", "F-MIXED-CLAUSE", "F-SELECT-TIME", "A-DAISY", "G-CYCLE",
                  "G-HUB", "G-EMPTY-MODULE", "A-SUBSIDIARY", "A-TEXT-FORMAT", "A-FINDITEM", "A-TEXT-JOIN", "A-SUMMARY-ON", "G-UNUSED"):
         assert fp.get(rule), rule
-    assert by["Caldergate FP&A"].facts["effort_by_module"][0][0] == "CAL05 Opex OLD"        # the leftover module carries the time
+    assert "F-DIVIDE" not in fp
+    assert by["Caldergate FP&A"].facts["effort_by_module"][0][0] == "CAL05 Opex OLD"
     assert by["Caldergate FP&A"].facts["hubs"][0][0] == "SYS01 Time Settings.Actual?"
     acts = by["Caldergate FP&A"].facts["actions"]
-    assert "Import from Caldergate Hub v1 - Cost Centres" in acts["orphans"] and any(s[0] == "Import FX from Treasury file" for s in acts["stale"])
+    assert "Import from Caldergate Hub v1 - Cost Centres" in acts["not_in_process"] and any(s[0] == "Import FX from Treasury file" for s in acts["no_recent_run"])
     assert "Caldergate Hub v1" in er.external and len(er.external["Workday"]) == 2
     assert {(e["from"], e["to"]) for e in er.edges} >= {("Caldergate Data Hub", "Caldergate FP&A"), ("Workforce Planning", "Caldergate FP&A"),
                                                         ("Caldergate FP&A", "Board Reporting"), ("Caldergate Data Hub", "Workforce Planning")}
@@ -64,22 +66,20 @@ def test_example_estate_finds_the_planted_faults():
     assert not by["Workforce Planning"].facts["has_effort"]
 
 
-def test_example_estate_action_list():
+def test_example_estate_findings():
     er = fleet.run(EX)
-    acts = er.actions
-    assert acts and acts[0].title.startswith("Retire CAL05 Opex OLD")            # the dead module tops the list
-    assert acts[0].payoff["cells"] > 50_000_000 and acts[0].confidence == "check pages"
-    kinds = {a.kind for a in acts}
-    assert {"retire", "merge", "collapse", "fix", "refactor", "tidy", "schedule", "dedupe"} <= kinds
-    titles = " | ".join(a.title for a in acts)
-    for frag in ("mapping module", "hard-coded constant", "divisions that error on zero", "pass-through chain", "single owner", "imports and exports"):
+    fs = er.findings
+    assert fs and fs[0].area == "usage" and "CAL05 Opex OLD" in fs[0].objects       # the leftover module leads
+    assert fs[0].strength == "partial" and fs[0].benefit_kind == "conditional" and any("saved views" in x for x in fs[0].missing)
+    areas = {f.area for f in fs}
+    assert {"usage", "maintain", "dependency", "capacity", "integration"} <= areas
+    titles = " | ".join(f.title for f in fs)
+    for frag in ("lookup table", "Numeric literals", "DIVIDE()", "Pass-through", "more than one model", "no recent recorded run", "differ in exactly one place"):
         assert frag in titles, frag
-    assert not any("1 groups" in a.title or "1 line items" in a.title for a in acts)   # plurals
-    assert all(a.steps and a.verify for a in acts)
+    assert all(f.next_step and f.keep_design and f.basis for f in fs)
     md = fleet.render_markdown(er)
-    assert md.index("## What to do") < md.index("\n# Actions in detail\n") < md.index("\n# The estate\n")
+    assert md.index("## Summary") < md.index("\n# Findings\n") < md.index("\n# Reference\n")
     fp = next(m for m in er.models if m.name == "Caldergate FP&A")
     r = fp.redundancy.counts()
-    assert r["aliases"] >= 10 and r["superseded"] >= 1
-    # a downstream summary module is never called superseded by its own source
-    assert not any(s["module"] == "CAL06 Department Summary" and s["by"] for s in fp.redundancy.superseded)
+    assert r["aliases"] >= 10 and (r["orphan_modules"] + r["overlap"]) >= 1
+    assert not any(s.get("target") == "CAL07 P&L by Cost Centre" and s["module"] == "CAL06 Department Summary" for s in fp.redundancy.overlap)
