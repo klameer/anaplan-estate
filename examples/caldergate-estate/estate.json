@@ -35,7 +35,7 @@
    "evidence": [
     "Readers outside the module: 0. Exports reading it: 0. Twin module: CAL03 Opex (2 matches)."
    ],
-   "score": 16.797,
+   "score": 51.455,
    "rules": []
   },
   {
@@ -84,58 +84,53 @@
     "| 6510 Audit | `INP02 Opex Drivers.Audit Fees` |",
     "| 6600 Recruitment | `INP02 Opex Drivers.Recruitment Fees` |"
    ],
-   "score": 14.673,
+   "score": 16.611,
    "rules": [
     "A-IF-COUNT"
    ]
   },
   {
    "id": "A3",
-   "kind": "merge",
-   "title": "Reconcile 6 pairs of formulas that differ in exactly one place",
+   "kind": "retire",
+   "title": "Confirm and retire 5 calculated line items that no formula, export or twin explains",
    "model": "Caldergate FP&A",
    "objects": [
-    "CAL03 Opex.Actual Opex",
-    "CAL03 Opex.Opex GBP",
-    "CAL02 Revenue.Gross Revenue",
-    "CAL01 Volumes.Sellable Units Prior Year",
-    "CAL02 Revenue.Revenue GBP",
-    "CAL07 P&L by Cost Centre.Opex Budget"
+    "DAT01 Actuals GL",
+    "CAL03 Opex",
+    "CAL02 Revenue"
    ],
    "payoff": {
-    "cells": 10163664,
-    "effort": 0,
-    "objects": 6
+    "cells": 15126048,
+    "effort": 10.04,
+    "objects": 5
    },
    "touches": {
     "readers": 0,
     "exports": 0,
     "downstream_models": 0,
-    "pages": "n/a"
+    "pages": "unknown"
    },
-   "confidence": "judgment",
-   "why": "Same formula skeleton, same dimensions, one leaf differs: a constant, a reference or a list item. This is what copy, paste and tweak leaves behind. Either the difference is intended (then the name should say so) or one of the pair is the stale copy.",
+   "confidence": "check pages",
+   "why": "Calculated, read by no formula, not exported, not in an output-style module, and not a twin of anything. Either a page reads them or nothing does. (30 other unreferenced line items look like page outputs by their module, format or time scale and are not listed here.)",
    "steps": [
-    "For each pair, read the difference column and decide: intended, or drift.",
-    "Intended: rename so the difference is in the name, or add a note.",
-    "Drift: fix the stale one, or merge as an exact duplicate."
+    "For each module, list the pages that use it.",
+    "Where nothing does, set the formula blank in a sandbox and wait a cycle.",
+    "Delete what nobody missed."
    ],
    "verify": [
-    "Re-run this report: pairs that were drift are gone; pairs that were intended carry a note."
+    "Cell count falls by what was deleted.",
+    "Re-run this report: the unknown list shrinks to the ones a page needs."
    ],
    "evidence": [
-    "| Line item | Near twin | The one difference | Cells |",
+    "| Module | Line items with no reader | Cells | Effort |",
     "|---|---|---|---|",
-    "| CAL03 Opex.Actual Opex | CAL05 Opex OLD.Actual | `SYS03 Account Attributes.Opex?` vs `SYS01 Time Settings.Actual?` | 5.0M |",
-    "| CAL03 Opex.Opex GBP | CAL05 Opex OLD.Opex GBP | `CAL03 Opex.Opex` vs `CAL05 Opex OLD.Opex` | 5.0M |",
-    "| CAL02 Revenue.Gross Revenue | CAL04 Margn.COGS | `INP01 Volumes.Price` vs `INP06 Unit Costs.Landed Cost` | 36.3K |",
-    "| CAL01 Volumes.Sellable Units Prior Year | CAL02 Revenue.Revenue Prior Year | `CAL01 Volumes.Sellable Units` vs `CAL02 Revenue.Revenue GBP` | 36.3K |",
-    "| CAL02 Revenue.Revenue GBP | CAL04 Margn.Margin GBP | `CAL02 Revenue.Net Revenue` vs `CAL04 Margn.Margin` | 36.3K |",
-    "| CAL07 P&L by Cost Centre.Opex Budget | OUT02 Board Pack.Budget Revenue | `CAL07 P&L by Cost Centre.Opex` vs `OUT01 Management Pack.Revenue` | 19.2K |"
+    "| DAT01 Actuals GL | 2: Journal Cost Centre, Loaded? | 10.0M | 7.71% |",
+    "| CAL03 Opex | 1: Opex Variance | 5.0M | 2.31% |",
+    "| CAL02 Revenue | 2: Revenue USD, VAT | 72.6K | 0.02% |"
    ],
-   "score": 7.632,
+   "score": 11.42,
    "rules": [
-    "REDUNDANT-NEAR"
+    "G-UNUSED"
    ]
   },
   {
@@ -214,7 +209,7 @@
     "| Board Reporting | DAT01 P&L.EBITDA | SUM | 19.2K |",
     "| Board Reporting | DAT01 P&L.Staff Cost | SUM | 19.2K |"
    ],
-   "score": 3.7,
+   "score": 4.739,
    "rules": [
     "A-SUMMARY-ON"
    ]
@@ -231,8 +226,8 @@
     "Import from Caldergate Hub v1 - Cost Centres",
     "Import FX from Treasury file",
     "Export Opex Drivers to Excel",
-    "Export Assumptions for Workforce",
-    "Import Budget from Excel"
+    "Import Budget from Excel",
+    "Export Assumptions for Workforce"
    ],
    "payoff": {
     "cells": 0,
@@ -265,118 +260,18 @@
     "| Caldergate FP&A | Import from Caldergate Hub v1 - Cost Centres | 2021-03-19 | no | SYS02 Cost Centre Attributes |",
     "| Caldergate FP&A | Import FX from Treasury file | 2023-11-02 | no | SYS05 FX Rates |",
     "| Caldergate FP&A | Export Opex Drivers to Excel | 2024-05-30 | no | INP02 Opex Drivers |",
-    "| Caldergate FP&A | Export Assumptions for Workforce | recent | no | SYS00 Model Settings |",
     "| Caldergate FP&A | Import Budget from Excel | recent | no | INP02 Opex Drivers |",
+    "| Caldergate FP&A | Export Assumptions for Workforce | recent | no | SYS00 Model Settings |",
     "| Workforce Planning | Import from Caldergate FP&A - Assumptions | 2022-08-17 | no | Inputs - Settings |",
     "| Workforce Planning | Export Leavers Report | 2024-12-19 | no | Calcs - Attrition |",
     "| Workforce Planning | Export Headcount by Department | recent | no | Reports - Headcount |",
     "| Board Reporting | Export Board Pack PDF Data | recent | no | OUT01 Board Dashboard |"
    ],
-   "score": 3.6,
+   "score": 3.342,
    "rules": []
   },
   {
    "id": "A6",
-   "kind": "retire",
-   "title": "Confirm and retire 5 calculated line items that no formula, export or twin explains",
-   "model": "Caldergate FP&A",
-   "objects": [
-    "DAT01 Actuals GL",
-    "CAL03 Opex",
-    "CAL02 Revenue"
-   ],
-   "payoff": {
-    "cells": 15126048,
-    "effort": 10.04,
-    "objects": 5
-   },
-   "touches": {
-    "readers": 0,
-    "exports": 0,
-    "downstream_models": 0,
-    "pages": "unknown"
-   },
-   "confidence": "check pages",
-   "why": "Calculated, read by no formula, not exported, not in an output-style module, and not a twin of anything. Either a page reads them or nothing does. (30 other unreferenced line items look like page outputs by their module, format or time scale and are not listed here.)",
-   "steps": [
-    "For each module, list the pages that use it.",
-    "Where nothing does, set the formula blank in a sandbox and wait a cycle.",
-    "Delete what nobody missed."
-   ],
-   "verify": [
-    "Cell count falls by what was deleted.",
-    "Re-run this report: the unknown list shrinks to the ones a page needs."
-   ],
-   "evidence": [
-    "| Module | Line items with no reader | Cells | Effort |",
-    "|---|---|---|---|",
-    "| DAT01 Actuals GL | 2: Journal Cost Centre, Loaded? | 10.0M | 7.71% |",
-    "| CAL03 Opex | 1: Opex Variance | 5.0M | 2.31% |",
-    "| CAL02 Revenue | 2: Revenue USD, VAT | 72.6K | 0.02% |"
-   ],
-   "score": 3.501,
-   "rules": [
-    "G-UNUSED"
-   ]
-  },
-  {
-   "id": "A7",
-   "kind": "refactor",
-   "title": "Move 11 hard-coded constants into assumptions modules",
-   "model": "Caldergate FP&A, Workforce Planning",
-   "objects": [
-    "1.27",
-    "0.2",
-    "30",
-    "0.25",
-    "10",
-    "119",
-    "120",
-    "239"
-   ],
-   "payoff": {
-    "cells": 0,
-    "effort": 0,
-    "objects": 9
-   },
-   "touches": {
-    "readers": 0,
-    "exports": 0,
-    "downstream_models": 0,
-    "pages": "n/a"
-   },
-   "confidence": "proven",
-   "why": "Numbers inside formulas are assumptions nobody can see or change without a model builder. The same constant in more than one formula drifts.",
-   "steps": [
-    "Create (or reuse) a settings module per model with one line item per constant, named, with a note saying who owns it.",
-    "Replace each constant with the reference.",
-    "Tell the owner where the number now lives."
-   ],
-   "verify": [
-    "Search formulas for the constant: zero hits."
-   ],
-   "evidence": [
-    "| Constant | Used in | Suggested input |",
-    "|---|---|---|",
-    "| 0.1 | Workforce Planning: Calcs - Cost.Bonus, Workforce Planning: Calcs - Headcount by CC.Bonus % | Assumption 1 |",
-    "| 1.27 | Caldergate FP&A: CAL02 Revenue.Revenue USD | Assumption 2 |",
-    "| 0.2 | Caldergate FP&A: CAL02 Revenue.VAT | Assumption 3 |",
-    "| 30 | Caldergate FP&A: CAL08 Cash Flow.Debtors | Assumption 4 |",
-    "| 0.25 | Caldergate FP&A: CAL08 Cash Flow.Tax | Assumption 5 |",
-    "| 10 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 6 |",
-    "| 119 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 7 |",
-    "| 120 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 8 |",
-    "| 239 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 9 |",
-    "| 0.05 | Caldergate FP&A: INP03 Headcount.Pension | Assumption 10 |",
-    "| 11 | Workforce Planning: Calcs - Attrition.Annualised Attrition | Assumption 11 |"
-   ],
-   "score": 0.9,
-   "rules": [
-    "F-HARDCODE"
-   ]
-  },
-  {
-   "id": "A8",
    "kind": "tidy",
    "title": "Move 18 text and lookup line items out of large calculation modules",
    "model": "3 models",
@@ -432,7 +327,7 @@
     "| Workforce Planning | Data - Employees.Name and Role | Text-formatted line item | 66.6K |",
     "| Workforce Planning | Data - Employees.Name and Role | Text concatenation in a large line item | 66.6K |"
    ],
-   "score": 0.857,
+   "score": 3.144,
    "rules": [
     "A-TEXT-FORMAT",
     "A-FINDITEM",
@@ -441,7 +336,63 @@
    ]
   },
   {
-   "id": "A9",
+   "id": "A7",
+   "kind": "refactor",
+   "title": "Move 11 hard-coded constants into assumptions modules",
+   "model": "Caldergate FP&A, Workforce Planning",
+   "objects": [
+    "1.27",
+    "0.2",
+    "30",
+    "0.25",
+    "10",
+    "119",
+    "120",
+    "239"
+   ],
+   "payoff": {
+    "cells": 0,
+    "effort": 0,
+    "objects": 9
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "n/a"
+   },
+   "confidence": "proven",
+   "why": "Numbers inside formulas are assumptions nobody can see or change without a model builder. The same constant in more than one formula drifts.",
+   "steps": [
+    "Create (or reuse) a settings module per model with one line item per constant, named, with a note saying who owns it.",
+    "Replace each constant with the reference.",
+    "Tell the owner where the number now lives."
+   ],
+   "verify": [
+    "Search formulas for the constant: zero hits."
+   ],
+   "evidence": [
+    "| Constant | Used in | Suggested input |",
+    "|---|---|---|",
+    "| 0.1 | Workforce Planning: Calcs - Cost.Bonus, Workforce Planning: Calcs - Headcount by CC.Bonus % | Assumption 1 |",
+    "| 1.27 | Caldergate FP&A: CAL02 Revenue.Revenue USD | Assumption 2 |",
+    "| 0.2 | Caldergate FP&A: CAL02 Revenue.VAT | Assumption 3 |",
+    "| 30 | Caldergate FP&A: CAL08 Cash Flow.Debtors | Assumption 4 |",
+    "| 0.25 | Caldergate FP&A: CAL08 Cash Flow.Tax | Assumption 5 |",
+    "| 10 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 6 |",
+    "| 119 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 7 |",
+    "| 120 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 8 |",
+    "| 239 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 9 |",
+    "| 0.05 | Caldergate FP&A: INP03 Headcount.Pension | Assumption 10 |",
+    "| 11 | Workforce Planning: Calcs - Attrition.Annualised Attrition | Assumption 11 |"
+   ],
+   "score": 3.0,
+   "rules": [
+    "F-HARDCODE"
+   ]
+  },
+  {
+   "id": "A8",
    "kind": "retire",
    "title": "Find out what reads SYS01 Time: no formula or export reads it",
    "model": "Board Reporting",
@@ -474,11 +425,11 @@
    "evidence": [
     "Readers outside the module: 0. Exports reading it: 0."
    ],
-   "score": 0.5,
+   "score": 2.116,
    "rules": []
   },
   {
-   "id": "A10",
+   "id": "A9",
    "kind": "fix",
    "title": "Guard 4 divisions that error on zero",
    "model": "3 models",
@@ -516,56 +467,13 @@
     "| Workforce Planning | Calcs - Attrition.Attrition % | `DIVIDE(Leavers by Role, Headcount)` |",
     "| Board Reporting | CAL01 KPIs.Revenue per FTE | `DIVIDE(DAT02 Board Lines.Revenue, FTE)` |"
    ],
-   "score": 0.4,
+   "score": 2.097,
    "rules": [
     "F-DIVIDE"
    ]
   },
   {
-   "id": "A11",
-   "kind": "merge",
-   "title": "Reconcile 3 pairs of formulas that differ in exactly one place",
-   "model": "Workforce Planning",
-   "objects": [
-    "Calcs - Attrition.Headcount",
-    "Calcs - Attrition.Leavers by Role",
-    "Calcs - Attrition.Leavers by Role"
-   ],
-   "payoff": {
-    "cells": 13392,
-    "effort": 0,
-    "objects": 3
-   },
-   "touches": {
-    "readers": 0,
-    "exports": 0,
-    "downstream_models": 0,
-    "pages": "n/a"
-   },
-   "confidence": "judgment",
-   "why": "Same formula skeleton, same dimensions, one leaf differs: a constant, a reference or a list item. This is what copy, paste and tweak leaves behind. Either the difference is intended (then the name should say so) or one of the pair is the stale copy.",
-   "steps": [
-    "For each pair, read the difference column and decide: intended, or drift.",
-    "Intended: rename so the difference is in the name, or add a note.",
-    "Drift: fix the stale one, or merge as an exact duplicate."
-   ],
-   "verify": [
-    "Re-run this report: pairs that were drift are gone; pairs that were intended carry a note."
-   ],
-   "evidence": [
-    "| Line item | Near twin | The one difference | Cells |",
-    "|---|---|---|---|",
-    "| Calcs - Attrition.Headcount | zz Archive - 2021 Cost.Cost | `Data - Employees.FTE` vs `Calcs - Cost.Total Cost` | 4.5K |",
-    "| Calcs - Attrition.Leavers by Role | zz Archive - 2021 Cost.Headcount | `Calcs - Attrition.Leavers` vs `Data - Employees.FTE` | 4.5K |",
-    "| Calcs - Attrition.Leavers by Role | zz Archive - 2021 Cost.Cost | `Calcs - Attrition.Leavers` vs `Calcs - Cost.Total Cost` | 4.5K |"
-   ],
-   "score": 0.309,
-   "rules": [
-    "REDUNDANT-NEAR"
-   ]
-  },
-  {
-   "id": "A12",
+   "id": "A10",
    "kind": "collapse",
    "title": "Collapse 15 line items that only copy another line item",
    "model": "Caldergate FP&A",
@@ -620,53 +528,13 @@
     "| OUT02 Board Pack.Revenue | OUT01 Management Pack.Revenue | 19.2K | 1 | SUM / SUM |",
     "| OUT02 Board Pack.EBITDA | OUT01 Management Pack.EBITDA | 19.2K | 0 | SUM / SUM |"
    ],
-   "score": 0.23,
+   "score": 1.672,
    "rules": [
     "REDUNDANT-ALIAS"
    ]
   },
   {
-   "id": "A13",
-   "kind": "tidy",
-   "title": "Move 2 subsidiary-view line items into modules of their own dimensions",
-   "model": "Caldergate FP&A, Workforce Planning",
-   "objects": [
-    "CAL01 Volumes.Launched?",
-    "Calcs - Attrition.Leavers"
-   ],
-   "payoff": {
-    "cells": 0,
-    "effort": 0,
-    "objects": 2
-   },
-   "touches": {
-    "readers": 2,
-    "exports": 0,
-    "downstream_models": 0,
-    "pages": "n/a"
-   },
-   "confidence": "proven",
-   "why": "A line item dimensioned differently from its module is a subsidiary view. Used in calculation, it hides a lookup and confuses the next builder. Anaplan's checklist: display only.",
-   "steps": [
-    "Create or find a module dimensioned as the line item is (usually a SYS module for that list).",
-    "Move the line item; repoint its readers."
-   ],
-   "verify": [
-    "Modules export: no calculation module has a line item whose Applies To differs from the module's."
-   ],
-   "evidence": [
-    "| Model | Line item | Applies to | Module applies to | Readers |",
-    "|---|---|---|---|---|",
-    "| Caldergate FP&A | CAL01 Volumes.Launched? | Products | Products, Regions | 1 |",
-    "| Workforce Planning | Calcs - Attrition.Leavers | Employees | Roles | 1 |"
-   ],
-   "score": 0.167,
-   "rules": [
-    "A-SUBSIDIARY"
-   ]
-  },
-  {
-   "id": "A14",
+   "id": "A11",
    "kind": "collapse",
    "title": "Shorten 4 pass-through chains",
    "model": "Caldergate FP&A",
@@ -704,13 +572,228 @@
     "| OUT02 Board Pack.Revenue | 4 | CAL07 P&L by Cost Centre.Revenue |",
     "| OUT02 Board Pack.EBITDA | 4 | CAL07 P&L by Cost Centre.EBITDA |"
    ],
-   "score": 0.142,
+   "score": 1.427,
    "rules": [
     "A-DAISY"
    ]
   },
   {
+   "id": "A12",
+   "kind": "tidy",
+   "title": "Move 2 subsidiary-view line items into modules of their own dimensions",
+   "model": "Caldergate FP&A, Workforce Planning",
+   "objects": [
+    "CAL01 Volumes.Launched?",
+    "Calcs - Attrition.Leavers"
+   ],
+   "payoff": {
+    "cells": 0,
+    "effort": 0,
+    "objects": 2
+   },
+   "touches": {
+    "readers": 2,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "n/a"
+   },
+   "confidence": "proven",
+   "why": "A line item dimensioned differently from its module is a subsidiary view. Used in calculation, it hides a lookup and confuses the next builder. Anaplan's checklist: display only.",
+   "steps": [
+    "Create or find a module dimensioned as the line item is (usually a SYS module for that list).",
+    "Move the line item; repoint its readers."
+   ],
+   "verify": [
+    "Modules export: no calculation module has a line item whose Applies To differs from the module's."
+   ],
+   "evidence": [
+    "| Model | Line item | Applies to | Module applies to | Readers |",
+    "|---|---|---|---|---|",
+    "| Caldergate FP&A | CAL01 Volumes.Launched? | Products | Products, Regions | 1 |",
+    "| Workforce Planning | Calcs - Attrition.Leavers | Employees | Roles | 1 |"
+   ],
+   "score": 1.376,
+   "rules": [
+    "A-SUBSIDIARY"
+   ]
+  },
+  {
+   "id": "A13",
+   "kind": "merge",
+   "title": "Reconcile 6 pairs of formulas that differ in exactly one place",
+   "model": "Caldergate FP&A",
+   "objects": [
+    "CAL03 Opex.Actual Opex",
+    "CAL03 Opex.Opex GBP",
+    "CAL02 Revenue.Gross Revenue",
+    "CAL01 Volumes.Sellable Units Prior Year",
+    "CAL02 Revenue.Revenue GBP",
+    "CAL07 P&L by Cost Centre.Opex Budget"
+   ],
+   "payoff": {
+    "cells": 0,
+    "effort": 0,
+    "objects": 6
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "n/a"
+   },
+   "confidence": "judgment",
+   "why": "Same formula skeleton, same dimensions, one leaf differs: a constant, a reference or a list item. This is what copy, paste and tweak leaves behind. Either the difference is intended (then the name should say so) or one of the pair is the stale copy.",
+   "steps": [
+    "For each pair, read the difference column and decide: intended, or drift.",
+    "Intended: rename so the difference is in the name, or add a note.",
+    "Drift: fix the stale one, or merge as an exact duplicate."
+   ],
+   "verify": [
+    "Re-run this report: pairs that were drift are gone; pairs that were intended carry a note."
+   ],
+   "evidence": [
+    "| Line item | Near twin | The one difference | Cells |",
+    "|---|---|---|---|",
+    "| CAL03 Opex.Actual Opex | CAL05 Opex OLD.Actual | `SYS03 Account Attributes.Opex?` vs `SYS01 Time Settings.Actual?` | 5.0M |",
+    "| CAL03 Opex.Opex GBP | CAL05 Opex OLD.Opex GBP | `CAL03 Opex.Opex` vs `CAL05 Opex OLD.Opex` | 5.0M |",
+    "| CAL02 Revenue.Gross Revenue | CAL04 Margn.COGS | `INP01 Volumes.Price` vs `INP06 Unit Costs.Landed Cost` | 36.3K |",
+    "| CAL01 Volumes.Sellable Units Prior Year | CAL02 Revenue.Revenue Prior Year | `CAL01 Volumes.Sellable Units` vs `CAL02 Revenue.Revenue GBP` | 36.3K |",
+    "| CAL02 Revenue.Revenue GBP | CAL04 Margn.Margin GBP | `CAL02 Revenue.Net Revenue` vs `CAL04 Margn.Margin` | 36.3K |",
+    "| CAL07 P&L by Cost Centre.Opex Budget | OUT02 Board Pack.Budget Revenue | `CAL07 P&L by Cost Centre.Opex` vs `OUT01 Management Pack.Revenue` | 19.2K |"
+   ],
+   "score": 1.268,
+   "rules": [
+    "REDUNDANT-NEAR"
+   ]
+  },
+  {
+   "id": "A14",
+   "kind": "collapse",
+   "title": "Collapse 4 line items that only copy another line item",
+   "model": "Board Reporting",
+   "objects": [
+    "OUT01 Board Dashboard.Revenue",
+    "OUT01 Board Dashboard.EBITDA",
+    "OUT01 Board Dashboard.Revenue per FTE",
+    "OUT01 Board Dashboard.Revenue Growth"
+   ],
+   "payoff": {
+    "cells": 576,
+    "effort": 0,
+    "objects": 4
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "unknown"
+   },
+   "confidence": "check pages",
+   "why": "4 line items have the formula `B = A` with the same dimensions as A. Each stores a second copy of A: 576 cells. Readers of B can read A directly. Some exist to give a page a friendlier name; those are the ones to keep.",
+   "steps": [
+    "Repoint each reader of the alias to the target (readers column).",
+    "Keep an alias only where a page or export needs it under that name.",
+    "Delete the rest."
+   ],
+   "verify": [
+    "Cell count falls by up to 576.",
+    "Re-run this report: the alias count falls to the ones kept on purpose."
+   ],
+   "evidence": [
+    "| Alias | Is just | Cells | Readers to repoint | Summary (alias / target) |",
+    "|---|---|---|---|---|",
+    "| OUT01 Board Dashboard.Revenue | DAT02 Board Lines.Revenue | 144 | 0 | SUM / SUM |",
+    "| OUT01 Board Dashboard.EBITDA | DAT02 Board Lines.EBITDA | 144 | 0 | SUM / SUM |",
+    "| OUT01 Board Dashboard.Revenue per FTE | CAL01 KPIs.Revenue per FTE | 144 | 0 | SUM / FORMULA |",
+    "| OUT01 Board Dashboard.Revenue Growth | CAL01 KPIs.Revenue Growth | 144 | 0 | SUM / FORMULA |"
+   ],
+   "score": 1.049,
+   "rules": [
+    "REDUNDANT-ALIAS"
+   ]
+  },
+  {
    "id": "A15",
+   "kind": "retire",
+   "title": "Retire zz Archive - 2021 Cost, superseded by Calcs - Attrition",
+   "model": "Workforce Planning",
+   "objects": [
+    "zz Archive - 2021 Cost"
+   ],
+   "payoff": {
+    "cells": 13392,
+    "effort": 0.0,
+    "objects": 3
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "unknown"
+   },
+   "confidence": "check pages",
+   "why": "No formula outside zz Archive - 2021 Cost reads any of its 3 line items, and no export action reads it. 2 of its 3 calculated line items have a twin in Calcs - Attrition, which other formulas do read. It holds 13.4K cells, recalculated on every change. Module note: \"Old cost calc from go-live. Kept for reference.\"",
+   "steps": [
+    "List the pages and saved views that use zz Archive - 2021 Cost (Modules export: Used in Dashboards covers classic dashboards only; UX pages need the page builder).",
+    "Where a page reads zz Archive - 2021 Cost, repoint the card to the twin line item in Calcs - Attrition.",
+    "In a sandbox copy, blank every formula in zz Archive - 2021 Cost; open the pages listed in step 1.",
+    "Delete zz Archive - 2021 Cost."
+   ],
+   "verify": [
+    "Workspace size falls by about 13.4K cells.",
+    "Every page listed in step 1 opens without a blank card."
+   ],
+   "evidence": [
+    "Readers outside the module: 0. Exports reading it: 0. Twin module: Calcs - Attrition (2 matches)."
+   ],
+   "score": 0.908,
+   "rules": []
+  },
+  {
+   "id": "A16",
+   "kind": "merge",
+   "title": "Reconcile 3 pairs of formulas that differ in exactly one place",
+   "model": "Workforce Planning",
+   "objects": [
+    "Calcs - Attrition.Headcount",
+    "Calcs - Attrition.Leavers by Role",
+    "Calcs - Attrition.Leavers by Role"
+   ],
+   "payoff": {
+    "cells": 0,
+    "effort": 0,
+    "objects": 3
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "n/a"
+   },
+   "confidence": "judgment",
+   "why": "Same formula skeleton, same dimensions, one leaf differs: a constant, a reference or a list item. This is what copy, paste and tweak leaves behind. Either the difference is intended (then the name should say so) or one of the pair is the stale copy.",
+   "steps": [
+    "For each pair, read the difference column and decide: intended, or drift.",
+    "Intended: rename so the difference is in the name, or add a note.",
+    "Drift: fix the stale one, or merge as an exact duplicate."
+   ],
+   "verify": [
+    "Re-run this report: pairs that were drift are gone; pairs that were intended carry a note."
+   ],
+   "evidence": [
+    "| Line item | Near twin | The one difference | Cells |",
+    "|---|---|---|---|",
+    "| Calcs - Attrition.Headcount | zz Archive - 2021 Cost.Cost | `Data - Employees.FTE` vs `Calcs - Cost.Total Cost` | 4.5K |",
+    "| Calcs - Attrition.Leavers by Role | zz Archive - 2021 Cost.Headcount | `Calcs - Attrition.Leavers` vs `Data - Employees.FTE` | 4.5K |",
+    "| Calcs - Attrition.Leavers by Role | zz Archive - 2021 Cost.Cost | `Calcs - Attrition.Leavers` vs `Calcs - Cost.Total Cost` | 4.5K |"
+   ],
+   "score": 0.903,
+   "rules": [
+    "REDUNDANT-NEAR"
+   ]
+  },
+  {
+   "id": "A17",
    "kind": "fix",
    "title": "Split 1 formula that aggregate and look up in one bracket",
    "model": "Caldergate FP&A",
@@ -742,13 +825,13 @@
     "|---|---|---|---|",
     "| Caldergate FP&A | CAL06 Department Summary.Benchmark Opex | LOOKUP+SUM | `'CAL03 Opex'.Opex GBP[SUM: 'SYS02 Cost Centre Attributes'.Department, LOOKUP: 'SYS09 Department Sett` |"
    ],
-   "score": 0.1,
+   "score": 0.903,
    "rules": [
     "F-MIXED-CLAUSE"
    ]
   },
   {
-   "id": "A16",
+   "id": "A18",
    "kind": "tidy",
    "title": "Delete 1 empty module",
    "model": "Caldergate FP&A",
@@ -777,13 +860,97 @@
    "evidence": [
     "Caldergate FP&A: CAL09 Scenario Planning"
    ],
-   "score": 0.1,
+   "score": 0.903,
    "rules": [
     "G-EMPTY-MODULE"
    ]
   },
   {
-   "id": "A17",
+   "id": "A19",
+   "kind": "merge",
+   "title": "Merge 1 line item that repeat a calculation already made (1 group)",
+   "model": "Caldergate FP&A",
+   "objects": [
+    "CAL07 P&L by Cost Centre.Depreciation"
+   ],
+   "payoff": {
+    "cells": 19152,
+    "effort": 0,
+    "objects": 1
+   },
+   "touches": {
+    "readers": 0,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "unknown"
+   },
+   "confidence": "check pages",
+   "why": "1 calculated line items have the same resolved formula, dimensions, time scale and versions as another line item in the model. Each is computed and stored twice: 19.2K cells. The keeper in each group is the one most formulas already read.",
+   "steps": [
+    "For each group, keep the line item most formulas read (first column).",
+    "Repoint every formula that reads a duplicate to the keeper (the readers count is in the table).",
+    "Where the summary methods differ (last column), decide which one the pages need before merging; that is the one legitimate reason for two copies.",
+    "Check pages for the duplicates, then delete them."
+   ],
+   "verify": [
+    "Cell count falls by about 19.2K.",
+    "No page shows a blank; no export loses a column.",
+    "Re-run this report: the group count reaches zero."
+   ],
+   "evidence": [
+    "| Keep (most read) | Also computed as | Dimensions | Redundant cells | Summary methods |",
+    "|---|---|---|---|---|",
+    "| CAL07 P&L by Cost Centre.Depreciation | OUT01 Management Pack.Depreciation | Cost Centres | 19.2K | SUM |"
+   ],
+   "score": 0.458,
+   "rules": [
+    "REDUNDANT-EXACT"
+   ]
+  },
+  {
+   "id": "A20",
+   "kind": "merge",
+   "title": "Merge 1 line item that repeat a calculation already made (1 group)",
+   "model": "Workforce Planning",
+   "objects": [
+    "Calcs - Attrition.Headcount"
+   ],
+   "payoff": {
+    "cells": 4464,
+    "effort": 0,
+    "objects": 1
+   },
+   "touches": {
+    "readers": 1,
+    "exports": 0,
+    "downstream_models": 0,
+    "pages": "unknown"
+   },
+   "confidence": "check pages",
+   "why": "1 calculated line items have the same resolved formula, dimensions, time scale and versions as another line item in the model. Each is computed and stored twice: 4.5K cells. The keeper in each group is the one most formulas already read.",
+   "steps": [
+    "For each group, keep the line item most formulas read (first column).",
+    "Repoint every formula that reads a duplicate to the keeper (the readers count is in the table).",
+    "Where the summary methods differ (last column), decide which one the pages need before merging; that is the one legitimate reason for two copies.",
+    "Check pages for the duplicates, then delete them."
+   ],
+   "verify": [
+    "Cell count falls by about 4.5K.",
+    "No page shows a blank; no export loses a column.",
+    "Re-run this report: the group count reaches zero."
+   ],
+   "evidence": [
+    "| Keep (most read) | Also computed as | Dimensions | Redundant cells | Summary methods |",
+    "|---|---|---|---|---|",
+    "| Calcs - Attrition.Headcount | zz Archive - 2021 Cost.Headcount | Roles | 4.5K | SUM |"
+   ],
+   "score": 0.449,
+   "rules": [
+    "REDUNDANT-EXACT"
+   ]
+  },
+  {
+   "id": "A21",
    "kind": "dedupe",
    "title": "Give 8 calculations that exist in more than one model a single owner",
    "model": "Estate",
@@ -830,176 +997,9 @@
     "| Sign | Caldergate Data Hub, Caldergate FP&A | `(IF 'Revenue?' THEN -1 ELSE 1)` |",
     "| Working Days | Caldergate FP&A, Workforce Planning | `(Days in Month - Weekend Days - Bank Holidays)` |"
    ],
-   "score": 0.08,
+   "score": 0.143,
    "rules": [
     "DUP-CROSS"
-   ]
-  },
-  {
-   "id": "A18",
-   "kind": "collapse",
-   "title": "Collapse 4 line items that only copy another line item",
-   "model": "Board Reporting",
-   "objects": [
-    "OUT01 Board Dashboard.Revenue",
-    "OUT01 Board Dashboard.EBITDA",
-    "OUT01 Board Dashboard.Revenue per FTE",
-    "OUT01 Board Dashboard.Revenue Growth"
-   ],
-   "payoff": {
-    "cells": 576,
-    "effort": 0,
-    "objects": 4
-   },
-   "touches": {
-    "readers": 0,
-    "exports": 0,
-    "downstream_models": 0,
-    "pages": "unknown"
-   },
-   "confidence": "check pages",
-   "why": "4 line items have the formula `B = A` with the same dimensions as A. Each stores a second copy of A: 576 cells. Readers of B can read A directly. Some exist to give a page a friendlier name; those are the ones to keep.",
-   "steps": [
-    "Repoint each reader of the alias to the target (readers column).",
-    "Keep an alias only where a page or export needs it under that name.",
-    "Delete the rest."
-   ],
-   "verify": [
-    "Cell count falls by up to 576.",
-    "Re-run this report: the alias count falls to the ones kept on purpose."
-   ],
-   "evidence": [
-    "| Alias | Is just | Cells | Readers to repoint | Summary (alias / target) |",
-    "|---|---|---|---|---|",
-    "| OUT01 Board Dashboard.Revenue | DAT02 Board Lines.Revenue | 144 | 0 | SUM / SUM |",
-    "| OUT01 Board Dashboard.EBITDA | DAT02 Board Lines.EBITDA | 144 | 0 | SUM / SUM |",
-    "| OUT01 Board Dashboard.Revenue per FTE | CAL01 KPIs.Revenue per FTE | 144 | 0 | SUM / FORMULA |",
-    "| OUT01 Board Dashboard.Revenue Growth | CAL01 KPIs.Revenue Growth | 144 | 0 | SUM / FORMULA |"
-   ],
-   "score": 0.067,
-   "rules": [
-    "REDUNDANT-ALIAS"
-   ]
-  },
-  {
-   "id": "A19",
-   "kind": "retire",
-   "title": "Retire zz Archive - 2021 Cost, superseded by Calcs - Attrition",
-   "model": "Workforce Planning",
-   "objects": [
-    "zz Archive - 2021 Cost"
-   ],
-   "payoff": {
-    "cells": 13392,
-    "effort": 0.0,
-    "objects": 3
-   },
-   "touches": {
-    "readers": 0,
-    "exports": 0,
-    "downstream_models": 0,
-    "pages": "unknown"
-   },
-   "confidence": "check pages",
-   "why": "No formula outside zz Archive - 2021 Cost reads any of its 3 line items, and no export action reads it. 2 of its 3 calculated line items have a twin in Calcs - Attrition, which other formulas do read. It holds 13.4K cells, recalculated on every change. Module note: \"Old cost calc from go-live. Kept for reference.\"",
-   "steps": [
-    "List the pages and saved views that use zz Archive - 2021 Cost (Modules export: Used in Dashboards covers classic dashboards only; UX pages need the page builder).",
-    "Where a page reads zz Archive - 2021 Cost, repoint the card to the twin line item in Calcs - Attrition.",
-    "In a sandbox copy, blank every formula in zz Archive - 2021 Cost; open the pages listed in step 1.",
-    "Delete zz Archive - 2021 Cost."
-   ],
-   "verify": [
-    "Workspace size falls by about 13.4K cells.",
-    "Every page listed in step 1 opens without a blank card."
-   ],
-   "evidence": [
-    "Readers outside the module: 0. Exports reading it: 0. Twin module: Calcs - Attrition (2 matches)."
-   ],
-   "score": 0.052,
-   "rules": []
-  },
-  {
-   "id": "A20",
-   "kind": "merge",
-   "title": "Merge 1 line item that repeat a calculation already made (1 group)",
-   "model": "Caldergate FP&A",
-   "objects": [
-    "CAL07 P&L by Cost Centre.Depreciation"
-   ],
-   "payoff": {
-    "cells": 19152,
-    "effort": 0,
-    "objects": 1
-   },
-   "touches": {
-    "readers": 0,
-    "exports": 0,
-    "downstream_models": 0,
-    "pages": "unknown"
-   },
-   "confidence": "check pages",
-   "why": "1 calculated line items have the same resolved formula, dimensions, time scale and versions as another line item in the model. Each is computed and stored twice: 19.2K cells. The keeper in each group is the one most formulas already read.",
-   "steps": [
-    "For each group, keep the line item most formulas read (first column).",
-    "Repoint every formula that reads a duplicate to the keeper (the readers count is in the table).",
-    "Where the summary methods differ (last column), decide which one the pages need before merging; that is the one legitimate reason for two copies.",
-    "Check pages for the duplicates, then delete them."
-   ],
-   "verify": [
-    "Cell count falls by about 19.2K.",
-    "No page shows a blank; no export loses a column.",
-    "Re-run this report: the group count reaches zero."
-   ],
-   "evidence": [
-    "| Keep (most read) | Also computed as | Dimensions | Redundant cells | Summary methods |",
-    "|---|---|---|---|---|",
-    "| CAL07 P&L by Cost Centre.Depreciation | OUT01 Management Pack.Depreciation | Cost Centres | 19.2K | SUM |"
-   ],
-   "score": 0.019,
-   "rules": [
-    "REDUNDANT-EXACT"
-   ]
-  },
-  {
-   "id": "A21",
-   "kind": "merge",
-   "title": "Merge 1 line item that repeat a calculation already made (1 group)",
-   "model": "Workforce Planning",
-   "objects": [
-    "Calcs - Attrition.Headcount"
-   ],
-   "payoff": {
-    "cells": 4464,
-    "effort": 0,
-    "objects": 1
-   },
-   "touches": {
-    "readers": 1,
-    "exports": 0,
-    "downstream_models": 0,
-    "pages": "unknown"
-   },
-   "confidence": "check pages",
-   "why": "1 calculated line items have the same resolved formula, dimensions, time scale and versions as another line item in the model. Each is computed and stored twice: 4.5K cells. The keeper in each group is the one most formulas already read.",
-   "steps": [
-    "For each group, keep the line item most formulas read (first column).",
-    "Repoint every formula that reads a duplicate to the keeper (the readers count is in the table).",
-    "Where the summary methods differ (last column), decide which one the pages need before merging; that is the one legitimate reason for two copies.",
-    "Check pages for the duplicates, then delete them."
-   ],
-   "verify": [
-    "Cell count falls by about 4.5K.",
-    "No page shows a blank; no export loses a column.",
-    "Re-run this report: the group count reaches zero."
-   ],
-   "evidence": [
-    "| Keep (most read) | Also computed as | Dimensions | Redundant cells | Summary methods |",
-    "|---|---|---|---|---|",
-    "| Calcs - Attrition.Headcount | zz Archive - 2021 Cost.Headcount | Roles | 4.5K | SUM |"
-   ],
-   "score": 0.017,
-   "rules": [
-    "REDUNDANT-EXACT"
    ]
   },
   {
@@ -1033,7 +1033,7 @@
    "evidence": [
     "Readers outside the module to repoint: 50."
    ],
-   "score": 0.013,
+   "score": 0.113,
    "rules": [
     "A-LI-COUNT"
    ]

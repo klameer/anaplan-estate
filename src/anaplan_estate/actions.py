@@ -10,14 +10,15 @@ how, what it costs, what it touches, how to verify"; whether it matters
 for this estate is a review, and this list is its evidence.
 
 Score = payoff points / (1 + touch points), where
-  payoff  = 100 x (cells reclaimed / estate cells) + effort share (%) + 0.1 x objects + 0.3 x actions
-  touch   = readers to repoint / 10 + 2 x exports on the module + 3 x downstream models
-            + 5 if page exposure is unknown and the action removes something
+  payoff  = 100 x (cells reclaimed / estate cells) + effort share (%) + 3 x log10(1 + objects) + 3 x log10(1 + actions)
+  touch   = readers to repoint / 50 + 2 x exports on the module + 3 x downstream models
+            + 1 if page exposure is unknown and the action removes something;
+  halved when the action needs judgment the exports cannot supply
 """
 from __future__ import annotations
 from dataclasses import dataclass, field, asdict
 from collections import defaultdict, Counter
-import re
+import re, math
 from anaplan_grammar.parser import parse
 from anaplan_grammar.unparse import unparse
 from .lint import _walk, RULES
@@ -62,11 +63,14 @@ def _c(x) -> str:
 
 def _score(a: Action, estate_cells: int) -> float:
     p = a.payoff; t = a.touches
-    payoff = 100 * p.get("cells", 0) / max(estate_cells, 1) + p.get("effort", 0) + 0.1 * p.get("objects", 0) + 0.3 * p.get("actions", 0)
-    touch = t.get("readers", 0) / 10 + 2 * t.get("exports", 0) + 3 * t.get("downstream_models", 0)
+    payoff = 100 * p.get("cells", 0) / max(estate_cells, 1) + p.get("effort", 0) + 3 * math.log10(1 + p.get("objects", 0)) + 3 * math.log10(1 + p.get("actions", 0))
+    touch = t.get("readers", 0) / 50 + 2 * t.get("exports", 0) + 3 * t.get("downstream_models", 0)
     if t.get("pages") == "unknown" and a.kind in ("retire", "merge", "collapse"):
-        touch += 5
-    return round(payoff / (1 + touch), 3)
+        touch += 1
+    score = payoff / (1 + touch)
+    if a.confidence == "judgment":
+        score *= 0.5           # the exports show the shape, not the answer
+    return round(score, 3)
 
 
 def _pl(n, word):
@@ -209,7 +213,7 @@ def _actions_for_model(er, m, n0: int) -> list[Action]:
         for n in cross[:25]:
             rows.append(f"| {n['a']} | {n['b']} | `{n['differs'][0][:40]}` vs `{n['differs'][1][:40]}` | {_c(n['cells'])} |")
         new("merge", f"Reconcile {_pl(len(cross), 'pair')} of formulas that differ in exactly one place", [n["a"] for n in cross[:8]],
-            {"cells": sum(n["cells"] for n in cross), "effort": 0, "objects": len(cross)},
+            {"cells": 0, "effort": 0, "objects": len(cross)},
             {"readers": 0, "exports": 0, "downstream_models": 0, "pages": "n/a"},
             "judgment",
             "Same formula skeleton, same dimensions, one leaf differs: a constant, a reference or a list item. This is what copy, paste and tweak leaves behind. "
@@ -505,10 +509,12 @@ def heading(a: Action) -> str:
     return f"{a.id}. {a.title}"
 
 
-def render_list(acts: list[Action]) -> list[str]:
+def render_list(acts: list[Action], limit: int = 40) -> list[str]:
     out = ["| # | Do this | Model | Reclaims | Touches | Exports can prove |", "|---|---|---|---|---|---|"]
-    for a in acts:
+    for a in acts[:limit]:
         out.append(f"| {a.id} | [{a.title}](#{_slug(heading(a))}) | {a.model} | {_reclaims(a)} | {_touches(a)} | {a.confidence} |")
+    if len(acts) > limit:
+        out += ["", f"{len(acts) - limit} more, smaller, in [Actions in detail](#actions-in-detail)."]
     return out
 
 

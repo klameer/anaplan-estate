@@ -10,25 +10,25 @@ Generated 2026-09-22 from each model's Line Items and Actions exports. Determini
 |---|---|---|---|---|---|
 | A1 | [Retire CAL05 Opex OLD, superseded by CAL03 Opex](#a1-retire-cal05-opex-old-superseded-by-cal03-opex) | Caldergate FP&A | 70.2M cells, 50.8% effort | pages: check | check pages |
 | A2 | [Replace the 12-branch IF in CAL03 Opex.Forecast Opex with a mapping module](#a2-replace-the-12-branch-if-in-cal03-opex-forecast-opex-with-a-mapping-module) | Caldergate FP&A | up to 16.0% effort | 1 formula | proven |
-| A3 | [Reconcile 6 pairs of formulas that differ in exactly one place](#a3-reconcile-6-pairs-of-formulas-that-differ-in-exactly-one-place) | Caldergate FP&A | 10.2M cells | nothing in the exports | judgment |
+| A3 | [Confirm and retire 5 calculated line items that no formula, export or twin explains](#a3-confirm-and-retire-5-calculated-line-items-that-no-formula-export-or-twin-explains) | Caldergate FP&A | 15.1M cells, 10.0% effort | pages: check | check pages |
 | A4 | [Turn summaries off on 37 large line items no formula reads](#a4-turn-summaries-off-on-37-large-line-items-no-formula-reads) | 4 models | 37 objects | pages: check | check pages |
 | A5 | [Retire or schedule 12 imports and exports that no process runs or that have not run in a year](#a5-retire-or-schedule-12-imports-and-exports-that-no-process-runs-or-that-have-not-run-in-a-year) | 4 models | 12 actions | nothing in the exports | proven |
-| A6 | [Confirm and retire 5 calculated line items that no formula, export or twin explains](#a6-confirm-and-retire-5-calculated-line-items-that-no-formula-export-or-twin-explains) | Caldergate FP&A | 15.1M cells, 10.0% effort | pages: check | check pages |
+| A6 | [Move 18 text and lookup line items out of large calculation modules](#a6-move-18-text-and-lookup-line-items-out-of-large-calculation-modules) | 3 models | 18 objects | 11 formulas | proven |
 | A7 | [Move 11 hard-coded constants into assumptions modules](#a7-move-11-hard-coded-constants-into-assumptions-modules) | Caldergate FP&A, Workforce Planning | 9 objects | nothing in the exports | proven |
-| A8 | [Move 18 text and lookup line items out of large calculation modules](#a8-move-18-text-and-lookup-line-items-out-of-large-calculation-modules) | 3 models | 18 objects | 11 formulas | proven |
-| A9 | [Find out what reads SYS01 Time: no formula or export reads it](#a9-find-out-what-reads-sys01-time-no-formula-or-export-reads-it) | Board Reporting | 72 cells, 2.8% effort | pages: check | check pages |
-| A10 | [Guard 4 divisions that error on zero](#a10-guard-4-divisions-that-error-on-zero) | 3 models | 4 objects | nothing in the exports | proven |
-| A11 | [Reconcile 3 pairs of formulas that differ in exactly one place](#a11-reconcile-3-pairs-of-formulas-that-differ-in-exactly-one-place) | Workforce Planning | 13.4K cells | nothing in the exports | judgment |
-| A12 | [Collapse 15 line items that only copy another line item](#a12-collapse-15-line-items-that-only-copy-another-line-item) | Caldergate FP&A | 287K cells | 14 formulas, pages: check | check pages |
-| A13 | [Move 2 subsidiary-view line items into modules of their own dimensions](#a13-move-2-subsidiary-view-line-items-into-modules-of-their-own-dimensions) | Caldergate FP&A, Workforce Planning | 2 objects | 2 formulas | proven |
-| A14 | [Shorten 4 pass-through chains](#a14-shorten-4-pass-through-chains) | Caldergate FP&A | 153K cells | 4 formulas, pages: check | check pages |
-| A15 | [Split 1 formula that aggregate and look up in one bracket](#a15-split-1-formula-that-aggregate-and-look-up-in-one-bracket) | Caldergate FP&A | 1 object | nothing in the exports | proven |
-| A16 | [Delete 1 empty module](#a16-delete-1-empty-module) | Caldergate FP&A | 1 object | nothing in the exports | proven |
-| A17 | [Give 8 calculations that exist in more than one model a single owner](#a17-give-8-calculations-that-exist-in-more-than-one-model-a-single-owner) | Estate | 8 objects | 3 models | judgment |
-| A18 | [Collapse 4 line items that only copy another line item](#a18-collapse-4-line-items-that-only-copy-another-line-item) | Board Reporting | 576 cells | pages: check | check pages |
-| A19 | [Retire zz Archive - 2021 Cost, superseded by Calcs - Attrition](#a19-retire-zz-archive-2021-cost-superseded-by-calcs-attrition) | Workforce Planning | 13.4K cells | pages: check | check pages |
-| A20 | [Merge 1 line item that repeat a calculation already made (1 group)](#a20-merge-1-line-item-that-repeat-a-calculation-already-made-1-group) | Caldergate FP&A | 19.2K cells | pages: check | check pages |
-| A21 | [Merge 1 line item that repeat a calculation already made (1 group)](#a21-merge-1-line-item-that-repeat-a-calculation-already-made-1-group) | Workforce Planning | 4.5K cells | 1 formula, pages: check | check pages |
+| A8 | [Find out what reads SYS01 Time: no formula or export reads it](#a8-find-out-what-reads-sys01-time-no-formula-or-export-reads-it) | Board Reporting | 72 cells, 2.8% effort | pages: check | check pages |
+| A9 | [Guard 4 divisions that error on zero](#a9-guard-4-divisions-that-error-on-zero) | 3 models | 4 objects | nothing in the exports | proven |
+| A10 | [Collapse 15 line items that only copy another line item](#a10-collapse-15-line-items-that-only-copy-another-line-item) | Caldergate FP&A | 287K cells | 14 formulas, pages: check | check pages |
+| A11 | [Shorten 4 pass-through chains](#a11-shorten-4-pass-through-chains) | Caldergate FP&A | 153K cells | 4 formulas, pages: check | check pages |
+| A12 | [Move 2 subsidiary-view line items into modules of their own dimensions](#a12-move-2-subsidiary-view-line-items-into-modules-of-their-own-dimensions) | Caldergate FP&A, Workforce Planning | 2 objects | 2 formulas | proven |
+| A13 | [Reconcile 6 pairs of formulas that differ in exactly one place](#a13-reconcile-6-pairs-of-formulas-that-differ-in-exactly-one-place) | Caldergate FP&A | 6 objects | nothing in the exports | judgment |
+| A14 | [Collapse 4 line items that only copy another line item](#a14-collapse-4-line-items-that-only-copy-another-line-item) | Board Reporting | 576 cells | pages: check | check pages |
+| A15 | [Retire zz Archive - 2021 Cost, superseded by Calcs - Attrition](#a15-retire-zz-archive-2021-cost-superseded-by-calcs-attrition) | Workforce Planning | 13.4K cells | pages: check | check pages |
+| A16 | [Reconcile 3 pairs of formulas that differ in exactly one place](#a16-reconcile-3-pairs-of-formulas-that-differ-in-exactly-one-place) | Workforce Planning | 3 objects | nothing in the exports | judgment |
+| A17 | [Split 1 formula that aggregate and look up in one bracket](#a17-split-1-formula-that-aggregate-and-look-up-in-one-bracket) | Caldergate FP&A | 1 object | nothing in the exports | proven |
+| A18 | [Delete 1 empty module](#a18-delete-1-empty-module) | Caldergate FP&A | 1 object | nothing in the exports | proven |
+| A19 | [Merge 1 line item that repeat a calculation already made (1 group)](#a19-merge-1-line-item-that-repeat-a-calculation-already-made-1-group) | Caldergate FP&A | 19.2K cells | pages: check | check pages |
+| A20 | [Merge 1 line item that repeat a calculation already made (1 group)](#a20-merge-1-line-item-that-repeat-a-calculation-already-made-1-group) | Workforce Planning | 4.5K cells | 1 formula, pages: check | check pages |
+| A21 | [Give 8 calculations that exist in more than one model a single owner](#a21-give-8-calculations-that-exist-in-more-than-one-model-a-single-owner) | Estate | 8 objects | 3 models | judgment |
 | A22 | [Split INP02 Opex Drivers (58 line items)](#a22-split-inp02-opex-drivers-58-line-items) | Caldergate FP&A | 1 object | 50 formulas, 1 export, pages: check | judgment |
 
 ## The estate in one page
@@ -135,34 +135,32 @@ Readers outside the module: 0. Exports reading it: 0. Twin module: CAL03 Opex (2
 | 6510 Audit | `INP02 Opex Drivers.Audit Fees` |
 | 6600 Recruitment | `INP02 Opex Drivers.Recruitment Fees` |
 
-## A3. Reconcile 6 pairs of formulas that differ in exactly one place
+## A3. Confirm and retire 5 calculated line items that no formula, export or twin explains
 
-**Caldergate FP&A.** Same formula skeleton, same dimensions, one leaf differs: a constant, a reference or a list item. This is what copy, paste and tweak leaves behind. Either the difference is intended (then the name should say so) or one of the pair is the stale copy.
+**Caldergate FP&A.** Calculated, read by no formula, not exported, not in an output-style module, and not a twin of anything. Either a page reads them or nothing does. (30 other unreferenced line items look like page outputs by their module, format or time scale and are not listed here.)
 
 | Reclaims | Touches | Exports can prove |
 |---|---|---|
-| 10.2M cells | nothing in the exports | judgment: The exports show the shape; whether the change is right needs someone who knows the model. |
+| 15.1M cells, 10.0% effort | pages: check | check pages: Formulas, exports and imports are in the exports; pages and saved views are not. Check them before removing anything. |
 
 **Steps**
 
-1. For each pair, read the difference column and decide: intended, or drift.
-2. Intended: rename so the difference is in the name, or add a note.
-3. Drift: fix the stale one, or merge as an exact duplicate.
+1. For each module, list the pages that use it.
+2. Where nothing does, set the formula blank in a sandbox and wait a cycle.
+3. Delete what nobody missed.
 
 **Verify**
 
-- Re-run this report: pairs that were drift are gone; pairs that were intended carry a note.
+- Cell count falls by what was deleted.
+- Re-run this report: the unknown list shrinks to the ones a page needs.
 
 **Evidence**
 
-| Line item | Near twin | The one difference | Cells |
+| Module | Line items with no reader | Cells | Effort |
 |---|---|---|---|
-| CAL03 Opex.Actual Opex | CAL05 Opex OLD.Actual | `SYS03 Account Attributes.Opex?` vs `SYS01 Time Settings.Actual?` | 5.0M |
-| CAL03 Opex.Opex GBP | CAL05 Opex OLD.Opex GBP | `CAL03 Opex.Opex` vs `CAL05 Opex OLD.Opex` | 5.0M |
-| CAL02 Revenue.Gross Revenue | CAL04 Margn.COGS | `INP01 Volumes.Price` vs `INP06 Unit Costs.Landed Cost` | 36.3K |
-| CAL01 Volumes.Sellable Units Prior Year | CAL02 Revenue.Revenue Prior Year | `CAL01 Volumes.Sellable Units` vs `CAL02 Revenue.Revenue GBP` | 36.3K |
-| CAL02 Revenue.Revenue GBP | CAL04 Margn.Margin GBP | `CAL02 Revenue.Net Revenue` vs `CAL04 Margn.Margin` | 36.3K |
-| CAL07 P&L by Cost Centre.Opex Budget | OUT02 Board Pack.Budget Revenue | `CAL07 P&L by Cost Centre.Opex` vs `OUT01 Management Pack.Revenue` | 19.2K |
+| DAT01 Actuals GL | 2: Journal Cost Centre, Loaded? | 10.0M | 7.71% |
+| CAL03 Opex | 1: Opex Variance | 5.0M | 2.31% |
+| CAL02 Revenue | 2: Revenue USD, VAT | 72.6K | 0.02% |
 
 ## A4. Turn summaries off on 37 large line items no formula reads
 
@@ -251,75 +249,14 @@ Readers outside the module: 0. Exports reading it: 0. Twin module: CAL03 Opex (2
 | Caldergate FP&A | Import from Caldergate Hub v1 - Cost Centres | 2021-03-19 | no | SYS02 Cost Centre Attributes |
 | Caldergate FP&A | Import FX from Treasury file | 2023-11-02 | no | SYS05 FX Rates |
 | Caldergate FP&A | Export Opex Drivers to Excel | 2024-05-30 | no | INP02 Opex Drivers |
-| Caldergate FP&A | Export Assumptions for Workforce | recent | no | SYS00 Model Settings |
 | Caldergate FP&A | Import Budget from Excel | recent | no | INP02 Opex Drivers |
+| Caldergate FP&A | Export Assumptions for Workforce | recent | no | SYS00 Model Settings |
 | Workforce Planning | Import from Caldergate FP&A - Assumptions | 2022-08-17 | no | Inputs - Settings |
 | Workforce Planning | Export Leavers Report | 2024-12-19 | no | Calcs - Attrition |
 | Workforce Planning | Export Headcount by Department | recent | no | Reports - Headcount |
 | Board Reporting | Export Board Pack PDF Data | recent | no | OUT01 Board Dashboard |
 
-## A6. Confirm and retire 5 calculated line items that no formula, export or twin explains
-
-**Caldergate FP&A.** Calculated, read by no formula, not exported, not in an output-style module, and not a twin of anything. Either a page reads them or nothing does. (30 other unreferenced line items look like page outputs by their module, format or time scale and are not listed here.)
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 15.1M cells, 10.0% effort | pages: check | check pages: Formulas, exports and imports are in the exports; pages and saved views are not. Check them before removing anything. |
-
-**Steps**
-
-1. For each module, list the pages that use it.
-2. Where nothing does, set the formula blank in a sandbox and wait a cycle.
-3. Delete what nobody missed.
-
-**Verify**
-
-- Cell count falls by what was deleted.
-- Re-run this report: the unknown list shrinks to the ones a page needs.
-
-**Evidence**
-
-| Module | Line items with no reader | Cells | Effort |
-|---|---|---|---|
-| DAT01 Actuals GL | 2: Journal Cost Centre, Loaded? | 10.0M | 7.71% |
-| CAL03 Opex | 1: Opex Variance | 5.0M | 2.31% |
-| CAL02 Revenue | 2: Revenue USD, VAT | 72.6K | 0.02% |
-
-## A7. Move 11 hard-coded constants into assumptions modules
-
-**Caldergate FP&A, Workforce Planning.** Numbers inside formulas are assumptions nobody can see or change without a model builder. The same constant in more than one formula drifts.
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 9 objects | nothing in the exports | proven: Everything this action touches is in the exports. |
-
-**Steps**
-
-1. Create (or reuse) a settings module per model with one line item per constant, named, with a note saying who owns it.
-2. Replace each constant with the reference.
-3. Tell the owner where the number now lives.
-
-**Verify**
-
-- Search formulas for the constant: zero hits.
-
-**Evidence**
-
-| Constant | Used in | Suggested input |
-|---|---|---|
-| 0.1 | Workforce Planning: Calcs - Cost.Bonus, Workforce Planning: Calcs - Headcount by CC.Bonus % | Assumption 1 |
-| 1.27 | Caldergate FP&A: CAL02 Revenue.Revenue USD | Assumption 2 |
-| 0.2 | Caldergate FP&A: CAL02 Revenue.VAT | Assumption 3 |
-| 30 | Caldergate FP&A: CAL08 Cash Flow.Debtors | Assumption 4 |
-| 0.25 | Caldergate FP&A: CAL08 Cash Flow.Tax | Assumption 5 |
-| 10 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 6 |
-| 119 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 7 |
-| 120 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 8 |
-| 239 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 9 |
-| 0.05 | Caldergate FP&A: INP03 Headcount.Pension | Assumption 10 |
-| 11 | Workforce Planning: Calcs - Attrition.Annualised Attrition | Assumption 11 |
-
-## A8. Move 18 text and lookup line items out of large calculation modules
+## A6. Move 18 text and lookup line items out of large calculation modules
 
 **3 models.** Text, FINDITEM, ITEM() and text joins in a multi-dimensional line item are computed once per cell. In a one-dimension system module they are computed once per list item.
 
@@ -359,7 +296,41 @@ Readers outside the module: 0. Exports reading it: 0. Twin module: CAL03 Opex (2
 | Workforce Planning | Data - Employees.Name and Role | Text-formatted line item | 66.6K |
 | Workforce Planning | Data - Employees.Name and Role | Text concatenation in a large line item | 66.6K |
 
-## A9. Find out what reads SYS01 Time: no formula or export reads it
+## A7. Move 11 hard-coded constants into assumptions modules
+
+**Caldergate FP&A, Workforce Planning.** Numbers inside formulas are assumptions nobody can see or change without a model builder. The same constant in more than one formula drifts.
+
+| Reclaims | Touches | Exports can prove |
+|---|---|---|
+| 9 objects | nothing in the exports | proven: Everything this action touches is in the exports. |
+
+**Steps**
+
+1. Create (or reuse) a settings module per model with one line item per constant, named, with a note saying who owns it.
+2. Replace each constant with the reference.
+3. Tell the owner where the number now lives.
+
+**Verify**
+
+- Search formulas for the constant: zero hits.
+
+**Evidence**
+
+| Constant | Used in | Suggested input |
+|---|---|---|
+| 0.1 | Workforce Planning: Calcs - Cost.Bonus, Workforce Planning: Calcs - Headcount by CC.Bonus % | Assumption 1 |
+| 1.27 | Caldergate FP&A: CAL02 Revenue.Revenue USD | Assumption 2 |
+| 0.2 | Caldergate FP&A: CAL02 Revenue.VAT | Assumption 3 |
+| 30 | Caldergate FP&A: CAL08 Cash Flow.Debtors | Assumption 4 |
+| 0.25 | Caldergate FP&A: CAL08 Cash Flow.Tax | Assumption 5 |
+| 10 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 6 |
+| 119 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 7 |
+| 120 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 8 |
+| 239 | Caldergate FP&A: CAL10 Depreciation.Charge | Assumption 9 |
+| 0.05 | Caldergate FP&A: INP03 Headcount.Pension | Assumption 10 |
+| 11 | Workforce Planning: Calcs - Attrition.Annualised Attrition | Assumption 11 |
+
+## A8. Find out what reads SYS01 Time: no formula or export reads it
 
 **Board Reporting.** No formula outside SYS01 Time reads any of its 2 line items, and no export action reads it. It holds 72 cells and 2.8% of the model's calculation effort, recalculated on every change.
 
@@ -383,7 +354,7 @@ Readers outside the module: 0. Exports reading it: 0. Twin module: CAL03 Opex (2
 
 Readers outside the module: 0. Exports reading it: 0.
 
-## A10. Guard 4 divisions that error on zero
+## A9. Guard 4 divisions that error on zero
 
 **3 models.** A / B shows an error cell when B is zero, and every summary above it shows an error too. DIVIDE() returns zero. The replacement formula is written out; paste it.
 
@@ -409,33 +380,7 @@ Readers outside the module: 0. Exports reading it: 0.
 | Workforce Planning | Calcs - Attrition.Attrition % | `DIVIDE(Leavers by Role, Headcount)` |
 | Board Reporting | CAL01 KPIs.Revenue per FTE | `DIVIDE(DAT02 Board Lines.Revenue, FTE)` |
 
-## A11. Reconcile 3 pairs of formulas that differ in exactly one place
-
-**Workforce Planning.** Same formula skeleton, same dimensions, one leaf differs: a constant, a reference or a list item. This is what copy, paste and tweak leaves behind. Either the difference is intended (then the name should say so) or one of the pair is the stale copy.
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 13.4K cells | nothing in the exports | judgment: The exports show the shape; whether the change is right needs someone who knows the model. |
-
-**Steps**
-
-1. For each pair, read the difference column and decide: intended, or drift.
-2. Intended: rename so the difference is in the name, or add a note.
-3. Drift: fix the stale one, or merge as an exact duplicate.
-
-**Verify**
-
-- Re-run this report: pairs that were drift are gone; pairs that were intended carry a note.
-
-**Evidence**
-
-| Line item | Near twin | The one difference | Cells |
-|---|---|---|---|
-| Calcs - Attrition.Headcount | zz Archive - 2021 Cost.Cost | `Data - Employees.FTE` vs `Calcs - Cost.Total Cost` | 4.5K |
-| Calcs - Attrition.Leavers by Role | zz Archive - 2021 Cost.Headcount | `Calcs - Attrition.Leavers` vs `Data - Employees.FTE` | 4.5K |
-| Calcs - Attrition.Leavers by Role | zz Archive - 2021 Cost.Cost | `Calcs - Attrition.Leavers` vs `Calcs - Cost.Total Cost` | 4.5K |
-
-## A12. Collapse 15 line items that only copy another line item
+## A10. Collapse 15 line items that only copy another line item
 
 **Caldergate FP&A.** 15 line items have the formula `B = A` with the same dimensions as A. Each stores a second copy of A: 287K cells. Readers of B can read A directly. Some exist to give a page a friendlier name; those are the ones to keep.
 
@@ -474,31 +419,7 @@ Readers outside the module: 0. Exports reading it: 0.
 | OUT02 Board Pack.Revenue | OUT01 Management Pack.Revenue | 19.2K | 1 | SUM / SUM |
 | OUT02 Board Pack.EBITDA | OUT01 Management Pack.EBITDA | 19.2K | 0 | SUM / SUM |
 
-## A13. Move 2 subsidiary-view line items into modules of their own dimensions
-
-**Caldergate FP&A, Workforce Planning.** A line item dimensioned differently from its module is a subsidiary view. Used in calculation, it hides a lookup and confuses the next builder. Anaplan's checklist: display only.
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 2 objects | 2 formulas | proven: Everything this action touches is in the exports. |
-
-**Steps**
-
-1. Create or find a module dimensioned as the line item is (usually a SYS module for that list).
-2. Move the line item; repoint its readers.
-
-**Verify**
-
-- Modules export: no calculation module has a line item whose Applies To differs from the module's.
-
-**Evidence**
-
-| Model | Line item | Applies to | Module applies to | Readers |
-|---|---|---|---|---|
-| Caldergate FP&A | CAL01 Volumes.Launched? | Products | Products, Regions | 1 |
-| Workforce Planning | Calcs - Attrition.Leavers | Employees | Roles | 1 |
-
-## A14. Shorten 4 pass-through chains
+## A11. Shorten 4 pass-through chains
 
 **Caldergate FP&A.** A reads B reads C, each a pure copy. Every step recalculates on any change, and each intermediate is a stored copy. Anaplan's checklist: never.
 
@@ -524,7 +445,138 @@ Readers outside the module: 0. Exports reading it: 0.
 | OUT02 Board Pack.Revenue | 4 | CAL07 P&L by Cost Centre.Revenue |
 | OUT02 Board Pack.EBITDA | 4 | CAL07 P&L by Cost Centre.EBITDA |
 
-## A15. Split 1 formula that aggregate and look up in one bracket
+## A12. Move 2 subsidiary-view line items into modules of their own dimensions
+
+**Caldergate FP&A, Workforce Planning.** A line item dimensioned differently from its module is a subsidiary view. Used in calculation, it hides a lookup and confuses the next builder. Anaplan's checklist: display only.
+
+| Reclaims | Touches | Exports can prove |
+|---|---|---|
+| 2 objects | 2 formulas | proven: Everything this action touches is in the exports. |
+
+**Steps**
+
+1. Create or find a module dimensioned as the line item is (usually a SYS module for that list).
+2. Move the line item; repoint its readers.
+
+**Verify**
+
+- Modules export: no calculation module has a line item whose Applies To differs from the module's.
+
+**Evidence**
+
+| Model | Line item | Applies to | Module applies to | Readers |
+|---|---|---|---|---|
+| Caldergate FP&A | CAL01 Volumes.Launched? | Products | Products, Regions | 1 |
+| Workforce Planning | Calcs - Attrition.Leavers | Employees | Roles | 1 |
+
+## A13. Reconcile 6 pairs of formulas that differ in exactly one place
+
+**Caldergate FP&A.** Same formula skeleton, same dimensions, one leaf differs: a constant, a reference or a list item. This is what copy, paste and tweak leaves behind. Either the difference is intended (then the name should say so) or one of the pair is the stale copy.
+
+| Reclaims | Touches | Exports can prove |
+|---|---|---|
+| 6 objects | nothing in the exports | judgment: The exports show the shape; whether the change is right needs someone who knows the model. |
+
+**Steps**
+
+1. For each pair, read the difference column and decide: intended, or drift.
+2. Intended: rename so the difference is in the name, or add a note.
+3. Drift: fix the stale one, or merge as an exact duplicate.
+
+**Verify**
+
+- Re-run this report: pairs that were drift are gone; pairs that were intended carry a note.
+
+**Evidence**
+
+| Line item | Near twin | The one difference | Cells |
+|---|---|---|---|
+| CAL03 Opex.Actual Opex | CAL05 Opex OLD.Actual | `SYS03 Account Attributes.Opex?` vs `SYS01 Time Settings.Actual?` | 5.0M |
+| CAL03 Opex.Opex GBP | CAL05 Opex OLD.Opex GBP | `CAL03 Opex.Opex` vs `CAL05 Opex OLD.Opex` | 5.0M |
+| CAL02 Revenue.Gross Revenue | CAL04 Margn.COGS | `INP01 Volumes.Price` vs `INP06 Unit Costs.Landed Cost` | 36.3K |
+| CAL01 Volumes.Sellable Units Prior Year | CAL02 Revenue.Revenue Prior Year | `CAL01 Volumes.Sellable Units` vs `CAL02 Revenue.Revenue GBP` | 36.3K |
+| CAL02 Revenue.Revenue GBP | CAL04 Margn.Margin GBP | `CAL02 Revenue.Net Revenue` vs `CAL04 Margn.Margin` | 36.3K |
+| CAL07 P&L by Cost Centre.Opex Budget | OUT02 Board Pack.Budget Revenue | `CAL07 P&L by Cost Centre.Opex` vs `OUT01 Management Pack.Revenue` | 19.2K |
+
+## A14. Collapse 4 line items that only copy another line item
+
+**Board Reporting.** 4 line items have the formula `B = A` with the same dimensions as A. Each stores a second copy of A: 576 cells. Readers of B can read A directly. Some exist to give a page a friendlier name; those are the ones to keep.
+
+| Reclaims | Touches | Exports can prove |
+|---|---|---|
+| 576 cells | pages: check | check pages: Formulas, exports and imports are in the exports; pages and saved views are not. Check them before removing anything. |
+
+**Steps**
+
+1. Repoint each reader of the alias to the target (readers column).
+2. Keep an alias only where a page or export needs it under that name.
+3. Delete the rest.
+
+**Verify**
+
+- Cell count falls by up to 576.
+- Re-run this report: the alias count falls to the ones kept on purpose.
+
+**Evidence**
+
+| Alias | Is just | Cells | Readers to repoint | Summary (alias / target) |
+|---|---|---|---|---|
+| OUT01 Board Dashboard.Revenue | DAT02 Board Lines.Revenue | 144 | 0 | SUM / SUM |
+| OUT01 Board Dashboard.EBITDA | DAT02 Board Lines.EBITDA | 144 | 0 | SUM / SUM |
+| OUT01 Board Dashboard.Revenue per FTE | CAL01 KPIs.Revenue per FTE | 144 | 0 | SUM / FORMULA |
+| OUT01 Board Dashboard.Revenue Growth | CAL01 KPIs.Revenue Growth | 144 | 0 | SUM / FORMULA |
+
+## A15. Retire zz Archive - 2021 Cost, superseded by Calcs - Attrition
+
+**Workforce Planning.** No formula outside zz Archive - 2021 Cost reads any of its 3 line items, and no export action reads it. 2 of its 3 calculated line items have a twin in Calcs - Attrition, which other formulas do read. It holds 13.4K cells, recalculated on every change. Module note: "Old cost calc from go-live. Kept for reference."
+
+| Reclaims | Touches | Exports can prove |
+|---|---|---|
+| 13.4K cells | pages: check | check pages: Formulas, exports and imports are in the exports; pages and saved views are not. Check them before removing anything. |
+
+**Steps**
+
+1. List the pages and saved views that use zz Archive - 2021 Cost (Modules export: Used in Dashboards covers classic dashboards only; UX pages need the page builder).
+2. Where a page reads zz Archive - 2021 Cost, repoint the card to the twin line item in Calcs - Attrition.
+3. In a sandbox copy, blank every formula in zz Archive - 2021 Cost; open the pages listed in step 1.
+4. Delete zz Archive - 2021 Cost.
+
+**Verify**
+
+- Workspace size falls by about 13.4K cells.
+- Every page listed in step 1 opens without a blank card.
+
+**Evidence**
+
+Readers outside the module: 0. Exports reading it: 0. Twin module: Calcs - Attrition (2 matches).
+
+## A16. Reconcile 3 pairs of formulas that differ in exactly one place
+
+**Workforce Planning.** Same formula skeleton, same dimensions, one leaf differs: a constant, a reference or a list item. This is what copy, paste and tweak leaves behind. Either the difference is intended (then the name should say so) or one of the pair is the stale copy.
+
+| Reclaims | Touches | Exports can prove |
+|---|---|---|
+| 3 objects | nothing in the exports | judgment: The exports show the shape; whether the change is right needs someone who knows the model. |
+
+**Steps**
+
+1. For each pair, read the difference column and decide: intended, or drift.
+2. Intended: rename so the difference is in the name, or add a note.
+3. Drift: fix the stale one, or merge as an exact duplicate.
+
+**Verify**
+
+- Re-run this report: pairs that were drift are gone; pairs that were intended carry a note.
+
+**Evidence**
+
+| Line item | Near twin | The one difference | Cells |
+|---|---|---|---|
+| Calcs - Attrition.Headcount | zz Archive - 2021 Cost.Cost | `Data - Employees.FTE` vs `Calcs - Cost.Total Cost` | 4.5K |
+| Calcs - Attrition.Leavers by Role | zz Archive - 2021 Cost.Headcount | `Calcs - Attrition.Leavers` vs `Data - Employees.FTE` | 4.5K |
+| Calcs - Attrition.Leavers by Role | zz Archive - 2021 Cost.Cost | `Calcs - Attrition.Leavers` vs `Calcs - Cost.Total Cost` | 4.5K |
+
+## A17. Split 1 formula that aggregate and look up in one bracket
 
 **Caldergate FP&A.** SUM with LOOKUP or SELECT in one expression makes the engine build a large intermediate mapping. Anapedia: never combine them.
 
@@ -547,7 +599,7 @@ Readers outside the module: 0. Exports reading it: 0.
 |---|---|---|---|
 | Caldergate FP&A | CAL06 Department Summary.Benchmark Opex | LOOKUP+SUM | `'CAL03 Opex'.Opex GBP[SUM: 'SYS02 Cost Centre Attributes'.Department, LOOKUP: 'SYS09 Department Sett` |
 
-## A16. Delete 1 empty module
+## A18. Delete 1 empty module
 
 **Caldergate FP&A.** No line items. Usually a leftover from a build that moved on.
 
@@ -567,7 +619,61 @@ Readers outside the module: 0. Exports reading it: 0.
 
 Caldergate FP&A: CAL09 Scenario Planning
 
-## A17. Give 8 calculations that exist in more than one model a single owner
+## A19. Merge 1 line item that repeat a calculation already made (1 group)
+
+**Caldergate FP&A.** 1 calculated line items have the same resolved formula, dimensions, time scale and versions as another line item in the model. Each is computed and stored twice: 19.2K cells. The keeper in each group is the one most formulas already read.
+
+| Reclaims | Touches | Exports can prove |
+|---|---|---|
+| 19.2K cells | pages: check | check pages: Formulas, exports and imports are in the exports; pages and saved views are not. Check them before removing anything. |
+
+**Steps**
+
+1. For each group, keep the line item most formulas read (first column).
+2. Repoint every formula that reads a duplicate to the keeper (the readers count is in the table).
+3. Where the summary methods differ (last column), decide which one the pages need before merging; that is the one legitimate reason for two copies.
+4. Check pages for the duplicates, then delete them.
+
+**Verify**
+
+- Cell count falls by about 19.2K.
+- No page shows a blank; no export loses a column.
+- Re-run this report: the group count reaches zero.
+
+**Evidence**
+
+| Keep (most read) | Also computed as | Dimensions | Redundant cells | Summary methods |
+|---|---|---|---|---|
+| CAL07 P&L by Cost Centre.Depreciation | OUT01 Management Pack.Depreciation | Cost Centres | 19.2K | SUM |
+
+## A20. Merge 1 line item that repeat a calculation already made (1 group)
+
+**Workforce Planning.** 1 calculated line items have the same resolved formula, dimensions, time scale and versions as another line item in the model. Each is computed and stored twice: 4.5K cells. The keeper in each group is the one most formulas already read.
+
+| Reclaims | Touches | Exports can prove |
+|---|---|---|
+| 4.5K cells | 1 formula, pages: check | check pages: Formulas, exports and imports are in the exports; pages and saved views are not. Check them before removing anything. |
+
+**Steps**
+
+1. For each group, keep the line item most formulas read (first column).
+2. Repoint every formula that reads a duplicate to the keeper (the readers count is in the table).
+3. Where the summary methods differ (last column), decide which one the pages need before merging; that is the one legitimate reason for two copies.
+4. Check pages for the duplicates, then delete them.
+
+**Verify**
+
+- Cell count falls by about 4.5K.
+- No page shows a blank; no export loses a column.
+- Re-run this report: the group count reaches zero.
+
+**Evidence**
+
+| Keep (most read) | Also computed as | Dimensions | Redundant cells | Summary methods |
+|---|---|---|---|---|
+| Calcs - Attrition.Headcount | zz Archive - 2021 Cost.Headcount | Roles | 4.5K | SUM |
+
+## A21. Give 8 calculations that exist in more than one model a single owner
 
 **Estate.** The same line item, same formula, in more than one model. A change in one must be repeated in the others, and one day it is not. Caldergate FP&A holds the most copies; where a feed already exists, it can own the value and the others import it.
 
@@ -597,112 +703,6 @@ Caldergate FP&A: CAL09 Scenario Planning
 | Revenue? | Caldergate Data Hub, Caldergate FP&A | `(Account Type = Account Types.Revenue)` |
 | Sign | Caldergate Data Hub, Caldergate FP&A | `(IF 'Revenue?' THEN -1 ELSE 1)` |
 | Working Days | Caldergate FP&A, Workforce Planning | `(Days in Month - Weekend Days - Bank Holidays)` |
-
-## A18. Collapse 4 line items that only copy another line item
-
-**Board Reporting.** 4 line items have the formula `B = A` with the same dimensions as A. Each stores a second copy of A: 576 cells. Readers of B can read A directly. Some exist to give a page a friendlier name; those are the ones to keep.
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 576 cells | pages: check | check pages: Formulas, exports and imports are in the exports; pages and saved views are not. Check them before removing anything. |
-
-**Steps**
-
-1. Repoint each reader of the alias to the target (readers column).
-2. Keep an alias only where a page or export needs it under that name.
-3. Delete the rest.
-
-**Verify**
-
-- Cell count falls by up to 576.
-- Re-run this report: the alias count falls to the ones kept on purpose.
-
-**Evidence**
-
-| Alias | Is just | Cells | Readers to repoint | Summary (alias / target) |
-|---|---|---|---|---|
-| OUT01 Board Dashboard.Revenue | DAT02 Board Lines.Revenue | 144 | 0 | SUM / SUM |
-| OUT01 Board Dashboard.EBITDA | DAT02 Board Lines.EBITDA | 144 | 0 | SUM / SUM |
-| OUT01 Board Dashboard.Revenue per FTE | CAL01 KPIs.Revenue per FTE | 144 | 0 | SUM / FORMULA |
-| OUT01 Board Dashboard.Revenue Growth | CAL01 KPIs.Revenue Growth | 144 | 0 | SUM / FORMULA |
-
-## A19. Retire zz Archive - 2021 Cost, superseded by Calcs - Attrition
-
-**Workforce Planning.** No formula outside zz Archive - 2021 Cost reads any of its 3 line items, and no export action reads it. 2 of its 3 calculated line items have a twin in Calcs - Attrition, which other formulas do read. It holds 13.4K cells, recalculated on every change. Module note: "Old cost calc from go-live. Kept for reference."
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 13.4K cells | pages: check | check pages: Formulas, exports and imports are in the exports; pages and saved views are not. Check them before removing anything. |
-
-**Steps**
-
-1. List the pages and saved views that use zz Archive - 2021 Cost (Modules export: Used in Dashboards covers classic dashboards only; UX pages need the page builder).
-2. Where a page reads zz Archive - 2021 Cost, repoint the card to the twin line item in Calcs - Attrition.
-3. In a sandbox copy, blank every formula in zz Archive - 2021 Cost; open the pages listed in step 1.
-4. Delete zz Archive - 2021 Cost.
-
-**Verify**
-
-- Workspace size falls by about 13.4K cells.
-- Every page listed in step 1 opens without a blank card.
-
-**Evidence**
-
-Readers outside the module: 0. Exports reading it: 0. Twin module: Calcs - Attrition (2 matches).
-
-## A20. Merge 1 line item that repeat a calculation already made (1 group)
-
-**Caldergate FP&A.** 1 calculated line items have the same resolved formula, dimensions, time scale and versions as another line item in the model. Each is computed and stored twice: 19.2K cells. The keeper in each group is the one most formulas already read.
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 19.2K cells | pages: check | check pages: Formulas, exports and imports are in the exports; pages and saved views are not. Check them before removing anything. |
-
-**Steps**
-
-1. For each group, keep the line item most formulas read (first column).
-2. Repoint every formula that reads a duplicate to the keeper (the readers count is in the table).
-3. Where the summary methods differ (last column), decide which one the pages need before merging; that is the one legitimate reason for two copies.
-4. Check pages for the duplicates, then delete them.
-
-**Verify**
-
-- Cell count falls by about 19.2K.
-- No page shows a blank; no export loses a column.
-- Re-run this report: the group count reaches zero.
-
-**Evidence**
-
-| Keep (most read) | Also computed as | Dimensions | Redundant cells | Summary methods |
-|---|---|---|---|---|
-| CAL07 P&L by Cost Centre.Depreciation | OUT01 Management Pack.Depreciation | Cost Centres | 19.2K | SUM |
-
-## A21. Merge 1 line item that repeat a calculation already made (1 group)
-
-**Workforce Planning.** 1 calculated line items have the same resolved formula, dimensions, time scale and versions as another line item in the model. Each is computed and stored twice: 4.5K cells. The keeper in each group is the one most formulas already read.
-
-| Reclaims | Touches | Exports can prove |
-|---|---|---|
-| 4.5K cells | 1 formula, pages: check | check pages: Formulas, exports and imports are in the exports; pages and saved views are not. Check them before removing anything. |
-
-**Steps**
-
-1. For each group, keep the line item most formulas read (first column).
-2. Repoint every formula that reads a duplicate to the keeper (the readers count is in the table).
-3. Where the summary methods differ (last column), decide which one the pages need before merging; that is the one legitimate reason for two copies.
-4. Check pages for the duplicates, then delete them.
-
-**Verify**
-
-- Cell count falls by about 4.5K.
-- No page shows a blank; no export loses a column.
-- Re-run this report: the group count reaches zero.
-
-**Evidence**
-
-| Keep (most read) | Also computed as | Dimensions | Redundant cells | Summary methods |
-|---|---|---|---|---|
-| Calcs - Attrition.Headcount | zz Archive - 2021 Cost.Headcount | Roles | 4.5K | SUM |
 
 ## A22. Split INP02 Opex Drivers (58 line items)
 
