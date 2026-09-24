@@ -53,7 +53,8 @@ EXAMPLE_TARGET = ("CAL03 Opex", "Forecast Opex")               # the line item t
 STATIC = Path(__file__).resolve().parent / "static"
 def _find_example() -> Path:
     """The fictional example estate: ESTATE_EXAMPLE_DIR, else the checkout the service runs from, else next to the source tree."""
-    for c in (Path(os.environ.get("ESTATE_EXAMPLE_DIR", "")), Path.cwd() / "examples" / "caldergate-estate", Path(__file__).resolve().parents[2] / "examples" / "caldergate-estate"):
+    here = Path(__file__).resolve()
+    for c in (Path(os.environ.get("ESTATE_EXAMPLE_DIR", "")), here.parent / "example" / "caldergate-estate", Path.cwd() / "examples" / "caldergate-estate", here.parents[2] / "examples" / "caldergate-estate"):
         if str(c) not in ("", ".") and c.is_dir():
             return c
     return Path(__file__).resolve().parents[2] / "examples" / "caldergate-estate"

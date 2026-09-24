@@ -21,3 +21,11 @@ anaplan-estate-web = "anaplan_estate.web:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/anaplan_estate"]
+
+[tool.hatch.build.targets.wheel.force-include]
+# the fictional example estate ships inside the package so the local page's "Explore an example" works after pip install
+"examples/caldergate-estate/1 Caldergate Data Hub" = "anaplan_estate/example/caldergate-estate/1 Caldergate Data Hub"
+"examples/caldergate-estate/2 Caldergate FP&A" = "anaplan_estate/example/caldergate-estate/2 Caldergate FP&A"
+"examples/caldergate-estate/3 Workforce Planning" = "anaplan_estate/example/caldergate-estate/3 Workforce Planning"
+"examples/caldergate-estate/4 Board Reporting" = "anaplan_estate/example/caldergate-estate/4 Board Reporting"
+"examples/caldergate-estate/PLANTED.md" = "anaplan_estate/example/caldergate-estate/PLANTED.md"
