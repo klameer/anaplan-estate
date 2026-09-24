@@ -115,6 +115,26 @@ def _usage_modules(m) -> dict[str, dict]:
 
 
 # ---------------------------------------------------------------- generators
+#
+# Every card is written for someone who owns or uses the model, not only for a builder: the "why" opens with a
+# plain explanation of the kind of problem, then names the modules and line items involved, then the figures.
+
+def _li(name: str, m=None) -> tuple[str, str]:
+    """(module, line item) for a 'Module.Line item' name, resolved against the model because both parts can contain dots."""
+    if m is not None:
+        for k in m.model.line_items:
+            if f"{k[0]}.{k[1]}" == name:
+                return k
+        if name in m.model.modules:
+            return (name, "")
+    mod, _, item = name.partition(".")
+    return (mod, item) if item else (name, "")
+
+
+def _named(name: str, m=None) -> str:
+    mod, item = _li(name, m)
+    return f"the line item '{item}' in the module '{mod}'" if item else f"the module '{mod}'"
+
 
 def _hotspot_candidates(er, fmap, mi, m) -> list[Candidate]:
     """Join the named high-effort line items to the findings that name them; one candidate per (model, rule family).
@@ -142,54 +162,61 @@ def _hotspot_candidates(er, fmap, mi, m) -> list[Candidate]:
         eff = round(sum(e for _, e, _ in items), 1); cells = sum(c for *_, c in items)
         first, first_eff = items[0][0], items[0][1]
         ids = sorted({i for n in names for i in fmap.get((m.name, n), [])} | ({eff_id} if eff_id else set()), key=lambda s: int(s[1:]))
-        mod = first.split(".", 1)[0] if "." in first else first
+        n = len(names)
+        others = (f" and {n - 1} similar line item{'s' if n > 2 else ''} (listed under Evidence)" if n > 1 else "")
+        explorer = [mi, _li(first, m)[0], _li(first, m)[1] or None]
         if fam == "text":
-            n = len(names)
             c = Candidate(key=f"hotspot-text:{m.name}", kind="change",
-                          title=(f"Move {n} text formulas that run on every cell into a system module in {m.name}" if n != 1
-                                 else f"Move the text formula {first} into a system module in {m.name}"),
-                          why=(f"{first}" + (f" and {n - 1} similar line item{'s' if n > 2 else ''}" if n > 1 else "") +
-                               f" {'build' if n > 1 else 'builds'} a text or per-item value on every cell of a multi-dimensional module ({_c(cells)} cells) and {'carry' if n > 1 else 'carries'} {eff:.1f}% of {m.name}'s measured effort; "
-                               "in a module dimensioned only by the list the value varies by, each is calculated once per list item and read from there."),
-                          steps=[f"Read {first} ({first_eff:.1f}%): name the list its value varies by (often Time or one list).",
-                                 "In a development copy, compute it in a SYS module on that list and repoint the readers; keep the original until reconciled.",
-                                 "Record Calculation Effort before and after."],
-                          done_when="Readers reconcile cell for cell and the measured effort share falls.",
+                          title=f"Stop working out text labels on every cell in {m.name} ({_pl(n, 'formula')})",
+                          why=(f"Anaplan runs a formula once for every cell of a module. When the formula only produces a label (a text value such as a period code) "
+                               f"that is the same across a whole row, working it out for every cell of a large grid is wasted effort. Moving the formula into a small helper module "
+                               f"that has only the list the label depends on means it is worked out once per item and simply looked up from there. "
+                               f"In {m.name} this applies to {_named(first, m)}{others}: together {_c(cells)} cells and {eff:.1f}% of the model's measured calculation effort."),
+                          steps=[f"Open {_named(first, m)} ({first_eff:.1f}% of measured effort) and note which list its value actually changes with (often Time, or one list).",
+                                 "In a development copy of the model, create a small system module with just that list, put the formula there, and point the places that used the old formula at the new one. Keep the old line item until the check below passes.",
+                                 "Compare the results before and after, and read the Calculation Effort column before and after."],
+                          done_when="Every value that used the label still matches the original, cell for cell, and the measured effort share has fallen.",
                           role=f"model builder, {m.name}", model=m.name, objects=names, finding_ids=ids, strength="confirmed",
-                          footprint_cells=cells, footprint_effort=eff, explorer=[mi, mod, first.split(".", 1)[1] if "." in first else None])
+                          footprint_cells=cells, footprint_effort=eff, explorer=explorer)
         elif fam == "mixed":
             c = Candidate(key=f"hotspot-mixed:{m.name}", kind="change",
-                          title=f"Split SUM from LOOKUP or SELECT in {first}" + (f" and {len(names) - 1} more" if len(names) > 1 else ""),
-                          why=f"{_pl(len(names), 'formula')} carrying {eff:.1f}% of {m.name}'s measured effort combine SUM with LOOKUP or SELECT, which Anaplan's documentation advises against for calculation time.",
-                          steps=[f"In a development copy, split {first} into one line item that aggregates and one that looks up or selects from it.",
-                                 "Reconcile cell for cell against the original; record Calculation Effort before and after.",
-                                 "Keep the split only where the share falls."],
-                          done_when="Values reconcile cell for cell and the measured effort share falls.",
+                          title=f"Split the heavy 'add up and look up' formulas in {m.name} ({_pl(n, 'formula')})",
+                          why=(f"A formula that adds values up (SUM) and looks a value up (LOOKUP or SELECT) in the same step makes Anaplan do both jobs for every cell at once; "
+                               f"Anaplan's own guidance is to do them in two line items, one that adds up and one that looks up from the result. "
+                               f"In {m.name} this applies to {_named(first, m)}{others}: together {eff:.1f}% of the model's measured calculation effort."),
+                          steps=[f"In a development copy, split {_named(first, m)} into two line items: one that adds up, one that looks up from it.",
+                                 "Compare the results with the original, cell for cell, and read the Calculation Effort column before and after.",
+                                 "Keep the split only where the effort share falls; then do the next formula."],
+                          done_when="Values match the original cell for cell and the measured effort share has fallen.",
                           role=f"model builder, {m.name}", model=m.name, objects=names, finding_ids=ids, strength="confirmed",
-                          footprint_cells=cells, footprint_effort=eff, explorer=[mi, mod, first.split(".", 1)[1] if "." in first else None])
+                          footprint_cells=cells, footprint_effort=eff, explorer=explorer)
         else:
             c = Candidate(key=f"hotspot-if:{m.name}", kind="change",
-                          title=f"Replace the IF chain in {first} with a mapping module and LOOKUP",
-                          why=f"{first} carries {first_eff:.1f}% of {m.name}'s measured effort and evaluates every IF branch for every cell; a mapping module makes each case a row, not a formula edit.",
-                          steps=["In a development copy, load the branch-to-value table (in the evidence) into a mapping module on the list the branches test.",
-                                 f"Replace the chain in {first} with one LOOKUP; keep the original formula in a note until reconciled.",
-                                 "Export the line item before and after; every cell equal."],
-                          done_when="Every cell is equal before and after and the mapping module holds every case the chain held.",
+                          title=f"Replace the long chain of IF tests in {_named(first, m)} with a lookup table",
+                          why=(f"A formula built as a long chain of 'if this then that' tests checks every branch for every cell, and each new case means editing the formula. "
+                               f"The same mapping held as rows in a small table module, read with one lookup, is quicker to calculate and can be maintained without a builder. "
+                               f"In {m.name}, {_named(first, m)} carries {first_eff:.1f}% of the model's measured calculation effort."),
+                          steps=["In a development copy, load the 'case to value' table (it is written out under Evidence) into a small mapping module keyed by the list the tests refer to.",
+                                 f"Replace the chain in {_named(first, m)} with a single lookup on that table; keep the old formula in a note until the check below passes.",
+                                 "Export the line item before and after and confirm every cell is equal."],
+                          done_when="Every cell is equal before and after, and the table holds every case the chain held.",
                           role=f"model builder, {m.name}", model=m.name, objects=names, finding_ids=ids, strength="confirmed",
-                          footprint_cells=cells, footprint_effort=eff, explorer=[mi, mod, first.split(".", 1)[1] if "." in first else None])
+                          footprint_cells=cells, footprint_effort=eff, explorer=explorer)
         out.append(c)
     if not out:
         first = top[0][0]
         out.append(Candidate(key=f"hotspot-investigate:{m.name}", kind="investigation",
-                             title=f"Read the five largest calculation hotspots in {m.name}",
-                             why=f"Ten line items carry {f['effort_top10_share']}% of {m.name}'s measured effort and none matches a rule finding, so concentration is the only evidence: a place to look, not a change to make.",
-                             steps=[f"Read the five largest with the owner, led by {first} ({top[0][1]:.1f}%): what each computes and how often it changes.",
-                                    "Note where a documented pattern applies (SUM with LOOKUP, text per cell, IF chains) or the effort is the model's main job.",
-                                    "Choose at most one to trial in a development copy, with Calculation Effort read before and after."],
-                             done_when="Each of the five has a recorded reading (keep, or one named change to trial) agreed with the owner.",
+                             title=f"Look at the five heaviest calculations in {m.name}",
+                             why=(f"Anaplan records how much of a model's calculation effort each line item takes. In {m.name}, ten line items take {f['effort_top10_share']}% of it, "
+                                  f"led by {_named(first, m)} at {top[0][1]:.1f}%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: "
+                                  f"heavy calculation is often simply the model doing its main job."),
+                             steps=[f"With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.",
+                                    "For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).",
+                                    "Try at most one change in a development copy, reading Calculation Effort before and after."],
+                             done_when="Each of the five has a recorded decision (keep, or one named change to trial) agreed with the owner.",
                              role=f"model builder, {m.name}", model=m.name, objects=[n for n, *_ in top[:5]], finding_ids=[eff_id] if eff_id else [], strength="confirmed",
                              footprint_cells=sum(t[2] for t in top[:5]), footprint_effort=None,   # concentration is not a change footprint; banded by cells only
-                             explorer=[mi, first.split(".", 1)[0], first.split(".", 1)[1] if "." in first else None]))
+                             explorer=[mi, _li(first, m)[0], _li(first, m)[1] or None]))
     return out
 
 
@@ -202,19 +229,21 @@ def _retire_candidate(er, fmap, mi, m) -> Candidate | None:
     x = next((x for x in er.findings if x.model == m.name and x.area == "usage" and s["module"] in x.objects and "G-UNUSED" in x.rules), None)
     ids = sorted(set(fmap.get((m.name, s["module"]), [])), key=lambda i: int(i[1:]))
     has_actions = bool(m.facts.get("actions"))
-    fp = f"{_c(s['cells'])} cells" + (f" and {s['effort']:.1f}% of {m.name}'s measured effort" if m.facts["has_effort"] and s["effort"] else "")
-    steps = [f"Ask the page builder which pages, saved views and line item subsets use {s['module']}" + (" (no Modules export: classic dashboards unchecked too)" if not m.model.has_modules_export else "") + ".",
-             "Check whether another model imports from a saved view on it" + ("; it is an import target, so its data may be kept on purpose" if s.get("imported_into") else "") + ".",
-             "Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off."]
+    fp = f"{_c(s['cells'])} cells" + (f" and {s['effort']:.1f}% of the model's measured calculation effort" if m.facts["has_effort"] and s["effort"] else "")
+    steps = [f"Ask the page builder whether any page, dashboard, saved view or line item subset still uses '{s['module']}'" + (" (no Modules export was supplied, so old-style dashboards could not be checked either)" if not m.model.has_modules_export else "") + ".",
+             "Ask whether another model imports from a saved view on it" + ("; it is also loaded by an import, so its data may be kept on purpose" if s.get("imported_into") else "") + ".",
+             "Record the decision: keep, or retire. If retire: make the change in a development copy first, keep the original for comparison, check the owner's key outputs over a full cycle, then sign off."]
     notices = []
     if not has_actions:
-        notices.append("Export-action usage not assessed (no Actions export).")
+        notices.append("Whether an export reads this module could not be checked (no Actions export).")
     if s.get("target"):
-        notices.append(f"{s['matched_source']} of {s['calculated']} calculated line items match {s['target']}; the rest do not, so it is not a proven duplicate.")
+        notices.append(f"{s['matched_source']} of its {s['calculated']} calculated line items match line items in '{s['target']}'; the rest do not, so it is not a proven duplicate.")
     return Candidate(key=f"retire:{m.name}", kind="investigation",
-                     title=f"Check for consumers of {s['module']} in {m.name} before keeping or retiring it",
-                     why=f"No formula outside it reads its {s['line_items']} line items" + (" and no export action reads it" if has_actions else "") + f"; it holds {fp}: an observed footprint, not a saving.",
-                     steps=steps, done_when="Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.",
+                     title=f"Find out whether anyone still uses the module '{s['module']}' in {m.name}",
+                     why=(f"A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. "
+                          f"Until someone checks, it can neither be removed nor trusted. In {m.name}, no formula outside '{s['module']}' reads any of its {s['line_items']} line items"
+                          + (" and no export reads it" if has_actions else "") + f"; it occupies {fp}. That is what it takes up now, not a saving."),
+                     steps=steps, done_when="Every question above has a recorded answer and the owner has signed a keep-or-retire decision.",
                      role=f"model owner with a page builder, {m.name}", model=m.name, objects=[s["module"]], finding_ids=ids,
                      strength=(x.strength if x else "partial"), footprint_cells=s["cells"], footprint_effort=(s["effort"] if m.facts["has_effort"] and s["effort"] else None),
                      notices=notices, explorer=[mi, s["module"], None])
@@ -228,13 +257,17 @@ def _duplicate_candidate(er, fmap, mi, m) -> Candidate | None:
     x = next((x for x in er.findings if x.model == m.name and x.rules == ["REDUNDANT-EXACT"]), None)
     ids = [x.id] if x else []
     names = [i["key"] for i in g["items"]]
+    n = len(rest)
     return Candidate(key=f"duplicate:{m.name}", kind="change",
-                     title=f"Consolidate {len(rest)} {'copy' if len(rest) == 1 else 'copies'} of {keep['key']} in {m.name}",
-                     why=f"{rest[0]['key']}{f' and {len(rest) - 1} more' if len(rest) > 1 else ''} {'has' if len(rest) == 1 else 'have'} the same resolved formula and context as {keep['key']}; the copies hold {_c(g['redundant_cells'])} cells and {g['readers_to_repoint']} formulas read them.",
-                     steps=["Confirm with the owner and page builder that no copy serves a separate page, export column or access boundary.",
-                            f"In a development copy, repoint the {g['readers_to_repoint']} readers to {keep['key']}; keep the copies until reconciled.",
-                            "Reconcile the outputs that read them cell for cell, sign off, then remove the copies."],
-                     done_when="Readers reconcile cell for cell and the copies are removed with no blank page or missing export column.",
+                     title=f"Remove {n} duplicate {'copy' if n == 1 else 'copies'} of one calculation in {m.name}",
+                     why=(f"The same calculation exists more than once under different names, with the same formula and the same dimensions. Two copies can drift apart when one is changed, "
+                          f"and each copy takes space and calculation time. In {m.name}, {_named(rest[0]['key'], m)}"
+                          + (f" and {n - 1} more" if n > 1 else "") + f" {'is' if n == 1 else 'are'} the same calculation as {_named(keep['key'], m)}; the copies occupy {_c(g['redundant_cells'])} cells "
+                          f"and {g['readers_to_repoint']} other formulas read them."),
+                     steps=["Ask the owner and page builder whether any copy exists for a reason: a page that shows it under that name, an export column, or different access rights.",
+                            f"In a development copy, point the {g['readers_to_repoint']} formulas that read the copies at {_named(keep['key'], m)} instead; keep the copies until the check below passes.",
+                            "Compare the outputs that depend on them cell for cell, get sign-off, then remove the copies."],
+                     done_when="Everything that read the copies gives the same values from the kept line item, and the copies are gone with no blank page or missing export column.",
                      role=f"model builder, {m.name}", model=m.name, objects=names, finding_ids=ids,
                      strength=(x.strength if x else "confirmed"), footprint_cells=g["redundant_cells"],
                      explorer=[mi, keep["module"], keep["name"]])
@@ -247,15 +280,16 @@ def _if_chain_candidate(er, fmap, mi, m) -> Candidate | None:
     x = sorted(xs, key=lambda x: (-(x.footprint_effort or 0), x.objects[0]))[0]
     first = x.objects[0]
     return Candidate(key=f"if:{m.name}:{first}", kind="change",
-                     title=f"Replace the IF chain in {first} with a mapping module and LOOKUP",
-                     why="The chain encodes a lookup table (the evidence lists every branch), so each new case is a formula edit; a mapping module makes it a row"
-                         + (f", and the line item carries {x.footprint_effort:.1f}% of {m.name}'s measured effort" if x.footprint_effort else "") + ".",
-                     steps=["In a development copy, load the branch-to-value table (in the evidence) into a mapping module on the list the branches test.",
-                            f"Replace the chain in {first} with one LOOKUP; keep the original formula in a note until reconciled.",
-                            "Export the line item before and after; every cell equal."],
-                     done_when="Every cell is equal before and after and the mapping module holds every case the chain held.",
+                     title=f"Replace the long chain of IF tests in {_named(first, m)} with a lookup table",
+                     why=("A formula built as a long chain of 'if this then that' tests checks every branch for every cell, and each new case means editing the formula. "
+                          "The same mapping held as rows in a small table module, read with one lookup, is easier to maintain without a builder"
+                          + (f" and, in {m.name}, the line item carries {x.footprint_effort:.1f}% of the model's measured calculation effort" if x.footprint_effort else "") + "."),
+                     steps=["In a development copy, load the 'case to value' table (written out under Evidence) into a small mapping module keyed by the list the tests refer to.",
+                            f"Replace the chain in {_named(first, m)} with a single lookup on that table; keep the old formula in a note until the check below passes.",
+                            "Export the line item before and after and confirm every cell is equal."],
+                     done_when="Every cell is equal before and after, and the table holds every case the chain held.",
                      role=f"model builder, {m.name}", model=m.name, objects=[first], finding_ids=[x.id], strength=x.strength,
-                     footprint_effort=x.footprint_effort, explorer=[mi, first.split(".", 1)[0], first.split(".", 1)[1] if "." in first else None])
+                     footprint_effort=x.footprint_effort, explorer=[mi, _li(first, m)[0], _li(first, m)[1] or None])
 
 
 def candidates(er) -> list[Candidate]:
@@ -267,10 +301,8 @@ def candidates(er) -> list[Candidate]:
             c = gen(er, fmap, mi, m)
             if c:
                 out.append(c)
-    # de-duplicate the IF-chain candidate when the hotspot join already carries the same object
     keys = {(c.model, tuple(c.objects)) for c in out if c.key.startswith("hotspot-if:")}
     out = [c for c in out if not (c.key.startswith("if:") and (c.model, tuple(c.objects)) in keys)]
-    # merge overlapping findings and mark dependencies on the consumer check
     by_model = {m.name: m for m in er.models}
     for c in out:
         m = by_model[c.model]
@@ -279,34 +311,50 @@ def candidates(er) -> list[Candidate]:
             mod = c.objects[0]
             c.finding_ids = sorted(set(c.finding_ids) | {x.id for x in er.findings if x.model == c.model and mod in x.objects}, key=lambda i: int(i[1:]))
             continue
-        mods = {o.split(".", 1)[0] for o in c.objects if "." in o}
+        mods = {_li(o, m)[0] for o in c.objects if _li(o, m)[1]}
         hit = sorted(mods & set(usage))
         if hit:
             r = next((r for r in out if r.key == f"retire:{c.model}" and r.objects[0] in hit), None)
             if r:
                 c.depends_on.append(r.key)
-                c.notices.append(f"{hit[0]}{f' and {len(hit) - 1} more' if len(hit) > 1 else ''} has no consumer detected: complete that consumer check first.")
+                c.notices.append(f"The module '{hit[0]}'{f' and {len(hit) - 1} more' if len(hit) > 1 else ''} may no longer be used: do that check first, since a retired module needs no tuning.")
             else:
-                c.notices.append(f"{_pl(len(hit), 'module')} named here {'has' if len(hit) == 1 else 'have'} no consumer detected: confirm {'it is' if len(hit) == 1 else 'they are'} needed before optimising.")
+                c.notices.append(f"{_pl(len(hit), 'module')} named here {'has' if len(hit) == 1 else 'have'} no reader the exports can see: confirm {'it is' if len(hit) == 1 else 'they are'} still needed before tuning.")
         c.notices += [n for n in _coverage_notices(m) if n not in c.notices][:2]
     for c in out:
         c.rank_reason = _reason(c)
     return sorted(out, key=rank_key)
 
 
-def select(er, limit: int = 5) -> dict:
-    """At most `limit` cards, ordered; a dependency selected alongside its dependant is placed first."""
+WORTH = [
+    "A change is worth doing when its evidence is not merely inferred, its scope is bounded, and its observed footprint is at least medium (1% of its model's measured effort, or 1M cells).",
+    "An investigation is worth doing only when the footprint is high (5% of its model's measured effort, or 50M cells): asking someone to check a small module is not a good use of their time.",
+    "A prerequisite (for example a consumer check on a module that a change would tune) is included whenever the action that needs it is.",
+]
+
+
+def worth_doing(c: Candidate) -> bool:
+    if c.strength == "inferred" or not c.bounded:
+        return False
+    b = band(c)
+    return b <= 1 if c.kind == "change" else b == 0
+
+
+def select(er, limit: int | None = None) -> dict:
+    """Every candidate that is worth doing, in rank order; `limit` caps the count only when given.
+    A prerequisite is placed before the action that needs it."""
     ranked = candidates(er)
     by_key = {c.key: c for c in ranked}
     chosen: list[Candidate] = []
     for c in ranked:
-        if len(chosen) >= limit:
+        if limit is not None and len(chosen) >= limit:
             break
-        deps = [by_key[d] for d in c.depends_on if d in by_key and by_key[d] not in chosen]
-        for d in deps:                       # a prerequisite is placed before the action that needs it
-            if len(chosen) < limit:
+        if not worth_doing(c):
+            continue
+        for d in [by_key[d] for d in c.depends_on if d in by_key and by_key[d] not in chosen]:
+            if limit is None or len(chosen) < limit:
                 chosen.append(d)
-        if c not in chosen and len(chosen) < limit and all(by_key[d] in chosen for d in c.depends_on if d in by_key):
+        if c not in chosen and (limit is None or len(chosen) < limit) and all(by_key[d] in chosen for d in c.depends_on if d in by_key):
             chosen.append(c)
     for i, c in enumerate(chosen, 1):
         c.rank_reason = f"#{i}: " + c.rank_reason
@@ -314,10 +362,11 @@ def select(er, limit: int = 5) -> dict:
     if not chosen:
         checks = []
         if not any(m.facts["has_effort"] for m in er.models):
-            checks.append("export the Line Items grid with the Calculation Effort column so hotspots can be joined to findings")
+            checks.append("export the Line Items grid with the Calculation Effort column so the heaviest calculations can be matched to known patterns")
         if any(not m.facts.get("actions") for m in er.models):
             checks.append("supply the Actions export for " + ", ".join(m.name for m in er.models if not m.facts.get("actions")))
         if not checks:
-            checks.append("no finding met the bar for a bounded, evidenced action; the catalogue in Evidence lists what was observed")
+            checks.append("no finding met the bar for a bounded, evidenced action worth doing; the catalogue under Evidence lists everything that was observed")
         nothing = {"message": "No action is suggested from these exports.", "next_check": "; ".join(checks)}
-    return {"actions": [c.to_dict() for c in chosen], "candidates": [c.to_dict() for c in ranked], "ranking": RANKING, "limit": limit, "none": nothing}
+    return {"actions": [c.to_dict() for c in chosen], "candidates": [c.to_dict() for c in ranked], "ranking": RANKING, "worth": WORTH, "limit": limit,
+            "considered": len(ranked), "none": nothing}

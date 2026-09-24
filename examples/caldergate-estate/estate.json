@@ -27,50 +27,16 @@
  "plan": {
   "actions": [
    {
-    "key": "hotspot-text:Caldergate FP&A",
-    "kind": "change",
-    "title": "Move the text formula DAT01 Actuals GL.Journal Cost Centre into a system module in Caldergate FP&A",
-    "why": "DAT01 Actuals GL.Journal Cost Centre builds a text or per-item value on every cell of a multi-dimensional module (5.0M cells) and carries 6.2% of Caldergate FP&A's measured effort; in a module dimensioned only by the list the value varies by, each is calculated once per list item and read from there.",
-    "steps": [
-     "Read DAT01 Actuals GL.Journal Cost Centre (6.2%): name the list its value varies by (often Time or one list).",
-     "In a development copy, compute it in a SYS module on that list and repoint the readers; keep the original until reconciled.",
-     "Record Calculation Effort before and after."
-    ],
-    "done_when": "Readers reconcile cell for cell and the measured effort share falls.",
-    "role": "model builder, Caldergate FP&A",
-    "model": "Caldergate FP&A",
-    "objects": [
-     "DAT01 Actuals GL.Journal Cost Centre"
-    ],
-    "finding_ids": [
-     "F5",
-     "F16"
-    ],
-    "strength": "confirmed",
-    "footprint_cells": 5017824,
-    "footprint_effort": 6.2,
-    "notices": [],
-    "depends_on": [],
-    "explorer": [
-     1,
-     "DAT01 Actuals GL",
-     "Journal Cost Centre"
-    ],
-    "rank_reason": "#1: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 6.2% of its model's effort",
-    "bounded": true,
-    "footprint_measured": true
-   },
-   {
     "key": "hotspot-if:Caldergate FP&A",
     "kind": "change",
-    "title": "Replace the IF chain in CAL03 Opex.Forecast Opex with a mapping module and LOOKUP",
-    "why": "CAL03 Opex.Forecast Opex carries 16.0% of Caldergate FP&A's measured effort and evaluates every IF branch for every cell; a mapping module makes each case a row, not a formula edit.",
+    "title": "Replace the long chain of IF tests in the line item 'Forecast Opex' in the module 'CAL03 Opex' with a lookup table",
+    "why": "A formula built as a long chain of 'if this then that' tests checks every branch for every cell, and each new case means editing the formula. The same mapping held as rows in a small table module, read with one lookup, is quicker to calculate and can be maintained without a builder. In Caldergate FP&A, the line item 'Forecast Opex' in the module 'CAL03 Opex' carries 16.0% of the model's measured calculation effort.",
     "steps": [
-     "In a development copy, load the branch-to-value table (in the evidence) into a mapping module on the list the branches test.",
-     "Replace the chain in CAL03 Opex.Forecast Opex with one LOOKUP; keep the original formula in a note until reconciled.",
-     "Export the line item before and after; every cell equal."
+     "In a development copy, load the 'case to value' table (it is written out under Evidence) into a small mapping module keyed by the list the tests refer to.",
+     "Replace the chain in the line item 'Forecast Opex' in the module 'CAL03 Opex' with a single lookup on that table; keep the old formula in a note until the check below passes.",
+     "Export the line item before and after and confirm every cell is equal."
     ],
-    "done_when": "Every cell is equal before and after and the mapping module holds every case the chain held.",
+    "done_when": "Every cell is equal before and after, and the table holds every case the chain held.",
     "role": "model builder, Caldergate FP&A",
     "model": "Caldergate FP&A",
     "objects": [
@@ -92,21 +58,55 @@
      "CAL03 Opex",
      "Forecast Opex"
     ],
-    "rank_reason": "#2: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 16.0% of its model's effort",
+    "rank_reason": "#1: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 16.0% of its model's effort",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "hotspot-text:Caldergate FP&A",
+    "kind": "change",
+    "title": "Stop working out text labels on every cell in Caldergate FP&A (1 formula)",
+    "why": "Anaplan runs a formula once for every cell of a module. When the formula only produces a label (a text value such as a period code) that is the same across a whole row, working it out for every cell of a large grid is wasted effort. Moving the formula into a small helper module that has only the list the label depends on means it is worked out once per item and simply looked up from there. In Caldergate FP&A this applies to the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL': together 5.0M cells and 6.2% of the model's measured calculation effort.",
+    "steps": [
+     "Open the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL' (6.2% of measured effort) and note which list its value actually changes with (often Time, or one list).",
+     "In a development copy of the model, create a small system module with just that list, put the formula there, and point the places that used the old formula at the new one. Keep the old line item until the check below passes.",
+     "Compare the results before and after, and read the Calculation Effort column before and after."
+    ],
+    "done_when": "Every value that used the label still matches the original, cell for cell, and the measured effort share has fallen.",
+    "role": "model builder, Caldergate FP&A",
+    "model": "Caldergate FP&A",
+    "objects": [
+     "DAT01 Actuals GL.Journal Cost Centre"
+    ],
+    "finding_ids": [
+     "F5",
+     "F16"
+    ],
+    "strength": "confirmed",
+    "footprint_cells": 5017824,
+    "footprint_effort": 6.2,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     1,
+     "DAT01 Actuals GL",
+     "Journal Cost Centre"
+    ],
+    "rank_reason": "#2: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 6.2% of its model's effort",
     "bounded": true,
     "footprint_measured": true
    },
    {
     "key": "retire:Caldergate FP&A",
     "kind": "investigation",
-    "title": "Check for consumers of CAL05 Opex OLD in Caldergate FP&A before keeping or retiring it",
-    "why": "No formula outside it reads its 14 line items and no export action reads it; it holds 70.2M cells and 50.8% of Caldergate FP&A's measured effort: an observed footprint, not a saving.",
+    "title": "Find out whether anyone still uses the module 'CAL05 Opex OLD' in Caldergate FP&A",
+    "why": "A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. Until someone checks, it can neither be removed nor trusted. In Caldergate FP&A, no formula outside 'CAL05 Opex OLD' reads any of its 14 line items and no export reads it; it occupies 70.2M cells and 50.8% of the model's measured calculation effort. That is what it takes up now, not a saving.",
     "steps": [
-     "Ask the page builder which pages, saved views and line item subsets use CAL05 Opex OLD.",
-     "Check whether another model imports from a saved view on it.",
-     "Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off."
+     "Ask the page builder whether any page, dashboard, saved view or line item subset still uses 'CAL05 Opex OLD'.",
+     "Ask whether another model imports from a saved view on it.",
+     "Record the decision: keep, or retire. If retire: make the change in a development copy first, keep the original for comparison, check the owner's key outputs over a full cycle, then sign off."
     ],
-    "done_when": "Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.",
+    "done_when": "Every question above has a recorded answer and the owner has signed a keep-or-retire decision.",
     "role": "model owner with a page builder, Caldergate FP&A",
     "model": "Caldergate FP&A",
     "objects": [
@@ -126,126 +126,22 @@
      null
     ],
     "rank_reason": "#3: evidence partial; bounded scope; materiality high; investigation; 70.2M cells; 50.8% of its model's effort",
-    "bounded": true,
-    "footprint_measured": true
-   },
-   {
-    "key": "hotspot-investigate:Caldergate Data Hub",
-    "kind": "investigation",
-    "title": "Read the five largest calculation hotspots in Caldergate Data Hub",
-    "why": "Ten line items carry 99.9% of Caldergate Data Hub's measured effort and none matches a rule finding, so concentration is the only evidence: a place to look, not a change to make.",
-    "steps": [
-     "Read the five largest with the owner, led by DAT01 GL Transactions.Loaded? (88.3%): what each computes and how often it changes.",
-     "Note where a documented pattern applies (SUM with LOOKUP, text per cell, IF chains) or the effort is the model's main job.",
-     "Choose at most one to trial in a development copy, with Calculation Effort read before and after."
-    ],
-    "done_when": "Each of the five has a recorded reading (keep, or one named change to trial) agreed with the owner.",
-    "role": "model builder, Caldergate Data Hub",
-    "model": "Caldergate Data Hub",
-    "objects": [
-     "DAT01 GL Transactions.Loaded?",
-     "CAL01 Volume Summary.Units",
-     "CAL01 Volume Summary.Revenue",
-     "CAL01 Volume Summary.Orders",
-     "DAT05 CRM Pipeline.Weighted Pipeline"
-    ],
-    "finding_ids": [
-     "F3"
-    ],
-    "strength": "confirmed",
-    "footprint_cells": 1298952,
-    "footprint_effort": null,
-    "notices": [],
-    "depends_on": [],
-    "explorer": [
-     0,
-     "DAT01 GL Transactions",
-     "Loaded?"
-    ],
-    "rank_reason": "#4: evidence confirmed; bounded scope; materiality medium; investigation; 1.3M cells",
-    "bounded": true,
-    "footprint_measured": true
-   },
-   {
-    "key": "retire:Board Reporting",
-    "kind": "investigation",
-    "title": "Check for consumers of SYS01 Time in Board Reporting before keeping or retiring it",
-    "why": "No formula outside it reads its 2 line items and no export action reads it; it holds 72 cells and 2.8% of Board Reporting's measured effort: an observed footprint, not a saving.",
-    "steps": [
-     "Ask the page builder which pages, saved views and line item subsets use SYS01 Time.",
-     "Check whether another model imports from a saved view on it.",
-     "Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off."
-    ],
-    "done_when": "Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.",
-    "role": "model owner with a page builder, Board Reporting",
-    "model": "Board Reporting",
-    "objects": [
-     "SYS01 Time"
-    ],
-    "finding_ids": [
-     "F8"
-    ],
-    "strength": "partial",
-    "footprint_cells": 72,
-    "footprint_effort": 2.8,
-    "notices": [],
-    "depends_on": [],
-    "explorer": [
-     3,
-     "SYS01 Time",
-     null
-    ],
-    "rank_reason": "#5: evidence partial; bounded scope; materiality medium; investigation; 72 cells; 2.8% of its model's effort",
     "bounded": true,
     "footprint_measured": true
    }
   ],
   "candidates": [
    {
-    "key": "hotspot-text:Caldergate FP&A",
-    "kind": "change",
-    "title": "Move the text formula DAT01 Actuals GL.Journal Cost Centre into a system module in Caldergate FP&A",
-    "why": "DAT01 Actuals GL.Journal Cost Centre builds a text or per-item value on every cell of a multi-dimensional module (5.0M cells) and carries 6.2% of Caldergate FP&A's measured effort; in a module dimensioned only by the list the value varies by, each is calculated once per list item and read from there.",
-    "steps": [
-     "Read DAT01 Actuals GL.Journal Cost Centre (6.2%): name the list its value varies by (often Time or one list).",
-     "In a development copy, compute it in a SYS module on that list and repoint the readers; keep the original until reconciled.",
-     "Record Calculation Effort before and after."
-    ],
-    "done_when": "Readers reconcile cell for cell and the measured effort share falls.",
-    "role": "model builder, Caldergate FP&A",
-    "model": "Caldergate FP&A",
-    "objects": [
-     "DAT01 Actuals GL.Journal Cost Centre"
-    ],
-    "finding_ids": [
-     "F5",
-     "F16"
-    ],
-    "strength": "confirmed",
-    "footprint_cells": 5017824,
-    "footprint_effort": 6.2,
-    "notices": [],
-    "depends_on": [],
-    "explorer": [
-     1,
-     "DAT01 Actuals GL",
-     "Journal Cost Centre"
-    ],
-    "rank_reason": "#1: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 6.2% of its model's effort",
-    "bounded": true,
-    "footprint_measured": true
-   },
-   {
     "key": "hotspot-if:Caldergate FP&A",
     "kind": "change",
-    "title": "Replace the IF chain in CAL03 Opex.Forecast Opex with a mapping module and LOOKUP",
-    "why": "CAL03 Opex.Forecast Opex carries 16.0% of Caldergate FP&A's measured effort and evaluates every IF branch for every cell; a mapping module makes each case a row, not a formula edit.",
+    "title": "Replace the long chain of IF tests in the line item 'Forecast Opex' in the module 'CAL03 Opex' with a lookup table",
+    "why": "A formula built as a long chain of 'if this then that' tests checks every branch for every cell, and each new case means editing the formula. The same mapping held as rows in a small table module, read with one lookup, is quicker to calculate and can be maintained without a builder. In Caldergate FP&A, the line item 'Forecast Opex' in the module 'CAL03 Opex' carries 16.0% of the model's measured calculation effort.",
     "steps": [
-     "In a development copy, load the branch-to-value table (in the evidence) into a mapping module on the list the branches test.",
-     "Replace the chain in CAL03 Opex.Forecast Opex with one LOOKUP; keep the original formula in a note until reconciled.",
-     "Export the line item before and after; every cell equal."
+     "In a development copy, load the 'case to value' table (it is written out under Evidence) into a small mapping module keyed by the list the tests refer to.",
+     "Replace the chain in the line item 'Forecast Opex' in the module 'CAL03 Opex' with a single lookup on that table; keep the old formula in a note until the check below passes.",
+     "Export the line item before and after and confirm every cell is equal."
     ],
-    "done_when": "Every cell is equal before and after and the mapping module holds every case the chain held.",
+    "done_when": "Every cell is equal before and after, and the table holds every case the chain held.",
     "role": "model builder, Caldergate FP&A",
     "model": "Caldergate FP&A",
     "objects": [
@@ -267,21 +163,55 @@
      "CAL03 Opex",
      "Forecast Opex"
     ],
-    "rank_reason": "#2: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 16.0% of its model's effort",
+    "rank_reason": "#1: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 16.0% of its model's effort",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "hotspot-text:Caldergate FP&A",
+    "kind": "change",
+    "title": "Stop working out text labels on every cell in Caldergate FP&A (1 formula)",
+    "why": "Anaplan runs a formula once for every cell of a module. When the formula only produces a label (a text value such as a period code) that is the same across a whole row, working it out for every cell of a large grid is wasted effort. Moving the formula into a small helper module that has only the list the label depends on means it is worked out once per item and simply looked up from there. In Caldergate FP&A this applies to the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL': together 5.0M cells and 6.2% of the model's measured calculation effort.",
+    "steps": [
+     "Open the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL' (6.2% of measured effort) and note which list its value actually changes with (often Time, or one list).",
+     "In a development copy of the model, create a small system module with just that list, put the formula there, and point the places that used the old formula at the new one. Keep the old line item until the check below passes.",
+     "Compare the results before and after, and read the Calculation Effort column before and after."
+    ],
+    "done_when": "Every value that used the label still matches the original, cell for cell, and the measured effort share has fallen.",
+    "role": "model builder, Caldergate FP&A",
+    "model": "Caldergate FP&A",
+    "objects": [
+     "DAT01 Actuals GL.Journal Cost Centre"
+    ],
+    "finding_ids": [
+     "F5",
+     "F16"
+    ],
+    "strength": "confirmed",
+    "footprint_cells": 5017824,
+    "footprint_effort": 6.2,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     1,
+     "DAT01 Actuals GL",
+     "Journal Cost Centre"
+    ],
+    "rank_reason": "#2: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 6.2% of its model's effort",
     "bounded": true,
     "footprint_measured": true
    },
    {
     "key": "retire:Caldergate FP&A",
     "kind": "investigation",
-    "title": "Check for consumers of CAL05 Opex OLD in Caldergate FP&A before keeping or retiring it",
-    "why": "No formula outside it reads its 14 line items and no export action reads it; it holds 70.2M cells and 50.8% of Caldergate FP&A's measured effort: an observed footprint, not a saving.",
+    "title": "Find out whether anyone still uses the module 'CAL05 Opex OLD' in Caldergate FP&A",
+    "why": "A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. Until someone checks, it can neither be removed nor trusted. In Caldergate FP&A, no formula outside 'CAL05 Opex OLD' reads any of its 14 line items and no export reads it; it occupies 70.2M cells and 50.8% of the model's measured calculation effort. That is what it takes up now, not a saving.",
     "steps": [
-     "Ask the page builder which pages, saved views and line item subsets use CAL05 Opex OLD.",
-     "Check whether another model imports from a saved view on it.",
-     "Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off."
+     "Ask the page builder whether any page, dashboard, saved view or line item subset still uses 'CAL05 Opex OLD'.",
+     "Ask whether another model imports from a saved view on it.",
+     "Record the decision: keep, or retire. If retire: make the change in a development copy first, keep the original for comparison, check the owner's key outputs over a full cycle, then sign off."
     ],
-    "done_when": "Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.",
+    "done_when": "Every question above has a recorded answer and the owner has signed a keep-or-retire decision.",
     "role": "model owner with a page builder, Caldergate FP&A",
     "model": "Caldergate FP&A",
     "objects": [
@@ -307,14 +237,14 @@
    {
     "key": "hotspot-investigate:Caldergate Data Hub",
     "kind": "investigation",
-    "title": "Read the five largest calculation hotspots in Caldergate Data Hub",
-    "why": "Ten line items carry 99.9% of Caldergate Data Hub's measured effort and none matches a rule finding, so concentration is the only evidence: a place to look, not a change to make.",
+    "title": "Look at the five heaviest calculations in Caldergate Data Hub",
+    "why": "Anaplan records how much of a model's calculation effort each line item takes. In Caldergate Data Hub, ten line items take 99.9% of it, led by the line item 'Loaded?' in the module 'DAT01 GL Transactions' at 88.3%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: heavy calculation is often simply the model doing its main job.",
     "steps": [
-     "Read the five largest with the owner, led by DAT01 GL Transactions.Loaded? (88.3%): what each computes and how often it changes.",
-     "Note where a documented pattern applies (SUM with LOOKUP, text per cell, IF chains) or the effort is the model's main job.",
-     "Choose at most one to trial in a development copy, with Calculation Effort read before and after."
+     "With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.",
+     "For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).",
+     "Try at most one change in a development copy, reading Calculation Effort before and after."
     ],
-    "done_when": "Each of the five has a recorded reading (keep, or one named change to trial) agreed with the owner.",
+    "done_when": "Each of the five has a recorded decision (keep, or one named change to trial) agreed with the owner.",
     "role": "model builder, Caldergate Data Hub",
     "model": "Caldergate Data Hub",
     "objects": [
@@ -337,21 +267,21 @@
      "DAT01 GL Transactions",
      "Loaded?"
     ],
-    "rank_reason": "#4: evidence confirmed; bounded scope; materiality medium; investigation; 1.3M cells",
+    "rank_reason": "evidence confirmed; bounded scope; materiality medium; investigation; 1.3M cells",
     "bounded": true,
     "footprint_measured": true
    },
    {
     "key": "retire:Board Reporting",
     "kind": "investigation",
-    "title": "Check for consumers of SYS01 Time in Board Reporting before keeping or retiring it",
-    "why": "No formula outside it reads its 2 line items and no export action reads it; it holds 72 cells and 2.8% of Board Reporting's measured effort: an observed footprint, not a saving.",
+    "title": "Find out whether anyone still uses the module 'SYS01 Time' in Board Reporting",
+    "why": "A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. Until someone checks, it can neither be removed nor trusted. In Board Reporting, no formula outside 'SYS01 Time' reads any of its 2 line items and no export reads it; it occupies 72 cells and 2.8% of the model's measured calculation effort. That is what it takes up now, not a saving.",
     "steps": [
-     "Ask the page builder which pages, saved views and line item subsets use SYS01 Time.",
-     "Check whether another model imports from a saved view on it.",
-     "Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off."
+     "Ask the page builder whether any page, dashboard, saved view or line item subset still uses 'SYS01 Time'.",
+     "Ask whether another model imports from a saved view on it.",
+     "Record the decision: keep, or retire. If retire: make the change in a development copy first, keep the original for comparison, check the owner's key outputs over a full cycle, then sign off."
     ],
-    "done_when": "Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.",
+    "done_when": "Every question above has a recorded answer and the owner has signed a keep-or-retire decision.",
     "role": "model owner with a page builder, Board Reporting",
     "model": "Board Reporting",
     "objects": [
@@ -370,21 +300,21 @@
      "SYS01 Time",
      null
     ],
-    "rank_reason": "#5: evidence partial; bounded scope; materiality medium; investigation; 72 cells; 2.8% of its model's effort",
+    "rank_reason": "evidence partial; bounded scope; materiality medium; investigation; 72 cells; 2.8% of its model's effort",
     "bounded": true,
     "footprint_measured": true
    },
    {
     "key": "duplicate:Caldergate FP&A",
     "kind": "change",
-    "title": "Consolidate 1 copy of CAL07 P&L by Cost Centre.Depreciation in Caldergate FP&A",
-    "why": "OUT01 Management Pack.Depreciation has the same resolved formula and context as CAL07 P&L by Cost Centre.Depreciation; the copies hold 19.2K cells and 0 formulas read them.",
+    "title": "Remove 1 duplicate copy of one calculation in Caldergate FP&A",
+    "why": "The same calculation exists more than once under different names, with the same formula and the same dimensions. Two copies can drift apart when one is changed, and each copy takes space and calculation time. In Caldergate FP&A, the line item 'Depreciation' in the module 'OUT01 Management Pack' is the same calculation as the line item 'Depreciation' in the module 'CAL07 P&L by Cost Centre'; the copies occupy 19.2K cells and 0 other formulas read them.",
     "steps": [
-     "Confirm with the owner and page builder that no copy serves a separate page, export column or access boundary.",
-     "In a development copy, repoint the 0 readers to CAL07 P&L by Cost Centre.Depreciation; keep the copies until reconciled.",
-     "Reconcile the outputs that read them cell for cell, sign off, then remove the copies."
+     "Ask the owner and page builder whether any copy exists for a reason: a page that shows it under that name, an export column, or different access rights.",
+     "In a development copy, point the 0 formulas that read the copies at the line item 'Depreciation' in the module 'CAL07 P&L by Cost Centre' instead; keep the copies until the check below passes.",
+     "Compare the outputs that depend on them cell for cell, get sign-off, then remove the copies."
     ],
-    "done_when": "Readers reconcile cell for cell and the copies are removed with no blank page or missing export column.",
+    "done_when": "Everything that read the copies gives the same values from the kept line item, and the copies are gone with no blank page or missing export column.",
     "role": "model builder, Caldergate FP&A",
     "model": "Caldergate FP&A",
     "objects": [
@@ -411,14 +341,14 @@
    {
     "key": "duplicate:Workforce Planning",
     "kind": "change",
-    "title": "Consolidate 1 copy of Calcs - Attrition.Headcount in Workforce Planning",
-    "why": "zz Archive - 2021 Cost.Headcount has the same resolved formula and context as Calcs - Attrition.Headcount; the copies hold 4.5K cells and 1 formulas read them.",
+    "title": "Remove 1 duplicate copy of one calculation in Workforce Planning",
+    "why": "The same calculation exists more than once under different names, with the same formula and the same dimensions. Two copies can drift apart when one is changed, and each copy takes space and calculation time. In Workforce Planning, the line item 'Headcount' in the module 'zz Archive - 2021 Cost' is the same calculation as the line item 'Headcount' in the module 'Calcs - Attrition'; the copies occupy 4.5K cells and 1 other formulas read them.",
     "steps": [
-     "Confirm with the owner and page builder that no copy serves a separate page, export column or access boundary.",
-     "In a development copy, repoint the 1 readers to Calcs - Attrition.Headcount; keep the copies until reconciled.",
-     "Reconcile the outputs that read them cell for cell, sign off, then remove the copies."
+     "Ask the owner and page builder whether any copy exists for a reason: a page that shows it under that name, an export column, or different access rights.",
+     "In a development copy, point the 1 formulas that read the copies at the line item 'Headcount' in the module 'Calcs - Attrition' instead; keep the copies until the check below passes.",
+     "Compare the outputs that depend on them cell for cell, get sign-off, then remove the copies."
     ],
-    "done_when": "Readers reconcile cell for cell and the copies are removed with no blank page or missing export column.",
+    "done_when": "Everything that read the copies gives the same values from the kept line item, and the copies are gone with no blank page or missing export column.",
     "role": "model builder, Workforce Planning",
     "model": "Workforce Planning",
     "objects": [
@@ -432,7 +362,7 @@
     "footprint_cells": 4464,
     "footprint_effort": null,
     "notices": [
-     "zz Archive - 2021 Cost has no consumer detected: complete that consumer check first."
+     "The module 'zz Archive - 2021 Cost' may no longer be used: do that check first, since a retired module needs no tuning."
     ],
     "depends_on": [
      "retire:Workforce Planning"
@@ -449,14 +379,14 @@
    {
     "key": "hotspot-investigate:Board Reporting",
     "kind": "investigation",
-    "title": "Read the five largest calculation hotspots in Board Reporting",
-    "why": "Ten line items carry 89.7% of Board Reporting's measured effort and none matches a rule finding, so concentration is the only evidence: a place to look, not a change to make.",
+    "title": "Look at the five heaviest calculations in Board Reporting",
+    "why": "Anaplan records how much of a model's calculation effort each line item takes. In Board Reporting, ten line items take 89.7% of it, led by the line item 'Revenue per FTE' in the module 'CAL01 KPIs' at 11.2%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: heavy calculation is often simply the model doing its main job.",
     "steps": [
-     "Read the five largest with the owner, led by CAL01 KPIs.Revenue per FTE (11.2%): what each computes and how often it changes.",
-     "Note where a documented pattern applies (SUM with LOOKUP, text per cell, IF chains) or the effort is the model's main job.",
-     "Choose at most one to trial in a development copy, with Calculation Effort read before and after."
+     "With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.",
+     "For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).",
+     "Try at most one change in a development copy, reading Calculation Effort before and after."
     ],
-    "done_when": "Each of the five has a recorded reading (keep, or one named change to trial) agreed with the owner.",
+    "done_when": "Each of the five has a recorded decision (keep, or one named change to trial) agreed with the owner.",
     "role": "model builder, Board Reporting",
     "model": "Board Reporting",
     "objects": [
@@ -486,14 +416,14 @@
    {
     "key": "retire:Workforce Planning",
     "kind": "investigation",
-    "title": "Check for consumers of zz Archive - 2021 Cost in Workforce Planning before keeping or retiring it",
-    "why": "No formula outside it reads its 3 line items and no export action reads it; it holds 13.4K cells: an observed footprint, not a saving.",
+    "title": "Find out whether anyone still uses the module 'zz Archive - 2021 Cost' in Workforce Planning",
+    "why": "A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. Until someone checks, it can neither be removed nor trusted. In Workforce Planning, no formula outside 'zz Archive - 2021 Cost' reads any of its 3 line items and no export reads it; it occupies 13.4K cells. That is what it takes up now, not a saving.",
     "steps": [
-     "Ask the page builder which pages, saved views and line item subsets use zz Archive - 2021 Cost.",
-     "Check whether another model imports from a saved view on it.",
-     "Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off."
+     "Ask the page builder whether any page, dashboard, saved view or line item subset still uses 'zz Archive - 2021 Cost'.",
+     "Ask whether another model imports from a saved view on it.",
+     "Record the decision: keep, or retire. If retire: make the change in a development copy first, keep the original for comparison, check the owner's key outputs over a full cycle, then sign off."
     ],
-    "done_when": "Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.",
+    "done_when": "Every question above has a recorded answer and the owner has signed a keep-or-retire decision.",
     "role": "model owner with a page builder, Workforce Planning",
     "model": "Workforce Planning",
     "objects": [
@@ -519,14 +449,14 @@
    {
     "key": "retire:Caldergate Data Hub",
     "kind": "investigation",
-    "title": "Check for consumers of SYS01 Time Settings in Caldergate Data Hub before keeping or retiring it",
-    "why": "No formula outside it reads its 5 line items and no export action reads it; it holds 180 cells: an observed footprint, not a saving.",
+    "title": "Find out whether anyone still uses the module 'SYS01 Time Settings' in Caldergate Data Hub",
+    "why": "A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. Until someone checks, it can neither be removed nor trusted. In Caldergate Data Hub, no formula outside 'SYS01 Time Settings' reads any of its 5 line items and no export reads it; it occupies 180 cells. That is what it takes up now, not a saving.",
     "steps": [
-     "Ask the page builder which pages, saved views and line item subsets use SYS01 Time Settings.",
-     "Check whether another model imports from a saved view on it.",
-     "Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off."
+     "Ask the page builder whether any page, dashboard, saved view or line item subset still uses 'SYS01 Time Settings'.",
+     "Ask whether another model imports from a saved view on it.",
+     "Record the decision: keep, or retire. If retire: make the change in a development copy first, keep the original for comparison, check the owner's key outputs over a full cycle, then sign off."
     ],
-    "done_when": "Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.",
+    "done_when": "Every question above has a recorded answer and the owner has signed a keep-or-retire decision.",
     "role": "model owner with a page builder, Caldergate Data Hub",
     "model": "Caldergate Data Hub",
     "objects": [
@@ -559,55 +489,27 @@
    "Then the larger observed footprint in cells, then the title. Ties never depend on the order the files were read.",
    "Overlapping findings on the same objects are merged into one decision; a change whose objects sit in a module with no consumer detected depends on that consumer check, which is then placed first."
   ],
-  "limit": 5,
+  "worth": [
+   "A change is worth doing when its evidence is not merely inferred, its scope is bounded, and its observed footprint is at least medium (1% of its model's measured effort, or 1M cells).",
+   "An investigation is worth doing only when the footprint is high (5% of its model's measured effort, or 50M cells): asking someone to check a small module is not a good use of their time.",
+   "A prerequisite (for example a consumer check on a module that a change would tune) is included whenever the action that needs it is."
+  ],
+  "limit": null,
+  "considered": 10,
   "none": null
  },
  "investigations": [
   {
-   "key": "hotspot-text:Caldergate FP&A",
-   "kind": "change",
-   "title": "Move the text formula DAT01 Actuals GL.Journal Cost Centre into a system module in Caldergate FP&A",
-   "why": "DAT01 Actuals GL.Journal Cost Centre builds a text or per-item value on every cell of a multi-dimensional module (5.0M cells) and carries 6.2% of Caldergate FP&A's measured effort; in a module dimensioned only by the list the value varies by, each is calculated once per list item and read from there.",
-   "steps": [
-    "Read DAT01 Actuals GL.Journal Cost Centre (6.2%): name the list its value varies by (often Time or one list).",
-    "In a development copy, compute it in a SYS module on that list and repoint the readers; keep the original until reconciled.",
-    "Record Calculation Effort before and after."
-   ],
-   "done_when": "Readers reconcile cell for cell and the measured effort share falls.",
-   "role": "model builder, Caldergate FP&A",
-   "model": "Caldergate FP&A",
-   "objects": [
-    "DAT01 Actuals GL.Journal Cost Centre"
-   ],
-   "finding_ids": [
-    "F5",
-    "F16"
-   ],
-   "strength": "confirmed",
-   "footprint_cells": 5017824,
-   "footprint_effort": 6.2,
-   "notices": [],
-   "depends_on": [],
-   "explorer": [
-    1,
-    "DAT01 Actuals GL",
-    "Journal Cost Centre"
-   ],
-   "rank_reason": "#1: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 6.2% of its model's effort",
-   "bounded": true,
-   "footprint_measured": true
-  },
-  {
    "key": "hotspot-if:Caldergate FP&A",
    "kind": "change",
-   "title": "Replace the IF chain in CAL03 Opex.Forecast Opex with a mapping module and LOOKUP",
-   "why": "CAL03 Opex.Forecast Opex carries 16.0% of Caldergate FP&A's measured effort and evaluates every IF branch for every cell; a mapping module makes each case a row, not a formula edit.",
+   "title": "Replace the long chain of IF tests in the line item 'Forecast Opex' in the module 'CAL03 Opex' with a lookup table",
+   "why": "A formula built as a long chain of 'if this then that' tests checks every branch for every cell, and each new case means editing the formula. The same mapping held as rows in a small table module, read with one lookup, is quicker to calculate and can be maintained without a builder. In Caldergate FP&A, the line item 'Forecast Opex' in the module 'CAL03 Opex' carries 16.0% of the model's measured calculation effort.",
    "steps": [
-    "In a development copy, load the branch-to-value table (in the evidence) into a mapping module on the list the branches test.",
-    "Replace the chain in CAL03 Opex.Forecast Opex with one LOOKUP; keep the original formula in a note until reconciled.",
-    "Export the line item before and after; every cell equal."
+    "In a development copy, load the 'case to value' table (it is written out under Evidence) into a small mapping module keyed by the list the tests refer to.",
+    "Replace the chain in the line item 'Forecast Opex' in the module 'CAL03 Opex' with a single lookup on that table; keep the old formula in a note until the check below passes.",
+    "Export the line item before and after and confirm every cell is equal."
    ],
-   "done_when": "Every cell is equal before and after and the mapping module holds every case the chain held.",
+   "done_when": "Every cell is equal before and after, and the table holds every case the chain held.",
    "role": "model builder, Caldergate FP&A",
    "model": "Caldergate FP&A",
    "objects": [
@@ -629,21 +531,55 @@
     "CAL03 Opex",
     "Forecast Opex"
    ],
-   "rank_reason": "#2: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 16.0% of its model's effort",
+   "rank_reason": "#1: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 16.0% of its model's effort",
+   "bounded": true,
+   "footprint_measured": true
+  },
+  {
+   "key": "hotspot-text:Caldergate FP&A",
+   "kind": "change",
+   "title": "Stop working out text labels on every cell in Caldergate FP&A (1 formula)",
+   "why": "Anaplan runs a formula once for every cell of a module. When the formula only produces a label (a text value such as a period code) that is the same across a whole row, working it out for every cell of a large grid is wasted effort. Moving the formula into a small helper module that has only the list the label depends on means it is worked out once per item and simply looked up from there. In Caldergate FP&A this applies to the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL': together 5.0M cells and 6.2% of the model's measured calculation effort.",
+   "steps": [
+    "Open the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL' (6.2% of measured effort) and note which list its value actually changes with (often Time, or one list).",
+    "In a development copy of the model, create a small system module with just that list, put the formula there, and point the places that used the old formula at the new one. Keep the old line item until the check below passes.",
+    "Compare the results before and after, and read the Calculation Effort column before and after."
+   ],
+   "done_when": "Every value that used the label still matches the original, cell for cell, and the measured effort share has fallen.",
+   "role": "model builder, Caldergate FP&A",
+   "model": "Caldergate FP&A",
+   "objects": [
+    "DAT01 Actuals GL.Journal Cost Centre"
+   ],
+   "finding_ids": [
+    "F5",
+    "F16"
+   ],
+   "strength": "confirmed",
+   "footprint_cells": 5017824,
+   "footprint_effort": 6.2,
+   "notices": [],
+   "depends_on": [],
+   "explorer": [
+    1,
+    "DAT01 Actuals GL",
+    "Journal Cost Centre"
+   ],
+   "rank_reason": "#2: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 6.2% of its model's effort",
    "bounded": true,
    "footprint_measured": true
   },
   {
    "key": "retire:Caldergate FP&A",
    "kind": "investigation",
-   "title": "Check for consumers of CAL05 Opex OLD in Caldergate FP&A before keeping or retiring it",
-   "why": "No formula outside it reads its 14 line items and no export action reads it; it holds 70.2M cells and 50.8% of Caldergate FP&A's measured effort: an observed footprint, not a saving.",
+   "title": "Find out whether anyone still uses the module 'CAL05 Opex OLD' in Caldergate FP&A",
+   "why": "A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. Until someone checks, it can neither be removed nor trusted. In Caldergate FP&A, no formula outside 'CAL05 Opex OLD' reads any of its 14 line items and no export reads it; it occupies 70.2M cells and 50.8% of the model's measured calculation effort. That is what it takes up now, not a saving.",
    "steps": [
-    "Ask the page builder which pages, saved views and line item subsets use CAL05 Opex OLD.",
-    "Check whether another model imports from a saved view on it.",
-    "Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off."
+    "Ask the page builder whether any page, dashboard, saved view or line item subset still uses 'CAL05 Opex OLD'.",
+    "Ask whether another model imports from a saved view on it.",
+    "Record the decision: keep, or retire. If retire: make the change in a development copy first, keep the original for comparison, check the owner's key outputs over a full cycle, then sign off."
    ],
-   "done_when": "Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.",
+   "done_when": "Every question above has a recorded answer and the owner has signed a keep-or-retire decision.",
    "role": "model owner with a page builder, Caldergate FP&A",
    "model": "Caldergate FP&A",
    "objects": [
@@ -663,76 +599,6 @@
     null
    ],
    "rank_reason": "#3: evidence partial; bounded scope; materiality high; investigation; 70.2M cells; 50.8% of its model's effort",
-   "bounded": true,
-   "footprint_measured": true
-  },
-  {
-   "key": "hotspot-investigate:Caldergate Data Hub",
-   "kind": "investigation",
-   "title": "Read the five largest calculation hotspots in Caldergate Data Hub",
-   "why": "Ten line items carry 99.9% of Caldergate Data Hub's measured effort and none matches a rule finding, so concentration is the only evidence: a place to look, not a change to make.",
-   "steps": [
-    "Read the five largest with the owner, led by DAT01 GL Transactions.Loaded? (88.3%): what each computes and how often it changes.",
-    "Note where a documented pattern applies (SUM with LOOKUP, text per cell, IF chains) or the effort is the model's main job.",
-    "Choose at most one to trial in a development copy, with Calculation Effort read before and after."
-   ],
-   "done_when": "Each of the five has a recorded reading (keep, or one named change to trial) agreed with the owner.",
-   "role": "model builder, Caldergate Data Hub",
-   "model": "Caldergate Data Hub",
-   "objects": [
-    "DAT01 GL Transactions.Loaded?",
-    "CAL01 Volume Summary.Units",
-    "CAL01 Volume Summary.Revenue",
-    "CAL01 Volume Summary.Orders",
-    "DAT05 CRM Pipeline.Weighted Pipeline"
-   ],
-   "finding_ids": [
-    "F3"
-   ],
-   "strength": "confirmed",
-   "footprint_cells": 1298952,
-   "footprint_effort": null,
-   "notices": [],
-   "depends_on": [],
-   "explorer": [
-    0,
-    "DAT01 GL Transactions",
-    "Loaded?"
-   ],
-   "rank_reason": "#4: evidence confirmed; bounded scope; materiality medium; investigation; 1.3M cells",
-   "bounded": true,
-   "footprint_measured": true
-  },
-  {
-   "key": "retire:Board Reporting",
-   "kind": "investigation",
-   "title": "Check for consumers of SYS01 Time in Board Reporting before keeping or retiring it",
-   "why": "No formula outside it reads its 2 line items and no export action reads it; it holds 72 cells and 2.8% of Board Reporting's measured effort: an observed footprint, not a saving.",
-   "steps": [
-    "Ask the page builder which pages, saved views and line item subsets use SYS01 Time.",
-    "Check whether another model imports from a saved view on it.",
-    "Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off."
-   ],
-   "done_when": "Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.",
-   "role": "model owner with a page builder, Board Reporting",
-   "model": "Board Reporting",
-   "objects": [
-    "SYS01 Time"
-   ],
-   "finding_ids": [
-    "F8"
-   ],
-   "strength": "partial",
-   "footprint_cells": 72,
-   "footprint_effort": 2.8,
-   "notices": [],
-   "depends_on": [],
-   "explorer": [
-    3,
-    "SYS01 Time",
-    null
-   ],
-   "rank_reason": "#5: evidence partial; bounded scope; materiality medium; investigation; 72 cells; 2.8% of its model's effort",
    "bounded": true,
    "footprint_measured": true
   }
@@ -4634,19 +4500,19 @@
    ],
    [
     55,
-    43
+    40
    ],
    [
     55,
-    40
+    43
+   ],
+   [
+    56,
+    43
    ],
    [
     56,
     41
-   ],
-   [
-    56,
-    43
    ],
    [
     57,
@@ -4666,11 +4532,11 @@
    ],
    [
     60,
-    58
+    59
    ],
    [
     60,
-    59
+    58
    ],
    [
     61,
@@ -4702,11 +4568,11 @@
    ],
    [
     81,
-    78
+    80
    ],
    [
     81,
-    80
+    78
    ],
    [
     81,
@@ -4718,11 +4584,11 @@
    ],
    [
     94,
-    90
+    93
    ],
    [
     94,
-    93
+    90
    ],
    [
     95,
@@ -4754,11 +4620,11 @@
    ],
    [
     113,
-    112
+    110
    ],
    [
     113,
-    110
+    112
    ],
    [
     118,
@@ -4766,67 +4632,11 @@
    ],
    [
     119,
-    118
-   ],
-   [
-    119,
     105
    ],
    [
-    177,
-    161
-   ],
-   [
-    177,
-    172
-   ],
-   [
-    177,
-    153
-   ],
-   [
-    177,
-    140
-   ],
-   [
-    177,
-    127
-   ],
-   [
-    177,
-    159
-   ],
-   [
-    177,
-    136
-   ],
-   [
-    177,
-    149
-   ],
-   [
-    177,
-    175
-   ],
-   [
-    177,
-    139
-   ],
-   [
-    177,
-    130
-   ],
-   [
-    177,
-    169
-   ],
-   [
-    177,
-    142
-   ],
-   [
-    177,
-    133
+    119,
+    118
    ],
    [
     177,
@@ -4834,67 +4644,11 @@
    ],
    [
     177,
-    168
-   ],
-   [
-    177,
-    163
-   ],
-   [
-    177,
-    170
-   ],
-   [
-    177,
-    152
-   ],
-   [
-    177,
-    150
-   ],
-   [
-    177,
-    146
-   ],
-   [
-    177,
-    167
-   ],
-   [
-    177,
-    173
-   ],
-   [
-    177,
-    164
+    142
    ],
    [
     177,
     138
-   ],
-   [
-    177,
-    154
-   ],
-   [
-    177,
-    128
-   ],
-   [
-    177,
-    166
-   ],
-   [
-    177,
-    129
-   ],
-   [
-    177,
-    145
-   ],
-   [
-    177,
-    162
    ],
    [
     177,
@@ -4902,11 +4656,7 @@
    ],
    [
     177,
-    157
-   ],
-   [
-    177,
-    156
+    165
    ],
    [
     177,
@@ -4914,19 +4664,11 @@
    ],
    [
     177,
-    151
+    170
    ],
    [
     177,
-    160
-   ],
-   [
-    177,
-    171
-   ],
-   [
-    177,
-    135
+    168
    ],
    [
     177,
@@ -4934,7 +4676,19 @@
    ],
    [
     177,
+    175
+   ],
+   [
+    177,
     148
+   ],
+   [
+    177,
+    145
+   ],
+   [
+    177,
+    173
    ],
    [
     177,
@@ -4946,7 +4700,39 @@
    ],
    [
     177,
-    176
+    172
+   ],
+   [
+    177,
+    127
+   ],
+   [
+    177,
+    129
+   ],
+   [
+    177,
+    135
+   ],
+   [
+    177,
+    156
+   ],
+   [
+    177,
+    157
+   ],
+   [
+    177,
+    133
+   ],
+   [
+    177,
+    144
+   ],
+   [
+    177,
+    159
    ],
    [
     177,
@@ -4954,7 +4740,31 @@
    ],
    [
     177,
-    141
+    169
+   ],
+   [
+    177,
+    149
+   ],
+   [
+    177,
+    164
+   ],
+   [
+    177,
+    171
+   ],
+   [
+    177,
+    152
+   ],
+   [
+    177,
+    128
+   ],
+   [
+    177,
+    160
    ],
    [
     177,
@@ -4962,31 +4772,71 @@
    ],
    [
     177,
+    176
+   ],
+   [
+    177,
     131
    ],
    [
     177,
-    165
+    140
    ],
    [
     177,
-    144
+    136
    ],
    [
-    178,
+    177,
+    167
+   ],
+   [
+    177,
+    154
+   ],
+   [
+    177,
+    139
+   ],
+   [
+    177,
     130
    ],
    [
-    178,
-    132
+    177,
+    150
    ],
    [
-    178,
-    128
+    177,
+    163
    ],
    [
-    178,
-    129
+    177,
+    166
+   ],
+   [
+    177,
+    141
+   ],
+   [
+    177,
+    153
+   ],
+   [
+    177,
+    162
+   ],
+   [
+    177,
+    161
+   ],
+   [
+    177,
+    151
+   ],
+   [
+    177,
+    146
    ],
    [
     178,
@@ -4997,12 +4847,24 @@
     127
    ],
    [
-    179,
-    134
+    178,
+    129
+   ],
+   [
+    178,
+    128
+   ],
+   [
+    178,
+    132
+   ],
+   [
+    178,
+    130
    ],
    [
     179,
-    154
+    135
    ],
    [
     179,
@@ -5010,15 +4872,19 @@
    ],
    [
     179,
-    153
-   ],
-   [
-    179,
     136
    ],
    [
     179,
-    135
+    134
+   ],
+   [
+    179,
+    153
+   ],
+   [
+    179,
+    154
    ],
    [
     180,
@@ -5042,7 +4908,15 @@
    ],
    [
     181,
+    143
+   ],
+   [
+    181,
     142
+   ],
+   [
+    181,
+    144
    ],
    [
     181,
@@ -5053,12 +4927,8 @@
     145
    ],
    [
-    181,
-    143
-   ],
-   [
-    181,
-    144
+    182,
+    178
    ],
    [
     182,
@@ -5075,10 +4945,6 @@
    [
     182,
     179
-   ],
-   [
-    182,
-    178
    ],
    [
     183,
@@ -5102,15 +4968,15 @@
    ],
    [
     191,
+    190
+   ],
+   [
+    191,
     188
    ],
    [
     191,
     189
-   ],
-   [
-    191,
-    190
    ],
    [
     192,
@@ -5126,11 +4992,11 @@
    ],
    [
     194,
-    188
+    193
    ],
    [
     194,
-    193
+    191
    ],
    [
     194,
@@ -5138,7 +5004,7 @@
    ],
    [
     194,
-    191
+    188
    ],
    [
     194,
@@ -5162,11 +5028,7 @@
    ],
    [
     213,
-    73
-   ],
-   [
-    213,
-    211
+    124
    ],
    [
     213,
@@ -5174,11 +5036,15 @@
    ],
    [
     213,
-    125
+    211
    ],
    [
     213,
-    124
+    73
+   ],
+   [
+    213,
+    125
    ],
    [
     214,
@@ -5214,14 +5080,10 @@
    ],
    [
     219,
-    217
-   ],
-   [
-    219,
     218
    ],
    [
-    220,
+    219,
     217
    ],
    [
@@ -5229,11 +5091,19 @@
     121
    ],
    [
+    220,
+    217
+   ],
+   [
+    221,
+    220
+   ],
+   [
     221,
     122
    ],
    [
-    221,
+    222,
     220
    ],
    [
@@ -5241,12 +5111,8 @@
     221
    ],
    [
-    222,
-    220
-   ],
-   [
     223,
-    114
+    222
    ],
    [
     223,
@@ -5254,7 +5120,7 @@
    ],
    [
     223,
-    222
+    114
    ],
    [
     224,
@@ -5266,19 +5132,19 @@
    ],
    [
     226,
-    215
+    222
    ],
    [
     226,
-    222
-   ],
-   [
-    227,
     215
    ],
    [
     227,
     222
+   ],
+   [
+    227,
+    215
    ],
    [
     228,
@@ -5298,11 +5164,15 @@
    ],
    [
     232,
-    100
+    207
    ],
    [
     232,
-    207
+    100
+   ],
+   [
+    233,
+    143
    ],
    [
     233,
@@ -5314,23 +5184,7 @@
    ],
    [
     233,
-    134
-   ],
-   [
-    233,
-    133
-   ],
-   [
-    233,
-    128
-   ],
-   [
-    233,
-    153
-   ],
-   [
-    233,
-    141
+    127
    ],
    [
     233,
@@ -5338,11 +5192,23 @@
    ],
    [
     233,
-    143
+    133
    ],
    [
     233,
-    127
+    134
+   ],
+   [
+    233,
+    141
+   ],
+   [
+    233,
+    153
+   ],
+   [
+    233,
+    128
    ],
    [
     233,
@@ -5358,15 +5224,11 @@
    ],
    [
     234,
-    73
-   ],
-   [
-    234,
     232
    ],
    [
-    235,
-    88
+    234,
+    73
    ],
    [
     235,
@@ -5375,6 +5237,10 @@
    [
     235,
     234
+   ],
+   [
+    235,
+    88
    ],
    [
     236,
@@ -5390,18 +5256,22 @@
    ],
    [
     238,
-    217
+    206
    ],
    [
     238,
-    206
+    217
+   ],
+   [
+    239,
+    222
    ],
    [
     239,
     238
    ],
    [
-    239,
+    240,
     222
    ],
    [
@@ -5409,8 +5279,8 @@
     239
    ],
    [
-    240,
-    222
+    241,
+    110
    ],
    [
     241,
@@ -5421,16 +5291,12 @@
     114
    ],
    [
-    241,
-    110
+    242,
+    207
    ],
    [
     242,
     73
-   ],
-   [
-    242,
-    207
    ],
    [
     243,
@@ -5466,11 +5332,7 @@
    ],
    [
     251,
-    249
-   ],
-   [
-    251,
-    245
+    247
    ],
    [
     251,
@@ -5478,7 +5340,11 @@
    ],
    [
     251,
-    247
+    245
+   ],
+   [
+    251,
+    249
    ],
    [
     251,
@@ -5486,7 +5352,7 @@
    ],
    [
     251,
-    243
+    248
    ],
    [
     251,
@@ -5494,11 +5360,11 @@
    ],
    [
     251,
-    248
+    243
    ],
    [
     252,
-    73
+    251
    ],
    [
     252,
@@ -5506,11 +5372,7 @@
    ],
    [
     252,
-    251
-   ],
-   [
-    253,
-    252
+    73
    ],
    [
     253,
@@ -5519,6 +5381,10 @@
    [
     253,
     88
+   ],
+   [
+    253,
+    252
    ],
    [
     254,
@@ -5538,11 +5404,11 @@
    ],
    [
     257,
-    268
+    85
    ],
    [
     257,
-    85
+    268
    ],
    [
     258,
@@ -5562,15 +5428,19 @@
    ],
    [
     260,
-    262
-   ],
-   [
-    260,
     85
    ],
    [
     260,
     235
+   ],
+   [
+    260,
+    262
+   ],
+   [
+    261,
+    258
    ],
    [
     261,
@@ -5579,10 +5449,6 @@
    [
     261,
     259
-   ],
-   [
-    261,
-    258
    ],
    [
     265,
@@ -5594,11 +5460,11 @@
    ],
    [
     266,
-    238
+    108
    ],
    [
     266,
-    108
+    238
    ],
    [
     267,
@@ -5634,14 +5500,10 @@
    ],
    [
     272,
-    270
-   ],
-   [
-    272,
     271
    ],
    [
-    273,
+    272,
     270
    ],
    [
@@ -5649,16 +5511,20 @@
     265
    ],
    [
+    273,
+    270
+   ],
+   [
     274,
     268
    ],
    [
     275,
-    274
+    268
    ],
    [
     275,
-    268
+    274
    ],
    [
     276,
@@ -5694,19 +5560,11 @@
    ],
    [
     281,
-    195
-   ],
-   [
-    281,
     87
    ],
    [
-    282,
-    279
-   ],
-   [
-    282,
-    281
+    281,
+    195
    ],
    [
     282,
@@ -5714,7 +5572,15 @@
    ],
    [
     282,
+    281
+   ],
+   [
+    282,
     280
+   ],
+   [
+    282,
+    279
    ],
    [
     283,
@@ -5730,15 +5596,19 @@
    ],
    [
     284,
-    282
+    283
    ],
    [
     284,
-    283
+    282
    ],
    [
     285,
     284
+   ],
+   [
+    286,
+    197
    ],
    [
     286,
@@ -5749,16 +5619,12 @@
     196
    ],
    [
-    286,
-    197
+    287,
+    286
    ],
    [
     287,
     195
-   ],
-   [
-    287,
-    286
    ],
    [
     288,
@@ -5802,14 +5668,10 @@
    ],
    [
     295,
-    73
-   ],
-   [
-    295,
     129
    ],
    [
-    296,
+    295,
     73
    ],
    [
@@ -5817,7 +5679,7 @@
     130
    ],
    [
-    297,
+    296,
     73
    ],
    [
@@ -5825,7 +5687,7 @@
     131
    ],
    [
-    298,
+    297,
     73
    ],
    [
@@ -5833,7 +5695,7 @@
     132
    ],
    [
-    299,
+    298,
     73
    ],
    [
@@ -5841,7 +5703,7 @@
     133
    ],
    [
-    300,
+    299,
     73
    ],
    [
@@ -5849,7 +5711,7 @@
     134
    ],
    [
-    301,
+    300,
     73
    ],
    [
@@ -5857,7 +5719,7 @@
     135
    ],
    [
-    302,
+    301,
     73
    ],
    [
@@ -5865,7 +5727,7 @@
     136
    ],
    [
-    303,
+    302,
     73
    ],
    [
@@ -5873,7 +5735,7 @@
     137
    ],
    [
-    304,
+    303,
     73
    ],
    [
@@ -5881,7 +5743,7 @@
     138
    ],
    [
-    305,
+    304,
     73
    ],
    [
@@ -5889,7 +5751,7 @@
     139
    ],
    [
-    306,
+    305,
     73
    ],
    [
@@ -5897,7 +5759,7 @@
     140
    ],
    [
-    307,
+    306,
     73
    ],
    [
@@ -5905,7 +5767,7 @@
     141
    ],
    [
-    308,
+    307,
     73
    ],
    [
@@ -5913,7 +5775,7 @@
     142
    ],
    [
-    309,
+    308,
     73
    ],
    [
@@ -5921,7 +5783,7 @@
     143
    ],
    [
-    310,
+    309,
     73
    ],
    [
@@ -5929,7 +5791,7 @@
     144
    ],
    [
-    311,
+    310,
     73
    ],
    [
@@ -5937,7 +5799,7 @@
     145
    ],
    [
-    312,
+    311,
     73
    ],
    [
@@ -5945,7 +5807,7 @@
     146
    ],
    [
-    313,
+    312,
     73
    ],
    [
@@ -5953,7 +5815,7 @@
     147
    ],
    [
-    314,
+    313,
     73
    ],
    [
@@ -5961,7 +5823,7 @@
     148
    ],
    [
-    315,
+    314,
     73
    ],
    [
@@ -5969,7 +5831,7 @@
     149
    ],
    [
-    316,
+    315,
     73
    ],
    [
@@ -5977,7 +5839,7 @@
     150
    ],
    [
-    317,
+    316,
     73
    ],
    [
@@ -5985,7 +5847,7 @@
     151
    ],
    [
-    318,
+    317,
     73
    ],
    [
@@ -5993,7 +5855,7 @@
     152
    ],
    [
-    319,
+    318,
     73
    ],
    [
@@ -6001,12 +5863,16 @@
     153
    ],
    [
-    320,
+    319,
     73
    ],
    [
     320,
     154
+   ],
+   [
+    320,
+    73
    ],
    [
     321,
@@ -6018,107 +5884,11 @@
    ],
    [
     322,
-    73
-   ],
-   [
-    322,
     156
    ],
    [
-    323,
-    299
-   ],
-   [
-    323,
-    316
-   ],
-   [
-    323,
-    305
-   ],
-   [
-    323,
-    322
-   ],
-   [
-    323,
-    298
-   ],
-   [
-    323,
-    301
-   ],
-   [
-    323,
-    317
-   ],
-   [
-    323,
-    295
-   ],
-   [
-    323,
-    302
-   ],
-   [
-    323,
-    307
-   ],
-   [
-    323,
-    311
-   ],
-   [
-    323,
-    296
-   ],
-   [
-    323,
-    312
-   ],
-   [
-    323,
-    321
-   ],
-   [
-    323,
-    313
-   ],
-   [
-    323,
-    304
-   ],
-   [
-    323,
-    303
-   ],
-   [
-    323,
-    318
-   ],
-   [
-    323,
-    294
-   ],
-   [
-    323,
-    320
-   ],
-   [
-    323,
-    319
-   ],
-   [
-    323,
-    314
-   ],
-   [
-    323,
-    315
-   ],
-   [
-    323,
-    306
+    322,
+    73
    ],
    [
     323,
@@ -6126,15 +5896,23 @@
    ],
    [
     323,
-    293
+    306
    ],
    [
     323,
-    300
+    303
    ],
    [
     323,
-    310
+    298
+   ],
+   [
+    323,
+    316
+   ],
+   [
+    323,
+    318
    ],
    [
     323,
@@ -6143,6 +5921,94 @@
    [
     323,
     309
+   ],
+   [
+    323,
+    307
+   ],
+   [
+    323,
+    317
+   ],
+   [
+    323,
+    321
+   ],
+   [
+    323,
+    300
+   ],
+   [
+    323,
+    299
+   ],
+   [
+    323,
+    301
+   ],
+   [
+    323,
+    313
+   ],
+   [
+    323,
+    296
+   ],
+   [
+    323,
+    319
+   ],
+   [
+    323,
+    320
+   ],
+   [
+    323,
+    310
+   ],
+   [
+    323,
+    304
+   ],
+   [
+    323,
+    311
+   ],
+   [
+    323,
+    302
+   ],
+   [
+    323,
+    312
+   ],
+   [
+    323,
+    314
+   ],
+   [
+    323,
+    293
+   ],
+   [
+    323,
+    322
+   ],
+   [
+    323,
+    295
+   ],
+   [
+    323,
+    294
+   ],
+   [
+    323,
+    305
+   ],
+   [
+    323,
+    315
    ],
    [
     324,
@@ -6230,15 +6096,15 @@
    ],
    [
     353,
+    351
+   ],
+   [
+    353,
     352
    ],
    [
     353,
     350
-   ],
-   [
-    353,
-    351
    ],
    [
     354,
@@ -6254,11 +6120,11 @@
    ],
    [
     367,
-    361
+    359
    ],
    [
     367,
-    359
+    361
    ],
    [
     368,
@@ -6278,15 +6144,15 @@
    ],
    [
     371,
-    346
-   ],
-   [
-    371,
     370
    ],
    [
     371,
     354
+   ],
+   [
+    371,
+    346
    ],
    [
     372,
@@ -6298,15 +6164,15 @@
    ],
    [
     374,
+    373
+   ],
+   [
+    374,
     370
    ],
    [
     374,
     372
-   ],
-   [
-    374,
-    373
    ],
    [
     375,
@@ -6322,35 +6188,35 @@
    ],
    [
     377,
-    376
-   ],
-   [
-    377,
     371
    ],
    [
     377,
-    374
+    376
    ],
    [
     377,
     375
    ],
    [
-    378,
-    360
-   ],
-   [
-    378,
-    361
+    377,
+    374
    ],
    [
     378,
     365
    ],
    [
+    378,
+    360
+   ],
+   [
+    378,
+    361
+   ],
+   [
     379,
-    377
+    360
    ],
    [
     379,
@@ -6358,7 +6224,7 @@
    ],
    [
     379,
-    360
+    377
    ],
    [
     380,
@@ -6366,11 +6232,11 @@
    ],
    [
     380,
-    361
+    360
    ],
    [
     380,
-    360
+    361
    ],
    [
     381,
@@ -6382,11 +6248,11 @@
    ],
    [
     383,
-    361
+    365
    ],
    [
     383,
-    365
+    361
    ],
    [
     384,
@@ -6394,27 +6260,27 @@
    ],
    [
     385,
-    361
-   ],
-   [
-    385,
     384
    ],
    [
-    386,
-    385
+    385,
+    361
    ],
    [
     386,
     383
    ],
    [
-    387,
+    386,
     385
    ],
    [
     387,
     383
+   ],
+   [
+    387,
+    385
    ],
    [
     388,
@@ -6426,11 +6292,11 @@
    ],
    [
     389,
-    355
+    379
    ],
    [
     389,
-    379
+    355
    ],
    [
     390,
@@ -6446,35 +6312,35 @@
    ],
    [
     392,
-    391
-   ],
-   [
-    392,
     388
    ],
    [
-    393,
-    361
+    392,
+    391
    ],
    [
     393,
     365
    ],
    [
-    394,
-    377
+    393,
+    361
    ],
    [
     394,
     361
    ],
    [
-    395,
-    393
+    394,
+    377
    ],
    [
     395,
     394
+   ],
+   [
+    395,
+    393
    ],
    [
     396,

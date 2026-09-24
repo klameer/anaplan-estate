@@ -548,7 +548,7 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
         out.append('<ol class="actions">' + "".join(_action_card(i, a, rep, nidx, midx) for i, a in enumerate(pl["actions"], 1)) + "</ol>")
     else:
         out.append(f'<p><strong>{_e(pl["none"]["message"])}</strong></p><p>Next data check: {_e(pl["none"]["next_check"])}.</p>')
-    out.append('<p class="fnote">Suggested starting points; the order is a hypothesis, not a verdict. '
+    out.append(f'<p class="fnote">{len(pl["actions"])} of {pl["considered"]} candidates met the bar for being worth doing; the order is a hypothesis, not a verdict. '
                '<a href="#ranking">How chosen</a> &middot; <a href="#coverage">Coverage</a> &middot; <a href="#catalogue">All findings</a></p></section>')
     # ---------------- Change impact
     out.append('<section id="impact" class="view" role="tabpanel" aria-label="Change impact" hidden><h2>Change impact</h2>'
@@ -589,7 +589,8 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
             out.append(f'<details><summary>{fid}. {_e(fmap[fid]["title"])}</summary>' + _finding(fmap[fid], rep, nidx, midx) + "</details>")
     out.append("</div>")
     # ranking
-    out.append('<h3 id="ranking">How the actions were chosen</h3><ul>' + "".join(f"<li>{_e(r)}</li>" for r in pl["ranking"]) + "</ul>")
+    out.append(f'<h3 id="ranking">How the actions were chosen</h3><p>{pl["considered"]} candidate{"s were" if pl["considered"] != 1 else " was"} built from the findings; {len(pl["actions"])} met the bar for being worth doing. The number is not fixed.</p>'
+               '<h4>What counts as worth doing</h4><ul>' + "".join(f"<li>{_e(r)}</li>" for r in pl["worth"]) + "</ul><h4>Order</h4><ul>" + "".join(f"<li>{_e(r)}</li>" for r in pl["ranking"]) + "</ul>")
     if pl["candidates"]:
         out.append('<details><summary>All candidates in rank order (' + str(len(pl["candidates"])) + ')</summary><div class="wrap"><table><thead><tr><th>#</th><th>Candidate</th><th>Evidence</th><th>Kind</th><th>Scope</th><th>Footprint</th><th>Depends on</th></tr></thead><tbody>'
                    + "".join(f'<tr><td>{i}</td><td>{_e(c["title"])}<br><span class="fnote">{" ".join(f"<a href=#{f}>{f}</a>" for f in c["finding_ids"])}</span></td><td>{c["strength"]}</td><td>{c["kind"]}</td><td>{"bounded" if c["bounded"] else "open"} ({len(c["objects"])})</td>'

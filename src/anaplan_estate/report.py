@@ -255,7 +255,8 @@ def render_markdown(er) -> str:
         for e in rep["map"]["edges"]:
             out.append(f"  {ids[e['from']]} -.->|{e['actions']} inferred| {ids[e['to']]}")
         out += ["```", ""]
-    out += ["## How the actions were chosen", ""] + [f"- {r}" for r in pl["ranking"]] + [""]
+    out += ["## How the actions were chosen", "", f"{pl['considered']} candidates were built from the findings; {len(pl['actions'])} met the bar for being worth doing. The number is not fixed.", "",
+            "**What counts as worth doing**", ""] + [f"- {r}" for r in pl["worth"]] + ["", "**Order**", ""] + [f"- {r}" for r in pl["ranking"]] + [""]
     if pl["candidates"]:
         out += ["| Rank | Candidate | Evidence | Kind | Scope | Footprint |", "|---|---|---|---|---|---|"]
         for i, c in enumerate(pl["candidates"], 1):

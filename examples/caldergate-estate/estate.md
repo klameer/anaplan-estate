@@ -4,75 +4,47 @@ Generated with CodelessOps Estate Review. 4 Anaplan models, 426 line items, 145M
 
 ## Action plan
 
-### 1. Move the text formula DAT01 Actuals GL.Journal Cost Centre into a system module in Caldergate FP&A
+### 1. Replace the long chain of IF tests in the line item 'Forecast Opex' in the module 'CAL03 Opex' with a lookup table
 
-**Why.** DAT01 Actuals GL.Journal Cost Centre builds a text or per-item value on every cell of a multi-dimensional module (5.0M cells) and carries 6.2% of Caldergate FP&A's measured effort; in a module dimensioned only by the list the value varies by, each is calculated once per list item and read from there.
-
-**Steps.**
-
-1. Read DAT01 Actuals GL.Journal Cost Centre (6.2%): name the list its value varies by (often Time or one list).
-2. In a development copy, compute it in a SYS module on that list and repoint the readers; keep the original until reconciled.
-3. Record Calculation Effort before and after.
-
-**Done when.** Readers reconcile cell for cell and the measured effort share falls.
-
-Role: model builder, Caldergate FP&A. Evidence: [F5](#F5), [F16](#F16).
-
-### 2. Replace the IF chain in CAL03 Opex.Forecast Opex with a mapping module and LOOKUP
-
-**Why.** CAL03 Opex.Forecast Opex carries 16.0% of Caldergate FP&A's measured effort and evaluates every IF branch for every cell; a mapping module makes each case a row, not a formula edit.
+**Why.** A formula built as a long chain of 'if this then that' tests checks every branch for every cell, and each new case means editing the formula. The same mapping held as rows in a small table module, read with one lookup, is quicker to calculate and can be maintained without a builder. In Caldergate FP&A, the line item 'Forecast Opex' in the module 'CAL03 Opex' carries 16.0% of the model's measured calculation effort.
 
 **Steps.**
 
-1. In a development copy, load the branch-to-value table (in the evidence) into a mapping module on the list the branches test.
-2. Replace the chain in CAL03 Opex.Forecast Opex with one LOOKUP; keep the original formula in a note until reconciled.
-3. Export the line item before and after; every cell equal.
+1. In a development copy, load the 'case to value' table (it is written out under Evidence) into a small mapping module keyed by the list the tests refer to.
+2. Replace the chain in the line item 'Forecast Opex' in the module 'CAL03 Opex' with a single lookup on that table; keep the old formula in a note until the check below passes.
+3. Export the line item before and after and confirm every cell is equal.
 
-**Done when.** Every cell is equal before and after and the mapping module holds every case the chain held.
+**Done when.** Every cell is equal before and after, and the table holds every case the chain held.
 
 Role: model builder, Caldergate FP&A. Evidence: [F2](#F2), [F5](#F5), [F16](#F16), [F21](#F21).
 
-### 3. Check for consumers of CAL05 Opex OLD in Caldergate FP&A before keeping or retiring it
+### 2. Stop working out text labels on every cell in Caldergate FP&A (1 formula)
 
-**Why.** No formula outside it reads its 14 line items and no export action reads it; it holds 70.2M cells and 50.8% of Caldergate FP&A's measured effort: an observed footprint, not a saving.
+**Why.** Anaplan runs a formula once for every cell of a module. When the formula only produces a label (a text value such as a period code) that is the same across a whole row, working it out for every cell of a large grid is wasted effort. Moving the formula into a small helper module that has only the list the label depends on means it is worked out once per item and simply looked up from there. In Caldergate FP&A this applies to the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL': together 5.0M cells and 6.2% of the model's measured calculation effort.
 
 **Steps.**
 
-1. Ask the page builder which pages, saved views and line item subsets use CAL05 Opex OLD.
-2. Check whether another model imports from a saved view on it.
-3. Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off.
+1. Open the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL' (6.2% of measured effort) and note which list its value actually changes with (often Time, or one list).
+2. In a development copy of the model, create a small system module with just that list, put the formula there, and point the places that used the old formula at the new one. Keep the old line item until the check below passes.
+3. Compare the results before and after, and read the Calculation Effort column before and after.
 
-**Done when.** Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.
+**Done when.** Every value that used the label still matches the original, cell for cell, and the measured effort share has fallen.
+
+Role: model builder, Caldergate FP&A. Evidence: [F5](#F5), [F16](#F16).
+
+### 3. Find out whether anyone still uses the module 'CAL05 Opex OLD' in Caldergate FP&A
+
+**Why.** A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. Until someone checks, it can neither be removed nor trusted. In Caldergate FP&A, no formula outside 'CAL05 Opex OLD' reads any of its 14 line items and no export reads it; it occupies 70.2M cells and 50.8% of the model's measured calculation effort. That is what it takes up now, not a saving.
+
+**Steps.**
+
+1. Ask the page builder whether any page, dashboard, saved view or line item subset still uses 'CAL05 Opex OLD'.
+2. Ask whether another model imports from a saved view on it.
+3. Record the decision: keep, or retire. If retire: make the change in a development copy first, keep the original for comparison, check the owner's key outputs over a full cycle, then sign off.
+
+**Done when.** Every question above has a recorded answer and the owner has signed a keep-or-retire decision.
 
 Role: model owner with a page builder, Caldergate FP&A. Evidence: [F1](#F1).
-
-### 4. Read the five largest calculation hotspots in Caldergate Data Hub
-
-**Why.** Ten line items carry 99.9% of Caldergate Data Hub's measured effort and none matches a rule finding, so concentration is the only evidence: a place to look, not a change to make.
-
-**Steps.**
-
-1. Read the five largest with the owner, led by DAT01 GL Transactions.Loaded? (88.3%): what each computes and how often it changes.
-2. Note where a documented pattern applies (SUM with LOOKUP, text per cell, IF chains) or the effort is the model's main job.
-3. Choose at most one to trial in a development copy, with Calculation Effort read before and after.
-
-**Done when.** Each of the five has a recorded reading (keep, or one named change to trial) agreed with the owner.
-
-Role: model builder, Caldergate Data Hub. Evidence: [F3](#F3).
-
-### 5. Check for consumers of SYS01 Time in Board Reporting before keeping or retiring it
-
-**Why.** No formula outside it reads its 2 line items and no export action reads it; it holds 72 cells and 2.8% of Board Reporting's measured effort: an observed footprint, not a saving.
-
-**Steps.**
-
-1. Ask the page builder which pages, saved views and line item subsets use SYS01 Time.
-2. Check whether another model imports from a saved view on it.
-3. Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off.
-
-**Done when.** Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.
-
-Role: model owner with a page builder, Board Reporting. Evidence: [F8](#F8).
 
 Suggested starting points from the supplied exports; the ordering is a hypothesis (see Evidence: how the actions were chosen).
 
@@ -107,6 +79,16 @@ flowchart LR
 
 ## How the actions were chosen
 
+10 candidates were built from the findings; 3 met the bar for being worth doing. The number is not fixed.
+
+**What counts as worth doing**
+
+- A change is worth doing when its evidence is not merely inferred, its scope is bounded, and its observed footprint is at least medium (1% of its model's measured effort, or 1M cells).
+- An investigation is worth doing only when the footprint is high (5% of its model's measured effort, or 50M cells): asking someone to check a small module is not a good use of their time.
+- A prerequisite (for example a consumer check on a module that a change would tune) is included whenever the action that needs it is.
+
+**Order**
+
 - Inferred evidence last: a candidate resting on names or an unresolved comparison is a hypothesis, whatever its footprint.
 - Scope: a bounded scope (10 named objects or fewer) before an open-ended review.
 - Materiality band from the observed footprint: high (5% or more of its own model's measured effort, or 50M cells or more), medium (1% or 1M), low. Effort shares are banded within one model and never compared across models as absolute value.
@@ -117,16 +99,16 @@ flowchart LR
 
 | Rank | Candidate | Evidence | Kind | Scope | Footprint |
 |---|---|---|---|---|---|
-| 1 | Move the text formula DAT01 Actuals GL.Journal Cost Centre into a system module in Caldergate FP&A | confirmed | change | bounded (1) | 5.0M cells |
-| 2 | Replace the IF chain in CAL03 Opex.Forecast Opex with a mapping module and LOOKUP | confirmed | change | bounded (1) | 5.0M cells |
-| 3 | Check for consumers of CAL05 Opex OLD in Caldergate FP&A before keeping or retiring it | partial | investigation | bounded (1) | 70.2M cells |
-| 4 | Read the five largest calculation hotspots in Caldergate Data Hub | confirmed | investigation | bounded (5) | 1.3M cells |
-| 5 | Check for consumers of SYS01 Time in Board Reporting before keeping or retiring it | partial | investigation | bounded (1) | 72 cells |
-| 6 | Consolidate 1 copy of CAL07 P&L by Cost Centre.Depreciation in Caldergate FP&A | confirmed | change | bounded (2) | 19.2K cells |
-| 7 | Consolidate 1 copy of Calcs - Attrition.Headcount in Workforce Planning | confirmed | change | bounded (2) | 4.5K cells |
-| 8 | Read the five largest calculation hotspots in Board Reporting | confirmed | investigation | bounded (5) | 720 cells |
-| 9 | Check for consumers of zz Archive - 2021 Cost in Workforce Planning before keeping or retiring it | partial | investigation | bounded (1) | 13.4K cells |
-| 10 | Check for consumers of SYS01 Time Settings in Caldergate Data Hub before keeping or retiring it | partial | investigation | bounded (1) | 180 cells |
+| 1 | Replace the long chain of IF tests in the line item 'Forecast Opex' in the module 'CAL03 Opex' with a lookup table | confirmed | change | bounded (1) | 5.0M cells |
+| 2 | Stop working out text labels on every cell in Caldergate FP&A (1 formula) | confirmed | change | bounded (1) | 5.0M cells |
+| 3 | Find out whether anyone still uses the module 'CAL05 Opex OLD' in Caldergate FP&A | partial | investigation | bounded (1) | 70.2M cells |
+| 4 | Look at the five heaviest calculations in Caldergate Data Hub | confirmed | investigation | bounded (5) | 1.3M cells |
+| 5 | Find out whether anyone still uses the module 'SYS01 Time' in Board Reporting | partial | investigation | bounded (1) | 72 cells |
+| 6 | Remove 1 duplicate copy of one calculation in Caldergate FP&A | confirmed | change | bounded (2) | 19.2K cells |
+| 7 | Remove 1 duplicate copy of one calculation in Workforce Planning | confirmed | change | bounded (2) | 4.5K cells |
+| 8 | Look at the five heaviest calculations in Board Reporting | confirmed | investigation | bounded (5) | 720 cells |
+| 9 | Find out whether anyone still uses the module 'zz Archive - 2021 Cost' in Workforce Planning | partial | investigation | bounded (1) | 13.4K cells |
+| 10 | Find out whether anyone still uses the module 'SYS01 Time Settings' in Caldergate Data Hub | partial | investigation | bounded (1) | 180 cells |
 
 # Findings
 

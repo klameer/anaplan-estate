@@ -27,14 +27,15 @@ def _words(fragment):
 def test_initial_reading_path_is_short_and_actionable():
     er, rep, h = _rep()
     opening = h[h.index('<header class="top">'):h.index('<section id="impact"')]
-    assert _words(opening) <= 900, _words(opening)
     acts = rep["plan"]["actions"]
-    assert 1 <= len(acts) <= 5
+    assert len(acts) >= 1 and all(plan.worth_doing(plan.Candidate(**{k: v for k, v in a.items() if k not in ("bounded", "footprint_measured")})) or a["key"] in {d for b in acts for d in b["depends_on"]} for a in acts)
     cards = re.findall(r'<li class="action" id="A\d+">', h)
     assert len(cards) == len(acts)
     for a in acts:
         assert a["title"] and a["why"] and 2 <= len(a["steps"]) <= 3 and a["done_when"] and a["role"]
-        assert 60 <= len((a["title"] + " " + a["why"] + " " + " ".join(a["steps"]) + " " + a["done_when"]).split()) <= 140
+        assert 100 <= len((a["title"] + " " + a["why"] + " " + " ".join(a["steps"]) + " " + a["done_when"]).split()) <= 300
+        first_obj = min(i for i in (a["why"].find("the line item '"), a["why"].find("the module '")) if i >= 0)
+        assert first_obj > 80                                          # a plain explanation comes before the first named object
     # no findings catalogue follows the plan on the initial path
     plan_html = h[h.index('<section id="plan"'):h.index('<section id="impact"')]
     assert '<article class="f"' not in plan_html and "<table" not in plan_html
@@ -81,7 +82,7 @@ def test_select_can_return_fewer_than_three_and_explains_next_check(tmp_path):
         "B,Mod,\"{\"\"dataType\"\":\"\"NUMBER\"\"}\",A * 2,L,Month,All,SUM,100,\n", encoding="utf-8")
     er = fleet.run(tmp_path)
     sel = select(er)
-    assert len(sel["actions"]) < 5
+    assert len(sel["actions"]) <= 1
     if not sel["actions"]:
         assert sel["none"]["next_check"] and "Calculation Effort" in sel["none"]["next_check"]
 
