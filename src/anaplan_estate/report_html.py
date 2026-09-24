@@ -1,15 +1,21 @@
-"""Self-contained HTML for the three-level report.
+"""Self-contained HTML: Action plan | Change impact | Evidence.
 
-Rendered from the report dict (report.build), not from Markdown, so search,
-filters, sorting, review statuses and the register download can work on
-structured data. No external requests: fonts and tokens are embedded when a
-theme stylesheet is supplied, all links are same-document fragments, and the
-findings JSON is embedded for the page's own script.
+Rendered from the report dict (report.build), not from Markdown, so the catalogue
+search, filters, review statuses, notes, the working register and the change-impact
+explorer work on structured data. No external requests: fonts and tokens are
+embedded when a theme stylesheet is supplied, links are same-document fragments
+or the configured http(s) links, the findings and graph JSON are embedded for the
+page's own script. Navigation fragments carry internal identifiers only (finding
+ids, node numbers), never model contents.
 
-Review statuses are the reader's, not the analysis's. They live in the
-browser's localStorage under a key derived from the report title and
-generation date, and can be exported as JSON from the page. Nothing is
-stored anywhere else.
+Without JavaScript the three views are shown one after another, every finding is
+readable inside a <details>, and the explorer says what it needs.
+
+Review statuses and notes are the reader's, not the analysis's. They live in the
+browser's localStorage under a key derived from the report title and generation
+date, keyed by each finding's stable uid, and can be downloaded as a working
+register. Nothing is stored anywhere else; a blocked localStorage disables only
+the remembering, not the analysis or the downloads.
 """
 from __future__ import annotations
 import html, json, re
@@ -17,152 +23,272 @@ from .findings import AREA_LABEL, _c
 
 CSS = r"""
 :root{--bg:#F7F8F6;--ink:#1B2430;--muted:#5C6773;--rule:#D9DED9;--soft:#EEF1EE;--accent:#0E5E6F;--card:#FFFFFF;
---high:#A6301C;--med:#B7791F;--low:#4B6B5C;--conf:#0E5E6F;--part:#7A5F1F;--inf:#6B5A7A;
+--high:#A6301C;--med:#B7791F;--low:#4B6B5C;--conf:#0E5E6F;--part:#7A5F1F;--inf:#6B5A7A;--notice:#FFF7E6;
 --sans:"Geist Sans","IBM Plex Sans","Helvetica Neue",Arial,sans-serif;--mono:"Geist Mono","IBM Plex Mono",Consolas,monospace}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1416;--ink:#E6EBE8;--muted:#9AA6A0;--rule:#2E393C;--soft:#1B2427;--accent:#5FB3C1;--card:#161D20;
---high:#E07A63;--med:#D9A441;--low:#8FB8A6;--conf:#5FB3C1;--part:#D9A441;--inf:#B39DDB}}
-:root[data-theme="dark"]{--bg:#0F1416;--ink:#E6EBE8;--muted:#9AA6A0;--rule:#2E393C;--soft:#1B2427;--accent:#5FB3C1;--card:#161D20;--high:#E07A63;--med:#D9A441;--low:#8FB8A6;--conf:#5FB3C1;--part:#D9A441;--inf:#B39DDB}
+--high:#E07A63;--med:#D9A441;--low:#8FB8A6;--conf:#5FB3C1;--part:#D9A441;--inf:#B39DDB;--notice:#2A2416}}
+:root[data-theme="dark"]{--bg:#0F1416;--ink:#E6EBE8;--muted:#9AA6A0;--rule:#2E393C;--soft:#1B2427;--accent:#5FB3C1;--card:#161D20;--high:#E07A63;--med:#D9A441;--low:#8FB8A6;--conf:#5FB3C1;--part:#D9A441;--inf:#B39DDB;--notice:#2A2416}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;margin:0}
-.page{max-width:1040px;margin:0 auto;padding:36px 24px 80px}
-a{color:var(--accent)}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
-header.top{border-bottom:1px solid var(--rule);padding-bottom:14px;margin-bottom:22px}
-header.top h1{font-size:30px;line-height:1.15;margin:8px 0 4px;letter-spacing:-.01em;font-weight:600}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;margin:0}
+.page{max-width:1040px;margin:0 auto;padding:28px 24px 60px}
+a{color:var(--accent)}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+header.top{border-bottom:1px solid var(--rule);padding-bottom:12px;margin-bottom:14px}
+header.top h1{font-size:28px;line-height:1.15;margin:0 0 4px;letter-spacing:-.01em;font-weight:600}
+header.top .attrib{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin:0 0 6px}
+header.top .attrib svg,header.top .attrib img{height:18px;width:auto}
 header.top .lead{color:var(--muted);font-size:13.5px;margin:0}
-nav.jump{position:sticky;top:0;background:var(--bg);z-index:5;border-bottom:1px solid var(--rule);padding:8px 0;margin-bottom:18px;display:flex;gap:14px;flex-wrap:wrap;font-size:13px}
-nav.jump a{text-decoration:none;color:var(--ink);padding:2px 0;border-bottom:2px solid transparent}nav.jump a:hover{border-bottom-color:var(--accent)}
-h2{font-size:21px;font-weight:600;margin:34px 0 10px;letter-spacing:-.01em}
-h3{font-size:16px;font-weight:600;margin:22px 0 8px}
-h4{font-size:14px;font-weight:600;margin:14px 0 4px}
-p{max-width:78ch;margin:8px 0}
-.muted{color:var(--muted)}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:14px 0 18px}
-.tile{background:var(--card);border:1px solid var(--rule);border-radius:8px;padding:10px 12px}
-.tile .v{font-size:22px;font-weight:600;letter-spacing:-.01em}.tile .k{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:12px 0 18px}
-.card{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--accent);border-radius:8px;padding:12px 14px}
-.card h3{margin:0 0 6px;font-size:15px}.card p{font-size:13.5px;margin:6px 0}.card .lab{font-weight:600;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em}
+nav.views{position:sticky;top:0;background:var(--bg);z-index:5;border-bottom:1px solid var(--rule);padding:6px 0;margin-bottom:16px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+nav.views [role=tab]{font:inherit;font-size:14px;padding:6px 12px;border:1px solid var(--rule);border-radius:999px;background:var(--card);color:var(--ink);cursor:pointer}
+nav.views [role=tab][aria-selected=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
+nav.views .right{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+button.btn{white-space:nowrap;font:inherit;font-size:13px;padding:5px 10px;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink);cursor:pointer}
+button.btn.primary{border-color:var(--accent);color:var(--accent)}
+h2{font-size:20px;font-weight:600;margin:26px 0 8px;letter-spacing:-.01em}
+h3{font-size:16px;font-weight:600;margin:20px 0 6px}
+h4{font-size:14px;font-weight:600;margin:12px 0 4px}
+p{max-width:78ch;margin:6px 0}
+.muted{color:var(--muted)}.fnote{font-size:12.5px;color:var(--muted)}
+.view{margin-bottom:24px}
+ol.actions{list-style:none;padding:0;margin:0;counter-reset:a}
+li.action{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--accent);border-radius:8px;padding:12px 16px;margin:10px 0;counter-increment:a}
+li.action h2{margin:0 0 4px;font-size:17px}li.action h2:before{content:counter(a) ". ";color:var(--muted)}
+li.action .role{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+li.action dl{margin:0}li.action dt{font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:8px}li.action dd{margin:2px 0 0}
+li.action ol{margin:2px 0 0;padding-left:20px}li.action ol li{margin:2px 0}
+li.action .notice{background:var(--notice);border-radius:6px;padding:6px 10px;font-size:13px;margin:8px 0 0}
+li.action .links{font-size:12.5px;margin:8px 0 0}li.action .links a{margin-right:10px}
 .badge{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid var(--rule);color:var(--muted);margin-right:4px;white-space:nowrap}
 .badge.imp-high{border-color:var(--high);color:var(--high)}.badge.imp-medium{border-color:var(--med);color:var(--med)}.badge.imp-low{border-color:var(--low);color:var(--low)}
 .badge.st-confirmed{border-color:var(--conf);color:var(--conf)}.badge.st-partial{border-color:var(--part);color:var(--part)}.badge.st-inferred{border-color:var(--inf);color:var(--inf)}
-.invite{background:var(--soft);border-radius:8px;padding:12px 14px;margin:18px 0;font-size:14px}
-.limits li{margin:4px 0}
 .map{margin:12px 0;overflow-x:auto}.map svg{max-width:100%;height:auto;font-family:var(--sans)}
-.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--soft);padding:10px;border-radius:8px;margin:10px 0 16px;position:sticky;top:38px;z-index:4}
-.controls input,.controls select,.controls button{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink)}
-.controls input{min-width:220px;flex:1}.controls .count{font-size:12.5px;color:var(--muted);margin-left:auto}
-.area{margin-top:26px}.area>p{color:var(--muted);font-size:13.5px}
-article.f{background:var(--card);border:1px solid var(--rule);border-radius:8px;padding:12px 16px;margin:10px 0}
-article.f header{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline}
-article.f header h3{margin:0;font-size:15.5px;flex:1 1 320px}
-article.f .objs{font-family:var(--mono);font-size:12px;color:var(--muted);word-break:break-word;margin:6px 0 8px}
-article.f .objs code{background:none;padding:0}
-article.f .status{margin-left:auto}article.f .status select{font-size:12px;padding:3px 6px;border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink)}
-dl.fields{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:8px 0;font-size:14px}
-dl.fields dt{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;padding-top:3px}dl.fields dd{margin:0;max-width:80ch}
-dl.fields ul{margin:0;padding-left:18px}
-details{margin:8px 0}summary{cursor:pointer;font-weight:600;font-size:13.5px}
-details.ev>div{margin-top:8px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--soft);padding:10px;border-radius:8px;margin:10px 0 12px}
+.controls input,.controls select,.controls button,.controls textarea{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink)}
+.controls input[type=search],.controls input[type=text]{min-width:200px;flex:1}.controls .count{font-size:12.5px;color:var(--muted);margin-left:auto}
 .wrap{overflow-x:auto;max-width:100%;border:1px solid var(--rule);border-radius:6px}
 table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;vertical-align:top;padding:6px 8px;border-bottom:1px solid var(--rule)}
-th{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--soft);position:sticky;top:0}
+th{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--soft)}
 td{word-break:break-word}td code{white-space:pre-wrap}
+table.cat tr[data-id]{cursor:pointer}table.cat tr[data-id]:hover td{background:var(--soft)}table.cat tr.sel td{background:var(--soft);border-left:3px solid var(--accent)}
+table.cat td.t{min-width:220px}table.cat select{font:inherit;font-size:12px;padding:2px 4px;border:1px solid var(--rule);border-radius:4px;background:var(--bg);color:var(--ink)}
 code{font-family:var(--mono);font-size:12px;background:var(--soft);padding:1px 4px;border-radius:3px}
 .formula{display:flex;gap:6px;align-items:flex-start}.formula button{font-size:11px;padding:1px 6px;border:1px solid var(--rule);border-radius:4px;background:var(--bg);color:var(--muted);cursor:pointer}
-table.reg th[data-sort]{cursor:pointer}table.reg th[data-sort]:after{content:" \2195";opacity:.5}
-.back{font-size:12.5px}.back a{margin-right:12px}
-.empty{color:var(--muted);font-style:italic;padding:12px}
-footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:12px;font-size:12.5px;color:var(--muted)}
-.sr{position:absolute;left:-9999px}
-.hit{font-size:12px;color:var(--accent);margin:4px 0}
-.per{font-size:13px;margin:6px 0 0;padding-left:18px}
-.idx{display:none}
-.metric{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:15px;margin:10px 0 14px}.metric b{font-size:22px;font-weight:600;margin-right:4px}
-.example{border:1px solid var(--rule);border-radius:8px;padding:10px 14px;margin:12px 0;font-size:13.5px}.example dt{font-weight:600;margin-top:6px}.example dd{margin:0}
-.fnote{font-size:12.5px;color:var(--muted)}
-@media (max-width:640px){dl.fields{grid-template-columns:1fr}.controls{position:static}nav.jump{position:static}}
+article.f{background:var(--card);border:1px solid var(--rule);border-radius:8px;padding:12px 16px;margin:10px 0}
+article.f header{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline}article.f header h3{margin:0;font-size:15.5px;flex:1 1 320px}
+article.f .objs{font-family:var(--mono);font-size:12px;color:var(--muted);word-break:break-word;margin:6px 0 8px}article.f .objs code{background:none;padding:0}
+article.f .review{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;margin:8px 0;font-size:13px}
+article.f .review select,article.f .review textarea{font:inherit;font-size:12.5px;border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink);padding:4px 6px}
+article.f .review textarea{flex:1 1 260px;min-height:34px}
+dl.fields{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:8px 0;font-size:14px}
+dl.fields dt{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;padding-top:3px}dl.fields dd{margin:0;max-width:80ch}dl.fields ul{margin:0;padding-left:18px}
+details{margin:8px 0}summary{cursor:pointer;font-weight:600;font-size:13.5px}details.ev>div{margin-top:8px}
+.idx{display:none}.hit{font-size:12px;color:var(--accent);margin:4px 0}.sr{position:absolute;left:-9999px}
+#cat-detail:empty{display:none}#cat-detail{margin:12px 0}
+.subnav{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;margin:0 0 10px}
+footer{margin-top:36px;border-top:1px solid var(--rule);padding-top:12px;font-size:12.5px;color:var(--muted)}footer p{margin:4px 0}
+/* explorer */
+.ix-grid{display:grid;grid-template-columns:1fr;gap:12px}
+#ix-results{list-style:none;padding:0;margin:4px 0;max-height:220px;overflow:auto;border:1px solid var(--rule);border-radius:6px;background:var(--card)}
+#ix-results li{padding:4px 8px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--rule)}#ix-results li:hover,#ix-results li:focus{background:var(--soft)}
+#ix-results:empty{display:none}
+.ix-summary{background:var(--card);border:1px solid var(--rule);border-radius:8px;padding:10px 14px;font-size:13.5px}
+.ix-summary .big{font-size:20px;font-weight:600;margin-right:4px}.ix-summary .stats{display:flex;flex-wrap:wrap;gap:6px 18px;margin:4px 0 8px}
+.ix-cols{display:flex;gap:10px;overflow-x:auto;padding:6px 0}
+.ix-col{flex:0 0 240px;background:var(--soft);border-radius:8px;padding:8px}
+.ix-col h4{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.ix-mod{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:6px 8px;margin:4px 0;font-size:12.5px}
+.ix-mod summary{font-weight:600;font-size:12.5px}.ix-mod ul{margin:4px 0 0;padding-left:16px;font-family:var(--mono);font-size:11.5px}
+.ix-mod ul li a{cursor:pointer}.ix-mod .n{color:var(--muted);font-weight:400}
+.ix-start{background:var(--card);border:2px solid var(--accent);border-radius:6px;padding:6px 8px;font-size:12.5px;font-family:var(--mono)}
+.legend{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 16px;margin:6px 0}
+.legend .k{display:inline-block;width:22px;border-top:2px solid var(--accent);vertical-align:middle;margin-right:4px}.legend .k.dash{border-top-style:dashed}.legend .k.dot{border-top-style:dotted}
+.path{font-family:var(--mono);font-size:12px;background:var(--soft);padding:6px 8px;border-radius:6px;margin:6px 0;word-break:break-word}
+@media (max-width:640px){dl.fields{grid-template-columns:1fr}nav.views{position:static}.ix-col{flex-basis:200px}}
 @media print{
- :root{--bg:#fff;--ink:#111;--muted:#444;--rule:#bbb;--soft:#f2f2f2;--accent:#0E5E6F;--card:#fff}
- body{background:#fff;color:#111;font-size:11px}.page{max-width:none;padding:0}
- nav.jump,.controls,.status,.formula button,#dl-register,#dl-status,.noprint{display:none!important}
- h2{page-break-before:always}#summary h2{page-break-before:avoid}
- article.f,.card,.tile,tr{page-break-inside:avoid}
- thead{display:table-header-group}th{position:static}
- .wrap{overflow:visible;border:none}table{font-size:9.5px}td code{white-space:pre-wrap;word-break:break-all}
- details.ev:not([open]){display:block}details.ev:not([open])>div{display:none}
- body.print-summary #findings,body.print-summary #reference{display:none}
+ :root{--bg:#fff;--ink:#111;--muted:#444;--rule:#bbb;--soft:#f2f2f2;--accent:#0E5E6F;--card:#fff;--notice:#f7f2e6}
+ @page{size:A4;margin:12mm 14mm}
+ body{background:#fff;color:#111;font-size:10.5pt;line-height:1.3}.page{max-width:none;padding:0}p{margin:3px 0}
+ nav.views,.controls,.noprint,.review,.hit,#ix-results,footer .links-help,body:not(.print-full) footer{display:none!important}
+ header.top{margin-bottom:6px;padding-bottom:4px}header.top h1{font-size:17pt;margin:0}header.top .attrib,header.top .lead{font-size:9.5pt;margin:2px 0}
+ li.action{padding:5px 9px;margin:5px 0;page-break-inside:avoid;border:1px solid #bbb;border-left:3px solid #0E5E6F}li.action h2{font-size:12pt;margin:0 0 2px}li.action .role{font-size:8pt;margin:0 0 3px}
+ li.action dt{margin-top:3px;font-size:8.5pt}li.action dd,li.action ol li,li.action .notice,li.action .links{font-size:10pt}li.action .notice{padding:3px 8px;margin:4px 0 0}li.action .links{margin:4px 0 0}li.action ol li{margin:1px 0}
+ #plan>.fnote{font-size:9pt;margin:4px 0}footer{margin-top:10px;padding-top:6px;font-size:9pt}
+ body:not(.print-full) #impact,body:not(.print-full) #evidence{display:none!important}
+ body.print-full .view{display:block!important}#plan{display:block!important}
+ body.print-full #cat-articles{display:block!important}body.print-full #cat-detail{display:none}
+ body.print-full details.ev:not([open]){display:block}body.print-full details.ev:not([open])>div{display:none}
+ thead{display:table-header-group}.wrap{overflow:visible;border:none}table{font-size:9pt}td code{white-space:pre-wrap;word-break:break-all}
  a{color:#111;text-decoration:none}
 }
 """
 
 JS = r"""
 (function(){
- var data=JSON.parse(document.getElementById('report-data').textContent);
- var key='anaplan-estate-status:'+data.key;
- function load(){try{return JSON.parse(localStorage.getItem(key)||'{}')}catch(e){return {}}}
- function save(o){try{localStorage.setItem(key,JSON.stringify(o))}catch(e){}}
+ var D=JSON.parse(document.getElementById('report-data').textContent);
+ var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+ document.documentElement.classList.add('js');
+ function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+ function fmt(n){if(n===null||n===undefined)return 'n/a';if(Math.abs(n)>=1e9)return (n/1e9).toFixed(n/1e9>=100?0:1)+'B';if(Math.abs(n)>=1e6)return (n/1e6).toFixed(n/1e6>=100?0:1)+'M';if(Math.abs(n)>=1e3)return (n/1e3).toFixed(n/1e3>=100?0:1)+'K';return String(n)}
+ /* ---- local review state (statuses + notes), keyed by stable uid ---- */
+ var key='anaplan-estate-review:'+D.key, storeOk=true;
+ function load(){try{return JSON.parse(localStorage.getItem(key)||'{}')}catch(e){storeOk=false;return {}}}
+ function save(o){try{localStorage.setItem(key,JSON.stringify(o))}catch(e){storeOk=false}}
  var st=load();
- document.querySelectorAll('article.f').forEach(function(a){
-   var sel=a.querySelector('select.stsel');if(!sel)return;
-   var id=a.dataset.id; if(st[id]) sel.value=st[id]; a.dataset.status=sel.value;
-   sel.addEventListener('change',function(){st[id]=sel.value;a.dataset.status=sel.value;save(st);apply()});
- });
- function openTo(){var h=location.hash&&document.getElementById(decodeURIComponent(location.hash.slice(1)));if(!h)return;
-   var d=h.closest('details');while(d){d.open=true;d=d.parentElement&&d.parentElement.closest('details')}
-   var art=h.closest('article.f');if(art){art.hidden=false}h.scrollIntoView();}
- addEventListener('hashchange',openTo);openTo();
- var fl=document.getElementById('f-low');var q=document.getElementById('q'),fm=document.getElementById('f-model'),fa=document.getElementById('f-area'),fs=document.getElementById('f-strength'),fst=document.getElementById('f-status'),so=document.getElementById('f-sort'),cnt=document.getElementById('f-count');
+ if(!storeOk){$$('.store-note').forEach(function(e){e.textContent='This browser is not allowing local storage: statuses and notes will not be remembered after you leave, but you can still download the working register.'})}
+ /* ---- views ---- */
+ var VIEWS=['plan','impact','evidence'];
+ function show(v){if(VIEWS.indexOf(v)<0)v='plan';VIEWS.forEach(function(x){var s=document.getElementById(x);if(s)s.hidden=(x!==v);var b=$('[role=tab][data-view='+x+']');if(b){b.setAttribute('aria-selected',x===v?'true':'false');b.tabIndex=(x===v?0:-1)}});}
+ $$('[role=tab]').forEach(function(b,i,all){b.addEventListener('click',function(){location.hash='#'+b.dataset.view});
+   b.addEventListener('keydown',function(e){var j=(e.key==='ArrowRight')?(i+1)%all.length:(e.key==='ArrowLeft')?(i-1+all.length)%all.length:-1;if(j>=0){all[j].focus();all[j].click();e.preventDefault()}})});
+ /* ---- catalogue ---- */
+ var arts={},rows={};$$('article.f').forEach(function(a){arts[a.dataset.id]=a});$$('table.cat tr[data-id]').forEach(function(r){rows[r.dataset.id]=r});
+ var artBox=$('#cat-articles'),detail=$('#cat-detail');if(artBox)artBox.hidden=true;
+ var q=$('#q'),fm=$('#f-model'),fa=$('#f-area'),fs=$('#f-strength'),fst=$('#f-status'),fl=$('#f-low'),so=$('#f-sort'),cnt=$('#f-count'),fmsg=$('#f-msg');
  var IMP={high:0,medium:1,low:2},STR={confirmed:0,partial:1,inferred:2};
+ function statusOf(id){var a=arts[id];var r=st[a.dataset.uid];return (r&&r.status)||'To review'}
  function apply(){
-   var t=(q.value||'').toLowerCase().trim(),n=0;
-   var arts=Array.prototype.slice.call(document.querySelectorAll('article.f'));
-   arts.forEach(function(a){
-     var ok=true;var hit=a.querySelector('.hit');if(hit){hit.hidden=true;hit.textContent=''}
-     if(t){var head=(a.dataset.search||'').indexOf(t)>=0;var idx=a.querySelector('.idx');var body=idx?idx.textContent.toLowerCase():'';var pos=body.indexOf(t);ok=head||pos>=0;
+   var t=(q.value||'').toLowerCase().trim(),n=0,total=0;
+   Object.keys(rows).forEach(function(id){var r=rows[id],a=arts[id];total++;var ok=true;var hit=$('.hit',a);if(hit){hit.hidden=true;hit.textContent=''}
+     if(t){var head=(a.dataset.search||'').indexOf(t)>=0;var idx=$('.idx',a);var body=idx?idx.textContent.toLowerCase():'';var pos=body.indexOf(t);ok=head||pos>=0;
        if(ok&&!head&&hit){var line=body.slice(Math.max(0,body.lastIndexOf('\n',pos)+1),body.indexOf('\n',pos)>0?body.indexOf('\n',pos):body.length);
-         hit.textContent='Matched in '+(line.indexOf('formula:')===0?'a formula':line.indexOf('object:')===0?'an affected object':'the evidence')+': '+line.replace(/^(formula|object|evidence|text):\s*/,'').slice(0,140);hit.hidden=false;
-         var d=a.querySelector('details.full');if(d)d.open=true}}
+         hit.textContent='Matched in '+(line.indexOf('formula:')===0?'a formula':line.indexOf('object:')===0?'an affected object':'the evidence')+': '+line.replace(/^(formula|object|evidence|text):\s*/,'').slice(0,140);hit.hidden=false}}
      if(ok&&fm.value&&a.dataset.model!==fm.value)ok=false;
      if(ok&&fa.value&&a.dataset.area!==fa.value)ok=false;
      if(ok&&fs.value&&a.dataset.strength!==fs.value)ok=false;
-     if(ok&&fst.value&&(a.dataset.status||'To review')!==fst.value)ok=false;
+     if(ok&&fst.value&&statusOf(id)!==fst.value)ok=false;
      if(ok&&!fl.checked&&!t&&a.dataset.importance==='low')ok=false;
-     a.hidden=!ok; if(ok)n++;
-   });
-   var s=so.value;
-   function num(v){return v===''?null:parseFloat(v)}
-   function descNullLast(a,b){if(a===null&&b===null)return 0;if(a===null)return 1;if(b===null)return -1;return b-a}
-   document.querySelectorAll('section.area').forEach(function(sec){
-     var list=Array.prototype.slice.call(sec.querySelectorAll('article.f'));
-     list.sort(function(x,y){
-       if(s==='importance')return (IMP[x.dataset.importance]-IMP[y.dataset.importance])||(STR[x.dataset.strength]-STR[y.dataset.strength])||descNullLast(num(x.dataset.cells),num(y.dataset.cells));
-       if(s==='cells')return descNullLast(num(x.dataset.cells),num(y.dataset.cells))||(IMP[x.dataset.importance]-IMP[y.dataset.importance]);
-       if(s==='effort')return x.dataset.model.localeCompare(y.dataset.model)||descNullLast(num(x.dataset.effort),num(y.dataset.effort));
-       if(s==='model')return x.dataset.model.localeCompare(y.dataset.model)||(IMP[x.dataset.importance]-IMP[y.dataset.importance]);
-       if(s==='strength')return (STR[x.dataset.strength]-STR[y.dataset.strength])||(IMP[x.dataset.importance]-IMP[y.dataset.importance]);
-       return parseInt(x.dataset.id.slice(1))-parseInt(y.dataset.id.slice(1));});
-     list.forEach(function(a){sec.appendChild(a)});
-     var vis=list.some(function(a){return !a.hidden});var e=sec.querySelector('.empty');if(e)e.hidden=vis;
-   });
-   var active=[];if(fm.value)active.push('model');if(fa.value)active.push('category');if(fs.value)active.push('evidence');if(fst.value)active.push('status');
-   cnt.textContent=n+' of '+arts.length+' findings shown'+((!fl.checked&&!t)?' (reference findings hidden)':'')+(active.length?' with filters on '+active.join(', ')+' (Clear removes them)':'')+(t?' for "'+t+'" (searched across all evidence)':'');
+     r.hidden=!ok;if(ok)n++;});
+   var s=so.value,tb=$('table.cat tbody');var list=Object.keys(rows).map(function(id){return rows[id]});
+   function num(v){return v===''?null:parseFloat(v)}function dnl(a,b){if(a===null&&b===null)return 0;if(a===null)return 1;if(b===null)return -1;return b-a}
+   list.sort(function(x,y){var a=arts[x.dataset.id],b=arts[y.dataset.id];
+     if(s==='cells')return dnl(num(a.dataset.cells),num(b.dataset.cells))||(IMP[a.dataset.importance]-IMP[b.dataset.importance]);
+     if(s==='model')return a.dataset.model.localeCompare(b.dataset.model)||(IMP[a.dataset.importance]-IMP[b.dataset.importance]);
+     if(s==='strength')return (STR[a.dataset.strength]-STR[b.dataset.strength])||(IMP[a.dataset.importance]-IMP[b.dataset.importance]);
+     if(s==='id')return parseInt(x.dataset.id.slice(1))-parseInt(y.dataset.id.slice(1));
+     return (IMP[a.dataset.importance]-IMP[b.dataset.importance])||(STR[a.dataset.strength]-STR[b.dataset.strength])||dnl(num(a.dataset.cells),num(b.dataset.cells))});
+   list.forEach(function(r){tb.appendChild(r)});
+   cnt.textContent=n+' of '+total+' findings listed'+((!fl.checked&&!t)?' (low-importance findings hidden)':'')+(t?' for "'+t+'" (search covers every object, evidence row and formula)':'');
  }
  [q,fm,fa,fs,fst,so,fl].forEach(function(el){el.addEventListener('input',apply);el.addEventListener('change',apply)});
- apply();
- document.getElementById('f-clear').addEventListener('click',function(){q.value='';fm.value='';fa.value='';fs.value='';fst.value='';so.value='importance';fl.checked=false;apply();q.focus()});
- document.querySelectorAll('.copy').forEach(function(b){b.addEventListener('click',function(){var t=b.previousElementSibling.textContent;
-   if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){b.textContent='copied';setTimeout(function(){b.textContent='copy'},1200)})}})});
+ $('#f-clear').addEventListener('click',function(){q.value='';fm.value='';fa.value='';fs.value='';fst.value='';so.value='importance';fl.checked=false;fmsg.textContent='';apply();q.focus()});
+ var selected=null;
+ function openFinding(id,focus){var a=arts[id];if(!a)return false;
+   var cleared=[];if(rows[id]){apply();if(rows[id].hidden){if(q.value){q.value='';cleared.push('search')}if(fm.value&&fm.value!==a.dataset.model){fm.value='';cleared.push('model')}if(fa.value&&fa.value!==a.dataset.area){fa.value='';cleared.push('category')}
+     if(fs.value&&fs.value!==a.dataset.strength){fs.value='';cleared.push('evidence')}if(fst.value&&fst.value!==statusOf(id)){fst.value='';cleared.push('status')}if(!fl.checked&&a.dataset.importance==='low'){fl.checked=true;cleared.push('low-importance')}apply()}}
+   fmsg.textContent=cleared.length?('Filters on '+cleared.join(', ')+' were cleared to show '+id+'.'):'';
+   if(selected&&rows[selected])rows[selected].classList.remove('sel');selected=id;if(rows[id])rows[id].classList.add('sel');
+   detail.innerHTML='';detail.appendChild(a);a.hidden=false;$$('details.full',a).forEach(function(d){d.open=true});
+   if(focus!==false){a.setAttribute('tabindex','-1');a.focus({preventScroll:true});a.scrollIntoView({block:'start'})}
+   return true}
+ $$('table.cat tr[data-id]').forEach(function(r){r.addEventListener('click',function(e){if(e.target.closest('select,a,button'))return;location.hash='#'+r.dataset.id});
+   r.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();location.hash='#'+r.dataset.id}})});
+ /* status + note per finding */
+ Object.keys(arts).forEach(function(id){var a=arts[id],uid=a.dataset.uid,rec=st[uid]||{};var sel=$('select.stsel',a),note=$('textarea.note',a),rsel=rows[id]&&$('select.stsel',rows[id]);
+   if(rec.status){if(sel)sel.value=rec.status;if(rsel)rsel.value=rec.status}if(note&&rec.note)note.value=rec.note;
+   function setStatus(v){st[uid]=st[uid]||{};st[uid].status=v;if(sel)sel.value=v;if(rsel)rsel.value=v;save(st);apply()}
+   if(sel)sel.addEventListener('change',function(){setStatus(sel.value)});if(rsel)rsel.addEventListener('change',function(){setStatus(rsel.value)});
+   if(note)note.addEventListener('input',function(){st[uid]=st[uid]||{};st[uid].note=note.value;save(st)})});
+ /* downloads */
  function dl(name,text,type){var a=document.createElement('a');a.href='data:'+type+';charset=utf-8,'+encodeURIComponent(text);a.download=name;document.body.appendChild(a);a.click();a.remove()}
- document.getElementById('dl-register').addEventListener('click',function(){dl('findings-register.csv',data.csv,'text/csv')});
- document.getElementById('dl-status').addEventListener('click',function(){var o={report:data.key,exported:new Date().toISOString(),statuses:load()};dl('review-statuses.json',JSON.stringify(o,null,1),'application/json')});
- document.getElementById('print-summary').addEventListener('click',function(){document.body.classList.add('print-summary');window.print();setTimeout(function(){document.body.classList.remove('print-summary')},500)});
- document.getElementById('expand-all').addEventListener('click',function(){document.querySelectorAll('#findings details').forEach(function(d){d.open=true})});
- document.getElementById('collapse-all').addEventListener('click',function(){document.querySelectorAll('#findings details').forEach(function(d){d.open=false})});
- var reg=document.querySelector('table.reg');if(reg){reg.querySelectorAll('th[data-sort]').forEach(function(th,i){th.addEventListener('click',function(){
-   var rows=Array.prototype.slice.call(reg.tBodies[0].rows),num=th.dataset.sort==='num',asc=th.dataset.asc!=='1';th.dataset.asc=asc?'1':'0';
-   rows.sort(function(a,b){var x=a.cells[i].hasAttribute('data-v')?a.cells[i].dataset.v:a.cells[i].textContent,y=b.cells[i].hasAttribute('data-v')?b.cells[i].dataset.v:b.cells[i].textContent;if(num){if(x===''&&y==='')return 0;if(x==='')return 1;if(y==='')return -1;x=parseFloat(x);y=parseFloat(y);return asc?x-y:y-x}return asc?x.localeCompare(y):y.localeCompare(x)});
-   rows.forEach(function(r){reg.tBodies[0].appendChild(r)})})})}
+ function csvq(v){v=(v===null||v===undefined)?'':String(v);return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
+ $('#dl-register').addEventListener('click',function(){dl('findings-register.csv',D.csv,'text/csv')});
+ $('#dl-working').addEventListener('click',function(){var cols=D.register_cols.concat(['review_status','review_note']);var out=[cols.join(',')];
+   D.register.forEach(function(r){var rec=st[r.uid]||{};out.push(cols.map(function(c){return csvq(c==='review_status'?(rec.status||'To review'):c==='review_note'?(rec.note||''):r[c])}).join(','))});
+   dl('working-register.csv',out.join('\n'),'text/csv')});
+ $('#dl-status').addEventListener('click',function(){dl('review-state.json',JSON.stringify({report:D.key,exported:new Date().toISOString(),review:st},null,1),'application/json')});
+ $$('.copy').forEach(function(b){b.addEventListener('click',function(){var t=b.previousElementSibling.textContent;if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){b.textContent='copied';setTimeout(function(){b.textContent='copy'},1200)})}})});
+ /* print */
+ function printAs(cls){document.body.classList.add(cls);if(cls==='print-full'){$$('#evidence details').forEach(function(d){d.open=true})}window.print();setTimeout(function(){document.body.classList.remove(cls)},800)}
+ $('#print-plan').addEventListener('click',function(){printAs('print-plan')});$('#print-full').addEventListener('click',function(){printAs('print-full')});
+ if(/[?&]print=full/.test(location.search))document.body.classList.add('print-full');
+ /* ---- Change impact explorer ---- */
+ var G=D.graph,N=G.nodes,NI={};N.forEach(function(n){NI[n[0]]=n});
+ var down=null,up=null;
+ function adj(dir){if(dir==='downstream'){if(!down){down={};G.edges.forEach(function(e){(down[e[1]]=down[e[1]]||[]).push(e[0])})}return down}if(!up){up={};G.edges.forEach(function(e){(up[e[0]]=up[e[0]]||[]).push(e[1])})}return up}
+ function reach(starts,dir,depth){var A=adj(dir),dist={},par={},qq=[],h=0;starts.forEach(function(s){dist[s]=0;qq.push(s)});
+   while(h<qq.length){var n=qq[h++],d=dist[n];if(depth!==null&&d>=depth)continue;var xs=A[n]||[];for(var i=0;i<xs.length;i++){var x=xs[i];if(!(x in dist)){dist[x]=d+1;par[x]=n;qq.push(x)}}}
+   starts.forEach(function(s){delete dist[s]});return {dist:dist,par:par}}
+ function pathTo(par,starts,x){var out=[x];var S={};starts.forEach(function(s){S[s]=1});while(!(out[out.length-1] in S)&&(out[out.length-1] in par))out.push(par[out[out.length-1]]);return out.reverse()}
+ var ixq=$('#ix-q'),ixm=$('#ix-model'),ixr=$('#ix-results'),ixdir=$$('input[name=ix-dir]'),ixdepth=$('#ix-depth'),ixsum=$('#ix-summary'),ixg=$('#ix-graph'),ixt=$('#ix-table'),ixp=$('#ix-path'),ixdl=$('#ix-download');
+ var cur=null; /* {kind:'item'|'module', ids:[...], mi, module, name} */
+ function label(n){return n[2]+'.'+n[3]}
+ function search(){var t=(ixq.value||'').toLowerCase().trim(),mi=ixm.value===''?null:parseInt(ixm.value);ixr.innerHTML='';if(t.length<2)return;
+   var mods={},out=[];for(var i=0;i<N.length&&out.length<40;i++){var n=N[i];if(mi!==null&&n[1]!==mi)continue;var l=label(n).toLowerCase();
+     if(n[2].toLowerCase().indexOf(t)>=0&&!mods[n[1]+'|'+n[2]]){mods[n[1]+'|'+n[2]]=1;out.push({kind:'module',mi:n[1],module:n[2]})}
+     if(l.indexOf(t)>=0)out.push({kind:'item',id:n[0]})}
+   out.slice(0,40).forEach(function(o){var li=document.createElement('li');li.tabIndex=0;
+     if(o.kind==='module'){li.innerHTML='<span class="badge">module</span> '+esc(o.module)+' <span class="muted">'+esc(G.models[o.mi])+'</span>';li.addEventListener('click',function(){location.hash='#impact=m'+o.mi+':'+encodeURIComponent(o.module)})}
+     else{var n=NI[o.id];li.innerHTML='<span class="badge">line item</span> '+esc(label(n))+' <span class="muted">'+esc(G.models[n[1]])+'</span>';li.addEventListener('click',function(){location.hash='#impact='+o.id})}
+     li.addEventListener('keydown',function(e){if(e.key==='Enter')li.click()});ixr.appendChild(li)})}
+ ixq.addEventListener('input',search);ixm.addEventListener('change',search);
+ ixdir.forEach(function(r){r.addEventListener('change',render)});ixdepth.addEventListener('change',render);
+ function dirNow(){var r=ixdir.filter(function(x){return x.checked})[0];return r?r.value:'downstream'}
+ function selectItem(id){var n=NI[id];if(!n)return false;cur={kind:'item',ids:[id],mi:n[1],module:n[2],name:n[3]};ixq.value=label(n);ixr.innerHTML='';render();return true}
+ function selectModule(mi,module){var ids=N.filter(function(n){return n[1]===mi&&n[2]===module}).map(function(n){return n[0]});if(!ids.length)return false;cur={kind:'module',ids:ids,mi:mi,module:module,name:null};ixq.value=module;ixr.innerHTML='';render();return true}
+ function actionsFor(mi,modset){var acts=G.actions[mi];if(acts===null||acts===undefined)return null;return acts.filter(function(a){return a.module&&modset[a.module]})}
+ function render(){if(!cur)return;var dir=dirNow(),dv=ixdepth.value,depth=dv==='all'?null:parseInt(dv);
+   var full=reach(cur.ids,dir,null),shown=depth===null?full:reach(cur.ids,dir,depth);
+   var ids=Object.keys(full.dist).map(Number);var direct=0,indirect=0,cells=0,maxd=0,byd={};
+   ids.forEach(function(i){var d=full.dist[i];if(d===1)direct++;else indirect++;cells+=NI[i][4];if(d>maxd)maxd=d;byd[d]=(byd[d]||0)+1});
+   var reachedMods={};ids.forEach(function(i){reachedMods[NI[i][2]]=1});
+   var modset={};Object.keys(reachedMods).forEach(function(k){modset[k]=1});modset[cur.module]=1;
+   var acts=actionsFor(cur.mi,modset);
+   var cov=G.coverage[cur.mi],model=G.models[cur.mi];
+   var feeds=G.feeds.filter(function(f){return dir==='downstream'?f.from===model:f.to===model});
+   var what=cur.kind==='item'?('<code>'+esc(cur.module+'.'+cur.name)+'</code>'):('module <code>'+esc(cur.module)+'</code> ('+cur.ids.length+' line items, all as sources)');
+   var h='<p><strong>'+(dir==='downstream'?'What depends on this':'What this depends on')+'</strong>: '+what+' in '+esc(model)+'.</p>';
+   h+='<div class="stats"><span><span class="big">'+ids.length+'</span>unique line item'+(ids.length===1?'':'s')+' ('+direct+' direct, '+indirect+' indirect)</span><span><span class="big">'+Object.keys(reachedMods).length+'</span>module'+(Object.keys(reachedMods).length===1?'':'s')+'</span><span><span class="big">'+maxd+'</span>max distance</span></div>';
+   h+='<p class="fnote">Distance = shortest number of known formula-reference links from the selection (direct = 1); each line item counted once; the selection is excluded even where a cycle returns to it. Distribution: '+Object.keys(byd).sort(function(a,b){return a-b}).map(function(d){return d+': '+byd[d]}).join(', ')+'.</p>';
+   h+='<p><strong>Observed footprint of reachable objects:</strong> '+fmt(cells)+' cells (unique line items, counted once). Not a saving, a changed value or a predicted runtime; a formula change, a rename and a deletion have different consequences.</p>';
+   h+='<p><strong>Evidenced reach</strong> counts parsed formula references (ref) only'+(cov.referenced_by?', checked against Referenced By at '+(cov.agreement===null?'n/a':Math.round(cov.agreement*100)+'%')+' agreement (agreement between two observed edge sets, not the share of all dependencies known)':'; no Referenced By column to check against')+(cov.unparsed?'; '+cov.unparsed+' formulas did not parse, so their references are missing':'')+'.</p>';
+   if(acts===null)h+='<p><strong>Actions:</strong> not assessed (no Actions export for '+esc(model)+').</p>';
+   else if(!acts.length)h+='<p><strong>Actions:</strong> none touch the reached modules (Actions export supplied).</p>';
+   else{h+='<p><strong>Identified actions (module level, '+acts.length+'):</strong> an action touching a module does not establish use of every line item in it.</p><ul class="fnote">'+acts.map(function(a){return '<li>'+esc(a.name)+' <span class="badge">'+(a.kind==='import'?'import writes':'export reads')+'</span> <code>'+esc(a.module)+'</code>'+(a.processes.length?' in process '+esc(a.processes.join(', ')):' (in no process)')+(a.last_run?' &middot; last recorded run '+esc(a.last_run):'')+'</li>'}).join('')+'</ul>'}
+   if(feeds.length)h+='<p><strong>Reach requiring inferred links:</strong> '+esc(model)+(dir==='downstream'?' feeds ':' is fed by ')+feeds.map(function(f){return esc(dir==='downstream'?f.to:f.from)+' ('+f.actions+' import actions)'}).join(', ')+', inferred from action names. Tracing stops at this boundary: no line-item lineage across an import/export boundary is claimed without mapping evidence.</p>';
+   else h+='<p class="fnote">No inferred model-to-model feed '+(dir==='downstream'?'from':'into')+' '+esc(model)+' was found in the action names'+(cov.has_actions?'':' (no Actions export)')+'.</p>';
+   ixsum.innerHTML=h;
+   /* graph: columns by distance, module cards */
+   var sids=Object.keys(shown.dist).map(Number),cols={};sids.forEach(function(i){var d=shown.dist[i],m=NI[i][2];cols[d]=cols[d]||{};(cols[d][m]=cols[d][m]||[]).push(i)});
+   var maxShown=depth===null?maxd:Math.min(depth,maxd);
+   var g='<p class="fnote">'+(depth!==null&&depth<maxd?('Showing distance 1 to '+depth+' of '+maxd+' (partial view; the totals above are the full known reach).'):('Full known reach: distance 1 to '+maxd+'.'))+' Expand a module to list its line items; select one to re-centre.</p>';
+   g+='<div class="legend"><span><span class="k"></span>formula reference (evidenced, line-item level)</span><span><span class="k dash"></span>action on a module (module level)</span><span><span class="k dot"></span>model feed (inferred from names)</span><span>'+(dir==='downstream'?'left to right: each column reads the one before':'left to right: each column is read by the one before')+'</span></div>';
+   g+='<div class="ix-cols"><div class="ix-col"><h4>selection</h4><div class="ix-start">'+esc(cur.kind==='item'?cur.module+'.'+cur.name:cur.module+' (module)')+'</div></div>';
+   for(var d=1;d<=maxShown;d++){var cd=cols[d]||{};var mods=Object.keys(cd).sort(function(a,b){return cd[b].length-cd[a].length||a.localeCompare(b)});
+     var modCard=function(m){return '<details class="ix-mod"><summary>'+esc(m)+' <span class="n">'+cd[m].length+'</span></summary><ul>'+cd[m].slice().sort(function(a,b){return NI[a][3].localeCompare(NI[b][3])}).map(function(i){return '<li><a href="#impact='+i+'">'+esc(NI[i][3])+'</a></li>'}).join('')+'</ul></details>'};
+     g+='<div class="ix-col"><h4>distance '+d+' <span class="n">('+mods.reduce(function(s,m){return s+cd[m].length},0)+' line items, '+mods.length+' modules)</span></h4>';
+     g+=mods.slice(0,12).map(modCard).join('');
+     if(mods.length>12)g+='<details class="ix-mod"><summary>'+(mods.length-12)+' more modules</summary>'+mods.slice(12).map(modCard).join('')+'</details>';
+     g+='</div>'}
+   g+='</div>';ixg.innerHTML=g;
+   /* table */
+   var LIM=300,sorted=ids.slice().sort(function(a,b){return full.dist[a]-full.dist[b]||label(NI[a]).localeCompare(label(NI[b]))});
+   function rowsHtml(lim){return sorted.slice(0,lim).map(function(i){var n=NI[i],p=full.par[i];return '<tr><td><a href="#impact='+i+'">'+esc(n[3])+'</a></td><td>line item</td><td>'+esc(G.models[n[1]])+' / '+esc(n[2])+'</td><td>'+full.dist[i]+'</td><td>'+(p!==undefined?(dir==='downstream'?'reads ':'read by ')+'<code>'+esc(label(NI[p]))+'</code> (formula reference)':'')+'</td><td>'+fmt(n[4])+'</td><td><button type="button" class="btn" data-path="'+i+'">path</button></td></tr>'}).join('')}
+   ixt.innerHTML='<div class="wrap"><table><thead><tr><th>Object</th><th>Type</th><th>Model / module</th><th>Distance</th><th>Relationship basis</th><th>Cells</th><th></th></tr></thead><tbody>'+rowsHtml(LIM)+'</tbody></table></div>'+(sorted.length>LIM?'<p class="fnote">'+LIM+' of '+sorted.length+' shown. <button type="button" class="btn" id="ix-more">Show all</button></p>':'');
+   function bindPaths(){$$('button[data-path]',ixt).forEach(function(b){b.addEventListener('click',function(){var p=pathTo(full.par,cur.ids,parseInt(b.dataset.path));
+     ixp.innerHTML='<div class="path">One shortest path ('+(p.length-1)+' links; other paths may exist): '+p.map(function(i){return esc(label(NI[i]))}).join(dir==='downstream'?' &rarr; ':' &larr; ')+'</div>';ixp.scrollIntoView({block:'nearest'})})})}
+   var more=$('#ix-more');if(more)more.addEventListener('click',function(){$('tbody',ixt).innerHTML=rowsHtml(sorted.length);more.parentNode.remove();bindPaths()});
+   bindPaths();ixp.innerHTML='';
+   ixdl.onclick=function(){var rev={report:D.title,generated:D.generated,tool:D.generator,selection:{kind:cur.kind,model:model,module:cur.module,name:cur.name,line_items:cur.ids.length},direction:dir,
+       reach_scope:'full analysed reach, independent of the depth shown on screen',distance_definition:'shortest number of known formula-reference links; selection excluded; each line item once',
+       counts:{unique_line_items:ids.length,direct:direct,indirect:indirect,modules:Object.keys(reachedMods).length,max_distance:maxd,by_distance:byd},
+       observed_footprint_cells:cells,footprint_note:'observed footprint of reachable objects; not a saving, changed value or predicted runtime',
+       edge_types_counted:['ref'],edge_types:G.edge_types,
+       reach:sorted.map(function(i){var n=NI[i];return {module:n[2],name:n[3],model:G.models[n[1]],distance:full.dist[i],cells:n[4],via:full.par[i]!==undefined?label(NI[full.par[i]]):null,basis:'formula reference'}}),
+       actions:acts===null?'not assessed (no Actions export)':acts,actions_note:'module-level associations; an action touching a module does not establish use of every line item in it',
+       feeds_inferred:feeds,feeds_note:'inferred from import action names; no line-item lineage across the boundary',
+       coverage:cov,coverage_gaps:[].concat(cov.referenced_by?[]:['no Referenced By column'],cov.unparsed?[cov.unparsed+' formulas not parsed']:[],cov.has_actions?[]:['no Actions export'],['pages, saved views, line item subsets, filters, access drivers and integrations are not in the exports']),
+       validation_checks:['Baseline: record the outputs the owner names (and Calculation Effort where relevant) in production before any change.','Make the change in a development copy with the original state kept for comparison and recovery.','Use comparable inputs and scenarios in both copies.','Reconcile every reached output the owner names, plus the modules the identified actions export, cell for cell.','Agree acceptance criteria with the model owner before promotion; a status change in this report is not evidence of success.']};
+     dl('change-review.json',JSON.stringify(rev,null,1),'application/json')};
+ }
+ /* ---- routing ---- */
+ function route(){var h='';try{h=decodeURIComponent(location.hash||'')}catch(e){h=location.hash||''}h=h.replace(/^#/,'');
+   if(!h){show('plan');return}
+   if(VIEWS.indexOf(h)>=0){show(h);if(h==='impact'&&!cur&&G.suggested)selectItem(G.suggested.id);return}
+   if(/^F\d+$/.test(h)){show('evidence');if(!openFinding(h))fmsg.textContent='There is no finding '+h+' in this report.';return}
+   var m=/^impact=(.*)$/.exec(h);if(m){show('impact');var v=m[1];var mm=/^m(\d+):(.*)$/.exec(v);var ok=mm?selectModule(parseInt(mm[1]),mm[2]):(/^\d+$/.test(v)?selectItem(parseInt(v)):false);if(!ok)ixsum.innerHTML='<p class="fnote">That selection is not in this report.</p>';return}
+   if(/^A\d+$/.test(h)){show('plan');var el=document.getElementById(h);if(el){el.setAttribute('tabindex','-1');el.focus();el.scrollIntoView()}return}
+   var el2=document.getElementById(h);if(el2){var v2=el2.closest('.view');show(v2?v2.id:'evidence');var d=el2.closest('details');while(d){d.open=true;d=d.parentElement&&d.parentElement.closest('details')}el2.scrollIntoView();return}
+   show('plan')}
+ addEventListener('hashchange',route);apply();route();
 })();
 """
 
@@ -182,7 +308,7 @@ def _inline(s: str) -> str:
 
 def _cell(c: str) -> str:
     if c.startswith("`") and c.endswith("`") and len(c) > 2 and c.count("`") == 2:
-        return f'<td><div class="formula"><code>{_e(c[1:-1])}</code><button type="button" class="copy">copy</button></div></td>'
+        return f'<td><div class="formula"><code>{_e(c[1:-1])}</code><button type="button" class="copy noprint">copy</button></div></td>'
     return f"<td>{_inline(c)}</td>"
 
 
@@ -309,127 +435,182 @@ def _index_text(x: dict) -> str:
     return "\n".join(lines)
 
 
-def _finding(x: dict, rep: dict) -> str:
+GENERIC_PLAN = ["Baseline: record the outputs the owner names (and Calculation Effort where relevant) in production before any change.",
+                "Make the proposed change in a development copy, keeping the original state for comparison and recovery.",
+                "Use comparable inputs and scenarios in both copies; reconcile the named outputs cell for cell.",
+                "Agree acceptance criteria with the model owner before promotion. A status change in this report is not evidence of success."]
+
+
+def _node_ref(x: dict, nidx: dict, midx: dict) -> list[tuple[str, str]]:
+    """Change impact links for the previewed objects: a line item when the name resolves, else its module."""
+    out = []
+    mi = midx.get(x["model"])
+    if mi is None:
+        return out
+    mods = midx["_mods"]
+    for o in x["preview"][:3]:
+        mod, _, name = o.partition(".")
+        if (mi, mod, name) in nidx:
+            out.append((o, f"#impact={nidx[(mi, mod, name)]}"))
+        elif (mi, o) in mods:
+            out.append((o, f"#impact=m{mi}:{o}"))
+        elif (mi, mod) in mods:
+            out.append((mod, f"#impact=m{mi}:{mod}"))
+    return out
+
+
+def _finding(x: dict, rep: dict, nidx: dict, midx: dict) -> str:
     head = " ".join([x["id"], x["title"], x["model"], AREA_LABEL[x["area"]], x["kind_label"]] + x["rules"]).lower()
     status_opts = "".join(f'<option{" selected" if s == "To review" else ""}>{_e(s)}</option>' for s in rep["statuses"])
-    ex = x["objects"][:3]; more = len(x["objects"]) - len(ex)
-    svc = ""
-    if rep.get("service_url"):
-        svc = f'<p class="fnote noprint">Have a change planned here? <a href="{_e(rep["service_url"])}">Request a change-impact review</a>.</p>'
-    missing = "".join(f"<li>{_inline(m)}</li>" for m in x["missing"]) or "<li>nothing beyond the exports</li>"
-    related = f'<dt>Alternative or related</dt><dd>{", ".join(f"<a href=#{r}>{r}</a>" for r in x["related"])}</dd>' if x["related"] else ""
-    impl = f'<dt>Implementation, with prerequisites</dt><dd><ul>{"".join(f"<li>{_inline(v)}</li>" for v in x["implementation"])}</ul></dd>' if x["implementation"] else ""
+    ex = x["preview"]
+    fb = rep["links"]["feedback"]
+    report_link = f' <a class="fnote noprint" href="{_e(fb)}">Report a problem with {x["id"]} (public page; nothing is prefilled)</a>' if fb else ""
+    missing = "".join(f"<li>{_inline(m)}</li>" for m in x["missing"])
+    related = f'<dt>Related or alternative</dt><dd>{", ".join(f"<a href=#{r}>{r}</a>" for r in x["related"])}</dd>' if x["related"] else ""
+    impl = f'<dt>Preconditions and steps</dt><dd><ul>{"".join(f"<li>{_inline(v)}</li>" for v in x["implementation"])}</ul></dd>' if x["implementation"] else ""
     nrows = len([l for l in x["evidence"] if l.startswith("|")]) - 2 if any(l.startswith("|") for l in x["evidence"]) else len(x["evidence"])
     ev = f'<details class="ev"><summary>Evidence ({max(nrows, 0)} rows)</summary><div>{md_fragment(x["evidence"])}</div></details>' if x["evidence"] else ""
-    val = f'<details><summary>Validation guidance</summary><div><ul>{"".join(f"<li>{_inline(v)}</li>" for v in x["validation"])}</ul></div></details>' if x["validation"] else ""
+    val_items = [_inline(v) for v in x["validation"]] + [_e(v) for v in GENERIC_PLAN]
+    val = f'<details><summary>Validation plan</summary><div><ul>{"".join(f"<li>{v}</li>" for v in val_items)}</ul></div></details>'
+    deps = _node_ref(x, nidx, midx)
+    deplinks = (f'<dt>Dependencies</dt><dd>' + " &middot; ".join(f'<a href="{_e(h)}">{_e(n)}</a>' for n, h in deps) + ' <span class="fnote">(Change impact: what depends on it, what it depends on)</span></dd>') if deps else ""
     cells_v = "" if x["footprint_cells"] is None else x["footprint_cells"]
     eff_v = "" if x["footprint_effort"] is None else x["footprint_effort"]
-    return f'''<article class="f" id="{x["id"]}" data-id="{x["id"]}" data-model="{_e(x["model"])}" data-area="{x["area"]}" data-importance="{x["importance"]}" data-strength="{x["strength"]}" data-cells="{cells_v}" data-effort="{eff_v}" data-search="{_e(head)}">
-<header><h3><span class="muted">{x["id"]}.</span> {_e(x["title"])}</h3><span class="badge">{x["kind_label"]}</span>{_badges(x)}<label class="status noprint"><span class="sr">Review status for {x["id"]}</span><select class="stsel" aria-label="Review status (yours, stored in this browser)">{status_opts}</select></label></header>
-<div class="objs">{_e(x["model"])} &middot; {" &middot; ".join(f"<code>{_e(o)}</code>" for o in ex)}{f" &middot; and {more} more" if more > 0 else ""} <span class="muted">({_e(x["object_label"])})</span></div>
+    benefit = f'<dt>Proposed step and benefit</dt><dd>{_inline(x["next_step"])} <span class="fnote">{_inline(x["benefit"])} ({x["benefit_kind"]})</span></dd>'
+    missing_dd = f'<dt>Preconditions and missing information</dt><dd><ul>{missing}</ul></dd>' if missing else ""
+    return f'''<article class="f" id="{x["id"]}" data-id="{x["id"]}" data-uid="{_e(x["uid"])}" data-model="{_e(x["model"])}" data-area="{x["area"]}" data-importance="{x["importance"]}" data-strength="{x["strength"]}" data-cells="{cells_v}" data-effort="{eff_v}" data-search="{_e(head)}">
+<header><h3><span class="muted">{x["id"]}.</span> {_e(x["title"])}</h3><span class="badge">{x["kind_label"]}</span>{_badges(x)}<span class="badge">export actions: {_e(x["action_usage"])}</span></header>
+<div class="objs">{_e(x["model"])} &middot; {" &middot; ".join(f"<code>{_e(o)}</code>" for o in ex)} <span class="muted">({_e(x["preview_label"])}; {_e(x["object_label"])})</span></div>
 <p class="hit" hidden></p>
+<div class="review noprint"><label>Status <select class="stsel" aria-label="Review status for {x["id"]} (yours, stored in this browser)">{status_opts}</select></label><label style="flex:1 1 260px">Note <textarea class="note" rows="1" aria-label="Your note on {x["id"]} (stored in this browser)" placeholder="your note (kept in this browser only)"></textarea></label></div>
 <dl class="fields">
-<dt>Observed</dt><dd>{_inline(x["summary"])}</dd>
+<dt>What was found</dt><dd>{_inline(x["observed"])}</dd>
 <dt>Why it matters</dt><dd>{_inline(x["why"])}</dd>
-<dt>Next investigation step</dt><dd>{_inline(x["next_step"])}</dd>
-</dl>
-<details class="full"><summary>Full assessment and affected objects ({_e(x["object_label"])})</summary><div>
-<dl class="fields">
-<dt>Observed, in full</dt><dd>{_inline(x["observed"])}</dd>
-<dt>Affected scope</dt><dd>{_inline(x["scope"])}</dd>
-<dt>Potential benefit</dt><dd>{_inline(x["benefit"])} <span class="badge">{x["benefit_kind"]}</span></dd>
+{benefit}
+{missing_dd}{impl}{deplinks}
 <dt>Evidence strength</dt><dd><strong>{x["strength"]}.</strong> {_inline(x["basis"])}</dd>
-<dt>Missing information</dt><dd><ul>{missing}</ul></dd>
-<dt>Keeping the design</dt><dd>{_inline(x["keep_design"])}</dd>
-{impl}{related}
-<dt>All affected objects</dt><dd class="objs">{" &middot; ".join(f"<code>{_e(o)}</code>" for o in x["objects"])}</dd>
+<dt>Reasons to keep the design</dt><dd>{_inline(x["keep_design"])}</dd>
+{related}
 </dl>
-{ev}{val}{svc}
-</div></details>
+<details class="full"><summary>All affected objects ({len(x["objects"])} {_e(x["unit"])})</summary><div class="objs">{" &middot; ".join(f"<code>{_e(o)}</code>" for o in x["objects"])}</div></details>
+{ev}{val}{report_link}
 <div class="idx">{_e(_index_text(x))}</div>
-<p class="back"><a href="#summary">Summary</a><a href="#register">Register</a><a href="#area-{x["area"]}">Area</a></p>
+<p class="fnote"><a href="#catalogue">Catalogue</a> &middot; <a href="#area-{x["area"]}">{_e(AREA_LABEL[x["area"]])}</a> &middot; <a href="#plan">Action plan</a></p>
 </article>'''
 
 
+def _action_card(i: int, a: dict, rep: dict, nidx: dict, midx: dict) -> str:
+    ex = a.get("explorer")
+    dep = ""
+    if ex:
+        mi, mod, name = ex
+        if name and (mi, mod, name) in nidx:
+            dep = f'<a href="#impact={nidx[(mi, mod, name)]}">Change impact</a>'
+        elif (mi, mod) in midx["_mods"]:
+            dep = f'<a href="#impact=m{mi}:{_e(mod)}">Change impact</a>'
+    ev = " ".join(f'<a href="#{f}">{f}</a>' for f in a["finding_ids"])
+    keys = [x["key"] for x in rep["plan"]["actions"]]
+    depends = ""
+    if a["depends_on"]:
+        nums = [f'<a href="#A{keys.index(k) + 1}">action {keys.index(k) + 1}</a>' for k in a["depends_on"] if k in keys]
+        depends = f' &middot; After: {", ".join(nums)}' if nums else ""
+    notices = "".join(f'<p class="notice">{_e(n)}</p>' for n in a["notices"])
+    return (f'<li class="action" id="A{i}"><h2>{_e(a["title"])}</h2><p class="role">{_e(a["role"])} &middot; {a["kind"]}, evidence {a["strength"]}</p>'
+            f'<dl><dt>Why</dt><dd>{_e(a["why"])}</dd><dt>Steps</dt><dd><ol>{"".join(f"<li>{_e(s)}</li>" for s in a["steps"])}</ol></dd><dt>Done when</dt><dd>{_e(a["done_when"])}</dd></dl>'
+            f'{notices}<p class="links">Evidence: {ev or "none"}{(" &middot; " + dep) if dep else ""}{depends}</p></li>')
+
+
 def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None, brand: str | None = None, csv_text: str = "") -> str:
+    from .report import register_rows, REGISTER_COLS
     fmap = {x["id"]: x for x in rep["findings"]}
     models = sorted({x["model"] for x in rep["findings"]})
     key = re.sub(r"[^a-z0-9]+", "-", f"{rep['title']} {rep['generated']}".lower())
-    data = json.dumps({"key": key, "csv": csv_text, "ids": [x["id"] for x in rep["findings"]]}).replace("</", "<\\/")
-    sc = rep["scope"]
+    gd = rep["graph"]
+    nidx = {(n[1], n[2], n[3]): n[0] for n in gd["nodes"]}
+    midx = {name: i for i, name in enumerate(gd["models"])}
+    midx["_mods"] = {(n[1], n[2]) for n in gd["nodes"]}
+    regrows = register_rows(rep)
+    data = json.dumps({"key": key, "title": rep["title"], "generated": rep["generated"], "generator": rep["generator"], "csv": csv_text,
+                       "register": regrows, "register_cols": REGISTER_COLS, "graph": gd}, ensure_ascii=False).replace("</", "<\\/")
+    links = rep["links"]
+    attrib = brand or f"Generated with {rep['generator']}"
     out = [f"<title>{_e(rep['title'])}</title>", f"<style>{_theme_bits(theme_css)}{CSS}</style>", '<div class="page">']
-    out.append('<header class="top">' + (logo_svg or "") + (f'<div class="kicker">{_e(brand)}</div>' if brand else "") +
-               f'<h1>{_e(rep["title"])}</h1><p class="lead">{_e(rep["description"])} Generated {_e(rep["generated"])}.</p></header>')
-    out.append('<nav class="jump" aria-label="Sections"><a href="#summary">Summary</a><a href="#findings">Findings</a><a href="#register">Register</a><a href="#models">Models and coverage</a><a href="#dependencies">Dependency evidence</a><a href="#methodology">Methodology</a><a href="#glossary">Glossary</a>'
-               '<span style="margin-left:auto"></span><button type="button" id="print-summary" class="noprint">Print summary</button></nav>')
-    # ---- level 1
-    out.append('<section id="summary"><h2>Summary</h2>')
-    mt = rep["metrics"]
-    out.append(f'<div class="metric"><span><b>{mt["models"]}</b> models reviewed</span><span>&middot;</span><span><b>{mt["review_first"]}</b> findings to review first</span><span>&middot;</span><span><b>{mt["reference"]}</b> additional reference findings</span></div>'
-               f'<p class="fnote">Findings are observations ({mt["observations"]}) or review candidates; none is a validated defect. Coverage is under Models and coverage.</p>')
-    out += [f"<p>{_inline(p)}</p>" for p in rep["summary_text"]]
-    out.append("<h3>Observations</h3><ol>" + "".join(f"<li>{_inline(o)}</li>" for o in rep["observations"]) + "</ol>")
-    if rep["investigations"]:
-        out.append("<h3>Priority investigations</h3><div class=\"cards\">")
-        for n, p in enumerate(rep["investigations"], 1):
-            per = ""
-            if p.get("per_model"):
-                per = "<details><summary>Per model</summary><ul class=\"per\">" + "".join(
-                    f'<li><a href="#{pm["id"]}">{_e(pm["model"])}</a>: {pm["modules"]} modules, {_c(pm["cells"])} cells' + (f', {pm["effort"]:.1f}% effort' if pm["effort"] else "") + f'; largest {" &middot; ".join(f"<code>{_e(t)}</code>" for t in pm["top"])} <span class="badge st-{pm["strength"]}">evidence {pm["strength"]}</span></li>' for pm in p["per_model"]) + "</ul></details>"
-            links = " ".join(f'<a href="#{i_}">{i_}</a>' for i_ in p["ids"])
-            out.append(f'<div class="card"><h3><span class="muted">{n}.</span> {_e(p["title"])}</h3><p>{_inline(p["sentence"])}</p>'
-                       f'<p><span class="lab">Who</span><br>{_e(p["who"])}</p><p><span class="lab">Next step</span><br>{_inline(p["next"])}</p>{per}<p class="fnote">Findings: {links}</p></div>')
-        out.append("</div>")
+    out.append('<header class="top">' + f'<h1>{_e(rep["title"])}</h1><p class="attrib">{logo_svg or ""}<span>{_e(attrib)}</span></p>'
+               + f'<p class="lead">{_e(rep["summary_text"][0])}</p></header>')
+    out.append('<nav class="views" role="tablist" aria-label="Views"><button type="button" role="tab" data-view="plan" aria-selected="true" aria-controls="plan">Action plan</button>'
+               '<button type="button" role="tab" data-view="impact" aria-selected="false" aria-controls="impact">Change impact</button>'
+               '<button type="button" role="tab" data-view="evidence" aria-selected="false" aria-controls="evidence">Evidence</button>'
+               '<span class="right"><button type="button" id="print-plan" class="btn primary noprint">Print action plan</button><button type="button" id="print-full" class="btn noprint">Print evidence</button></span></nav>')
+    # ---------------- Action plan
+    pl = rep["plan"]
+    out.append('<section id="plan" class="view" role="tabpanel" aria-label="Action plan">')
+    if pl["actions"]:
+        out.append('<ol class="actions">' + "".join(_action_card(i, a, rep, nidx, midx) for i, a in enumerate(pl["actions"], 1)) + "</ol>")
     else:
-        out.append('<p class="muted">No finding met the bar for a priority investigation.</p>')
-    action = (f'<p><a href="{_e(rep["service_url"])}"><strong>Request a change-impact review</strong></a></p>' if rep.get("service_url")
-              else '<p class="fnote">Request route: not configured in this report (set --service-url when generating).</p>')
-    out.append('<div class="invite"><strong>Have a change planned in this estate?</strong><p>Request a review of one proposed change: the dependencies visible in your exports, what still needs checking, and a validation plan with your model owner.</p>' + action + "</div>")
-    ex = rep.get("example")
-    if ex:
-        out.append(f'<details class="example"><summary>Illustrative example: from a proposed change to a validation plan</summary><p class="fnote">Built from the exports; no further analysis has been run.</p><dl>'
-                   f'<dt>Proposed change</dt><dd>{_inline(ex["change"])}</dd><dt>Dependency evidence examined</dt><dd>{_inline(ex["evidence"])}</dd>'
-                   f'<dt>Additional context required</dt><dd>{_inline(ex["context"])}</dd><dt>Validation plan that would result</dt><dd>{_inline(ex["plan"])}</dd></dl></details>')
-    if rep["map"]["nodes"]:
-        out.append("<h3>Model map</h3><p class=\"muted\">Feeds inferred from import action names (dashed); no export confirms them.</p>"
-                   f'<div class="map">{map_svg(rep["map"]["nodes"], rep["map"]["edges"])}</div>')
-        if rep["map"]["edges"]:
-            out.append('<details><summary>Feed table</summary><div class="wrap"><table><thead><tr><th>From</th><th>To</th><th>Import actions</th><th>Into</th><th>Basis</th></tr></thead><tbody>' +
-                       "".join(f'<tr><td>{_e(e["from"])}</td><td>{_e(e["to"])}</td><td>{e["actions"]}</td><td>{_e(", ".join(e["targets"]))}</td><td>{_e(e["basis"])}</td></tr>' for e in rep["map"]["edges"]) + "</tbody></table></div></details>")
-    out.append("<h3>Coverage limitations</h3><ul class=\"limits\">" + "".join(f"<li>{_inline(l)}</li>" for l in rep["limitations"]) + "</ul></section>")
-    # ---- level 2
-    out.append('<section id="findings"><h2>Findings</h2><p class="muted">Grouped by the decision they inform. Each finding opens compact: observed, why it matters, the next investigation step, three example objects. "Full assessment" holds every affected object, the evidence and formulas, missing checks, reasons to keep the design, and implementation prerequisites. Search covers all of it, collapsed or not. Sorting is within each category. Reference findings are hidden until you tick the box. Review status is yours and is stored only in this browser.</p>')
-    out.append('<div class="controls noprint" role="search"><label class="sr" for="q">Search findings</label><input id="q" type="search" placeholder="Search titles, IDs, models, object names, rules">'
+        out.append(f'<p><strong>{_e(pl["none"]["message"])}</strong></p><p>Next data check: {_e(pl["none"]["next_check"])}.</p>')
+    out.append('<p class="fnote">Suggested starting points; the order is a hypothesis, not a verdict. '
+               '<a href="#ranking">How chosen</a> &middot; <a href="#coverage">Coverage</a> &middot; <a href="#catalogue">All findings</a></p></section>')
+    # ---------------- Change impact
+    out.append('<section id="impact" class="view" role="tabpanel" aria-label="Change impact" hidden><h2>Change impact</h2>'
+               '<p>Select a model, module or line item. <strong>What depends on this</strong> follows readers downstream; <strong>what this depends on</strong> follows sources upstream. Links are parsed formula references; actions are shown at module level; model feeds are inferred from names and are a boundary, not a lineage.</p>'
+               '<noscript><p class="notice">The explorer needs JavaScript. Without it, the Evidence view lists the most depended-on line items per model and the dependency evidence.</p></noscript>'
+               '<div class="controls" role="search"><label class="sr" for="ix-q">Search modules and line items</label><input id="ix-q" type="search" placeholder="Type two or more characters of a module or line item name" autocomplete="off">'
+               f'<select id="ix-model" aria-label="Model"><option value="">All models</option>{"".join(f"<option value={i}>{_e(m)}</option>" for i, m in enumerate(gd["models"]))}</select>'
+               '<span><label><input type="radio" name="ix-dir" value="downstream" checked> What depends on this</label> <label><input type="radio" name="ix-dir" value="upstream"> What this depends on</label></span>'
+               '<label>Show depth <select id="ix-depth"><option value="2">1 to 2</option><option value="1">1</option><option value="3">1 to 3</option><option value="all">all</option></select></label>'
+               '<button type="button" id="ix-download" class="btn">Download change review (JSON)</button></div><ul id="ix-results" aria-label="Matches"></ul>')
+    sug = gd.get("suggested")
+    if sug:
+        out.append(f'<p class="fnote">Suggested start: <a href="#impact={sug["id"]}">{_e(sug["module"] + "." + sug["name"])}</a> in {_e(sug["model"])}, the most-read line item there ({sug["direct_readers"]} direct readers).</p>')
+    out.append('<div class="ix-grid"><div id="ix-summary" class="ix-summary"><p class="fnote">No selection yet.</p></div><div id="ix-graph"></div><div id="ix-path"></div><div id="ix-table"></div></div></section>')
+    # ---------------- Evidence
+    out.append('<section id="evidence" class="view" role="tabpanel" aria-label="Evidence" hidden><h2>Evidence</h2>'
+               '<nav class="subnav" aria-label="Evidence sections"><a href="#catalogue">Findings catalogue</a><a href="#ranking">How the actions were chosen</a><a href="#coverage">Coverage</a><a href="#models">Models and inventory</a><a href="#map">Model map</a><a href="#dependencies">Dependency evidence</a><a href="#methodology">Methodology</a><a href="#glossary">Glossary</a><a href="#register">Register and downloads</a></nav>')
+    # catalogue
+    out.append('<h3 id="catalogue">Findings catalogue</h3><p class="muted">Every finding, compact. Open one for the working detail: what was found, the proposed step, preconditions, dependencies, the validation plan, reasons to keep the design, all affected objects and the evidence. Search covers every object name, evidence row and formula. Status and note are yours; <span class="store-note">they are stored in this browser only and travel only through the working register download.</span></p>')
+    out.append('<div class="controls noprint" role="search"><label class="sr" for="q">Search findings</label><input id="q" type="search" placeholder="Search titles, IDs, models, object names, formulas">'
                f'<select id="f-model" aria-label="Model"><option value="">All models</option>{"".join(f"<option>{_e(m)}</option>" for m in models)}</select>'
-               f'<select id="f-area" aria-label="Category"><option value="">All categories</option>{"".join(f"<option value={a['key']}>{_e(a['label'])}</option>" for a in rep['areas'])}</select>'
+               f'<select id="f-area" aria-label="Decision area"><option value="">All decision areas</option>{"".join(f"<option value={a['key']}>{_e(a['label'])}</option>" for a in rep['areas'])}</select>'
                '<select id="f-strength" aria-label="Evidence status"><option value="">Any evidence</option><option>confirmed</option><option>partial</option><option>inferred</option></select>'
                f'<select id="f-status" aria-label="Review status"><option value="">Any status</option>{"".join(f"<option>{_e(s)}</option>" for s in rep['statuses'])}</select>'
-               '<select id="f-sort" aria-label="Sort by"><option value="importance">Sort within category: importance, evidence, then cells (unavailable last)</option><option value="cells">Sort within category: footprint cells (unavailable last)</option><option value="effort">Sort within category: model, then effort share within that model (unavailable last)</option><option value="strength">Sort within category: evidence strength</option><option value="model">Sort within category: model</option><option value="id">Sort within category: ID</option></select>'
-               '<label><input type="checkbox" id="f-low"> show reference findings (low importance)</label><button type="button" id="f-clear">Clear</button><button type="button" id="expand-all">Expand evidence</button><button type="button" id="collapse-all">Collapse</button><span class="count" id="f-count"></span></div>')
-    for a in rep["areas"]:
-        out.append(f'<section class="area" id="area-{a["key"]}"><h3>{_e(a["label"])} <span class="muted">({len(a["ids"])})</span></h3><p>{_e(a["blurb"])}</p>')
-        for fid in a["ids"]:
-            out.append(_finding(fmap[fid], rep))
-        out.append('<p class="empty" hidden>No findings match the current filters in this area.</p></section>')
-    out.append("</section>")
-    # ---- level 3
-    out.append('<section id="reference"><h2>Reference</h2>')
-    out.append('<h3 id="register">Findings register</h3><p class="noprint"><button type="button" id="dl-register">Download register (CSV)</button> <button type="button" id="dl-status">Export review statuses (JSON)</button> <span class="muted">Statuses live in this browser\'s localStorage; the export is the only copy you can share.</span></p>')
-    out.append('<div class="wrap"><table class="reg"><thead><tr><th data-sort="text">ID</th><th data-sort="text">Area</th><th data-sort="text">Title</th><th data-sort="text">Model</th><th data-sort="text">Kind</th><th data-sort="text">Importance</th><th data-sort="text">Evidence</th><th data-sort="text">Complexity</th><th data-sort="num">Footprint cells (n/a last)</th><th data-sort="num">Effort share of its model (n/a last)</th><th data-sort="text">Benefit</th></tr></thead><tbody>')
+               '<select id="f-sort" aria-label="Sort by"><option value="importance">Sort: importance, evidence, cells (unavailable last)</option><option value="cells">Sort: footprint cells (unavailable last)</option><option value="strength">Sort: evidence strength</option><option value="model">Sort: model</option><option value="id">Sort: ID</option></select>'
+               '<label><input type="checkbox" id="f-low"> show low-importance findings</label><button type="button" id="f-clear" class="btn">Clear</button><span class="count" id="f-count"></span></div><p class="fnote" id="f-msg" aria-live="polite"></p>')
+    out.append('<div class="wrap"><table class="cat"><thead><tr><th>ID</th><th>Finding</th><th>Model</th><th>Next action</th><th>Evidence</th><th>Status</th></tr></thead><tbody>')
     for x in rep["findings"]:
-        out.append(f'<tr><td><a href="#{x["id"]}">{x["id"]}</a></td><td>{_e(AREA_LABEL[x["area"]])}</td><td>{_e(x["title"])}</td><td>{_e(x["model"])}</td><td>{x["kind_label"]}</td><td>{x["importance"]}</td><td>{x["strength"]}</td><td>{x["complexity"]}</td>'
-                   f'<td data-v="{"" if x["footprint_cells"] is None else x["footprint_cells"]}">{_c(x["footprint_cells"]) if x["footprint_cells"] is not None else "n/a"}</td><td data-v="{"" if x["footprint_effort"] is None else x["footprint_effort"]}">{f"{x['footprint_effort']:.1f}%" if x["footprint_effort"] is not None else "n/a"}</td><td>{x["benefit_kind"]}</td></tr>')
-    out.append("</tbody></table></div>")
-    # models and coverage
-    out.append('<h3 id="models">Models and coverage</h3>')
+        status_opts = "".join(f"<option>{_e(s)}</option>" for s in rep["statuses"])
+        out.append(f'<tr data-id="{x["id"]}" tabindex="0"><td><a href="#{x["id"]}">{x["id"]}</a></td><td class="t">{_e(x["title"])}<br><span class="fnote">{_e(x["preview_label"])}: {_e(", ".join(x["preview"]))}</span></td><td>{_e(x["model"])}</td>'
+                   f'<td>{_e(x["next_step"])}</td><td><span class="badge imp-{x["importance"]}">{x["importance"]}</span><span class="badge st-{x["strength"]}">{x["strength"]}</span><br><span class="fnote">actions: {_e(x["action_usage"])}</span></td>'
+                   f'<td class="noprint"><select class="stsel" aria-label="Review status for {x["id"]}">{status_opts}</select></td></tr>')
+    out.append('</tbody></table></div><div id="cat-detail" aria-live="polite"></div>')
+    out.append('<div id="cat-articles">')
+    for a in rep["areas"]:
+        out.append(f'<h4 id="area-{a["key"]}">{_e(a["label"])} <span class="muted">({len(a["ids"])})</span></h4><p class="fnote">{_e(a["blurb"])}</p>')
+        for fid in a["ids"]:
+            out.append(f'<details><summary>{fid}. {_e(fmap[fid]["title"])}</summary>' + _finding(fmap[fid], rep, nidx, midx) + "</details>")
+    out.append("</div>")
+    # ranking
+    out.append('<h3 id="ranking">How the actions were chosen</h3><ul>' + "".join(f"<li>{_e(r)}</li>" for r in pl["ranking"]) + "</ul>")
+    if pl["candidates"]:
+        out.append('<details><summary>All candidates in rank order (' + str(len(pl["candidates"])) + ')</summary><div class="wrap"><table><thead><tr><th>#</th><th>Candidate</th><th>Evidence</th><th>Kind</th><th>Scope</th><th>Footprint</th><th>Depends on</th></tr></thead><tbody>'
+                   + "".join(f'<tr><td>{i}</td><td>{_e(c["title"])}<br><span class="fnote">{" ".join(f"<a href=#{f}>{f}</a>" for f in c["finding_ids"])}</span></td><td>{c["strength"]}</td><td>{c["kind"]}</td><td>{"bounded" if c["bounded"] else "open"} ({len(c["objects"])})</td>'
+                             f'<td>{(_c(c["footprint_cells"]) + " cells") if c["footprint_cells"] else "not measured"}{(f"; {c['footprint_effort']:.1f}% of its model" if c["footprint_effort"] else "")}</td><td>{_e(", ".join(c["depends_on"])) or ""}</td></tr>' for i, c in enumerate(pl["candidates"], 1))
+                   + "</tbody></table></div></details>")
+    out.append(f'<p class="fnote">{_e(rep["validation_note"])}</p>')
+    # coverage + observations + limitations
+    out.append('<h3 id="coverage">Coverage and limitations</h3><ul class="limits">' + "".join(f"<li>{_inline(l)}</li>" for l in rep["limitations"]) + "</ul>")
+    mt = rep["metrics"]
+    out.append(f'<p class="fnote">{mt["models"]} models reviewed &middot; {mt["review_first"]} findings to review first &middot; {mt["reference"]} additional low-importance findings. No finding is a validated defect; all are observations or review candidates.</p>')
+    out.append("<h4>Observations</h4><ol>" + "".join(f"<li>{_inline(o)}</li>" for o in rep["observations"]) + "</ol>")
+    # models
+    out.append('<h3 id="models">Models, inventory and coverage</h3>')
     for m in rep["models"]:
         f, cov, rc = m["facts"], m["coverage"], m["facts"]["referenced_by_check"]
-        rows = [("Files supplied", ", ".join(f"{k}: {v}" for k, v in cov["files"].items() if v) + ("" if cov["files"]["actions"] else "; no Actions export") + ("" if cov["files"]["modules"] else "; no Modules export")),
-                ("Export date", "unknown (not in the files)"), ("Latest recorded action run", cov["snapshot_actions"] or "no Actions export"), ("Analysis generated", rep["generated"]),
+        rows = [("Files supplied", ", ".join(f"{k}: {v}" for k, v in cov["files"].items() if v) + ("" if cov["files"]["actions"] else "; no Actions export (action usage not assessed)") + ("" if cov["files"]["modules"] else "; no Modules export")),
+                ("Export date", "unknown (not in the files)"), ("Latest recorded action run", cov["snapshot_actions"] or ("not assessed (no Actions export)" if not cov["files"]["actions"] else "none recorded")), ("Analysis generated", rep["generated"]),
                 ("Engine", "not in any export (Classic or Polaris unknown)"),
                 ("Modules / line items / calculated", f"{f['modules']} / {_n_(f['line_items'])} / {_n_(f['calculated'])}"), ("Cells as exported", _n_(f["cells"])),
                 ("Formulas parsed", f"{f['parse_rate']:.2%} ({f['parse_errors']} not parsed)"),
-                ("Referenced By agreement", f"{rc['agreement'] if rc['agreement'] is not None else 'n/a'}: {rc['definition']} (both {rc['agree']}, parse only {rc['ours_only']}, Anaplan only {rc['anaplan_only']})"),
+                ("Referenced By agreement", f"{rc['agreement'] if rc['agreement'] is not None else 'n/a'}: {rc['definition']} (both {rc['agree']}, parse only {rc['ours_only']}, Anaplan only {rc['anaplan_only']}). Agreement between two observed edge sets, not the share of all dependencies known."),
                 ("Anaplan-only edges by cause", ", ".join(f"{k} {v}" for k, v in rc["anaplan_only_by_cause"].items()) or "none"),
                 ("Rules run", ", ".join(cov["rules_run"])), ("Rules skipped or limited", "; ".join(f"{r}: {why}" for r, why in cov["rules_skipped"]) or "none"),
                 ("Confirmed from metadata", "; ".join(cov["confirmed"])), ("Inferred from names", "; ".join(cov["inferred"]) or "nothing"), ("Missing", "; ".join(cov["missing"])),
@@ -437,14 +618,18 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
         out.append(f'<details><summary>{_e(m["name"])}</summary><div class="wrap"><table><tbody>' + "".join(f"<tr><th scope=row>{_e(k)}</th><td>{_e(v)}</td></tr>" for k, v in rows) + "</tbody></table></div>")
         if f["has_effort"]:
             out.append("<h4>Where measured calculation effort sits</h4>" + md_fragment(["| Line item | Effort share | Cells | Formula |", "|---|---|---|---|"] + [f"| `{n}` | {e:.2f}% | {_c(c)} | `{fm}` |" for n, e, c, fm in f["effort_top"]]))
+        else:
+            out.append('<p class="fnote">Calculation Effort: unavailable (column absent or blank), not zero.</p>')
         out.append("<h4>Largest modules by cells</h4>" + md_fragment(["| Module | Cells | Share |", "|---|---|---|"] + [f"| `{n}` | {_c(c)} | {p}% |" for n, c, p in f["cells_by_module"]]))
         out.append("<h4>Most depended-on line items</h4>" + md_fragment(["| Line item | Direct readers |", "|---|---|"] + [f"| `{n}` | {c} |" for n, c in f["hubs"]]))
         if f.get("actions"):
             a = f["actions"]
-            out.append("<h4>Actions</h4>" + md_fragment([f"- {a['imports']} imports, {a['exports']} exports, {a['processes']} processes; latest recorded run {a['latest_run'] or 'unknown'}; window {a['stale_months']} months (cutoff {a['stale_cutoff'] or 'n/a'})",
+            out.append("<h4>Actions</h4>" + md_fragment([f"- {a['imports']} imports, {a['exports']} exports, {a['processes']} processes; latest recorded run {a['latest_run'] or 'none recorded'}; window {a['stale_months']} months (cutoff {a['stale_cutoff'] or 'n/a'})",
                                                          f"- Not in any process: {a['not_in_process_count']}; no recorded run since cutoff: {len(a['no_recent_run'])}; no recorded run at all: {len(a['never_recorded'])}",
-                                                         "- Slowest recorded: " + ", ".join(f"`{n}` {ms / 1000:.0f}s" for n, ms in a["slow"]),
-                                                         "- Import targets: " + ", ".join(f"`{t}` ({n})" for t, n in a["imports_by_target"])]))
+                                                         "- Slowest recorded: " + (", ".join(f"`{n}` {ms / 1000:.0f}s" for n, ms in a["slow"]) or "none recorded"),
+                                                         "- Import targets: " + (", ".join(f"`{t}` ({n})" for t, n in a["imports_by_target"]) or "none")]))
+        else:
+            out.append('<h4>Actions</h4><p class="fnote">Not assessed: no Actions export was supplied for this model.</p>')
         pats = m["patterns"]
         out.append(f"<h4>Rule findings grouped into patterns ({len(pats)})</h4>" + md_fragment(["| Severity | Rule | Pattern | Count | Example | Suggested reading |", "|---|---|---|---|---|---|"] +
                    [f"| {c['severity']} | {c['rule']} | {c['label']} | {c['count']} | {(c['objects'][0] if c['objects'] else '')}: {c['message']} | {c['fix']} |" for c in pats]))
@@ -454,31 +639,51 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
         if red["same_text"]:
             out.append("<h4>Identical text, context unresolved</h4>" + md_fragment(["| Formula | Why not compared | Line items |", "|---|---|---|"] + [f"| `{e['formula']}` | {e['why']} | {', '.join('`' + i['key'] + '`' for i in e['items'])} |" for e in red["same_text"]]))
         out.append("</details>")
+    # map
+    if rep["map"]["nodes"]:
+        out.append('<h3 id="map">Model map</h3><p class="muted">Feeds inferred from import action names (dashed); no export confirms them.</p>'
+                   f'<div class="map">{map_svg(rep["map"]["nodes"], rep["map"]["edges"])}</div>')
+        if rep["map"]["edges"]:
+            out.append('<details><summary>Feed table</summary><div class="wrap"><table><thead><tr><th>From</th><th>To</th><th>Import actions</th><th>Into</th><th>Basis</th></tr></thead><tbody>' +
+                       "".join(f'<tr><td>{_e(e["from"])}</td><td>{_e(e["to"])}</td><td>{e["actions"]}</td><td>{_e(", ".join(e["targets"]))}</td><td>{_e(e["basis"])}</td></tr>' for e in rep["map"]["edges"]) + "</tbody></table></div></details>")
     # dependency evidence
-    out.append('<h3 id="dependencies">Dependency evidence</h3><p class="muted">Relationship types inspected: line-item references parsed from every formula (checked against Anaplan\'s Referenced By column); import target modules and export source modules from the Action column; process membership. '
+    out.append('<h3 id="dependencies">Dependency evidence</h3><p class="muted">Relationship types inspected: line-item references parsed from every formula (checked against Anaplan\'s Referenced By column where present); import target modules and export source modules from the Action column; process membership. '
                'Not inspected because not exported: pages, dashboards, saved views, line item subsets (COLLECT sources), filters, access drivers, CloudWorks and API schedules.</p>')
     for m in rep["models"]:
         rc = m["facts"]["referenced_by_check"]
         if rc["agreement"] is None:
+            out.append(f'<p class="fnote">{_e(m["name"])}: no Referenced By column; dependency completeness not checkable.</p>')
             continue
         ex = rc["examples"]
         out.append(f'<details><summary>{_e(m["name"])}: agreement {rc["agreement"]:.0%}; Anaplan-only edges by cause {_e(", ".join(f"{k} {v}" for k, v in rc["anaplan_only_by_cause"].items()) or "none")}</summary>' +
                    md_fragment(["| Cause | Examples (referencing line item -> referenced line item) |", "|---|---|"] + [f"| {k} | {'; '.join('`' + e + '`' for e in v) or 'none'} |" for k, v in ex.items()]) + "</details>")
     if rep["map"]["external"]:
-        out.append("<h3>Source-name candidates</h3><p class=\"muted\">Words after \"from\" in import action names that matched no model in the set. Candidates, not confirmed systems; generic words are excluded.</p>" +
+        out.append("<h4>Source-name candidates</h4><p class=\"muted\">Words after \"from\" in import action names that matched no model in the set. Candidates, not confirmed systems; generic words are excluded.</p>" +
                    md_fragment(["| Candidate | Imports | Example |", "|---|---|---|"] + [f"| {k} | {len(v)} | `{v[0]}` |" for k, v in sorted(rep["map"]["external"].items(), key=lambda kv: -len(kv[1]))]))
     if rep["shared_dims"]:
-        out.append("<h3>Dimensions shared across models</h3>" + md_fragment(["| Dimension | Models |", "|---|---|"] + [f"| {d} | {', '.join(ms)} |" for d, ms in rep["shared_dims"]]))
+        out.append("<h4>Dimensions shared across models</h4>" + md_fragment(["| Dimension | Models |", "|---|---|"] + [f"| {d} | {', '.join(ms)} |" for d, ms in rep["shared_dims"]]))
     if rep["duplicates"]:
-        out.append("<h3>Same name and formula in more than one model</h3>" + md_fragment(["| Line item | Models | Formula |", "|---|---|---|"] + [f"| `{d['line_item']}` | {', '.join(d['models'])} | `{d['formula']}` |" for d in rep["duplicates"]]))
+        out.append("<h4>Same name and formula in more than one model</h4>" + md_fragment(["| Line item | Models | Formula |", "|---|---|---|"] + [f"| `{d['line_item']}` | {', '.join(d['models'])} | `{d['formula']}` |" for d in rep["duplicates"]]))
     # methodology
     out.append('<h3 id="methodology">Methodology</h3><p class="muted">Every rule that ran, its source, and the official documentation it rests on (consulted 2026-09-22). Rule results are automated readings of the exports; nothing here was validated in a live Anaplan model.</p>')
-    out.append('<div class="wrap"><table><thead><tr><th>Rule</th><th>Severity</th><th>Source</th><th>Description</th><th>Planual</th><th>Documentation</th></tr></thead><tbody>' +
+    out.append('<details><summary>Rules and documentation (' + str(len(rep["methodology"])) + ')</summary><div class="wrap"><table><thead><tr><th>Rule</th><th>Severity</th><th>Source</th><th>Description</th><th>Planual</th><th>Documentation</th></tr></thead><tbody>' +
                "".join(f'<tr><td>{r["id"]}<br><span class="muted">{_e(r["title"])}</span></td><td>{r["severity"]}</td><td>{r["source"]}</td><td>{_e(r["description"])}</td><td>{_e("; ".join(r["planual"]))}</td>'
-                       f'<td>{"<br>".join(f"<a href={_e(d["url"])}>{_e(d["title"])}</a>: <span class=muted>{_e(d["quote"])}</span>" for d in r["docs"])}</td></tr>' for r in rep["methodology"]) + "</tbody></table></div>")
+                       f'<td>{"<br>".join(f"<a href={_e(d["url"])}>{_e(d["title"])}</a>: <span class=muted>{_e(d["quote"])}</span>" for d in r["docs"])}</td></tr>' for r in rep["methodology"]) + "</tbody></table></div></details>")
     out.append("<h4>Evidence strength labels</h4><ul>" + "".join(f"<li><strong>{k}.</strong> {_e(v)}</li>" for k, v in rep["strength_text"].items()) + "</ul>")
-    out.append('<h3 id="glossary">Glossary</h3><ul>' + "".join(f"<li><strong>{_e(t)}.</strong> {_e(d)}</li>" for t, d in rep["glossary"]) + "</ul></section>")
-    out.append(f'<footer>{_e(rep["description"])} Generated {_e(rep["generated"])}. Review statuses are stored in this browser only.</footer>')
+    out.append('<h3 id="glossary">Glossary</h3><ul>' + "".join(f"<li><strong>{_e(t)}.</strong> {_e(d)}</li>" for t, d in rep["glossary"]) + "</ul>")
+    # register
+    out.append('<h3 id="register">Register and downloads</h3><p class="noprint"><button type="button" id="dl-register" class="btn">Download findings register (CSV)</button> <button type="button" id="dl-working" class="btn">Download working register with your statuses and notes (CSV)</button> <button type="button" id="dl-status" class="btn">Export review state (JSON)</button></p>'
+               '<p class="fnote">The register lists every finding with its complete object set. The working register adds your review status and note per finding (identified by a stable id that survives regeneration). Both are built in this page from the embedded data; nothing is sent anywhere. The full evidence print is under the view buttons.</p></section>')
+    # footer
+    foot = ['<p>Free and open source. Maintained by CodelessOps; contributions welcome.' + (f' <a href="{_e(links["source"])}">Source</a>.' if links["source"] else "") + "</p>"]
+    if links["feedback"]:
+        foot.append(f'<p>Something missing or not quite right? Help improve this review for everyone. <a href="{_e(links["feedback"])}">Suggest an improvement</a> (public page: say what was missed or wrong, what you expected and why it matters; no code or estate upload needed, nothing is prefilled).</p>')
+    if links["help"]:
+        foot.append(f'<p class="links-help">Want another pair of eyes on this change? <a href="{_e(links["help"])}">Optional paid help</a>.</p>')
+    if links["contact"]:
+        foot.append(f'<p>{_inline(links["contact"])}</p>')
+    foot.append(f'<p class="attrib-line">{_e(attrib)}. Generated {_e(rep["generated"])}. Review statuses and notes stay in this browser.</p>')
+    out.append("<footer>" + "".join(foot) + "</footer>")
     out.append(f'<script type="application/json" id="report-data">{data}</script><script>{JS}</script></div>')
     return "\n".join(out)
 

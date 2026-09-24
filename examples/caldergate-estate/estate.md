@@ -1,35 +1,65 @@
 # Anaplan estate: 4 models
 
-Automated findings and candidate recommendations from each model's Line Items, Modules and Actions exports. Generated 2026-09-22.
+Generated with CodelessOps Estate Review. 4 Anaplan models, 426 line items, 145M cells as exported. Export date unknown. Latest recorded action run 2026-09-21. Analysis generated 2026-09-24.
 
-## Summary
+## Action plan
 
-4 Anaplan models, 426 line items, 145M cells as exported. Export date unknown. Latest recorded action run: 2026-09-21. Analysis generated 2026-09-22. Read from the exports only; pages, saved views and subsets are not in them, so 'no consumer detected' is a question, not a saving.
+### 1. Compute 1 text or per-item line item once in a system module in Caldergate FP&A
 
-The investigations below were chosen for footprint and evidence strength and can proceed independently. Reference findings are hidden until asked for.
+**Why.** 6.2% of Caldergate FP&A's measured effort sits in 1 line item that computes a text or per-item value on every cell (5.0M cells); a system module computes it once per list item.
 
-**Observations**
+**Steps.**
+
+1. Read DAT01 Actuals GL.Journal Cost Centre (6.2%): name the list its value varies by.
+2. In a development copy, compute it in a SYS module on that list and repoint the readers; keep the original until reconciled.
+3. Record Calculation Effort before and after.
+
+**Done when.** Readers reconcile cell for cell and the measured effort share falls.
+
+Role: model builder, Caldergate FP&A. Evidence: [F5](#F5), [F16](#F16).
+
+### 2. Replace the IF chain in CAL03 Opex.Forecast Opex with a mapping module and LOOKUP
+
+**Why.** CAL03 Opex.Forecast Opex carries 16.0% of Caldergate FP&A's measured effort and evaluates every IF branch for every cell; a mapping module makes each case a row, not a formula edit.
+
+**Steps.**
+
+1. In a development copy, load the branch-to-value table (in the evidence) into a mapping module on the list the branches test.
+2. Replace the chain in CAL03 Opex.Forecast Opex with one LOOKUP; keep the original formula in a note until reconciled.
+3. Export the line item before and after; every cell equal.
+
+**Done when.** Every cell is equal before and after and the mapping module holds every case the chain held.
+
+Role: model builder, Caldergate FP&A. Evidence: [F2](#F2), [F5](#F5), [F16](#F16), [F21](#F21).
+
+### 3. Check for consumers of CAL05 Opex OLD in Caldergate FP&A before keeping or retiring it
+
+**Why.** No formula outside it reads its 14 line items and no export action reads it; it holds 70.2M cells and 50.8% of Caldergate FP&A's measured effort: an observed footprint, not a saving.
+
+**Steps.**
+
+1. Ask the page builder which pages, saved views and line item subsets use CAL05 Opex OLD.
+2. Check whether another model imports from a saved view on it.
+3. Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off.
+
+**Done when.** Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.
+
+Role: model owner with a page builder, Caldergate FP&A. Evidence: [F1](#F1).
+
+Suggested starting points from the supplied exports; the ordering is a hypothesis (see Evidence: how the actions were chosen).
+
+## Coverage
+
+- Pages, saved views, line item subsets, filters, access drivers and integrations are not in any export; each 'no consumer detected' finding lists the checks that remain.
+- Export date unknown for every file; the latest recorded action run is not an export date.
+
+## Observations
 
 1. Caldergate FP&A holds 90% of the estate's 145M exported cells; CAL05 Opex OLD alone holds 70.2M.
 2. Ten line items carry 68.0% of Caldergate FP&A's measured calculation effort (per model; the engine is not in the export).
 3. Caldergate Data Hub feeds Caldergate FP&A, Workforce Planning through 6 import actions; all 6 feeds are inferred from action names.
 
-**Priority investigations**
-
-1. **Investigate Caldergate Data Hub's principal calculation hotspots.** Ten line items carry 99.9% of Caldergate Data Hub's measured calculation effort, led by DAT01 GL Transactions.Loaded? at 88.3%. Who: model builder who owns Caldergate Data Hub. Next: Read the formulas of the top five and match each against the findings that name it; choose one to trial in a development copy. Findings: [F3](#F3).
-2. **Establish whether the large modules nothing reads remain necessary.** 7 modules across 4 models hold 70.3M cells with no formula or export consumer in the exports; each needs a consumer check before any keep-or-retire decision. Who: model owner with a page builder. Next: Complete the consumer and retention checks for the largest modules in each model, then record a keep-or-retire recommendation per module. Findings: [F1](#F1), [F30](#F30), [F31](#F31), [F8](#F8).
-   - Caldergate FP&A: 3 modules, 70.3M cells, 50.8% effort; largest `CAL05 Opex OLD`, `CAL06 Department Summary` ([F1](#F1))
-   - Workforce Planning: 1 modules, 13.4K cells; largest `zz Archive - 2021 Cost` ([F30](#F30))
-   - Caldergate Data Hub: 2 modules, 360 cells, 0.0% effort; largest `SYS01 Time Settings`, `SYS02 Data Checks` ([F31](#F31))
-   - Board Reporting: 1 modules, 72 cells, 2.8% effort; largest `SYS01 Time` ([F8](#F8))
-3. **Validate one substantial duplicate-calculation group.** In Caldergate FP&A, 1 group; 1 duplicate line item plus one kept line item per group; the largest group repeats CAL07 P&L by Cost Centre.Depreciation 1 more time (19.2K cells). Who: model builder who owns Caldergate FP&A. Next: Validate equivalence and the reasons for separate objects in that group, then decide whether consolidation is appropriate. Findings: [F11](#F11).
-
 4 models reviewed · 8 findings to review first · 32 additional reference findings. No finding is a validated defect; all are observations or review candidates.
-
-**Coverage limitations**
-
-- Pages, saved views, line item subsets, filters, access drivers and integrations are not in any export; each 'no consumer detected' finding lists the checks that remain.
-- Export date unknown for every file; the latest recorded action run is not an export date.
 
 **Model map (feeds inferred from import action names)**
 
@@ -47,14 +77,28 @@ flowchart LR
   M2 -.->|1 inferred| M3
 ```
 
-Have a change planned in this estate? Request a review of one proposed change: the dependencies visible in your exports, what still needs checking, and a validation plan with your model owner. (Request route not configured in this report.)
+## How the actions were chosen
 
-Illustrative example (from the exports; no further analysis has been run):
+- Inferred evidence last: a candidate resting on names or an unresolved comparison is a hypothesis, whatever its footprint.
+- Scope: a bounded scope (10 named objects or fewer) before an open-ended review.
+- Materiality band from the observed footprint: high (5% or more of its own model's measured effort, or 50M cells or more), medium (1% or 1M), low. Effort shares are banded within one model and never compared across models as absolute value.
+- Kind: a concrete change with a validation criterion before an investigation.
+- Evidence: confirmed before partial (observation confidence, not confidence in the recommendation).
+- Then the larger observed footprint in cells, then the title. Ties never depend on the order the files were read.
+- Overlapping findings on the same objects are merged into one decision; a change whose objects sit in a module with no consumer detected depends on that consumer check, which is then placed first.
 
-- Proposed change: Change the formula of SYS01 Time Settings.Actual? in Caldergate FP&A.
-- Dependency evidence examined: 36 formulas read it directly and 101 line items across 13 modules depend on it transitively (parsed references, checked against Referenced By at 100% agreement); 2 export actions read those modules; Caldergate FP&A feeds Board Reporting, Workforce Planning by inferred import actions.
-- Additional context required: Pages and saved views that show any of the dependent line items; line item subsets that include them; whether the exports feed another model's import; the owner's acceptance criteria for the outputs.
-- Validation plan that would result: Compare the dependent outputs the owner names between a development copy and production before and after the change; reconcile the exports read by other models; sign-off by the model owner before promotion.
+| Rank | Candidate | Evidence | Kind | Scope | Footprint |
+|---|---|---|---|---|---|
+| 1 | Compute 1 text or per-item line item once in a system module in Caldergate FP&A | confirmed | change | bounded (1) | 5.0M cells |
+| 2 | Replace the IF chain in CAL03 Opex.Forecast Opex with a mapping module and LOOKUP | confirmed | change | bounded (1) | 5.0M cells |
+| 3 | Check for consumers of CAL05 Opex OLD in Caldergate FP&A before keeping or retiring it | partial | investigation | bounded (1) | 70.2M cells |
+| 4 | Read the five largest calculation hotspots in Caldergate Data Hub | confirmed | investigation | bounded (5) | 1.3M cells |
+| 5 | Check for consumers of SYS01 Time in Board Reporting before keeping or retiring it | partial | investigation | bounded (1) | 72 cells |
+| 6 | Consolidate 1 copy of CAL07 P&L by Cost Centre.Depreciation in Caldergate FP&A | confirmed | change | bounded (2) | 19.2K cells |
+| 7 | Consolidate 1 copy of Calcs - Attrition.Headcount in Workforce Planning | confirmed | change | bounded (2) | 4.5K cells |
+| 8 | Read the five largest calculation hotspots in Board Reporting | confirmed | investigation | bounded (5) | 720 cells |
+| 9 | Check for consumers of zz Archive - 2021 Cost in Workforce Planning before keeping or retiring it | partial | investigation | bounded (1) | 13.4K cells |
+| 10 | Check for consumers of SYS01 Time Settings in Caldergate Data Hub before keeping or retiring it | partial | investigation | bounded (1) | 180 cells |
 
 # Findings
 
@@ -64,9 +108,9 @@ Where cells and measured calculation effort concentrate, and what could be relea
 
 ### F3. Where measured calculation effort concentrates
 
-Caldergate Data Hub · observation · importance medium · evidence confirmed · complexity medium
+Caldergate Data Hub · observation · importance medium · evidence confirmed · complexity medium · export actions: none detected
 
-Examples: `DAT01 GL Transactions.Loaded?`, `CAL01 Volume Summary.Units`, `CAL01 Volume Summary.Revenue` and 7 more (top 20 line items by effort share)
+Showing 3 of 15 line items: `DAT01 GL Transactions.Loaded?`, `CAL01 Volume Summary.Units`, `CAL01 Volume Summary.Revenue` (top 15 line items by effort share; ten summarised)
 
 **Observed.** Ten line items carry 99.9% of Caldergate Data Hub's measured calculation effort, led by `DAT01 GL Transactions.Loaded?` at 88.3%; a concentration to investigate, not a saving.
 
@@ -78,7 +122,7 @@ Examples: `DAT01 GL Transactions.Loaded?`, `CAL01 Volume Summary.Units`, `CAL01 
 
 **Observed, in full.** Ten line items carry 99.9% of Caldergate Data Hub's measured calculation effort; the largest is `DAT01 GL Transactions.Loaded?` at 88.3%.
 
-**Affected scope.** top 20 line items by effort
+**Affected scope.** top 15 line items by effort share (the ten largest are summarised)
 
 **Potential benefit.** Observed footprint only; no reduction is claimed. (footprint)
 
@@ -91,7 +135,7 @@ Examples: `DAT01 GL Transactions.Loaded?`, `CAL01 Volume Summary.Units`, `CAL01 
 
 **When keeping the current design is reasonable.** High effort in the line item that does the model's main job is expected.
 
-**All affected objects.** `DAT01 GL Transactions.Loaded?`, `CAL01 Volume Summary.Units`, `CAL01 Volume Summary.Revenue`, `CAL01 Volume Summary.Orders`, `DAT05 CRM Pipeline.Weighted Pipeline`, `CAL01 Volume Summary.Average Order Value`, `DAT08 Employee Master.Employee Id`, `DAT03 Account Master.Sign`, `DAT07 Customer Master.Region Code`, `DAT03 Account Master.Revenue?`
+**All affected objects (15 line items).** `DAT01 GL Transactions.Loaded?`, `CAL01 Volume Summary.Units`, `CAL01 Volume Summary.Revenue`, `CAL01 Volume Summary.Orders`, `DAT05 CRM Pipeline.Weighted Pipeline`, `CAL01 Volume Summary.Average Order Value`, `DAT08 Employee Master.Employee Id`, `DAT03 Account Master.Sign`, `DAT07 Customer Master.Region Code`, `DAT03 Account Master.Revenue?`, `DAT03 Account Master.Opex?`, `DAT03 Account Master.COGS?`, `DAT07 Customer Master.Customer Code`, `DAT03 Account Master.Account Code`, `SYS02 Data Checks.Check Message`
 
 **Evidence**
 
@@ -119,9 +163,9 @@ By module: `DAT01 GL Transactions` 88.3%, `CAL01 Volume Summary` 9.6%, `DAT05 CR
 
 ### F5. Where measured calculation effort concentrates
 
-Caldergate FP&A · observation · importance medium · evidence confirmed · complexity medium
+Caldergate FP&A · observation · importance medium · evidence confirmed · complexity medium · export actions: none detected
 
-Examples: `CAL03 Opex.Forecast Opex`, `CAL03 Opex.Opex GBP`, `CAL05 Opex OLD.Opex GBP` and 7 more (top 20 line items by effort share)
+Showing 3 of 20 line items: `CAL03 Opex.Forecast Opex`, `CAL03 Opex.Opex GBP`, `CAL05 Opex OLD.Opex GBP` (top 20 line items by effort share; ten summarised)
 
 **Observed.** Ten line items carry 68.0% of Caldergate FP&A's measured calculation effort, led by `CAL03 Opex.Forecast Opex` at 16.0%; a concentration to investigate, not a saving.
 
@@ -133,7 +177,7 @@ Examples: `CAL03 Opex.Forecast Opex`, `CAL03 Opex.Opex GBP`, `CAL05 Opex OLD.Ope
 
 **Observed, in full.** Ten line items carry 68.0% of Caldergate FP&A's measured calculation effort; the largest is `CAL03 Opex.Forecast Opex` at 16.0%.
 
-**Affected scope.** top 20 line items by effort
+**Affected scope.** top 20 line items by effort share (the ten largest are summarised)
 
 **Potential benefit.** Observed footprint only; no reduction is claimed. (footprint)
 
@@ -146,7 +190,7 @@ Examples: `CAL03 Opex.Forecast Opex`, `CAL03 Opex.Opex GBP`, `CAL05 Opex OLD.Ope
 
 **When keeping the current design is reasonable.** High effort in the line item that does the model's main job is expected.
 
-**All affected objects.** `CAL03 Opex.Forecast Opex`, `CAL03 Opex.Opex GBP`, `CAL05 Opex OLD.Opex GBP`, `CAL05 Opex OLD.Forecast`, `DAT01 Actuals GL.Journal Cost Centre`, `CAL03 Opex.Opex`, `CAL05 Opex OLD.Opex`, `CAL03 Opex.Actual Opex`, `CAL05 Opex OLD.Actual`, `CAL05 Opex OLD.Opex Cumulative`
+**All affected objects (20 line items).** `CAL03 Opex.Forecast Opex`, `CAL03 Opex.Opex GBP`, `CAL05 Opex OLD.Opex GBP`, `CAL05 Opex OLD.Forecast`, `DAT01 Actuals GL.Journal Cost Centre`, `CAL03 Opex.Opex`, `CAL05 Opex OLD.Opex`, `CAL03 Opex.Actual Opex`, `CAL05 Opex OLD.Actual`, `CAL05 Opex OLD.Opex Cumulative`, `CAL05 Opex OLD.Opex Run Rate`, `CAL05 Opex OLD.Rent Forecast`, `CAL05 Opex OLD.Rates Forecast`, `CAL05 Opex OLD.Utilities Forecast`, `CAL05 Opex OLD.Travel Forecast`, `CAL05 Opex OLD.Marketing Forecast`, `CAL05 Opex OLD.Software Forecast`, `CAL05 Opex OLD.Fees Forecast`, `CAL05 Opex OLD.Other Forecast`, `CAL03 Opex.Opex Variance`
 
 **Evidence**
 
@@ -179,9 +223,9 @@ By module: `CAL05 Opex OLD` 50.8%, `CAL03 Opex` 37.8%, `DAT01 Actuals GL` 7.7%, 
 
 ### F6. Where measured calculation effort concentrates
 
-Board Reporting · observation · importance medium · evidence confirmed · complexity medium
+Board Reporting · observation · importance medium · evidence confirmed · complexity medium · export actions: none detected
 
-Examples: `CAL01 KPIs.Revenue per FTE`, `CAL01 KPIs.Opex Ratio`, `CAL01 KPIs.Revenue Growth` and 7 more (top 20 line items by effort share)
+Showing 3 of 13 line items: `CAL01 KPIs.Revenue per FTE`, `CAL01 KPIs.Opex Ratio`, `CAL01 KPIs.Revenue Growth` (top 13 line items by effort share; ten summarised)
 
 **Observed.** Ten line items carry 89.7% of Board Reporting's measured calculation effort, led by `CAL01 KPIs.Revenue per FTE` at 11.2%; a concentration to investigate, not a saving.
 
@@ -193,7 +237,7 @@ Examples: `CAL01 KPIs.Revenue per FTE`, `CAL01 KPIs.Opex Ratio`, `CAL01 KPIs.Rev
 
 **Observed, in full.** Ten line items carry 89.7% of Board Reporting's measured calculation effort; the largest is `CAL01 KPIs.Revenue per FTE` at 11.2%.
 
-**Affected scope.** top 20 line items by effort
+**Affected scope.** top 13 line items by effort share (the ten largest are summarised)
 
 **Potential benefit.** Observed footprint only; no reduction is claimed. (footprint)
 
@@ -206,7 +250,7 @@ Examples: `CAL01 KPIs.Revenue per FTE`, `CAL01 KPIs.Opex Ratio`, `CAL01 KPIs.Rev
 
 **When keeping the current design is reasonable.** High effort in the line item that does the model's main job is expected.
 
-**All affected objects.** `CAL01 KPIs.Revenue per FTE`, `CAL01 KPIs.Opex Ratio`, `CAL01 KPIs.Revenue Growth`, `CAL01 KPIs.EBITDA Margin`, `CAL01 KPIs.FTE`, `CAL01 KPIs.Revenue Prior Year`, `CAL01 KPIs.Revenue YTD`, `OUT01 Board Dashboard.Revenue`, `OUT01 Board Dashboard.EBITDA`, `OUT01 Board Dashboard.Revenue per FTE`
+**All affected objects (13 line items).** `CAL01 KPIs.Revenue per FTE`, `CAL01 KPIs.Opex Ratio`, `CAL01 KPIs.Revenue Growth`, `CAL01 KPIs.EBITDA Margin`, `CAL01 KPIs.FTE`, `CAL01 KPIs.Revenue Prior Year`, `CAL01 KPIs.Revenue YTD`, `OUT01 Board Dashboard.Revenue`, `OUT01 Board Dashboard.EBITDA`, `OUT01 Board Dashboard.Revenue per FTE`, `OUT01 Board Dashboard.Revenue Growth`, `SYS01 Time.Current Period?`, `SYS01 Time.Period Label`
 
 **Evidence**
 
@@ -232,9 +276,9 @@ By module: `CAL01 KPIs` 67.3%, `OUT01 Board Dashboard` 29.9%, `SYS01 Time` 2.8%
 
 ### F13. Text, FINDITEM and per-item functions in large multi-dimensional line items
 
-Caldergate Data Hub · review candidate · importance low · evidence confirmed · complexity low
+Caldergate Data Hub · review candidate · importance low · evidence confirmed · complexity low · export actions: none detected
 
-Examples: `DAT01 GL Transactions.Source System`, `DAT06 Sales Orders.Last Order Ref` (2 objects)
+All 2 line items: `DAT01 GL Transactions.Source System`, `DAT06 Sales Orders.Last Order Ref` (2 line items)
 
 **Observed.** 2 line items compute a text value, a FINDITEM, a text join or a per-item function (ITEM, PARENT, NAME, CODE) in a line item with many cells.
 
@@ -258,7 +302,7 @@ Examples: `DAT01 GL Transactions.Source System`, `DAT06 Sales Orders.Last Order 
 
 **When keeping the current design is reasonable.** A small line item, or one that genuinely varies per cell, is fine where it is.
 
-**All affected objects.** `DAT01 GL Transactions.Source System`, `DAT06 Sales Orders.Last Order Ref`
+**All affected objects (2 line items).** `DAT01 GL Transactions.Source System`, `DAT06 Sales Orders.Last Order Ref`
 
 **Evidence**
 
@@ -271,9 +315,9 @@ Examples: `DAT01 GL Transactions.Source System`, `DAT06 Sales Orders.Last Order 
 
 ### F15. SUM combined with LOOKUP or SELECT in one formula
 
-Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity low
+Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity low · export actions: none detected
 
-Examples: `CAL06 Department Summary.Benchmark Opex` (1 object)
+All 1 formulas: `CAL06 Department Summary.Benchmark Opex` (1 formulas)
 
 **Observed.** 1 formulas combine SUM with LOOKUP or SELECT.
 
@@ -301,7 +345,7 @@ Examples: `CAL06 Department Summary.Benchmark Opex` (1 object)
 
 - Prerequisites: a development copy and a Calculation Effort reading before the change. Then split, reconcile values cell for cell, read effort again; keep the split only if it pays.
 
-**All affected objects.** `CAL06 Department Summary.Benchmark Opex`
+**All affected objects (1 formulas).** `CAL06 Department Summary.Benchmark Opex`
 
 **Evidence**
 
@@ -313,9 +357,9 @@ Examples: `CAL06 Department Summary.Benchmark Opex` (1 object)
 
 ### F16. Text, FINDITEM and per-item functions in large multi-dimensional line items
 
-Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity low
+Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity low · export actions: none detected
 
-Examples: `DAT01 Actuals GL.Source Journal`, `DAT01 Actuals GL.Journal Cost Centre`, `CAL02 Revenue.Revenue Label` and 10 more (13 objects)
+Showing 3 of 13 line items: `DAT01 Actuals GL.Source Journal`, `DAT01 Actuals GL.Journal Cost Centre`, `CAL02 Revenue.Revenue Label` (13 line items)
 
 **Observed.** 13 line items compute a text value, a FINDITEM, a text join or a per-item function (ITEM, PARENT, NAME, CODE) in a line item with many cells.
 
@@ -339,7 +383,7 @@ Examples: `DAT01 Actuals GL.Source Journal`, `DAT01 Actuals GL.Journal Cost Cent
 
 **When keeping the current design is reasonable.** A small line item, or one that genuinely varies per cell, is fine where it is.
 
-**All affected objects.** `DAT01 Actuals GL.Source Journal`, `DAT01 Actuals GL.Journal Cost Centre`, `CAL02 Revenue.Revenue Label`, `CAL02 Revenue.Revenue Label`, `CAL03 Opex.Forecast Opex`, `CAL05 Opex OLD.Fees Forecast`, `CAL05 Opex OLD.Marketing Forecast`, `CAL05 Opex OLD.Other Forecast`, `CAL05 Opex OLD.Rates Forecast`, `CAL05 Opex OLD.Rent Forecast`, `CAL05 Opex OLD.Software Forecast`, `CAL05 Opex OLD.Travel Forecast`, `CAL05 Opex OLD.Utilities Forecast`
+**All affected objects (13 line items).** `DAT01 Actuals GL.Source Journal`, `DAT01 Actuals GL.Journal Cost Centre`, `CAL02 Revenue.Revenue Label`, `CAL02 Revenue.Revenue Label`, `CAL03 Opex.Forecast Opex`, `CAL05 Opex OLD.Fees Forecast`, `CAL05 Opex OLD.Marketing Forecast`, `CAL05 Opex OLD.Other Forecast`, `CAL05 Opex OLD.Rates Forecast`, `CAL05 Opex OLD.Rent Forecast`, `CAL05 Opex OLD.Software Forecast`, `CAL05 Opex OLD.Travel Forecast`, `CAL05 Opex OLD.Utilities Forecast`
 
 **Evidence**
 
@@ -363,9 +407,9 @@ Examples: `DAT01 Actuals GL.Source Journal`, `DAT01 Actuals GL.Journal Cost Cent
 
 ### F24. Text, FINDITEM and per-item functions in large multi-dimensional line items
 
-Workforce Planning · review candidate · importance low · evidence confirmed · complexity low
+Workforce Planning · review candidate · importance low · evidence confirmed · complexity low · export actions: none detected
 
-Examples: `Data - Employees.Employee Name`, `Data - Employees.Name and Role`, `Data - Employees.Name and Role` (3 objects)
+All 3 line items: `Data - Employees.Employee Name`, `Data - Employees.Name and Role`, `Data - Employees.Name and Role` (3 line items)
 
 **Observed.** 3 line items compute a text value, a FINDITEM, a text join or a per-item function (ITEM, PARENT, NAME, CODE) in a line item with many cells.
 
@@ -389,7 +433,7 @@ Examples: `Data - Employees.Employee Name`, `Data - Employees.Name and Role`, `D
 
 **When keeping the current design is reasonable.** A small line item, or one that genuinely varies per cell, is fine where it is.
 
-**All affected objects.** `Data - Employees.Employee Name`, `Data - Employees.Name and Role`, `Data - Employees.Name and Role`
+**All affected objects (3 line items).** `Data - Employees.Employee Name`, `Data - Employees.Name and Role`, `Data - Employees.Name and Role`
 
 **Evidence**
 
@@ -407,25 +451,25 @@ Objects with no consumer detected in the inspected dependency types. Pages, save
 
 ### F1. 3 modules with no consumer detected in the inspected dependency types
 
-Caldergate FP&A · review candidate · importance high · evidence partial · complexity medium
+Caldergate FP&A · review candidate · importance high · evidence partial · complexity medium · export actions: none detected
 
-Examples: `CAL05 Opex OLD`, `CAL06 Department Summary`, `CAL08 Cash Flow` (3 modules, 30 line items)
+All 3 modules: `CAL05 Opex OLD`, `CAL06 Department Summary`, `CAL08 Cash Flow` (3 modules, 30 line items)
 
 **Observed.** 3 modules holding 70.3M cells and 50.8% of measured effort have no formula or export consumer in the exports.
 
-**Why it matters.** Pages, saved views, subsets and integrations are not in the exports, so each module is either read there or by nothing. The footprint says which to ask about first.
+**Why it matters.** No consumer was detected in the inspected relationships (parsed formula references, export actions). Pages, saved views, subsets and integrations are not in the exports, and incomplete parsing or missing metadata can hide a reader, so a consumer remains possible. The footprint says which to ask about first.
 
-**Next investigation step.** Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.
+**Next investigation step.** Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the largest module first, then the rest of the five largest, and record a keep-or-retire recommendation for each.
 
 <details><summary>Full assessment and affected objects</summary>
 
-**Observed, in full.** No formula outside these modules reads any of their line items and no export action reads them. Together they hold 70.3M cells and 50.8% of Caldergate FP&A's measured calculation effort. The five largest: `CAL05 Opex OLD`, `CAL06 Department Summary`, `CAL08 Cash Flow`.
+**Observed, in full.** No formula outside these modules reads any of their line items, and no export action reads them. Together they hold 70.3M cells and 50.8% of Caldergate FP&A's measured calculation effort. The five largest: `CAL05 Opex OLD`, `CAL06 Department Summary`, `CAL08 Cash Flow`.
 
 **Affected scope.** 3 modules, 30 line items
 
 **Potential benefit.** If no consumer is found: 70.3M cells as exported; 50.8% of Caldergate FP&A's measured calculation effort would no longer be held or measured. Per module in the table. (conditional)
 
-**Evidence strength.** partial: No formula consumer detected (parsed references, checked against Referenced By); no export action. Dependency coverage for Caldergate FP&A: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
+**Evidence strength.** partial: No formula consumer detected (parsed references, checked against Referenced By); export actions: none detected. Dependency coverage for Caldergate FP&A: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
 
 **Missing information.**
 
@@ -439,10 +483,10 @@ Examples: `CAL05 Opex OLD`, `CAL06 Department Summary`, `CAL08 Cash Flow` (3 mod
 **Implementation, with prerequisites.**
 
 - Prerequisites: every consumer check returned none, retained data is not needed, and the model owner has accepted the recommendation.
-- Then: blank the formulas in a development copy, reconcile the outputs the owner names against production over a full cycle, obtain owner sign-off, and only then delete.
+- Then: in a development copy, make the proposed change (retire or repoint) while keeping the original module intact for comparison and recovery; reconcile the outputs the owner names against production over a full cycle; obtain owner sign-off; only then apply in production.
 - A module containing matching line items: repoint any page from the module to the matching line items first, and account for the unmatched line items separately.
 
-**All affected objects.** `CAL05 Opex OLD`, `CAL06 Department Summary`, `CAL08 Cash Flow`
+**All affected objects (3 modules).** `CAL05 Opex OLD`, `CAL06 Department Summary`, `CAL08 Cash Flow`
 
 **Evidence**
 
@@ -454,17 +498,17 @@ Examples: `CAL05 Opex OLD`, `CAL06 Department Summary`, `CAL08 Cash Flow` (3 mod
 
 **Validation**
 
-- After a removal, the Line Items export no longer lists the module; workspace size falls by about its cells; every page listed in the check opens without a blank card.
+- After a removal, the Line Items export no longer lists the module and every page listed in the check opens without a blank card. Cell counts are an observed footprint; any memory or open-time change is measured in the workspace, not assumed from cells.
 
 </details>
 
 ### F7. Calculated line items with no consumer detected, outside output modules
 
-Caldergate FP&A · review candidate · importance medium · evidence partial · complexity medium
+Caldergate FP&A · review candidate · importance medium · evidence partial · complexity medium · export actions: none detected
 
-Examples: `DAT01 Actuals GL`, `CAL03 Opex`, `CAL02 Revenue` (3 objects)
+All 3 modules: `DAT01 Actuals GL`, `CAL03 Opex`, `CAL02 Revenue` (3 modules)
 
-**Observed.** 5 calculated line items in 3 modules are read by no formula, not exported, not in an output-style module and have no matching line item elsewhere.
+**Observed.** 5 calculated line items in 3 modules are read by no formula, are not read by an export action, are not in an output-style module and have no matching line item elsewhere.
 
 **Why it matters.** Each is computed and stored; if nothing reads it the footprint is spare. If a page reads it, it is an output that lives in a calculation module.
 
@@ -472,7 +516,7 @@ Examples: `DAT01 Actuals GL`, `CAL03 Opex`, `CAL02 Revenue` (3 objects)
 
 <details><summary>Full assessment and affected objects</summary>
 
-**Observed, in full.** 5 calculated line items in 3 modules are read by no formula, not exported, not in an output-style module and have no matching line item elsewhere.
+**Observed, in full.** 5 calculated line items in 3 modules are read by no formula, are not read by an export action, are not in an output-style module and have no matching line item elsewhere.
 
 **Affected scope.** 5 line items in 3 modules
 
@@ -489,9 +533,9 @@ Examples: `DAT01 Actuals GL`, `CAL03 Opex`, `CAL02 Revenue` (3 objects)
 
 **Implementation, with prerequisites.**
 
-- Prerequisites: consumer checks returned none and the owner accepts. Then blank in a development copy, reconcile named outputs over a cycle, owner sign-off, delete.
+- Prerequisites: consumer checks returned none and the owner accepts. Then make the proposed change in a development copy with the originals kept for comparison, reconcile named outputs over a cycle, owner sign-off, apply.
 
-**All affected objects.** `DAT01 Actuals GL`, `CAL03 Opex`, `CAL02 Revenue`
+**All affected objects (3 modules).** `DAT01 Actuals GL`, `CAL03 Opex`, `CAL02 Revenue`
 
 **Evidence**
 
@@ -509,25 +553,25 @@ Examples: `DAT01 Actuals GL`, `CAL03 Opex`, `CAL02 Revenue` (3 objects)
 
 ### F8. 1 module with no consumer detected in the inspected dependency types
 
-Board Reporting · review candidate · importance medium · evidence partial · complexity medium
+Board Reporting · review candidate · importance medium · evidence partial · complexity medium · export actions: none detected
 
-Examples: `SYS01 Time` (1 module, 2 line items)
+All 1 modules: `SYS01 Time` (1 module, 2 line items)
 
 **Observed.** 1 module holding 72 cells and 2.8% of measured effort have no formula or export consumer in the exports.
 
-**Why it matters.** Pages, saved views, subsets and integrations are not in the exports, so each module is either read there or by nothing. The footprint says which to ask about first.
+**Why it matters.** No consumer was detected in the inspected relationships (parsed formula references, export actions). Pages, saved views, subsets and integrations are not in the exports, and incomplete parsing or missing metadata can hide a reader, so a consumer remains possible. The footprint says which to ask about first.
 
-**Next investigation step.** Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.
+**Next investigation step.** Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the largest module first, then the rest of the five largest, and record a keep-or-retire recommendation for each.
 
 <details><summary>Full assessment and affected objects</summary>
 
-**Observed, in full.** No formula outside these modules reads any of their line items and no export action reads them. Together they hold 72 cells and 2.8% of Board Reporting's measured calculation effort. The five largest: `SYS01 Time`.
+**Observed, in full.** No formula outside these modules reads any of their line items, and no export action reads them. Together they hold 72 cells and 2.8% of Board Reporting's measured calculation effort. The five largest: `SYS01 Time`.
 
 **Affected scope.** 1 module, 2 line items
 
 **Potential benefit.** If no consumer is found: 72 cells as exported; 2.8% of Board Reporting's measured calculation effort would no longer be held or measured. Per module in the table. (conditional)
 
-**Evidence strength.** partial: No formula consumer detected (parsed references, checked against Referenced By); no export action. Dependency coverage for Board Reporting: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
+**Evidence strength.** partial: No formula consumer detected (parsed references, checked against Referenced By); export actions: none detected. Dependency coverage for Board Reporting: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
 
 **Missing information.**
 
@@ -541,10 +585,10 @@ Examples: `SYS01 Time` (1 module, 2 line items)
 **Implementation, with prerequisites.**
 
 - Prerequisites: every consumer check returned none, retained data is not needed, and the model owner has accepted the recommendation.
-- Then: blank the formulas in a development copy, reconcile the outputs the owner names against production over a full cycle, obtain owner sign-off, and only then delete.
+- Then: in a development copy, make the proposed change (retire or repoint) while keeping the original module intact for comparison and recovery; reconcile the outputs the owner names against production over a full cycle; obtain owner sign-off; only then apply in production.
 - A module containing matching line items: repoint any page from the module to the matching line items first, and account for the unmatched line items separately.
 
-**All affected objects.** `SYS01 Time`
+**All affected objects (1 modules).** `SYS01 Time`
 
 **Evidence**
 
@@ -554,31 +598,31 @@ Examples: `SYS01 Time` (1 module, 2 line items)
 
 **Validation**
 
-- After a removal, the Line Items export no longer lists the module; workspace size falls by about its cells; every page listed in the check opens without a blank card.
+- After a removal, the Line Items export no longer lists the module and every page listed in the check opens without a blank card. Cell counts are an observed footprint; any memory or open-time change is measured in the workspace, not assumed from cells.
 
 </details>
 
 ### F30. 1 module with no consumer detected in the inspected dependency types
 
-Workforce Planning · review candidate · importance low · evidence partial · complexity medium
+Workforce Planning · review candidate · importance low · evidence partial · complexity medium · export actions: none detected
 
-Examples: `zz Archive - 2021 Cost` (1 module, 3 line items)
+All 1 modules: `zz Archive - 2021 Cost` (1 module, 3 line items)
 
 **Observed.** 1 module holding 13.4K cells have no formula or export consumer in the exports.
 
-**Why it matters.** Pages, saved views, subsets and integrations are not in the exports, so each module is either read there or by nothing. The footprint says which to ask about first.
+**Why it matters.** No consumer was detected in the inspected relationships (parsed formula references, export actions). Pages, saved views, subsets and integrations are not in the exports, and incomplete parsing or missing metadata can hide a reader, so a consumer remains possible. The footprint says which to ask about first.
 
-**Next investigation step.** Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.
+**Next investigation step.** Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the largest module first, then the rest of the five largest, and record a keep-or-retire recommendation for each.
 
 <details><summary>Full assessment and affected objects</summary>
 
-**Observed, in full.** No formula outside these modules reads any of their line items and no export action reads them. Together they hold 13.4K cells. The five largest: `zz Archive - 2021 Cost`.
+**Observed, in full.** No formula outside these modules reads any of their line items, and no export action reads them. Together they hold 13.4K cells. The five largest: `zz Archive - 2021 Cost`.
 
 **Affected scope.** 1 module, 3 line items
 
 **Potential benefit.** If no consumer is found: 13.4K cells as exported would no longer be held or measured. Per module in the table. (conditional)
 
-**Evidence strength.** partial: No formula consumer detected (parsed references, checked against Referenced By); no export action. Dependency coverage for Workforce Planning: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
+**Evidence strength.** partial: No formula consumer detected (parsed references, checked against Referenced By); export actions: none detected. Dependency coverage for Workforce Planning: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
 
 **Missing information.**
 
@@ -592,10 +636,10 @@ Examples: `zz Archive - 2021 Cost` (1 module, 3 line items)
 **Implementation, with prerequisites.**
 
 - Prerequisites: every consumer check returned none, retained data is not needed, and the model owner has accepted the recommendation.
-- Then: blank the formulas in a development copy, reconcile the outputs the owner names against production over a full cycle, obtain owner sign-off, and only then delete.
+- Then: in a development copy, make the proposed change (retire or repoint) while keeping the original module intact for comparison and recovery; reconcile the outputs the owner names against production over a full cycle; obtain owner sign-off; only then apply in production.
 - A module containing matching line items: repoint any page from the module to the matching line items first, and account for the unmatched line items separately.
 
-**All affected objects.** `zz Archive - 2021 Cost`
+**All affected objects (1 modules).** `zz Archive - 2021 Cost`
 
 **Evidence**
 
@@ -605,31 +649,31 @@ Examples: `zz Archive - 2021 Cost` (1 module, 3 line items)
 
 **Validation**
 
-- After a removal, the Line Items export no longer lists the module; workspace size falls by about its cells; every page listed in the check opens without a blank card.
+- After a removal, the Line Items export no longer lists the module and every page listed in the check opens without a blank card. Cell counts are an observed footprint; any memory or open-time change is measured in the workspace, not assumed from cells.
 
 </details>
 
 ### F31. 2 modules with no consumer detected in the inspected dependency types
 
-Caldergate Data Hub · review candidate · importance low · evidence partial · complexity medium
+Caldergate Data Hub · review candidate · importance low · evidence partial · complexity medium · export actions: none detected
 
-Examples: `SYS01 Time Settings`, `SYS02 Data Checks` (2 modules, 10 line items)
+All 2 modules: `SYS01 Time Settings`, `SYS02 Data Checks` (2 modules, 10 line items)
 
 **Observed.** 2 modules holding 360 cells and 0.0% of measured effort have no formula or export consumer in the exports.
 
-**Why it matters.** Pages, saved views, subsets and integrations are not in the exports, so each module is either read there or by nothing. The footprint says which to ask about first.
+**Why it matters.** No consumer was detected in the inspected relationships (parsed formula references, export actions). Pages, saved views, subsets and integrations are not in the exports, and incomplete parsing or missing metadata can hide a reader, so a consumer remains possible. The footprint says which to ask about first.
 
-**Next investigation step.** Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.
+**Next investigation step.** Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the largest module first, then the rest of the five largest, and record a keep-or-retire recommendation for each.
 
 <details><summary>Full assessment and affected objects</summary>
 
-**Observed, in full.** No formula outside these modules reads any of their line items and no export action reads them. Together they hold 360 cells and 0.0% of Caldergate Data Hub's measured calculation effort. The five largest: `SYS01 Time Settings`, `SYS02 Data Checks`.
+**Observed, in full.** No formula outside these modules reads any of their line items, and no export action reads them. Together they hold 360 cells and 0.0% of Caldergate Data Hub's measured calculation effort. The five largest: `SYS01 Time Settings`, `SYS02 Data Checks`.
 
 **Affected scope.** 2 modules, 10 line items
 
 **Potential benefit.** If no consumer is found: 360 cells as exported; 0.0% of Caldergate Data Hub's measured calculation effort would no longer be held or measured. Per module in the table. (conditional)
 
-**Evidence strength.** partial: No formula consumer detected (parsed references, checked against Referenced By); no export action. Dependency coverage for Caldergate Data Hub: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
+**Evidence strength.** partial: No formula consumer detected (parsed references, checked against Referenced By); export actions: none detected. Dependency coverage for Caldergate Data Hub: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).
 
 **Missing information.**
 
@@ -643,10 +687,10 @@ Examples: `SYS01 Time Settings`, `SYS02 Data Checks` (2 modules, 10 line items)
 **Implementation, with prerequisites.**
 
 - Prerequisites: every consumer check returned none, retained data is not needed, and the model owner has accepted the recommendation.
-- Then: blank the formulas in a development copy, reconcile the outputs the owner names against production over a full cycle, obtain owner sign-off, and only then delete.
+- Then: in a development copy, make the proposed change (retire or repoint) while keeping the original module intact for comparison and recovery; reconcile the outputs the owner names against production over a full cycle; obtain owner sign-off; only then apply in production.
 - A module containing matching line items: repoint any page from the module to the matching line items first, and account for the unmatched line items separately.
 
-**All affected objects.** `SYS01 Time Settings`, `SYS02 Data Checks`
+**All affected objects (2 modules).** `SYS01 Time Settings`, `SYS02 Data Checks`
 
 **Evidence**
 
@@ -657,7 +701,7 @@ Examples: `SYS01 Time Settings`, `SYS02 Data Checks` (2 modules, 10 line items)
 
 **Validation**
 
-- After a removal, the Line Items export no longer lists the module; workspace size falls by about its cells; every page listed in the check opens without a blank card.
+- After a removal, the Line Items export no longer lists the module and every page listed in the check opens without a blank card. Cell counts are an observed footprint; any memory or open-time change is measured in the workspace, not assumed from cells.
 
 </details>
 
@@ -667,9 +711,9 @@ Where a change spreads widest: hubs, chains, cross-model feeds.
 
 ### F4. Line items with the widest change impact
 
-Caldergate FP&A · observation · importance medium · evidence confirmed · complexity low
+Caldergate FP&A · observation · importance medium · evidence confirmed · complexity low · export actions: none detected
 
-Examples: `SYS01 Time Settings.Actual?` (1 line item)
+All 1 line items: `SYS01 Time Settings.Actual?` (1 line item)
 
 **Observed.** 1 line items are read directly by 25 or more formulas.
 
@@ -693,7 +737,7 @@ Examples: `SYS01 Time Settings.Actual?` (1 line item)
 
 **When keeping the current design is reasonable.** Hubs are by design; the action is awareness, not change.
 
-**All affected objects.** `SYS01 Time Settings.Actual?`
+**All affected objects (1 line items).** `SYS01 Time Settings.Actual?`
 
 **Evidence**
 
@@ -705,9 +749,9 @@ Examples: `SYS01 Time Settings.Actual?` (1 line item)
 
 ### F10. Pass-through chains
 
-Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity low
+Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity low · export actions: none detected
 
-Examples: `OUT01 Management Pack.Opex`, `OUT01 Management Pack.Staff Cost`, `OUT02 Board Pack.Revenue` and 1 more (4 objects)
+Showing 3 of 4 chains (head named): `OUT01 Management Pack.Opex`, `OUT01 Management Pack.Staff Cost`, `OUT02 Board Pack.Revenue` (4 chains (head named))
 
 **Observed.** 4 chains where A copies B copies C.
 
@@ -735,7 +779,7 @@ Examples: `OUT01 Management Pack.Opex`, `OUT01 Management Pack.Staff Cost`, `OUT
 
 - Prerequisites: the intermediate has no consumer and no interface role; owner accepts. Then repoint the head in a development copy, reconcile, sign-off.
 
-**All affected objects.** `OUT01 Management Pack.Opex`, `OUT01 Management Pack.Staff Cost`, `OUT02 Board Pack.Revenue`, `OUT02 Board Pack.EBITDA`
+**All affected objects (4 chains (head named)).** `OUT01 Management Pack.Opex`, `OUT01 Management Pack.Staff Cost`, `OUT02 Board Pack.Revenue`, `OUT02 Board Pack.EBITDA`
 
 **Evidence**
 
@@ -754,9 +798,9 @@ Repeated logic, hard-coded assumptions, long formulas, structure that the next b
 
 ### F2. IF chain that encodes a lookup table
 
-Caldergate FP&A · review candidate · importance medium · evidence confirmed · complexity medium
+Caldergate FP&A · review candidate · importance medium · evidence confirmed · complexity medium · export actions: none detected
 
-Examples: `CAL03 Opex.Forecast Opex` (1 object)
+All 1 objects: `CAL03 Opex.Forecast Opex` (1 object)
 
 **Observed.** 12 IF THEN ELSE in one formula.
 
@@ -784,7 +828,7 @@ Examples: `CAL03 Opex.Forecast Opex` (1 object)
 
 - Prerequisites: the mapping is stable and the owner accepts a module in place of the formula. Then build the mapping module in a development copy, replace the formula, reconcile every cell, sign-off.
 
-**All affected objects.** `CAL03 Opex.Forecast Opex`
+**All affected objects (1 objects).** `CAL03 Opex.Forecast Opex`
 
 **Evidence**
 
@@ -813,9 +857,9 @@ Formula: `IF ITEM(Accounts) = Accounts.'6100 Rent' THEN 'INP02 Opex Drivers'.Ren
 
 ### F9. Line items that only copy another line item
 
-Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity low
+Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity low · export actions: none detected
 
-Examples: `CAL07 P&L by Cost Centre.Depreciation`, `CAL11 Reporting Prep.Revenue`, `CAL11 Reporting Prep.EBITDA` and 11 more (14 copy line items)
+Showing 3 of 14 copy line items: `CAL07 P&L by Cost Centre.Depreciation`, `CAL11 Reporting Prep.Revenue`, `CAL11 Reporting Prep.EBITDA` (14 copy line items)
 
 **Observed.** 14 line items have the formula `B = A` with the same context as A.
 
@@ -844,7 +888,7 @@ Examples: `CAL07 P&L by Cost Centre.Depreciation`, `CAL11 Reporting Prep.Revenue
 
 - Prerequisites: no page, export or access reason for the copy; owner accepts. Then repoint readers in a development copy, reconcile, sign-off, remove.
 
-**All affected objects.** `CAL07 P&L by Cost Centre.Depreciation`, `CAL11 Reporting Prep.Revenue`, `CAL11 Reporting Prep.EBITDA`, `CAL11 Reporting Prep.Opex`, `CAL11 Reporting Prep.Staff Cost`, `OUT01 Management Pack.Revenue`, `OUT01 Management Pack.EBITDA`, `OUT01 Management Pack.Opex`, `OUT01 Management Pack.Staff Cost`, `OUT01 Management Pack.Total Cost`, `OUT01 Management Pack.Depreciation`, `OUT01 Management Pack.Phased Drivers`, `OUT02 Board Pack.Revenue`, `OUT02 Board Pack.EBITDA`
+**All affected objects (14 copy line items).** `CAL07 P&L by Cost Centre.Depreciation`, `CAL11 Reporting Prep.Revenue`, `CAL11 Reporting Prep.EBITDA`, `CAL11 Reporting Prep.Opex`, `CAL11 Reporting Prep.Staff Cost`, `OUT01 Management Pack.Revenue`, `OUT01 Management Pack.EBITDA`, `OUT01 Management Pack.Opex`, `OUT01 Management Pack.Staff Cost`, `OUT01 Management Pack.Total Cost`, `OUT01 Management Pack.Depreciation`, `OUT01 Management Pack.Phased Drivers`, `OUT02 Board Pack.Revenue`, `OUT02 Board Pack.EBITDA`
 
 **Evidence**
 
@@ -873,9 +917,9 @@ Examples: `CAL07 P&L by Cost Centre.Depreciation`, `CAL11 Reporting Prep.Revenue
 
 ### F11. Same calculation made more than once under different names
 
-Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity medium
+Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity medium · export actions: none detected
 
-Examples: `CAL07 P&L by Cost Centre.Depreciation` (1 group; 1 duplicate line item plus one kept line item per group)
+All 1 groups (kept line item named): `CAL07 P&L by Cost Centre.Depreciation` (1 group; 1 duplicate line item plus one kept line item per group)
 
 **Observed.** 1 line items in 1 groups repeat a calculation already made with the same formula and context; the copies hold 19.2K cells.
 
@@ -905,7 +949,7 @@ Examples: `CAL07 P&L by Cost Centre.Depreciation` (1 group; 1 duplicate line ite
 - Prerequisites: equivalence validated for the group, the reason for the second object ruled out, the owner accepts.
 - Then: repoint each reader of the copy to the kept line item in a development copy, reconcile the outputs that read it, owner sign-off, remove the copy.
 
-**All affected objects.** `CAL07 P&L by Cost Centre.Depreciation`
+**All affected objects (1 groups (kept line item named)).** `CAL07 P&L by Cost Centre.Depreciation`
 
 **Evidence**
 
@@ -925,9 +969,9 @@ Formulas (one per group):
 
 ### F12. Same calculation made more than once under different names
 
-Workforce Planning · review candidate · importance low · evidence confirmed · complexity medium
+Workforce Planning · review candidate · importance low · evidence confirmed · complexity medium · export actions: none detected
 
-Examples: `Calcs - Attrition.Headcount` (1 group; 1 duplicate line item plus one kept line item per group)
+All 1 groups (kept line item named): `Calcs - Attrition.Headcount` (1 group; 1 duplicate line item plus one kept line item per group)
 
 **Observed.** 1 line items in 1 groups repeat a calculation already made with the same formula and context; the copies hold 4.5K cells.
 
@@ -957,7 +1001,7 @@ Examples: `Calcs - Attrition.Headcount` (1 group; 1 duplicate line item plus one
 - Prerequisites: equivalence validated for the group, the reason for the second object ruled out, the owner accepts.
 - Then: repoint each reader of the copy to the kept line item in a development copy, reconcile the outputs that read it, owner sign-off, remove the copy.
 
-**All affected objects.** `Calcs - Attrition.Headcount`
+**All affected objects (1 groups (kept line item named)).** `Calcs - Attrition.Headcount`
 
 **Evidence**
 
@@ -977,9 +1021,9 @@ Formulas (one per group):
 
 ### F14. DIVIDE() where a zero divisor shows Infinity
 
-Caldergate Data Hub · review candidate · importance low · evidence confirmed · complexity low
+Caldergate Data Hub · review candidate · importance low · evidence confirmed · complexity low · export actions: none detected
 
-Examples: `CAL01 Volume Summary.Average Order Value` (1 object)
+All 1 formulas: `CAL01 Volume Summary.Average Order Value` (1 formulas)
 
 **Observed.** 1 formulas use DIVIDE().
 
@@ -999,7 +1043,7 @@ Examples: `CAL01 Volume Summary.Average Order Value` (1 object)
 
 **When keeping the current design is reasonable.** DIVIDE() is the right choice where a zero result would be misleading and Infinity signals a data gap.
 
-**All affected objects.** `CAL01 Volume Summary.Average Order Value`
+**All affected objects (1 formulas).** `CAL01 Volume Summary.Average Order Value`
 
 **Evidence**
 
@@ -1011,9 +1055,9 @@ Examples: `CAL01 Volume Summary.Average Order Value` (1 object)
 
 ### F17. Numeric literals inside formulas
 
-Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity low
+Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity low · export actions: none detected
 
-Examples: `CAL02 Revenue.Revenue USD`, `CAL02 Revenue.VAT`, `CAL08 Cash Flow.Debtors` and 3 more (6 objects)
+Showing 3 of 6 formulas: `CAL02 Revenue.Revenue USD`, `CAL02 Revenue.VAT`, `CAL08 Cash Flow.Debtors` (6 formulas)
 
 **Observed.** 6 formulas contain numeric literals other than the usual structural ones (0, 1, 12, 100 and the like).
 
@@ -1037,7 +1081,7 @@ Examples: `CAL02 Revenue.Revenue USD`, `CAL02 Revenue.VAT`, `CAL08 Cash Flow.Deb
 
 **When keeping the current design is reasonable.** Structural numbers (months in a year, a unit conversion fixed by definition) are fine inline. Unrelated occurrences of the same value must not share one input.
 
-**All affected objects.** `CAL02 Revenue.Revenue USD`, `CAL02 Revenue.VAT`, `CAL08 Cash Flow.Debtors`, `CAL08 Cash Flow.Tax`, `CAL10 Depreciation.Charge`, `INP03 Headcount.Pension`
+**All affected objects (6 formulas).** `CAL02 Revenue.Revenue USD`, `CAL02 Revenue.VAT`, `CAL08 Cash Flow.Debtors`, `CAL08 Cash Flow.Tax`, `CAL10 Depreciation.Charge`, `INP03 Headcount.Pension`
 
 **Evidence**
 
@@ -1054,9 +1098,9 @@ Examples: `CAL02 Revenue.Revenue USD`, `CAL02 Revenue.VAT`, `CAL08 Cash Flow.Deb
 
 ### F18. Subsidiary views used in calculation
 
-Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity medium
+Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity medium · export actions: none detected
 
-Examples: `CAL01 Volumes.Launched?` (1 object)
+All 1 line items: `CAL01 Volumes.Launched?` (1 line items)
 
 **Observed.** 1 line items are dimensioned differently from their module and are read by formulas.
 
@@ -1076,7 +1120,7 @@ Examples: `CAL01 Volumes.Launched?` (1 object)
 
 **When keeping the current design is reasonable.** A single small flag in an otherwise consistent module can be the least confusing option.
 
-**All affected objects.** `CAL01 Volumes.Launched?`
+**All affected objects (1 line items).** `CAL01 Volumes.Launched?`
 
 **Evidence**
 
@@ -1088,9 +1132,9 @@ Examples: `CAL01 Volumes.Launched?` (1 object)
 
 ### F19. Module with more than 50 line items
 
-Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity medium
+Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity medium · export actions: none detected
 
-Examples: `INP02 Opex Drivers` (1 object)
+All 1 objects: `INP02 Opex Drivers` (1 object)
 
 **Observed.** `INP02 Opex Drivers` has 58 line items.
 
@@ -1110,15 +1154,15 @@ Examples: `INP02 Opex Drivers` (1 object)
 
 **When keeping the current design is reasonable.** A module users open as one grid is easier to keep as one grid.
 
-**All affected objects.** `INP02 Opex Drivers`
+**All affected objects (1 objects).** `INP02 Opex Drivers`
 
 </details>
 
 ### F20. Modules with no line items
 
-Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity low
+Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity low · export actions: none detected
 
-Examples: `CAL09 Scenario Planning` (1 object)
+All 1 modules: `CAL09 Scenario Planning` (1 modules)
 
 **Observed.** 1 modules have no line items.
 
@@ -1138,15 +1182,15 @@ Examples: `CAL09 Scenario Planning` (1 object)
 
 **When keeping the current design is reasonable.** A placeholder for planned work, if noted.
 
-**All affected objects.** `CAL09 Scenario Planning`
+**All affected objects (1 modules).** `CAL09 Scenario Planning`
 
 </details>
 
 ### F21. Very long formulas
 
-Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity medium
+Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity medium · export actions: none detected
 
-Examples: `CAL03 Opex.Forecast Opex` (1 object)
+All 1 formulas: `CAL03 Opex.Forecast Opex` (1 formulas)
 
 **Observed.** 1 formulas exceed 120 tokens.
 
@@ -1166,7 +1210,7 @@ Examples: `CAL03 Opex.Forecast Opex` (1 object)
 
 **When keeping the current design is reasonable.** A long formula that is correct, documented and rarely touched is a known quantity; splitting it has its own risk.
 
-**All affected objects.** `CAL03 Opex.Forecast Opex`
+**All affected objects (1 formulas).** `CAL03 Opex.Forecast Opex`
 
 **Evidence**
 
@@ -1178,9 +1222,9 @@ Examples: `CAL03 Opex.Forecast Opex` (1 object)
 
 ### F22. Hard-coded time period or version selections
 
-Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity low
+Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity low · export actions: none detected
 
-Examples: `CAL07 P&L by Cost Centre.Opex Budget`, `OUT02 Board Pack.Budget Revenue`, `OUT02 Board Pack.Old Budget Revenue` (3 objects)
+All 3 formulas: `CAL07 P&L by Cost Centre.Opex Budget`, `OUT02 Board Pack.Budget Revenue`, `OUT02 Board Pack.Old Budget Revenue` (3 formulas)
 
 **Observed.** 3 formulas select a specific time period or version with SELECT.
 
@@ -1200,7 +1244,7 @@ Examples: `CAL07 P&L by Cost Centre.Opex Budget`, `OUT02 Board Pack.Budget Reven
 
 **When keeping the current design is reasonable.** A fixed historical period (a base year that never moves) is legitimately hard-coded.
 
-**All affected objects.** `CAL07 P&L by Cost Centre.Opex Budget`, `OUT02 Board Pack.Budget Revenue`, `OUT02 Board Pack.Old Budget Revenue`
+**All affected objects (3 formulas).** `CAL07 P&L by Cost Centre.Opex Budget`, `OUT02 Board Pack.Budget Revenue`, `OUT02 Board Pack.Old Budget Revenue`
 
 **Evidence**
 
@@ -1214,9 +1258,9 @@ Examples: `CAL07 P&L by Cost Centre.Opex Budget`, `OUT02 Board Pack.Budget Reven
 
 ### F23. DIVIDE() where a zero divisor shows Infinity
 
-Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity low
+Caldergate FP&A · review candidate · importance low · evidence confirmed · complexity low · export actions: none detected
 
-Examples: `CAL01 Volumes.Volume Growth`, `CAL02 Revenue.Average Price`, `CAL02 Revenue.Revenue Growth` and 5 more (8 objects)
+Showing 3 of 8 formulas: `CAL01 Volumes.Volume Growth`, `CAL02 Revenue.Average Price`, `CAL02 Revenue.Revenue Growth` (8 formulas)
 
 **Observed.** 8 formulas use DIVIDE().
 
@@ -1236,7 +1280,7 @@ Examples: `CAL01 Volumes.Volume Growth`, `CAL02 Revenue.Average Price`, `CAL02 R
 
 **When keeping the current design is reasonable.** DIVIDE() is the right choice where a zero result would be misleading and Infinity signals a data gap.
 
-**All affected objects.** `CAL01 Volumes.Volume Growth`, `CAL02 Revenue.Average Price`, `CAL02 Revenue.Revenue Growth`, `CAL04 Margn.Margin %`, `CAL06 Department Summary.Cost per FTE`, `CAL07 P&L by Cost Centre.EBITDA Margin`, `OUT02 Board Pack.Revenue Variance %`, `SYS05 FX Rates.Rate Movement`
+**All affected objects (8 formulas).** `CAL01 Volumes.Volume Growth`, `CAL02 Revenue.Average Price`, `CAL02 Revenue.Revenue Growth`, `CAL04 Margn.Margin %`, `CAL06 Department Summary.Cost per FTE`, `CAL07 P&L by Cost Centre.EBITDA Margin`, `OUT02 Board Pack.Revenue Variance %`, `SYS05 FX Rates.Rate Movement`
 
 **Evidence**
 
@@ -1255,9 +1299,9 @@ Examples: `CAL01 Volumes.Volume Growth`, `CAL02 Revenue.Average Price`, `CAL02 R
 
 ### F25. Numeric literals inside formulas
 
-Workforce Planning · review candidate · importance low · evidence confirmed · complexity low
+Workforce Planning · review candidate · importance low · evidence confirmed · complexity low · export actions: none detected
 
-Examples: `Calcs - Attrition.Annualised Attrition`, `Calcs - Cost.Bonus`, `Calcs - Headcount by CC.Bonus %` (3 objects)
+All 3 formulas: `Calcs - Attrition.Annualised Attrition`, `Calcs - Cost.Bonus`, `Calcs - Headcount by CC.Bonus %` (3 formulas)
 
 **Observed.** 3 formulas contain numeric literals other than the usual structural ones (0, 1, 12, 100 and the like).
 
@@ -1281,7 +1325,7 @@ Examples: `Calcs - Attrition.Annualised Attrition`, `Calcs - Cost.Bonus`, `Calcs
 
 **When keeping the current design is reasonable.** Structural numbers (months in a year, a unit conversion fixed by definition) are fine inline. Unrelated occurrences of the same value must not share one input.
 
-**All affected objects.** `Calcs - Attrition.Annualised Attrition`, `Calcs - Cost.Bonus`, `Calcs - Headcount by CC.Bonus %`
+**All affected objects (3 formulas).** `Calcs - Attrition.Annualised Attrition`, `Calcs - Cost.Bonus`, `Calcs - Headcount by CC.Bonus %`
 
 **Evidence**
 
@@ -1295,9 +1339,9 @@ Examples: `Calcs - Attrition.Annualised Attrition`, `Calcs - Cost.Bonus`, `Calcs
 
 ### F26. Subsidiary views used in calculation
 
-Workforce Planning · review candidate · importance low · evidence confirmed · complexity medium
+Workforce Planning · review candidate · importance low · evidence confirmed · complexity medium · export actions: none detected
 
-Examples: `Calcs - Attrition.Leavers` (1 object)
+All 1 line items: `Calcs - Attrition.Leavers` (1 line items)
 
 **Observed.** 1 line items are dimensioned differently from their module and are read by formulas.
 
@@ -1317,7 +1361,7 @@ Examples: `Calcs - Attrition.Leavers` (1 object)
 
 **When keeping the current design is reasonable.** A single small flag in an otherwise consistent module can be the least confusing option.
 
-**All affected objects.** `Calcs - Attrition.Leavers`
+**All affected objects (1 line items).** `Calcs - Attrition.Leavers`
 
 **Evidence**
 
@@ -1329,9 +1373,9 @@ Examples: `Calcs - Attrition.Leavers` (1 object)
 
 ### F27. Hard-coded time period or version selections
 
-Workforce Planning · review candidate · importance low · evidence confirmed · complexity low
+Workforce Planning · review candidate · importance low · evidence confirmed · complexity low · export actions: none detected
 
-Examples: `Reports - Headcount.FTE Budget` (1 object)
+All 1 formulas: `Reports - Headcount.FTE Budget` (1 formulas)
 
 **Observed.** 1 formulas select a specific time period or version with SELECT.
 
@@ -1351,7 +1395,7 @@ Examples: `Reports - Headcount.FTE Budget` (1 object)
 
 **When keeping the current design is reasonable.** A fixed historical period (a base year that never moves) is legitimately hard-coded.
 
-**All affected objects.** `Reports - Headcount.FTE Budget`
+**All affected objects (1 formulas).** `Reports - Headcount.FTE Budget`
 
 **Evidence**
 
@@ -1363,9 +1407,9 @@ Examples: `Reports - Headcount.FTE Budget` (1 object)
 
 ### F28. DIVIDE() where a zero divisor shows Infinity
 
-Workforce Planning · review candidate · importance low · evidence confirmed · complexity low
+Workforce Planning · review candidate · importance low · evidence confirmed · complexity low · export actions: none detected
 
-Examples: `Calcs - Headcount by CC.Average Salary`, `Reports - Headcount.Cost per FTE`, `zz Archive - 2021 Cost.Cost per Head` (3 objects)
+All 3 formulas: `Calcs - Headcount by CC.Average Salary`, `Reports - Headcount.Cost per FTE`, `zz Archive - 2021 Cost.Cost per Head` (3 formulas)
 
 **Observed.** 3 formulas use DIVIDE().
 
@@ -1385,7 +1429,7 @@ Examples: `Calcs - Headcount by CC.Average Salary`, `Reports - Headcount.Cost pe
 
 **When keeping the current design is reasonable.** DIVIDE() is the right choice where a zero result would be misleading and Infinity signals a data gap.
 
-**All affected objects.** `Calcs - Headcount by CC.Average Salary`, `Reports - Headcount.Cost per FTE`, `zz Archive - 2021 Cost.Cost per Head`
+**All affected objects (3 formulas).** `Calcs - Headcount by CC.Average Salary`, `Reports - Headcount.Cost per FTE`, `zz Archive - 2021 Cost.Cost per Head`
 
 **Evidence**
 
@@ -1399,9 +1443,9 @@ Examples: `Calcs - Headcount by CC.Average Salary`, `Reports - Headcount.Cost pe
 
 ### F29. DIVIDE() where a zero divisor shows Infinity
 
-Board Reporting · review candidate · importance low · evidence confirmed · complexity low
+Board Reporting · review candidate · importance low · evidence confirmed · complexity low · export actions: none detected
 
-Examples: `CAL01 KPIs.EBITDA Margin`, `CAL01 KPIs.Opex Ratio`, `CAL01 KPIs.Revenue Growth` (3 objects)
+All 3 formulas: `CAL01 KPIs.EBITDA Margin`, `CAL01 KPIs.Opex Ratio`, `CAL01 KPIs.Revenue Growth` (3 formulas)
 
 **Observed.** 3 formulas use DIVIDE().
 
@@ -1421,7 +1465,7 @@ Examples: `CAL01 KPIs.EBITDA Margin`, `CAL01 KPIs.Opex Ratio`, `CAL01 KPIs.Reven
 
 **When keeping the current design is reasonable.** DIVIDE() is the right choice where a zero result would be misleading and Infinity signals a data gap.
 
-**All affected objects.** `CAL01 KPIs.EBITDA Margin`, `CAL01 KPIs.Opex Ratio`, `CAL01 KPIs.Revenue Growth`
+**All affected objects (3 formulas).** `CAL01 KPIs.EBITDA Margin`, `CAL01 KPIs.Opex Ratio`, `CAL01 KPIs.Revenue Growth`
 
 **Evidence**
 
@@ -1435,9 +1479,9 @@ Examples: `CAL01 KPIs.EBITDA Margin`, `CAL01 KPIs.Opex Ratio`, `CAL01 KPIs.Reven
 
 ### F32. Summary methods on large line items no formula reads
 
-Caldergate Data Hub · review candidate · importance low · evidence partial · complexity low
+Caldergate Data Hub · review candidate · importance low · evidence partial · complexity low · export actions: none detected
 
-Examples: `DAT05 CRM Pipeline.Weighted Pipeline` (1 object)
+All 1 line items: `DAT05 CRM Pipeline.Weighted Pipeline` (1 line items)
 
 **Observed.** 1 number line items with 10,000 cells or more have a summary method set and no formula reader.
 
@@ -1461,7 +1505,7 @@ Examples: `DAT05 CRM Pipeline.Weighted Pipeline` (1 object)
 
 **When keeping the current design is reasonable.** A total a page shows is the reason the summary is on.
 
-**All affected objects.** `DAT05 CRM Pipeline.Weighted Pipeline`
+**All affected objects (1 line items).** `DAT05 CRM Pipeline.Weighted Pipeline`
 
 **Evidence**
 
@@ -1473,9 +1517,9 @@ Examples: `DAT05 CRM Pipeline.Weighted Pipeline` (1 object)
 
 ### F34. Summary methods on large line items no formula reads
 
-Caldergate FP&A · review candidate · importance low · evidence partial · complexity low
+Caldergate FP&A · review candidate · importance low · evidence partial · complexity low · export actions: none detected
 
-Examples: `CAL01 Volumes.Volume Growth`, `CAL02 Revenue.Average Price`, `CAL02 Revenue.Revenue Growth` and 27 more (30 objects)
+Showing 3 of 30 line items: `CAL01 Volumes.Volume Growth`, `CAL02 Revenue.Average Price`, `CAL02 Revenue.Revenue Growth` (30 line items)
 
 **Observed.** 30 number line items with 10,000 cells or more have a summary method set and no formula reader.
 
@@ -1499,7 +1543,7 @@ Examples: `CAL01 Volumes.Volume Growth`, `CAL02 Revenue.Average Price`, `CAL02 R
 
 **When keeping the current design is reasonable.** A total a page shows is the reason the summary is on.
 
-**All affected objects.** `CAL01 Volumes.Volume Growth`, `CAL02 Revenue.Average Price`, `CAL02 Revenue.Revenue Growth`, `CAL02 Revenue.Revenue USD`, `CAL02 Revenue.Revenue per Unit`, `CAL02 Revenue.VAT`, `CAL03 Opex.Opex Variance`, `CAL04 Margn.Margin %`, `CAL04 Margn.Margin GBP`, `CAL05 Opex OLD.Opex Cumulative`, `CAL05 Opex OLD.Opex Run Rate`, `CAL07 P&L by Cost Centre.EBIT`, `CAL07 P&L by Cost Centre.EBITDA Margin`, `CAL07 P&L by Cost Centre.Opex Variance to Budget`, `CAL10 Depreciation.NBV`, `DAT02 Actuals Volumes.Revenue Actual`, `INP02 Opex Drivers.Check`, `INP02 Opex Drivers.Driver Count`, `OUT01 Management Pack.Capex`, `OUT01 Management Pack.Depreciation`, `OUT01 Management Pack.EBITDA YTD`, `OUT01 Management Pack.Headcount`, `OUT01 Management Pack.Opex`, `OUT01 Management Pack.Phased Drivers`, `OUT01 Management Pack.Revenue YTD`, `OUT01 Management Pack.Staff Cost`, `OUT01 Management Pack.Total Cost`, `OUT02 Board Pack.EBITDA`, `OUT02 Board Pack.Old Budget Revenue`, `OUT02 Board Pack.Revenue Variance %`
+**All affected objects (30 line items).** `CAL01 Volumes.Volume Growth`, `CAL02 Revenue.Average Price`, `CAL02 Revenue.Revenue Growth`, `CAL02 Revenue.Revenue USD`, `CAL02 Revenue.Revenue per Unit`, `CAL02 Revenue.VAT`, `CAL03 Opex.Opex Variance`, `CAL04 Margn.Margin %`, `CAL04 Margn.Margin GBP`, `CAL05 Opex OLD.Opex Cumulative`, `CAL05 Opex OLD.Opex Run Rate`, `CAL07 P&L by Cost Centre.EBIT`, `CAL07 P&L by Cost Centre.EBITDA Margin`, `CAL07 P&L by Cost Centre.Opex Variance to Budget`, `CAL10 Depreciation.NBV`, `DAT02 Actuals Volumes.Revenue Actual`, `INP02 Opex Drivers.Check`, `INP02 Opex Drivers.Driver Count`, `OUT01 Management Pack.Capex`, `OUT01 Management Pack.Depreciation`, `OUT01 Management Pack.EBITDA YTD`, `OUT01 Management Pack.Headcount`, `OUT01 Management Pack.Opex`, `OUT01 Management Pack.Phased Drivers`, `OUT01 Management Pack.Revenue YTD`, `OUT01 Management Pack.Staff Cost`, `OUT01 Management Pack.Total Cost`, `OUT02 Board Pack.EBITDA`, `OUT02 Board Pack.Old Budget Revenue`, `OUT02 Board Pack.Revenue Variance %`
 
 **Evidence**
 
@@ -1540,9 +1584,9 @@ Examples: `CAL01 Volumes.Volume Growth`, `CAL02 Revenue.Average Price`, `CAL02 R
 
 ### F36. Summary methods on large line items no formula reads
 
-Workforce Planning · review candidate · importance low · evidence partial · complexity low
+Workforce Planning · review candidate · importance low · evidence partial · complexity low · export actions: none detected
 
-Examples: `Calcs - Headcount by CC.Average Salary` (1 object)
+All 1 line items: `Calcs - Headcount by CC.Average Salary` (1 line items)
 
 **Observed.** 1 number line items with 10,000 cells or more have a summary method set and no formula reader.
 
@@ -1566,7 +1610,7 @@ Examples: `Calcs - Headcount by CC.Average Salary` (1 object)
 
 **When keeping the current design is reasonable.** A total a page shows is the reason the summary is on.
 
-**All affected objects.** `Calcs - Headcount by CC.Average Salary`
+**All affected objects (1 line items).** `Calcs - Headcount by CC.Average Salary`
 
 **Evidence**
 
@@ -1578,9 +1622,9 @@ Examples: `Calcs - Headcount by CC.Average Salary` (1 object)
 
 ### F38. Summary methods on large line items no formula reads
 
-Board Reporting · review candidate · importance low · evidence partial · complexity low
+Board Reporting · review candidate · importance low · evidence partial · complexity low · export actions: none detected
 
-Examples: `DAT01 P&L.COGS`, `DAT01 P&L.Depreciation`, `DAT01 P&L.EBIT` and 2 more (5 objects)
+Showing 3 of 5 line items: `DAT01 P&L.COGS`, `DAT01 P&L.Depreciation`, `DAT01 P&L.EBIT` (5 line items)
 
 **Observed.** 5 number line items with 10,000 cells or more have a summary method set and no formula reader.
 
@@ -1604,7 +1648,7 @@ Examples: `DAT01 P&L.COGS`, `DAT01 P&L.Depreciation`, `DAT01 P&L.EBIT` and 2 mor
 
 **When keeping the current design is reasonable.** A total a page shows is the reason the summary is on.
 
-**All affected objects.** `DAT01 P&L.COGS`, `DAT01 P&L.Depreciation`, `DAT01 P&L.EBIT`, `DAT01 P&L.EBITDA`, `DAT01 P&L.Staff Cost`
+**All affected objects (5 line items).** `DAT01 P&L.COGS`, `DAT01 P&L.Depreciation`, `DAT01 P&L.EBIT`, `DAT01 P&L.EBITDA`, `DAT01 P&L.Staff Cost`
 
 **Evidence**
 
@@ -1620,9 +1664,9 @@ Examples: `DAT01 P&L.COGS`, `DAT01 P&L.Depreciation`, `DAT01 P&L.EBIT` and 2 mor
 
 ### F40. Same line item name and formula in more than one model
 
-Estate · review candidate · importance low · evidence inferred · complexity medium
+Estate · review candidate · importance low · evidence inferred · complexity medium · export actions: none detected
 
-Examples: `COGS?`, `Current Period?`, `Employer NI` and 5 more (8 line item names)
+Showing 3 of 8 line item names: `COGS?`, `Current Period?`, `Employer NI` (8 line item names)
 
 **Observed.** 8 line items appear in more than one model with the same name and the same formula tree.
 
@@ -1647,7 +1691,7 @@ Examples: `COGS?`, `Current Period?`, `Employer NI` and 5 more (8 line item name
 
 **When keeping the current design is reasonable.** A rule that must be evaluated locally in each model (a filter, a format, a local flag) is right to repeat.
 
-**All affected objects.** `COGS?`, `Current Period?`, `Employer NI`, `Group`, `Opex?`, `Revenue?`, `Sign`, `Working Days`
+**All affected objects (8 line item names).** `COGS?`, `Current Period?`, `Employer NI`, `Group`, `Opex?`, `Revenue?`, `Sign`, `Working Days`
 
 **Evidence**
 
@@ -1670,9 +1714,9 @@ Imports, exports and processes: what runs, what has no recorded run, what feeds 
 
 ### F33. Imports and exports with no recent recorded run or outside every process
 
-Caldergate Data Hub · review candidate · importance low · evidence partial · complexity low
+Caldergate Data Hub · review candidate · importance low · evidence partial · complexity low · export actions: none detected
 
-Examples: `Export Pipeline for Sales Ops`, `Import Customers from Salesforce`, `Import Products from PIM file` (3 objects)
+All 3 actions: `Export Pipeline for Sales Ops`, `Import Customers from Salesforce`, `Import Products from PIM file` (3 actions)
 
 **Observed.** Export date unknown.
 
@@ -1698,7 +1742,7 @@ Examples: `Export Pipeline for Sales Ops`, `Import Customers from Salesforce`, `
 
 **When keeping the current design is reasonable.** Year-end loads, ad-hoc reloads and API-driven actions legitimately show no recent run and no process. Retiring an import does not by itself justify removing its target module or the data it loaded.
 
-**All affected objects.** `Export Pipeline for Sales Ops`, `Import Customers from Salesforce`, `Import Products from PIM file`
+**All affected objects (3 actions).** `Export Pipeline for Sales Ops`, `Import Customers from Salesforce`, `Import Products from PIM file`
 
 **Evidence**
 
@@ -1712,9 +1756,9 @@ Examples: `Export Pipeline for Sales Ops`, `Import Customers from Salesforce`, `
 
 ### F35. Imports and exports with no recent recorded run or outside every process
 
-Caldergate FP&A · review candidate · importance low · evidence partial · complexity low
+Caldergate FP&A · review candidate · importance low · evidence partial · complexity low · export actions: none detected
 
-Examples: `Export Assumptions for Workforce`, `Export Opex Drivers to Excel`, `Import Budget from Excel` and 2 more (5 objects)
+Showing 3 of 5 actions: `Export Assumptions for Workforce`, `Export Opex Drivers to Excel`, `Import Budget from Excel` (5 actions)
 
 **Observed.** Export date unknown.
 
@@ -1740,7 +1784,7 @@ Examples: `Export Assumptions for Workforce`, `Export Opex Drivers to Excel`, `I
 
 **When keeping the current design is reasonable.** Year-end loads, ad-hoc reloads and API-driven actions legitimately show no recent run and no process. Retiring an import does not by itself justify removing its target module or the data it loaded.
 
-**All affected objects.** `Export Assumptions for Workforce`, `Export Opex Drivers to Excel`, `Import Budget from Excel`, `Import FX from Treasury file`, `Import from Caldergate Hub v1 - Cost Centres`
+**All affected objects (5 actions).** `Export Assumptions for Workforce`, `Export Opex Drivers to Excel`, `Import Budget from Excel`, `Import FX from Treasury file`, `Import from Caldergate Hub v1 - Cost Centres`
 
 **Evidence**
 
@@ -1756,9 +1800,9 @@ Examples: `Export Assumptions for Workforce`, `Export Opex Drivers to Excel`, `I
 
 ### F37. Imports and exports with no recent recorded run or outside every process
 
-Workforce Planning · review candidate · importance low · evidence partial · complexity low
+Workforce Planning · review candidate · importance low · evidence partial · complexity low · export actions: none detected
 
-Examples: `Export Headcount by Department`, `Export Leavers Report`, `Import from Caldergate FP&A - Assumptions` (3 objects)
+All 3 actions: `Export Headcount by Department`, `Export Leavers Report`, `Import from Caldergate FP&A - Assumptions` (3 actions)
 
 **Observed.** Export date unknown.
 
@@ -1784,7 +1828,7 @@ Examples: `Export Headcount by Department`, `Export Leavers Report`, `Import fro
 
 **When keeping the current design is reasonable.** Year-end loads, ad-hoc reloads and API-driven actions legitimately show no recent run and no process. Retiring an import does not by itself justify removing its target module or the data it loaded.
 
-**All affected objects.** `Export Headcount by Department`, `Export Leavers Report`, `Import from Caldergate FP&A - Assumptions`
+**All affected objects (3 actions).** `Export Headcount by Department`, `Export Leavers Report`, `Import from Caldergate FP&A - Assumptions`
 
 **Evidence**
 
@@ -1798,9 +1842,9 @@ Examples: `Export Headcount by Department`, `Export Leavers Report`, `Import fro
 
 ### F39. Imports and exports with no recent recorded run or outside every process
 
-Board Reporting · review candidate · importance low · evidence partial · complexity low
+Board Reporting · review candidate · importance low · evidence partial · complexity low · export actions: none detected
 
-Examples: `Export Board Pack PDF Data` (1 object)
+All 1 actions: `Export Board Pack PDF Data` (1 actions)
 
 **Observed.** Export date unknown.
 
@@ -1826,7 +1870,7 @@ Examples: `Export Board Pack PDF Data` (1 object)
 
 **When keeping the current design is reasonable.** Year-end loads, ad-hoc reloads and API-driven actions legitimately show no recent run and no process. Retiring an import does not by itself justify removing its target module or the data it loaded.
 
-**All affected objects.** `Export Board Pack PDF Data`
+**All affected objects (1 actions).** `Export Board Pack PDF Data`
 
 **Evidence**
 
@@ -2007,8 +2051,17 @@ Cost Centres (4), Departments (3), Accounts (2), Employees (2), Products (2), Re
 
 - **Cells.** Every line item multiplied out over its dimensions and time, as the export counts them. Workspace size and model open time follow cells; contractual cost does not follow from cells alone.
 - **Calculation effort.** Anaplan's own measure of where the engine spends its time, per line item, as a share of one model. Classic measures the whole model at open; Polaris measures a rolling ten-minute window. The exports do not say which engine produced the column, and shares are never added across models.
-- **No consumer detected.** No formula in the export references the object and no export action reads its module. Pages, saved views, line item subsets, filters, access drivers and integrations are not in the exports and can hold consumers. Not the same as unused.
-- **Referenced By agreement.** Edges present in both the parsed dependency graph and Anaplan's Referenced By column, over edges present in either. High means the graph can be trusted for change impact; discrepancies are listed by cause.
+- **No consumer detected.** No formula in the export references the object and, where an Actions export was supplied, no export action reads its module (otherwise action usage is not assessed). Pages, saved views, line item subsets, filters, access drivers and integrations are not in the exports and can hold consumers; incomplete parsing can hide a reader. Not the same as unused.
+- **Referenced By agreement.** Agreement between two observed edge sets: edges present in both the parsed dependency graph and Anaplan's Referenced By column, over edges present in either. It measures how far the two agree, not what share of every dependency is known; 100% does not establish complete coverage of the estate. Discrepancies are listed by cause.
+- **Observed footprint.** The cells of the objects reached or named, each counted once. Not a saving, a changed value or a predicted runtime; those are measured after a validated change.
 - **Inferred.** Read off names, not off a system table. Model-to-model feeds come from the words after 'from' in import action names; the same words give the source-name candidates.
 - **Footprint.** What objects occupy now. A conditional benefit is what would be released if an investigation confirms they can go. A measured improvement needs a before-and-after reading in the model; this report contains none.
 - **Evidence strength.** Confirmed: everything relied on is in the exports. Partial: formulas and actions are, pages and subsets are not. Inferred: rests on names or on a comparison the exports cannot fully resolve.
+
+## Validation status
+
+Rules, ranking and presentation were developed around a small number of estates; the three-action, 450-word plan is a design choice, not an established optimum, and the ordering is a hypothesis to revise. Nothing here was validated in a live Anaplan model.
+
+---
+
+Free and open source; maintained by CodelessOps, contributions welcome.

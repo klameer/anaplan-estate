@@ -1,9 +1,15 @@
 # anaplan-estate
 
+Find what to improve in Anaplan. See what a change could affect.
+
 Automated findings and candidate recommendations for a whole estate of
 Anaplan models, from the grid exports, run on your own machine. Nothing
-leaves it. Three levels: a summary with priority investigations, findings
-grouped by decision area, and the full reference with every formula.
+leaves it. The report opens on a one-page **action plan** (at most three
+suggested actions, each with steps and a completion check), with a
+**Change impact** explorer (what depends on a line item or module, what it
+depends on, offline) and the complete **Evidence** (every finding, object,
+formula and coverage gap) behind it. It is meant to be useful without
+contacting anyone.
 
 For each model it reports where the calculation time goes, what depends on
 what, what is unreferenced, circular or daisy-chained, which imports are
@@ -71,40 +77,61 @@ that wants to read them, including an architect's review.
 
 Options: `--alias "Headcount Model=HR"` when an import action names a
 model differently from its folder; `--name "2 HR Model Documentation=HR"`
-to rename; `--stale-months 12`; `--list` to see what would be analysed.
+to rename; `--skip Exec` to leave a copy out; `--stale-months 12`;
+`--title "Your estate"`; `--html estate.html --csv register.csv`;
+`--feedback-url`, `--source-url`, `--help-url` for the footer links
+(omitted when absent or not http(s)); `--list` to see what would be
+analysed. `scripts/regen_reports.py` regenerates the example outputs.
 
 ## What you get
 
-- **Summary**: scope and freshness, three or four observations computed
-  from the inputs, up to three priority investigations (observed, why it
-  matters, what to do next), the model map with feeds marked inferred,
-  and the coverage limitations that matter most.
-- **Findings by decision area**: capacity and performance, usage and
-  retirement, dependencies and change impact, maintainability and
-  consistency, integration and operations. Each finding: observed fact,
-  why it matters, affected scope, potential benefit (footprint,
-  conditional, or none), evidence strength and basis, missing
-  information, one next step, when keeping the design is reasonable,
-  expandable evidence with complete formulas, validation guidance.
-- **Reference**: findings register (downloadable CSV), per-model
-  statistics and coverage (files supplied, snapshot date, rules run and
-  skipped with reasons, confirmed vs inferred relationships, what is
-  missing), dependency evidence with Referenced By discrepancies by
-  cause, source-name candidates, shared dimensions, methodology with
-  documentation references, glossary.
-- **In the HTML**: search, filters (model, category, evidence, review
-  status), sorting, expand/collapse, review statuses kept in your
-  browser and exportable, a light print stylesheet with a summary-only
-  option. No external requests; all links are within the file.
+- **Action plan** (the default view): the estate name, one scope and
+  freshness line, and one to three suggested actions. Each: do this, why
+  (evidence and supportable value; footprint is called footprint, never
+  savings), two or three steps naming the actual objects, done when, a
+  suggested role, links to the evidence and to Change impact, and any
+  decision-changing uncertainty or coverage blocker on the card. Fewer
+  than three appear when fewer are supported; none, with the next data
+  check, when nothing qualifies. The ordering is deterministic and
+  explained under Evidence ("How the actions were chosen"); it is a
+  hypothesis, not a verdict. "Print action plan" gives one A4 page.
+- **Change impact**: search or select a model, module or line item.
+  "What depends on this" follows readers downstream; "what this depends
+  on" follows sources upstream. Shortest-link distances, unique counts,
+  modules, a grouped view by distance with expandable modules, a table
+  with one shortest path per object, module-level import/export actions
+  (or "not assessed" when there is no Actions export), inferred model
+  feeds shown as a boundary, an observed-footprint cell total (not a
+  saving), and a change-review download with the full analysed reach.
+- **Evidence**: the complete findings catalogue as a searchable table
+  (open one for the working detail: what was found, proposed step,
+  preconditions, dependencies, validation plan, reasons to keep the
+  design, all affected objects, evidence with complete formulas), how
+  the actions were chosen, coverage and limitations, models and
+  inventory, model map, dependency evidence with Referenced By
+  discrepancies by cause, methodology, glossary, register downloads.
+- **Your review state**: a status and a note per finding, kept in your
+  browser only, keyed by a stable id that survives regeneration, and
+  downloadable as a working register (CSV). Nothing is sent anywhere.
+- **Offline, self-contained**: no external requests, no analytics, no
+  login. Links appear only when configured on the command line
+  (`--feedback-url`, `--source-url`, optional `--help-url`).
 
-## What should it show next?
+See [VALIDATION.md](VALIDATION.md) for what has been checked and what has
+not: the rules and ranking were developed on one real estate and one
+fictional one, and remain a hypothesis until tested on unseen estates.
 
-Once line items and actions are in one place, most questions about an
-estate become a query over them. The report answers the ones above. Open
-a [Discussion](https://github.com/klameer/anaplan-estate/discussions) with
-the one it does not answer for your estate, or an Issue where the parser
-broke. The most useful contribution is an anonymised line-items export
-from an old model.
+## Something missing or not quite right?
+
+Help improve this review for everyone. Open a
+[Discussion](https://github.com/klameer/anaplan-estate/discussions) with
+what was missed or wrong, what you expected and why it matters; no code
+or estate upload is needed. An Issue is right where the parser broke. The
+reporting engine is free and open source, maintained by CodelessOps and
+open to contributions; accepted improvements stay in the project. Private
+examples are only reused in tests or documentation with explicit
+permission. Optional paid help is separate from the report and never
+required to use it.
 
 ## What it does not do
 

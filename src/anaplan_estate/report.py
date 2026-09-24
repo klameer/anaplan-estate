@@ -1,30 +1,33 @@
-"""Assemble the three-level report from an EstateRun.
+"""Assemble the report from an EstateRun.
 
-Level 1  opening summary: scope and freshness, three or four observations
-         computed from the inputs, up to three priority investigations, the
-         model map, the coverage limitations that matter most.
-Level 2  findings grouped by decision area, each with the fields a team needs.
-Level 3  full reference: findings register, per-model statistics and coverage,
-         dependency evidence, source-name candidates, shared dimensions,
-         methodology with rule definitions and documentation references,
-         glossary.
+Action plan   the estate title, one scope and freshness line, at most three
+              suggested actions (plan.select), the coverage notices that affect
+              them. The default reading path.
+Change impact the embedded dependency data (impact.graph_data) the explorer
+              and the change-review download rest on.
+Evidence      the complete findings catalogue by decision area, the model map
+              and feed table, inventory, coverage, dependency evidence,
+              methodology, glossary, register.
 
 `build` returns a plain dict (JSON-safe) that both renderers read, so the
-Markdown and the HTML say the same thing.
+Markdown and the HTML say the same thing. Links (feedback, source, help)
+appear only when configured with a valid http(s) URL; nothing is invented.
 """
 from __future__ import annotations
 import csv, io, re, datetime
 from collections import Counter
 from .lint import RULES, PLANUAL, DOCS
 from .findings import AREAS, AREA_LABEL, STRENGTH_TEXT, by_area, _c, _pl
+from . import plan as planmod, impact
 
 DESCRIPTION = "Automated findings and candidate recommendations from each model's Line Items, Modules and Actions exports."
 
 GLOSSARY = [
     ("Cells", "Every line item multiplied out over its dimensions and time, as the export counts them. Workspace size and model open time follow cells; contractual cost does not follow from cells alone."),
     ("Calculation effort", "Anaplan's own measure of where the engine spends its time, per line item, as a share of one model. Classic measures the whole model at open; Polaris measures a rolling ten-minute window. The exports do not say which engine produced the column, and shares are never added across models."),
-    ("No consumer detected", "No formula in the export references the object and no export action reads its module. Pages, saved views, line item subsets, filters, access drivers and integrations are not in the exports and can hold consumers. Not the same as unused."),
-    ("Referenced By agreement", "Edges present in both the parsed dependency graph and Anaplan's Referenced By column, over edges present in either. High means the graph can be trusted for change impact; discrepancies are listed by cause."),
+    ("No consumer detected", "No formula in the export references the object and, where an Actions export was supplied, no export action reads its module (otherwise action usage is not assessed). Pages, saved views, line item subsets, filters, access drivers and integrations are not in the exports and can hold consumers; incomplete parsing can hide a reader. Not the same as unused."),
+    ("Referenced By agreement", "Agreement between two observed edge sets: edges present in both the parsed dependency graph and Anaplan's Referenced By column, over edges present in either. It measures how far the two agree, not what share of every dependency is known; 100% does not establish complete coverage of the estate. Discrepancies are listed by cause."),
+    ("Observed footprint", "The cells of the objects reached or named, each counted once. Not a saving, a changed value or a predicted runtime; those are measured after a validated change."),
     ("Inferred", "Read off names, not off a system table. Model-to-model feeds come from the words after 'from' in import action names; the same words give the source-name candidates."),
     ("Footprint", "What objects occupy now. A conditional benefit is what would be released if an investigation confirms they can go. A measured improvement needs a before-and-after reading in the model; this report contains none."),
     ("Evidence strength", "Confirmed: everything relied on is in the exports. Partial: formulas and actions are, pages and subsets are not. Inferred: rests on names or on a comparison the exports cannot fully resolve."),
@@ -64,45 +67,6 @@ def _observations(er) -> list[str]:
     return obs[:3]
 
 
-def _investigations(er) -> list[dict]:
-    """Up to three distinct investigations, each backed by findings:
-      1 principal calculation hotspots in the model with the largest measured effort concentration;
-      2 whether the large modules with no consumer detected remain necessary (all models, one card, details per model);
-      3 the largest exact-duplicate calculation group.
-    A card is only produced when the evidence exists; nothing is manufactured. They can proceed independently."""
-    fs = er.findings
-    out = []
-    eff = [x for x in fs if x.kind == "capacity" and x.rules == ["EFFORT"]]
-    if eff:
-        m = next(mm for mm in er.models if mm.name == eff[0].model)
-        top = m.facts["effort_top"][0]
-        related = [x.id for x in fs if x.model == m.name and x.kind in ("fix", "refactor") and x.footprint_effort]
-        out.append({"key": "hotspots", "title": f"Investigate {m.name}'s principal calculation hotspots",
-                    "sentence": f"Ten line items carry {m.facts['effort_top10_share']}% of {m.name}'s measured calculation effort, led by {top[0]} at {top[1]:.1f}%.",
-                    "who": "model builder who owns " + m.name, "next": "Read the formulas of the top five and match each against the findings that name it; choose one to trial in a development copy.",
-                    "ids": [eff[0].id] + related[:3], "model": m.name})
-    usage = [x for x in fs if x.area == "usage" and "with no consumer detected in the inspected" in x.title and x.counts_benefit]
-    if usage:
-        usage.sort(key=lambda x: -(x.footprint_cells or 0))
-        cells = sum(x.footprint_cells or 0 for x in usage); n = sum(int(x.object_label.split()[0]) for x in usage)
-        per_model = [{"model": x.model, "id": x.id, "modules": int(x.object_label.split()[0]), "cells": x.footprint_cells or 0, "effort": x.footprint_effort, "top": x.objects[:2], "strength": x.strength} for x in usage]
-        out.append({"key": "usage", "title": "Establish whether the large modules nothing reads remain necessary",
-                    "sentence": f"{n} modules across {len(usage)} model{'s' if len(usage) != 1 else ''} hold {_c(cells)} cells with no formula or export consumer in the exports; each needs a consumer check before any keep-or-retire decision.",
-                    "who": "model owner with a page builder", "next": "Complete the consumer and retention checks for the largest modules in each model, then record a keep-or-retire recommendation per module.",
-                    "ids": [x.id for x in usage], "per_model": per_model, "model": "all models"})
-    dup = [x for x in fs if x.kind == "merge" and x.rules == ["REDUNDANT-EXACT"]]
-    if dup:
-        dup.sort(key=lambda x: -(x.footprint_cells or 0))
-        x = dup[0]
-        m = next(mm for mm in er.models if mm.name == x.model)
-        g = m.redundancy.exact[0]
-        out.append({"key": "duplicates", "title": "Validate one substantial duplicate-calculation group",
-                    "sentence": f"In {x.model}, {x.object_label}; the largest group repeats {g['items'][0]['key']} {len(g['items']) - 1} more time{'s' if len(g['items']) != 2 else ''} ({_c(g['redundant_cells'])} cells).",
-                    "who": "model builder who owns " + x.model, "next": "Validate equivalence and the reasons for separate objects in that group, then decide whether consolidation is appropriate.",
-                    "ids": [x.id], "model": x.model})
-    return out
-
-
 def _limitations(er) -> list[str]:
     ms = er.models
     out = ["Pages, saved views, line item subsets, filters, access drivers and integrations are not in any export; each 'no consumer detected' finding lists the checks that remain."]
@@ -115,7 +79,10 @@ def _limitations(er) -> list[str]:
         out.append("Dependency coverage is incomplete in " + ", ".join(f"{n} ({a:.0%})" for n, a in low) + " (agreement with Referenced By); findings there are marked partial or inferred.")
     no_actions = [m.name for m in ms if not m.facts.get("actions")]
     if no_actions:
-        out.append(f"No Actions export for {', '.join(no_actions)}: imports, exports and feeds not analysed there.")
+        out.append(f"No Actions export for {', '.join(no_actions)}: import, export and process usage is not assessed there (not zero); feeds from those models are unknown.")
+    unparsed = [(m.name, m.facts["parse_errors"]) for m in ms if m.facts["parse_errors"]]
+    if unparsed:
+        out.append("Formulas not parsed: " + ", ".join(f"{n} ({k})" for n, k in unparsed) + "; their references are absent from the graph.")
     out.append("Export date unknown for every file; the latest recorded action run is not an export date.")
     return out
 
@@ -125,56 +92,58 @@ def _summary_text(er, rep) -> list[str]:
     total_li = sum(m.facts["line_items"] for m in ms); total_cells = sum(m.facts["cells"] for m in ms)
     snaps = [m.facts["coverage"]["snapshot_actions"] for m in ms if m.facts["coverage"]["snapshot_actions"]]
     p1 = (f"{len(ms)} Anaplan model{'s' if len(ms) != 1 else ''}, {_n(total_li)} line items, {_c(total_cells)} cells as exported. "
-          f"Export date unknown. " + (f"Latest recorded action run: {max(snaps)}. " if snaps else "") + f"Analysis generated {rep['generated']}. "
-          "Read from the exports only; pages, saved views and subsets are not in them, so 'no consumer detected' is a question, not a saving.")
-    p2 = ("The investigations below were chosen for footprint and evidence strength and can proceed independently. "
-          "Reference findings are hidden until asked for.")
-    return [p1, p2]
+          f"Export date unknown. " + (f"Latest recorded action run {max(snaps)}. " if snaps else "") + f"Analysis generated {rep['generated']}.")
+    return [p1]
 
 
-def _example(er) -> dict | None:
-    """Illustrative progression from a proposed change to a validation plan, built from the exports: the widest-read line
-    item in the largest model. Labelled illustrative; no analysis beyond the exports has been run."""
+def _suggested_selection(er, gd) -> dict | None:
+    """A starting selection for the Change impact view: the most-read line item of the largest model, by node id."""
     ms = [m for m in er.models if m.facts["hubs"]]
     if not ms:
         return None
     m = max(ms, key=lambda x: x.facts["cells"])
+    mi = [x.name for x in er.models].index(m.name)
     name, n = m.facts["hubs"][0]
-    key = tuple(name.split(".", 1))
-    g = m.graph
-    imp = g.impact(key) if key in m.model.line_items else {}
-    mods = {k[0] for k in imp}
-    exports = [a.name for a in m.actions.actions.values() if a.kind == "export" and a.target in mods]
-    downstream = sorted({e["to"] for e in er.edges if e["from"] == m.name})
-    return {"change": f"Change the formula of {name} in {m.name}.",
-            "evidence": f"{n} formulas read it directly and {len(imp)} line items across {len(mods)} modules depend on it transitively (parsed references, checked against Referenced By at {m.facts['referenced_by_check']['agreement']:.0%} agreement)"
-                        + (f"; {len(exports)} export action{'s' if len(exports) != 1 else ''} read those modules" if exports else "; no export action reads those modules")
-                        + (f"; {m.name} feeds {', '.join(downstream)} by inferred import actions" if downstream else "") + ".",
-            "context": "Pages and saved views that show any of the dependent line items; line item subsets that include them; whether the exports feed another model's import; the owner's acceptance criteria for the outputs.",
-            "plan": "Compare the dependent outputs the owner names between a development copy and production before and after the change; reconcile the exports read by other models; sign-off by the model owner before promotion.",
-            "model": m.name, "hub": name}
+    idx = impact.node_index(gd)
+    for k in m.model.line_items:
+        if f"{k[0]}.{k[1]}" == name and (mi, k[0], k[1]) in idx:
+            return {"id": idx[(mi, k[0], k[1])], "model": m.name, "module": k[0], "name": k[1], "direct_readers": n}
+    return None
+
+
+_URL = re.compile(r"^https?://[^\s\"'<>]+$")
+
+
+def _url(u: str | None) -> str:
+    """Only a plain http(s) URL is used; anything else is dropped without a trace in the report (the CLI reports it)."""
+    return u.strip() if u and _URL.match(u.strip()) else ""
 
 
 # ---------------------------------------------------------------- build
 
-def build(er, service_url: str | None = None, contact: str | None = None) -> dict:
+def build(er, service_url: str | None = None, contact: str | None = None, feedback_url: str | None = None, source_url: str | None = None,
+          help_url: str | None = None, generator: str = "CodelessOps Estate Review") -> dict:
     ms = er.models
     fs = er.findings
     rep = {"title": f"Anaplan estate: {len(ms)} model{'s' if len(ms) != 1 else ''}", "generated": er.generated, "description": DESCRIPTION,
-           "service_url": service_url or "", "contact": contact or ""}
+           "generator": generator,
+           "links": {"help": _url(help_url or service_url), "feedback": _url(feedback_url), "source": _url(source_url), "contact": (contact or "").strip()},
+           "service_url": _url(help_url or service_url), "contact": (contact or "").strip()}
     rep["scope"] = {"models": len(ms), "line_items": sum(m.facts["line_items"] for m in ms), "calculated": sum(m.facts["calculated"] for m in ms),
                     "cells": sum(m.facts["cells"] for m in ms), "findings": len(fs),
                     "parse_rate": round(1 - sum(m.facts["parse_errors"] for m in ms) / max(sum(m.facts["calculated"] for m in ms), 1), 4)}
     rep["observations"] = _observations(er)
-    rep["investigations"] = _investigations(er)
-    rep["steps"] = rep["investigations"]
-    rep["priorities"] = rep["investigations"]
+    rep["plan"] = planmod.select(er)
+    rep["investigations"] = rep["plan"]["actions"]
     rep["metrics"] = {"models": len(ms), "review_first": sum(1 for x in fs if x.importance in ("high", "medium")),
                       "reference": sum(1 for x in fs if x.importance == "low"), "validated_defects": 0,
                       "observations": sum(1 for x in fs if x.kind_label == "observation")}
-    rep["example"] = _example(er)
+    rep["graph"] = impact.graph_data(er)
+    rep["graph"]["suggested"] = _suggested_selection(er, rep["graph"])
     rep["limitations"] = _limitations(er)
     rep["summary_text"] = _summary_text(er, rep)
+    rep["freshness"] = {"export_date": None, "latest_action_run": (max((m.facts["coverage"]["snapshot_actions"] for m in ms if m.facts["coverage"]["snapshot_actions"]), default=None)),
+                        "analysis_date": er.generated, "actions_missing": [m.name for m in ms if not m.facts.get("actions")]}
     rep["map"] = {"nodes": [{"name": m.name, "cells": m.facts["cells"], "line_items": m.facts["line_items"]} for m in ms],
                   "edges": [{"from": e["from"], "to": e["to"], "actions": e["actions"], "targets": e["targets"], "basis": e["basis"], "confirmed": False} for e in er.edges],
                   "external": {k: v for k, v in er.external.items()}}
@@ -204,12 +173,14 @@ def build(er, service_url: str | None = None, contact: str | None = None) -> dic
     rep["glossary"] = GLOSSARY
     rep["strength_text"] = STRENGTH_TEXT
     rep["statuses"] = ["To review", "Investigation in progress", "Accepted exception", "Change planned", "Resolved"]
+    rep["validation_note"] = ("Rules, ranking and presentation were developed around a small number of estates; the three-action, 450-word plan is a design choice, "
+                              "not an established optimum, and the ordering is a hypothesis to revise. Nothing here was validated in a live Anaplan model.")
     return rep
 
 
 # ---------------------------------------------------------------- register
 
-REGISTER_COLS = ["id", "area", "title", "model", "kind_label", "importance", "strength", "complexity", "benefit_kind", "footprint_cells", "footprint_effort", "object_label", "scope", "benefit", "next_step", "objects", "rules", "related"]
+REGISTER_COLS = ["id", "uid", "area", "title", "model", "kind_label", "importance", "strength", "complexity", "benefit_kind", "footprint_cells", "footprint_effort", "action_usage", "object_label", "preview_label", "scope", "benefit", "next_step", "preview", "objects", "rules", "related"]
 
 
 def register_rows(rep: dict) -> list[dict]:
@@ -217,7 +188,7 @@ def register_rows(rep: dict) -> list[dict]:
     for x in rep["findings"]:
         r = {k: ("" if x.get(k) is None else x.get(k, "")) for k in REGISTER_COLS}
         r["area"] = AREA_LABEL.get(x["area"], x["area"])
-        r["objects"] = "; ".join(x["objects"]); r["rules"] = "; ".join(x["rules"]); r["related"] = "; ".join(x["related"])
+        r["objects"] = "; ".join(x["objects"]); r["preview"] = "; ".join(x["preview"]); r["rules"] = "; ".join(x["rules"]); r["related"] = "; ".join(x["related"])
         rows.append(r)
     return rows
 
@@ -234,10 +205,10 @@ def register_csv(rep: dict) -> str:
 # ---------------------------------------------------------------- markdown
 
 def _finding_md(x: dict) -> list[str]:
-    ex = x["objects"][:3]; more = len(x["objects"]) - len(ex)
+    ex = x["preview"]
     out = [f"### {x['id']}. {x['title']}", "",
-           f"{x['model']} · {x['kind_label']} · importance {x['importance']} · evidence {x['strength']} · complexity {x['complexity']}", "",
-           f"Examples: {', '.join('`' + o + '`' for o in ex)}" + (f" and {more} more ({x['object_label']})" if more > 0 else f" ({x['object_label']})"), "",
+           f"{x['model']} · {x['kind_label']} · importance {x['importance']} · evidence {x['strength']} · complexity {x['complexity']} · export actions: {x['action_usage']}", "",
+           f"{x['preview_label']}: {', '.join('`' + o + '`' for o in ex)} ({x['object_label']})", "",
            f"**Observed.** {x['summary']}", "", f"**Why it matters.** {x['why']}", "", f"**Next investigation step.** {x['next_step']}", "",
            "<details><summary>Full assessment and affected objects</summary>", "",
            f"**Observed, in full.** {x['observed']}", "", f"**Affected scope.** {x['scope']}", "", f"**Potential benefit.** {x['benefit']} ({x['benefit_kind']})", "",
@@ -249,7 +220,7 @@ def _finding_md(x: dict) -> list[str]:
         out += ["**Implementation, with prerequisites.**", ""] + [f"- {v}" for v in x["implementation"]] + [""]
     if x["related"]:
         out += [f"Alternative or related: {', '.join(x['related'])}.", ""]
-    out += ["**All affected objects.** " + ", ".join("`" + o + "`" for o in x["objects"]), ""]
+    out += [f"**All affected objects ({len(x['objects'])} {x['unit']}).** " + ", ".join("`" + o + "`" for o in x["objects"]), ""]
     if x["evidence"]:
         out += ["**Evidence**", ""] + x["evidence"] + [""]
     if x["validation"]:
@@ -261,19 +232,21 @@ def _finding_md(x: dict) -> list[str]:
 def render_markdown(er) -> str:
     rep = build(er)
     fmap = {x["id"]: x for x in rep["findings"]}
-    out = [f"# {rep['title']}", "", f"{rep['description']} Generated {rep['generated']}.", "", "## Summary", ""]
-    out += [p + "\n" for p in rep["summary_text"]]
-    out += ["**Observations**", ""] + [f"{i}. {o}" for i, o in enumerate(rep["observations"], 1)] + [""]
-    if rep["investigations"]:
-        out += ["**Priority investigations**", ""]
-        for i, p in enumerate(rep["investigations"], 1):
-            out += [f"{i}. **{p['title']}.** {p['sentence']} Who: {p['who']}. Next: {p['next']} Findings: {', '.join(f'[{x}](#{x})' for x in p['ids'])}."]
-            for pm in p.get("per_model", []):
-                out.append(f"   - {pm['model']}: {pm['modules']} modules, {_c(pm['cells'])} cells" + (f", {pm['effort']:.1f}% effort" if pm['effort'] else "") + f"; largest {', '.join('`' + t + '`' for t in pm['top'])} ([{pm['id']}](#{pm['id']}))")
-        out.append("")
+    out = [f"# {rep['title']}", "", f"Generated with {rep['generator']}. {rep['summary_text'][0]}", "", "## Action plan", ""]
+    pl = rep["plan"]
+    if pl["actions"]:
+        for i, a in enumerate(pl["actions"], 1):
+            out += [f"### {i}. {a['title']}", "", f"**Why.** {a['why']}", "", "**Steps.**", ""] + [f"{j}. {st}" for j, st in enumerate(a["steps"], 1)] + ["",
+                    f"**Done when.** {a['done_when']}", "", f"Role: {a['role']}. Evidence: {', '.join(f'[{x}](#{x})' for x in a['finding_ids']) or 'none'}."
+                    + (f" Depends on: {', '.join(a['depends_on'])}." if a["depends_on"] else "")]
+            out += [f"- Note: {n}" for n in a["notices"]] + [""]
+    else:
+        out += [pl["none"]["message"], "", f"Next data check: {pl['none']['next_check']}.", ""]
+    out += ["Suggested starting points from the supplied exports; the ordering is a hypothesis (see Evidence: how the actions were chosen).", ""]
+    out += ["## Coverage", ""] + [f"- {l}" for l in rep["limitations"]] + [""]
+    out += ["## Observations", ""] + [f"{i}. {o}" for i, o in enumerate(rep["observations"], 1)] + [""]
     mt = rep["metrics"]
     out += [f"{mt['models']} models reviewed · {mt['review_first']} findings to review first · {mt['reference']} additional reference findings. No finding is a validated defect; all are observations or review candidates.", ""]
-    out += ["**Coverage limitations**", ""] + [f"- {l}" for l in rep["limitations"]] + [""]
     if rep["map"]["edges"]:
         out += ["**Model map (feeds inferred from import action names)**", "", "```mermaid", "flowchart LR"]
         ids = {n["name"]: f"M{i}" for i, n in enumerate(rep["map"]["nodes"])}
@@ -282,12 +255,12 @@ def render_markdown(er) -> str:
         for e in rep["map"]["edges"]:
             out.append(f"  {ids[e['from']]} -.->|{e['actions']} inferred| {ids[e['to']]}")
         out += ["```", ""]
-    out += ["Have a change planned in this estate? Request a review of one proposed change: the dependencies visible in your exports, what still needs checking, and a validation plan with your model owner."
-            + (f" Request a change-impact review: {rep['service_url']}" if rep["service_url"] else " (Request route not configured in this report.)"), ""]
-    ex = rep.get("example")
-    if ex:
-        out += ["Illustrative example (from the exports; no further analysis has been run):", "",
-                f"- Proposed change: {ex['change']}", f"- Dependency evidence examined: {ex['evidence']}", f"- Additional context required: {ex['context']}", f"- Validation plan that would result: {ex['plan']}", ""]
+    out += ["## How the actions were chosen", ""] + [f"- {r}" for r in pl["ranking"]] + [""]
+    if pl["candidates"]:
+        out += ["| Rank | Candidate | Evidence | Kind | Scope | Footprint |", "|---|---|---|---|---|---|"]
+        for i, c in enumerate(pl["candidates"], 1):
+            out.append(f"| {i} | {c['title']} | {c['strength']} | {c['kind']} | {'bounded' if c['bounded'] else 'open'} ({len(c['objects'])}) | {_c(c['footprint_cells']) + ' cells' if c['footprint_cells'] else 'not measured'} |")
+        out.append("")
     out += ["# Findings", ""]
     for a in rep["areas"]:
         out += [f"## {a['label']}", "", a["blurb"], ""]
@@ -318,4 +291,14 @@ def render_markdown(er) -> str:
     for r in rep["methodology"]:
         out.append(f"| {r['id']} {r['title']} | {r['severity']} | {r['source']} | {r['description']} | {', '.join(r['planual'])} | {', '.join(f'[{d['title']}]({d['url']})' for d in r['docs'])} |")
     out += ["", "## Glossary", ""] + [f"- **{t}.** {d}" for t, d in rep["glossary"]]
+    out += ["", "## Validation status", "", rep["validation_note"], ""]
+    links = rep["links"]
+    foot = ["Free and open source; maintained by CodelessOps, contributions welcome."]
+    if links["source"]:
+        foot.append(f"Source: {links['source']}")
+    if links["feedback"]:
+        foot.append(f"Something missing or not quite right? Help improve this review for everyone: {links['feedback']}")
+    if links["help"]:
+        foot.append(f"Want another pair of eyes on this change? {links['help']}")
+    out += ["---", "", " ".join(foot)]
     return "\n".join(out)

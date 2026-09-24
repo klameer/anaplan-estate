@@ -1,7 +1,14 @@
 {
- "title": "Anaplan estate: 4 models",
- "generated": "2026-09-22",
+ "title": "Caldergate Distribution Group: Anaplan estate (fictional example)",
+ "generated": "2026-09-24",
  "description": "Automated findings and candidate recommendations from each model's Line Items, Modules and Actions exports.",
+ "generator": "CodelessOps Estate Review",
+ "links": {
+  "help": "",
+  "feedback": "https://github.com/klameer/anaplan-estate/discussions",
+  "source": "https://github.com/klameer/anaplan-estate",
+  "contact": ""
+ },
  "service_url": "",
  "contact": "",
  "scope": {
@@ -17,262 +24,577 @@
   "Ten line items carry 68.0% of Caldergate FP&A's measured calculation effort (per model; the engine is not in the export).",
   "Caldergate Data Hub feeds Caldergate FP&A, Workforce Planning through 6 import actions; all 6 feeds are inferred from action names."
  ],
+ "plan": {
+  "actions": [
+   {
+    "key": "hotspot-text:Caldergate FP&A",
+    "kind": "change",
+    "title": "Compute 1 text or per-item line item once in a system module in Caldergate FP&A",
+    "why": "6.2% of Caldergate FP&A's measured effort sits in 1 line item that computes a text or per-item value on every cell (5.0M cells); a system module computes it once per list item.",
+    "steps": [
+     "Read DAT01 Actuals GL.Journal Cost Centre (6.2%): name the list its value varies by.",
+     "In a development copy, compute it in a SYS module on that list and repoint the readers; keep the original until reconciled.",
+     "Record Calculation Effort before and after."
+    ],
+    "done_when": "Readers reconcile cell for cell and the measured effort share falls.",
+    "role": "model builder, Caldergate FP&A",
+    "model": "Caldergate FP&A",
+    "objects": [
+     "DAT01 Actuals GL.Journal Cost Centre"
+    ],
+    "finding_ids": [
+     "F5",
+     "F16"
+    ],
+    "strength": "confirmed",
+    "footprint_cells": 5017824,
+    "footprint_effort": 6.2,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     1,
+     "DAT01 Actuals GL",
+     "Journal Cost Centre"
+    ],
+    "rank_reason": "#1: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 6.2% of its model's effort",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "hotspot-if:Caldergate FP&A",
+    "kind": "change",
+    "title": "Replace the IF chain in CAL03 Opex.Forecast Opex with a mapping module and LOOKUP",
+    "why": "CAL03 Opex.Forecast Opex carries 16.0% of Caldergate FP&A's measured effort and evaluates every IF branch for every cell; a mapping module makes each case a row, not a formula edit.",
+    "steps": [
+     "In a development copy, load the branch-to-value table (in the evidence) into a mapping module on the list the branches test.",
+     "Replace the chain in CAL03 Opex.Forecast Opex with one LOOKUP; keep the original formula in a note until reconciled.",
+     "Export the line item before and after; every cell equal."
+    ],
+    "done_when": "Every cell is equal before and after and the mapping module holds every case the chain held.",
+    "role": "model builder, Caldergate FP&A",
+    "model": "Caldergate FP&A",
+    "objects": [
+     "CAL03 Opex.Forecast Opex"
+    ],
+    "finding_ids": [
+     "F2",
+     "F5",
+     "F16",
+     "F21"
+    ],
+    "strength": "confirmed",
+    "footprint_cells": 5017824,
+    "footprint_effort": 16.0,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     1,
+     "CAL03 Opex",
+     "Forecast Opex"
+    ],
+    "rank_reason": "#2: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 16.0% of its model's effort",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "retire:Caldergate FP&A",
+    "kind": "investigation",
+    "title": "Check for consumers of CAL05 Opex OLD in Caldergate FP&A before keeping or retiring it",
+    "why": "No formula outside it reads its 14 line items and no export action reads it; it holds 70.2M cells and 50.8% of Caldergate FP&A's measured effort: an observed footprint, not a saving.",
+    "steps": [
+     "Ask the page builder which pages, saved views and line item subsets use CAL05 Opex OLD.",
+     "Check whether another model imports from a saved view on it.",
+     "Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off."
+    ],
+    "done_when": "Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.",
+    "role": "model owner with a page builder, Caldergate FP&A",
+    "model": "Caldergate FP&A",
+    "objects": [
+     "CAL05 Opex OLD"
+    ],
+    "finding_ids": [
+     "F1"
+    ],
+    "strength": "partial",
+    "footprint_cells": 70249536,
+    "footprint_effort": 50.78,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     1,
+     "CAL05 Opex OLD",
+     null
+    ],
+    "rank_reason": "#3: evidence partial; bounded scope; materiality high; investigation; 70.2M cells; 50.8% of its model's effort",
+    "bounded": true,
+    "footprint_measured": true
+   }
+  ],
+  "candidates": [
+   {
+    "key": "hotspot-text:Caldergate FP&A",
+    "kind": "change",
+    "title": "Compute 1 text or per-item line item once in a system module in Caldergate FP&A",
+    "why": "6.2% of Caldergate FP&A's measured effort sits in 1 line item that computes a text or per-item value on every cell (5.0M cells); a system module computes it once per list item.",
+    "steps": [
+     "Read DAT01 Actuals GL.Journal Cost Centre (6.2%): name the list its value varies by.",
+     "In a development copy, compute it in a SYS module on that list and repoint the readers; keep the original until reconciled.",
+     "Record Calculation Effort before and after."
+    ],
+    "done_when": "Readers reconcile cell for cell and the measured effort share falls.",
+    "role": "model builder, Caldergate FP&A",
+    "model": "Caldergate FP&A",
+    "objects": [
+     "DAT01 Actuals GL.Journal Cost Centre"
+    ],
+    "finding_ids": [
+     "F5",
+     "F16"
+    ],
+    "strength": "confirmed",
+    "footprint_cells": 5017824,
+    "footprint_effort": 6.2,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     1,
+     "DAT01 Actuals GL",
+     "Journal Cost Centre"
+    ],
+    "rank_reason": "#1: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 6.2% of its model's effort",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "hotspot-if:Caldergate FP&A",
+    "kind": "change",
+    "title": "Replace the IF chain in CAL03 Opex.Forecast Opex with a mapping module and LOOKUP",
+    "why": "CAL03 Opex.Forecast Opex carries 16.0% of Caldergate FP&A's measured effort and evaluates every IF branch for every cell; a mapping module makes each case a row, not a formula edit.",
+    "steps": [
+     "In a development copy, load the branch-to-value table (in the evidence) into a mapping module on the list the branches test.",
+     "Replace the chain in CAL03 Opex.Forecast Opex with one LOOKUP; keep the original formula in a note until reconciled.",
+     "Export the line item before and after; every cell equal."
+    ],
+    "done_when": "Every cell is equal before and after and the mapping module holds every case the chain held.",
+    "role": "model builder, Caldergate FP&A",
+    "model": "Caldergate FP&A",
+    "objects": [
+     "CAL03 Opex.Forecast Opex"
+    ],
+    "finding_ids": [
+     "F2",
+     "F5",
+     "F16",
+     "F21"
+    ],
+    "strength": "confirmed",
+    "footprint_cells": 5017824,
+    "footprint_effort": 16.0,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     1,
+     "CAL03 Opex",
+     "Forecast Opex"
+    ],
+    "rank_reason": "#2: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 16.0% of its model's effort",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "retire:Caldergate FP&A",
+    "kind": "investigation",
+    "title": "Check for consumers of CAL05 Opex OLD in Caldergate FP&A before keeping or retiring it",
+    "why": "No formula outside it reads its 14 line items and no export action reads it; it holds 70.2M cells and 50.8% of Caldergate FP&A's measured effort: an observed footprint, not a saving.",
+    "steps": [
+     "Ask the page builder which pages, saved views and line item subsets use CAL05 Opex OLD.",
+     "Check whether another model imports from a saved view on it.",
+     "Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off."
+    ],
+    "done_when": "Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.",
+    "role": "model owner with a page builder, Caldergate FP&A",
+    "model": "Caldergate FP&A",
+    "objects": [
+     "CAL05 Opex OLD"
+    ],
+    "finding_ids": [
+     "F1"
+    ],
+    "strength": "partial",
+    "footprint_cells": 70249536,
+    "footprint_effort": 50.78,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     1,
+     "CAL05 Opex OLD",
+     null
+    ],
+    "rank_reason": "#3: evidence partial; bounded scope; materiality high; investigation; 70.2M cells; 50.8% of its model's effort",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "hotspot-investigate:Caldergate Data Hub",
+    "kind": "investigation",
+    "title": "Read the five largest calculation hotspots in Caldergate Data Hub",
+    "why": "Ten line items carry 99.9% of Caldergate Data Hub's measured effort and none matches a rule finding, so concentration is the only evidence: a place to look, not a change to make.",
+    "steps": [
+     "Read the five largest with the owner, led by DAT01 GL Transactions.Loaded? (88.3%): what each computes and how often it changes.",
+     "Note where a documented pattern applies (SUM with LOOKUP, text per cell, IF chains) or the effort is the model's main job.",
+     "Choose at most one to trial in a development copy, with Calculation Effort read before and after."
+    ],
+    "done_when": "Each of the five has a recorded reading (keep, or one named change to trial) agreed with the owner.",
+    "role": "model builder, Caldergate Data Hub",
+    "model": "Caldergate Data Hub",
+    "objects": [
+     "DAT01 GL Transactions.Loaded?",
+     "CAL01 Volume Summary.Units",
+     "CAL01 Volume Summary.Revenue",
+     "CAL01 Volume Summary.Orders",
+     "DAT05 CRM Pipeline.Weighted Pipeline"
+    ],
+    "finding_ids": [
+     "F3"
+    ],
+    "strength": "confirmed",
+    "footprint_cells": 1298952,
+    "footprint_effort": null,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     0,
+     "DAT01 GL Transactions",
+     "Loaded?"
+    ],
+    "rank_reason": "evidence confirmed; bounded scope; materiality medium; investigation; 1.3M cells",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "retire:Board Reporting",
+    "kind": "investigation",
+    "title": "Check for consumers of SYS01 Time in Board Reporting before keeping or retiring it",
+    "why": "No formula outside it reads its 2 line items and no export action reads it; it holds 72 cells and 2.8% of Board Reporting's measured effort: an observed footprint, not a saving.",
+    "steps": [
+     "Ask the page builder which pages, saved views and line item subsets use SYS01 Time.",
+     "Check whether another model imports from a saved view on it.",
+     "Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off."
+    ],
+    "done_when": "Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.",
+    "role": "model owner with a page builder, Board Reporting",
+    "model": "Board Reporting",
+    "objects": [
+     "SYS01 Time"
+    ],
+    "finding_ids": [
+     "F8"
+    ],
+    "strength": "partial",
+    "footprint_cells": 72,
+    "footprint_effort": 2.8,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     3,
+     "SYS01 Time",
+     null
+    ],
+    "rank_reason": "evidence partial; bounded scope; materiality medium; investigation; 72 cells; 2.8% of its model's effort",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "duplicate:Caldergate FP&A",
+    "kind": "change",
+    "title": "Consolidate 1 copy of CAL07 P&L by Cost Centre.Depreciation in Caldergate FP&A",
+    "why": "OUT01 Management Pack.Depreciation has the same resolved formula and context as CAL07 P&L by Cost Centre.Depreciation; the copies hold 19.2K cells and 0 formulas read them.",
+    "steps": [
+     "Confirm with the owner and page builder that no copy serves a separate page, export column or access boundary.",
+     "In a development copy, repoint the 0 readers to CAL07 P&L by Cost Centre.Depreciation; keep the copies until reconciled.",
+     "Reconcile the outputs that read them cell for cell, sign off, then remove the copies."
+    ],
+    "done_when": "Readers reconcile cell for cell and the copies are removed with no blank page or missing export column.",
+    "role": "model builder, Caldergate FP&A",
+    "model": "Caldergate FP&A",
+    "objects": [
+     "CAL07 P&L by Cost Centre.Depreciation",
+     "OUT01 Management Pack.Depreciation"
+    ],
+    "finding_ids": [
+     "F11"
+    ],
+    "strength": "confirmed",
+    "footprint_cells": 19152,
+    "footprint_effort": null,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     1,
+     "CAL07 P&L by Cost Centre",
+     "Depreciation"
+    ],
+    "rank_reason": "evidence confirmed; bounded scope; materiality low; change; 19.2K cells",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "duplicate:Workforce Planning",
+    "kind": "change",
+    "title": "Consolidate 1 copy of Calcs - Attrition.Headcount in Workforce Planning",
+    "why": "zz Archive - 2021 Cost.Headcount has the same resolved formula and context as Calcs - Attrition.Headcount; the copies hold 4.5K cells and 1 formulas read them.",
+    "steps": [
+     "Confirm with the owner and page builder that no copy serves a separate page, export column or access boundary.",
+     "In a development copy, repoint the 1 readers to Calcs - Attrition.Headcount; keep the copies until reconciled.",
+     "Reconcile the outputs that read them cell for cell, sign off, then remove the copies."
+    ],
+    "done_when": "Readers reconcile cell for cell and the copies are removed with no blank page or missing export column.",
+    "role": "model builder, Workforce Planning",
+    "model": "Workforce Planning",
+    "objects": [
+     "Calcs - Attrition.Headcount",
+     "zz Archive - 2021 Cost.Headcount"
+    ],
+    "finding_ids": [
+     "F12"
+    ],
+    "strength": "confirmed",
+    "footprint_cells": 4464,
+    "footprint_effort": null,
+    "notices": [
+     "zz Archive - 2021 Cost has no consumer detected: complete that consumer check first."
+    ],
+    "depends_on": [
+     "retire:Workforce Planning"
+    ],
+    "explorer": [
+     2,
+     "Calcs - Attrition",
+     "Headcount"
+    ],
+    "rank_reason": "evidence confirmed; bounded scope; materiality low; change; 4.5K cells",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "hotspot-investigate:Board Reporting",
+    "kind": "investigation",
+    "title": "Read the five largest calculation hotspots in Board Reporting",
+    "why": "Ten line items carry 89.7% of Board Reporting's measured effort and none matches a rule finding, so concentration is the only evidence: a place to look, not a change to make.",
+    "steps": [
+     "Read the five largest with the owner, led by CAL01 KPIs.Revenue per FTE (11.2%): what each computes and how often it changes.",
+     "Note where a documented pattern applies (SUM with LOOKUP, text per cell, IF chains) or the effort is the model's main job.",
+     "Choose at most one to trial in a development copy, with Calculation Effort read before and after."
+    ],
+    "done_when": "Each of the five has a recorded reading (keep, or one named change to trial) agreed with the owner.",
+    "role": "model builder, Board Reporting",
+    "model": "Board Reporting",
+    "objects": [
+     "CAL01 KPIs.Revenue per FTE",
+     "CAL01 KPIs.Opex Ratio",
+     "CAL01 KPIs.Revenue Growth",
+     "CAL01 KPIs.EBITDA Margin",
+     "CAL01 KPIs.FTE"
+    ],
+    "finding_ids": [
+     "F6"
+    ],
+    "strength": "confirmed",
+    "footprint_cells": 720,
+    "footprint_effort": null,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     3,
+     "CAL01 KPIs",
+     "Revenue per FTE"
+    ],
+    "rank_reason": "evidence confirmed; bounded scope; materiality low; investigation; 720 cells",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "retire:Workforce Planning",
+    "kind": "investigation",
+    "title": "Check for consumers of zz Archive - 2021 Cost in Workforce Planning before keeping or retiring it",
+    "why": "No formula outside it reads its 3 line items and no export action reads it; it holds 13.4K cells: an observed footprint, not a saving.",
+    "steps": [
+     "Ask the page builder which pages, saved views and line item subsets use zz Archive - 2021 Cost.",
+     "Check whether another model imports from a saved view on it.",
+     "Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off."
+    ],
+    "done_when": "Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.",
+    "role": "model owner with a page builder, Workforce Planning",
+    "model": "Workforce Planning",
+    "objects": [
+     "zz Archive - 2021 Cost"
+    ],
+    "finding_ids": [
+     "F30"
+    ],
+    "strength": "partial",
+    "footprint_cells": 13392,
+    "footprint_effort": null,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     2,
+     "zz Archive - 2021 Cost",
+     null
+    ],
+    "rank_reason": "evidence partial; bounded scope; materiality low; investigation; 13.4K cells",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "retire:Caldergate Data Hub",
+    "kind": "investigation",
+    "title": "Check for consumers of SYS01 Time Settings in Caldergate Data Hub before keeping or retiring it",
+    "why": "No formula outside it reads its 5 line items and no export action reads it; it holds 180 cells: an observed footprint, not a saving.",
+    "steps": [
+     "Ask the page builder which pages, saved views and line item subsets use SYS01 Time Settings.",
+     "Check whether another model imports from a saved view on it.",
+     "Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off."
+    ],
+    "done_when": "Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.",
+    "role": "model owner with a page builder, Caldergate Data Hub",
+    "model": "Caldergate Data Hub",
+    "objects": [
+     "SYS01 Time Settings"
+    ],
+    "finding_ids": [
+     "F31"
+    ],
+    "strength": "partial",
+    "footprint_cells": 180,
+    "footprint_effort": null,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     0,
+     "SYS01 Time Settings",
+     null
+    ],
+    "rank_reason": "evidence partial; bounded scope; materiality low; investigation; 180 cells",
+    "bounded": true,
+    "footprint_measured": true
+   }
+  ],
+  "ranking": [
+   "Inferred evidence last: a candidate resting on names or an unresolved comparison is a hypothesis, whatever its footprint.",
+   "Scope: a bounded scope (10 named objects or fewer) before an open-ended review.",
+   "Materiality band from the observed footprint: high (5% or more of its own model's measured effort, or 50M cells or more), medium (1% or 1M), low. Effort shares are banded within one model and never compared across models as absolute value.",
+   "Kind: a concrete change with a validation criterion before an investigation.",
+   "Evidence: confirmed before partial (observation confidence, not confidence in the recommendation).",
+   "Then the larger observed footprint in cells, then the title. Ties never depend on the order the files were read.",
+   "Overlapping findings on the same objects are merged into one decision; a change whose objects sit in a module with no consumer detected depends on that consumer check, which is then placed first."
+  ],
+  "limit": 3,
+  "none": null
+ },
  "investigations": [
   {
-   "key": "hotspots",
-   "title": "Investigate Caldergate Data Hub's principal calculation hotspots",
-   "sentence": "Ten line items carry 99.9% of Caldergate Data Hub's measured calculation effort, led by DAT01 GL Transactions.Loaded? at 88.3%.",
-   "who": "model builder who owns Caldergate Data Hub",
-   "next": "Read the formulas of the top five and match each against the findings that name it; choose one to trial in a development copy.",
-   "ids": [
-    "F3"
+   "key": "hotspot-text:Caldergate FP&A",
+   "kind": "change",
+   "title": "Compute 1 text or per-item line item once in a system module in Caldergate FP&A",
+   "why": "6.2% of Caldergate FP&A's measured effort sits in 1 line item that computes a text or per-item value on every cell (5.0M cells); a system module computes it once per list item.",
+   "steps": [
+    "Read DAT01 Actuals GL.Journal Cost Centre (6.2%): name the list its value varies by.",
+    "In a development copy, compute it in a SYS module on that list and repoint the readers; keep the original until reconciled.",
+    "Record Calculation Effort before and after."
    ],
-   "model": "Caldergate Data Hub"
+   "done_when": "Readers reconcile cell for cell and the measured effort share falls.",
+   "role": "model builder, Caldergate FP&A",
+   "model": "Caldergate FP&A",
+   "objects": [
+    "DAT01 Actuals GL.Journal Cost Centre"
+   ],
+   "finding_ids": [
+    "F5",
+    "F16"
+   ],
+   "strength": "confirmed",
+   "footprint_cells": 5017824,
+   "footprint_effort": 6.2,
+   "notices": [],
+   "depends_on": [],
+   "explorer": [
+    1,
+    "DAT01 Actuals GL",
+    "Journal Cost Centre"
+   ],
+   "rank_reason": "#1: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 6.2% of its model's effort",
+   "bounded": true,
+   "footprint_measured": true
   },
   {
-   "key": "usage",
-   "title": "Establish whether the large modules nothing reads remain necessary",
-   "sentence": "7 modules across 4 models hold 70.3M cells with no formula or export consumer in the exports; each needs a consumer check before any keep-or-retire decision.",
-   "who": "model owner with a page builder",
-   "next": "Complete the consumer and retention checks for the largest modules in each model, then record a keep-or-retire recommendation per module.",
-   "ids": [
-    "F1",
-    "F30",
-    "F31",
-    "F8"
+   "key": "hotspot-if:Caldergate FP&A",
+   "kind": "change",
+   "title": "Replace the IF chain in CAL03 Opex.Forecast Opex with a mapping module and LOOKUP",
+   "why": "CAL03 Opex.Forecast Opex carries 16.0% of Caldergate FP&A's measured effort and evaluates every IF branch for every cell; a mapping module makes each case a row, not a formula edit.",
+   "steps": [
+    "In a development copy, load the branch-to-value table (in the evidence) into a mapping module on the list the branches test.",
+    "Replace the chain in CAL03 Opex.Forecast Opex with one LOOKUP; keep the original formula in a note until reconciled.",
+    "Export the line item before and after; every cell equal."
    ],
-   "per_model": [
-    {
-     "model": "Caldergate FP&A",
-     "id": "F1",
-     "modules": 3,
-     "cells": 70270848,
-     "effort": 50.78,
-     "top": [
-      "CAL05 Opex OLD",
-      "CAL06 Department Summary"
-     ],
-     "strength": "partial"
-    },
-    {
-     "model": "Workforce Planning",
-     "id": "F30",
-     "modules": 1,
-     "cells": 13392,
-     "effort": null,
-     "top": [
-      "zz Archive - 2021 Cost"
-     ],
-     "strength": "partial"
-    },
-    {
-     "model": "Caldergate Data Hub",
-     "id": "F31",
-     "modules": 2,
-     "cells": 360,
-     "effort": 0.01,
-     "top": [
-      "SYS01 Time Settings",
-      "SYS02 Data Checks"
-     ],
-     "strength": "partial"
-    },
-    {
-     "model": "Board Reporting",
-     "id": "F8",
-     "modules": 1,
-     "cells": 72,
-     "effort": 2.8,
-     "top": [
-      "SYS01 Time"
-     ],
-     "strength": "partial"
-    }
+   "done_when": "Every cell is equal before and after and the mapping module holds every case the chain held.",
+   "role": "model builder, Caldergate FP&A",
+   "model": "Caldergate FP&A",
+   "objects": [
+    "CAL03 Opex.Forecast Opex"
    ],
-   "model": "all models"
+   "finding_ids": [
+    "F2",
+    "F5",
+    "F16",
+    "F21"
+   ],
+   "strength": "confirmed",
+   "footprint_cells": 5017824,
+   "footprint_effort": 16.0,
+   "notices": [],
+   "depends_on": [],
+   "explorer": [
+    1,
+    "CAL03 Opex",
+    "Forecast Opex"
+   ],
+   "rank_reason": "#2: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 16.0% of its model's effort",
+   "bounded": true,
+   "footprint_measured": true
   },
   {
-   "key": "duplicates",
-   "title": "Validate one substantial duplicate-calculation group",
-   "sentence": "In Caldergate FP&A, 1 group; 1 duplicate line item plus one kept line item per group; the largest group repeats CAL07 P&L by Cost Centre.Depreciation 1 more time (19.2K cells).",
-   "who": "model builder who owns Caldergate FP&A",
-   "next": "Validate equivalence and the reasons for separate objects in that group, then decide whether consolidation is appropriate.",
-   "ids": [
-    "F11"
+   "key": "retire:Caldergate FP&A",
+   "kind": "investigation",
+   "title": "Check for consumers of CAL05 Opex OLD in Caldergate FP&A before keeping or retiring it",
+   "why": "No formula outside it reads its 14 line items and no export action reads it; it holds 70.2M cells and 50.8% of Caldergate FP&A's measured effort: an observed footprint, not a saving.",
+   "steps": [
+    "Ask the page builder which pages, saved views and line item subsets use CAL05 Opex OLD.",
+    "Check whether another model imports from a saved view on it.",
+    "Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off."
    ],
-   "model": "Caldergate FP&A"
-  }
- ],
- "steps": [
-  {
-   "key": "hotspots",
-   "title": "Investigate Caldergate Data Hub's principal calculation hotspots",
-   "sentence": "Ten line items carry 99.9% of Caldergate Data Hub's measured calculation effort, led by DAT01 GL Transactions.Loaded? at 88.3%.",
-   "who": "model builder who owns Caldergate Data Hub",
-   "next": "Read the formulas of the top five and match each against the findings that name it; choose one to trial in a development copy.",
-   "ids": [
-    "F3"
+   "done_when": "Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.",
+   "role": "model owner with a page builder, Caldergate FP&A",
+   "model": "Caldergate FP&A",
+   "objects": [
+    "CAL05 Opex OLD"
    ],
-   "model": "Caldergate Data Hub"
-  },
-  {
-   "key": "usage",
-   "title": "Establish whether the large modules nothing reads remain necessary",
-   "sentence": "7 modules across 4 models hold 70.3M cells with no formula or export consumer in the exports; each needs a consumer check before any keep-or-retire decision.",
-   "who": "model owner with a page builder",
-   "next": "Complete the consumer and retention checks for the largest modules in each model, then record a keep-or-retire recommendation per module.",
-   "ids": [
-    "F1",
-    "F30",
-    "F31",
-    "F8"
+   "finding_ids": [
+    "F1"
    ],
-   "per_model": [
-    {
-     "model": "Caldergate FP&A",
-     "id": "F1",
-     "modules": 3,
-     "cells": 70270848,
-     "effort": 50.78,
-     "top": [
-      "CAL05 Opex OLD",
-      "CAL06 Department Summary"
-     ],
-     "strength": "partial"
-    },
-    {
-     "model": "Workforce Planning",
-     "id": "F30",
-     "modules": 1,
-     "cells": 13392,
-     "effort": null,
-     "top": [
-      "zz Archive - 2021 Cost"
-     ],
-     "strength": "partial"
-    },
-    {
-     "model": "Caldergate Data Hub",
-     "id": "F31",
-     "modules": 2,
-     "cells": 360,
-     "effort": 0.01,
-     "top": [
-      "SYS01 Time Settings",
-      "SYS02 Data Checks"
-     ],
-     "strength": "partial"
-    },
-    {
-     "model": "Board Reporting",
-     "id": "F8",
-     "modules": 1,
-     "cells": 72,
-     "effort": 2.8,
-     "top": [
-      "SYS01 Time"
-     ],
-     "strength": "partial"
-    }
+   "strength": "partial",
+   "footprint_cells": 70249536,
+   "footprint_effort": 50.78,
+   "notices": [],
+   "depends_on": [],
+   "explorer": [
+    1,
+    "CAL05 Opex OLD",
+    null
    ],
-   "model": "all models"
-  },
-  {
-   "key": "duplicates",
-   "title": "Validate one substantial duplicate-calculation group",
-   "sentence": "In Caldergate FP&A, 1 group; 1 duplicate line item plus one kept line item per group; the largest group repeats CAL07 P&L by Cost Centre.Depreciation 1 more time (19.2K cells).",
-   "who": "model builder who owns Caldergate FP&A",
-   "next": "Validate equivalence and the reasons for separate objects in that group, then decide whether consolidation is appropriate.",
-   "ids": [
-    "F11"
-   ],
-   "model": "Caldergate FP&A"
-  }
- ],
- "priorities": [
-  {
-   "key": "hotspots",
-   "title": "Investigate Caldergate Data Hub's principal calculation hotspots",
-   "sentence": "Ten line items carry 99.9% of Caldergate Data Hub's measured calculation effort, led by DAT01 GL Transactions.Loaded? at 88.3%.",
-   "who": "model builder who owns Caldergate Data Hub",
-   "next": "Read the formulas of the top five and match each against the findings that name it; choose one to trial in a development copy.",
-   "ids": [
-    "F3"
-   ],
-   "model": "Caldergate Data Hub"
-  },
-  {
-   "key": "usage",
-   "title": "Establish whether the large modules nothing reads remain necessary",
-   "sentence": "7 modules across 4 models hold 70.3M cells with no formula or export consumer in the exports; each needs a consumer check before any keep-or-retire decision.",
-   "who": "model owner with a page builder",
-   "next": "Complete the consumer and retention checks for the largest modules in each model, then record a keep-or-retire recommendation per module.",
-   "ids": [
-    "F1",
-    "F30",
-    "F31",
-    "F8"
-   ],
-   "per_model": [
-    {
-     "model": "Caldergate FP&A",
-     "id": "F1",
-     "modules": 3,
-     "cells": 70270848,
-     "effort": 50.78,
-     "top": [
-      "CAL05 Opex OLD",
-      "CAL06 Department Summary"
-     ],
-     "strength": "partial"
-    },
-    {
-     "model": "Workforce Planning",
-     "id": "F30",
-     "modules": 1,
-     "cells": 13392,
-     "effort": null,
-     "top": [
-      "zz Archive - 2021 Cost"
-     ],
-     "strength": "partial"
-    },
-    {
-     "model": "Caldergate Data Hub",
-     "id": "F31",
-     "modules": 2,
-     "cells": 360,
-     "effort": 0.01,
-     "top": [
-      "SYS01 Time Settings",
-      "SYS02 Data Checks"
-     ],
-     "strength": "partial"
-    },
-    {
-     "model": "Board Reporting",
-     "id": "F8",
-     "modules": 1,
-     "cells": 72,
-     "effort": 2.8,
-     "top": [
-      "SYS01 Time"
-     ],
-     "strength": "partial"
-    }
-   ],
-   "model": "all models"
-  },
-  {
-   "key": "duplicates",
-   "title": "Validate one substantial duplicate-calculation group",
-   "sentence": "In Caldergate FP&A, 1 group; 1 duplicate line item plus one kept line item per group; the largest group repeats CAL07 P&L by Cost Centre.Depreciation 1 more time (19.2K cells).",
-   "who": "model builder who owns Caldergate FP&A",
-   "next": "Validate equivalence and the reasons for separate objects in that group, then decide whether consolidation is appropriate.",
-   "ids": [
-    "F11"
-   ],
-   "model": "Caldergate FP&A"
+   "rank_reason": "#3: evidence partial; bounded scope; materiality high; investigation; 70.2M cells; 50.8% of its model's effort",
+   "bounded": true,
+   "footprint_measured": true
   }
  ],
  "metrics": {
@@ -282,22 +604,6330 @@
   "validated_defects": 0,
   "observations": 4
  },
- "example": {
-  "change": "Change the formula of SYS01 Time Settings.Actual? in Caldergate FP&A.",
-  "evidence": "36 formulas read it directly and 101 line items across 13 modules depend on it transitively (parsed references, checked against Referenced By at 100% agreement); 2 export actions read those modules; Caldergate FP&A feeds Board Reporting, Workforce Planning by inferred import actions.",
-  "context": "Pages and saved views that show any of the dependent line items; line item subsets that include them; whether the exports feed another model's import; the owner's acceptance criteria for the outputs.",
-  "plan": "Compare the dependent outputs the owner names between a development copy and production before and after the change; reconcile the exports read by other models; sign-off by the model owner before promotion.",
-  "model": "Caldergate FP&A",
-  "hub": "SYS01 Time Settings.Actual?"
+ "graph": {
+  "models": [
+   "Caldergate Data Hub",
+   "Caldergate FP&A",
+   "Workforce Planning",
+   "Board Reporting"
+  ],
+  "nodes": [
+   [
+    0,
+    0,
+    "SYS01 Time Settings",
+    "Current Period?",
+    36,
+    0.0,
+    1
+   ],
+   [
+    1,
+    0,
+    "SYS01 Time Settings",
+    "Start of Month",
+    36,
+    0.0,
+    1
+   ],
+   [
+    2,
+    0,
+    "SYS01 Time Settings",
+    "End of Month",
+    36,
+    0.0,
+    1
+   ],
+   [
+    3,
+    0,
+    "SYS01 Time Settings",
+    "Days in Month",
+    36,
+    0.0,
+    1
+   ],
+   [
+    4,
+    0,
+    "SYS01 Time Settings",
+    "Period Label",
+    36,
+    0.0,
+    1
+   ],
+   [
+    5,
+    0,
+    "SYS00 Model Settings",
+    "Current Period",
+    1,
+    0.0,
+    0
+   ],
+   [
+    6,
+    0,
+    "SYS00 Model Settings",
+    "Last Loaded Period",
+    1,
+    0.0,
+    0
+   ],
+   [
+    7,
+    0,
+    "SYS00 Model Settings",
+    "Load Status",
+    1,
+    0.0,
+    1
+   ],
+   [
+    8,
+    0,
+    "DAT01 GL Transactions",
+    "Amount",
+    1254456,
+    0.0,
+    0
+   ],
+   [
+    9,
+    0,
+    "DAT01 GL Transactions",
+    "Journal Count",
+    1254456,
+    0.0,
+    0
+   ],
+   [
+    10,
+    0,
+    "DAT01 GL Transactions",
+    "Source System",
+    1254456,
+    0.0,
+    0
+   ],
+   [
+    11,
+    0,
+    "DAT01 GL Transactions",
+    "Loaded?",
+    1254456,
+    88.35,
+    1
+   ],
+   [
+    12,
+    0,
+    "DAT02 Cost Centre Master",
+    "Department",
+    133,
+    0.0,
+    0
+   ],
+   [
+    13,
+    0,
+    "DAT02 Cost Centre Master",
+    "Region",
+    133,
+    0.0,
+    0
+   ],
+   [
+    14,
+    0,
+    "DAT02 Cost Centre Master",
+    "Legal Entity",
+    133,
+    0.0,
+    0
+   ],
+   [
+    15,
+    0,
+    "DAT02 Cost Centre Master",
+    "Currency",
+    133,
+    0.0,
+    0
+   ],
+   [
+    16,
+    0,
+    "DAT02 Cost Centre Master",
+    "Active?",
+    133,
+    0.0,
+    0
+   ],
+   [
+    17,
+    0,
+    "DAT02 Cost Centre Master",
+    "Cost Centre Code",
+    133,
+    0.0,
+    1
+   ],
+   [
+    18,
+    0,
+    "DAT02 Cost Centre Master",
+    "Description",
+    133,
+    0.0,
+    0
+   ],
+   [
+    19,
+    0,
+    "DAT02 Cost Centre Master",
+    "Group",
+    133,
+    0.0,
+    1
+   ],
+   [
+    20,
+    0,
+    "DAT02 Cost Centre Master",
+    "Owner Email",
+    133,
+    0.0,
+    0
+   ],
+   [
+    21,
+    0,
+    "DAT03 Account Master",
+    "Account Type",
+    262,
+    0.0,
+    0
+   ],
+   [
+    22,
+    0,
+    "DAT03 Account Master",
+    "P&L Line",
+    262,
+    0.0,
+    0
+   ],
+   [
+    23,
+    0,
+    "DAT03 Account Master",
+    "Account Code",
+    262,
+    0.01,
+    1
+   ],
+   [
+    24,
+    0,
+    "DAT03 Account Master",
+    "Revenue?",
+    262,
+    0.02,
+    1
+   ],
+   [
+    25,
+    0,
+    "DAT03 Account Master",
+    "Opex?",
+    262,
+    0.02,
+    1
+   ],
+   [
+    26,
+    0,
+    "DAT03 Account Master",
+    "COGS?",
+    262,
+    0.02,
+    1
+   ],
+   [
+    27,
+    0,
+    "DAT03 Account Master",
+    "Sign",
+    262,
+    0.03,
+    1
+   ],
+   [
+    28,
+    0,
+    "DAT04 Product Master",
+    "Segment",
+    42,
+    0.0,
+    0
+   ],
+   [
+    29,
+    0,
+    "DAT04 Product Master",
+    "Launch Date",
+    42,
+    0.0,
+    0
+   ],
+   [
+    30,
+    0,
+    "DAT04 Product Master",
+    "Active?",
+    42,
+    0.0,
+    0
+   ],
+   [
+    31,
+    0,
+    "DAT04 Product Master",
+    "Product Code",
+    42,
+    0.0,
+    1
+   ],
+   [
+    32,
+    0,
+    "DAT04 Product Master",
+    "Revenue Cost Centre",
+    42,
+    0.0,
+    0
+   ],
+   [
+    33,
+    0,
+    "DAT04 Product Master",
+    "Product Family",
+    42,
+    0.0,
+    0
+   ],
+   [
+    34,
+    0,
+    "DAT05 CRM Pipeline",
+    "Open Pipeline",
+    17280,
+    0.0,
+    0
+   ],
+   [
+    35,
+    0,
+    "DAT05 CRM Pipeline",
+    "Probability",
+    17280,
+    0.0,
+    0
+   ],
+   [
+    36,
+    0,
+    "DAT05 CRM Pipeline",
+    "Weighted Pipeline",
+    17280,
+    1.83,
+    1
+   ],
+   [
+    37,
+    0,
+    "DAT05 CRM Pipeline",
+    "Expected Close",
+    17280,
+    0.0,
+    0
+   ],
+   [
+    38,
+    0,
+    "DAT05 CRM Pipeline",
+    "Stage",
+    17280,
+    0.0,
+    0
+   ],
+   [
+    39,
+    0,
+    "DAT06 Sales Orders",
+    "Units",
+    725760,
+    0.0,
+    0
+   ],
+   [
+    40,
+    0,
+    "DAT06 Sales Orders",
+    "Order Revenue",
+    725760,
+    0.0,
+    0
+   ],
+   [
+    41,
+    0,
+    "DAT06 Sales Orders",
+    "Order Count",
+    725760,
+    0.0,
+    0
+   ],
+   [
+    42,
+    0,
+    "DAT06 Sales Orders",
+    "Last Order Ref",
+    725760,
+    0.0,
+    0
+   ],
+   [
+    43,
+    0,
+    "DAT07 Customer Master",
+    "Region",
+    480,
+    0.0,
+    0
+   ],
+   [
+    44,
+    0,
+    "DAT07 Customer Master",
+    "Segment",
+    480,
+    0.0,
+    0
+   ],
+   [
+    45,
+    0,
+    "DAT07 Customer Master",
+    "Customer Code",
+    480,
+    0.02,
+    1
+   ],
+   [
+    46,
+    0,
+    "DAT07 Customer Master",
+    "Key Account?",
+    480,
+    0.0,
+    0
+   ],
+   [
+    47,
+    0,
+    "DAT07 Customer Master",
+    "Region Code",
+    480,
+    0.03,
+    1
+   ],
+   [
+    48,
+    0,
+    "DAT08 Employee Master",
+    "Cost Centre",
+    1850,
+    0.0,
+    0
+   ],
+   [
+    49,
+    0,
+    "DAT08 Employee Master",
+    "Role",
+    1850,
+    0.0,
+    0
+   ],
+   [
+    50,
+    0,
+    "DAT08 Employee Master",
+    "Start Date",
+    1850,
+    0.0,
+    0
+   ],
+   [
+    51,
+    0,
+    "DAT08 Employee Master",
+    "End Date",
+    1850,
+    0.0,
+    0
+   ],
+   [
+    52,
+    0,
+    "DAT08 Employee Master",
+    "FTE",
+    1850,
+    0.0,
+    0
+   ],
+   [
+    53,
+    0,
+    "DAT08 Employee Master",
+    "Employee Id",
+    1850,
+    0.07,
+    1
+   ],
+   [
+    54,
+    0,
+    "CAL01 Volume Summary",
+    "Units",
+    9072,
+    2.88,
+    1
+   ],
+   [
+    55,
+    0,
+    "CAL01 Volume Summary",
+    "Revenue",
+    9072,
+    2.88,
+    1
+   ],
+   [
+    56,
+    0,
+    "CAL01 Volume Summary",
+    "Orders",
+    9072,
+    2.88,
+    1
+   ],
+   [
+    57,
+    0,
+    "CAL01 Volume Summary",
+    "Average Order Value",
+    9072,
+    0.96,
+    1
+   ],
+   [
+    58,
+    0,
+    "SYS02 Data Checks",
+    "GL Total",
+    36,
+    0.0,
+    1
+   ],
+   [
+    59,
+    0,
+    "SYS02 Data Checks",
+    "Orders Total",
+    36,
+    0.0,
+    1
+   ],
+   [
+    60,
+    0,
+    "SYS02 Data Checks",
+    "Difference",
+    36,
+    0.0,
+    1
+   ],
+   [
+    61,
+    0,
+    "SYS02 Data Checks",
+    "Within Tolerance?",
+    36,
+    0.0,
+    1
+   ],
+   [
+    62,
+    0,
+    "SYS02 Data Checks",
+    "Check Message",
+    36,
+    0.01,
+    1
+   ],
+   [
+    63,
+    1,
+    "SYS00 Model Settings",
+    "Current Period",
+    1,
+    0.0,
+    0
+   ],
+   [
+    64,
+    1,
+    "SYS00 Model Settings",
+    "Forecast Start",
+    1,
+    0.0,
+    0
+   ],
+   [
+    65,
+    1,
+    "SYS00 Model Settings",
+    "Model Start",
+    1,
+    0.0,
+    0
+   ],
+   [
+    66,
+    1,
+    "SYS00 Model Settings",
+    "Reporting Currency",
+    1,
+    0.0,
+    0
+   ],
+   [
+    67,
+    1,
+    "SYS00 Model Settings",
+    "Default VAT Rate",
+    1,
+    0.0,
+    0
+   ],
+   [
+    68,
+    1,
+    "SYS00 Model Settings",
+    "NI Threshold",
+    1,
+    0.0,
+    0
+   ],
+   [
+    69,
+    1,
+    "SYS00 Model Settings",
+    "NI Rate",
+    1,
+    0.0,
+    0
+   ],
+   [
+    70,
+    1,
+    "SYS00 Model Settings",
+    "Corporation Tax Rate",
+    1,
+    0.0,
+    0
+   ],
+   [
+    71,
+    1,
+    "SYS00 Model Settings",
+    "Lock Actuals?",
+    1,
+    0.0,
+    0
+   ],
+   [
+    72,
+    1,
+    "SYS01 Time Settings",
+    "Current Period?",
+    36,
+    0.0,
+    1
+   ],
+   [
+    73,
+    1,
+    "SYS01 Time Settings",
+    "Actual?",
+    36,
+    0.0,
+    1
+   ],
+   [
+    74,
+    1,
+    "SYS01 Time Settings",
+    "Forecast?",
+    36,
+    0.0,
+    1
+   ],
+   [
+    75,
+    1,
+    "SYS01 Time Settings",
+    "First Period?",
+    36,
+    0.0,
+    1
+   ],
+   [
+    76,
+    1,
+    "SYS01 Time Settings",
+    "Start of Month",
+    36,
+    0.0,
+    1
+   ],
+   [
+    77,
+    1,
+    "SYS01 Time Settings",
+    "End of Month",
+    36,
+    0.0,
+    1
+   ],
+   [
+    78,
+    1,
+    "SYS01 Time Settings",
+    "Days in Month",
+    36,
+    0.0,
+    1
+   ],
+   [
+    79,
+    1,
+    "SYS01 Time Settings",
+    "Weekend Days",
+    36,
+    0.0,
+    0
+   ],
+   [
+    80,
+    1,
+    "SYS01 Time Settings",
+    "Bank Holidays",
+    36,
+    0.0,
+    0
+   ],
+   [
+    81,
+    1,
+    "SYS01 Time Settings",
+    "Working Days",
+    36,
+    0.0,
+    1
+   ],
+   [
+    82,
+    1,
+    "SYS01 Time Settings",
+    "Month Name",
+    36,
+    0.0,
+    1
+   ],
+   [
+    83,
+    1,
+    "SYS01 Time Settings",
+    "Year",
+    36,
+    0.0,
+    1
+   ],
+   [
+    84,
+    1,
+    "SYS01 Time Settings",
+    "Period Number",
+    36,
+    0.0,
+    1
+   ],
+   [
+    85,
+    1,
+    "SYS02 Cost Centre Attributes",
+    "Department",
+    133,
+    0.0,
+    0
+   ],
+   [
+    86,
+    1,
+    "SYS02 Cost Centre Attributes",
+    "Region",
+    133,
+    0.0,
+    0
+   ],
+   [
+    87,
+    1,
+    "SYS02 Cost Centre Attributes",
+    "Legal Entity",
+    133,
+    0.0,
+    0
+   ],
+   [
+    88,
+    1,
+    "SYS02 Cost Centre Attributes",
+    "Currency",
+    133,
+    0.0,
+    0
+   ],
+   [
+    89,
+    1,
+    "SYS02 Cost Centre Attributes",
+    "Active?",
+    133,
+    0.0,
+    0
+   ],
+   [
+    90,
+    1,
+    "SYS02 Cost Centre Attributes",
+    "Cost Centre Code",
+    133,
+    0.0,
+    1
+   ],
+   [
+    91,
+    1,
+    "SYS02 Cost Centre Attributes",
+    "Group",
+    133,
+    0.0,
+    1
+   ],
+   [
+    92,
+    1,
+    "SYS02 Cost Centre Attributes",
+    "Owner",
+    133,
+    0.0,
+    0
+   ],
+   [
+    93,
+    1,
+    "SYS02 Cost Centre Attributes",
+    "Region Code",
+    133,
+    0.0,
+    1
+   ],
+   [
+    94,
+    1,
+    "SYS02 Cost Centre Attributes",
+    "CC and Region",
+    133,
+    0.0,
+    1
+   ],
+   [
+    95,
+    1,
+    "SYS02 Cost Centre Attributes",
+    "Sales CC?",
+    133,
+    0.0,
+    1
+   ],
+   [
+    96,
+    1,
+    "SYS03 Account Attributes",
+    "Account Type",
+    262,
+    0.0,
+    0
+   ],
+   [
+    97,
+    1,
+    "SYS03 Account Attributes",
+    "P&L Line",
+    262,
+    0.0,
+    0
+   ],
+   [
+    98,
+    1,
+    "SYS03 Account Attributes",
+    "Account Code",
+    262,
+    0.0,
+    1
+   ],
+   [
+    99,
+    1,
+    "SYS03 Account Attributes",
+    "Revenue?",
+    262,
+    0.0,
+    1
+   ],
+   [
+    100,
+    1,
+    "SYS03 Account Attributes",
+    "Opex?",
+    262,
+    0.0,
+    1
+   ],
+   [
+    101,
+    1,
+    "SYS03 Account Attributes",
+    "COGS?",
+    262,
+    0.0,
+    1
+   ],
+   [
+    102,
+    1,
+    "SYS03 Account Attributes",
+    "Staff?",
+    262,
+    0.0,
+    1
+   ],
+   [
+    103,
+    1,
+    "SYS03 Account Attributes",
+    "Sign",
+    262,
+    0.0,
+    1
+   ],
+   [
+    104,
+    1,
+    "SYS04 Product Attributes",
+    "Segment",
+    42,
+    0.0,
+    0
+   ],
+   [
+    105,
+    1,
+    "SYS04 Product Attributes",
+    "Launch Date",
+    42,
+    0.0,
+    0
+   ],
+   [
+    106,
+    1,
+    "SYS04 Product Attributes",
+    "Active?",
+    42,
+    0.0,
+    0
+   ],
+   [
+    107,
+    1,
+    "SYS04 Product Attributes",
+    "Product Code",
+    42,
+    0.0,
+    1
+   ],
+   [
+    108,
+    1,
+    "SYS04 Product Attributes",
+    "Revenue Cost Centre",
+    42,
+    0.0,
+    0
+   ],
+   [
+    109,
+    1,
+    "SYS04 Product Attributes",
+    "Product Family",
+    42,
+    0.0,
+    0
+   ],
+   [
+    110,
+    1,
+    "SYS05 FX Rates",
+    "Rate to GBP",
+    1152,
+    0.0,
+    0
+   ],
+   [
+    111,
+    1,
+    "SYS05 FX Rates",
+    "Rate Locked?",
+    1152,
+    0.0,
+    0
+   ],
+   [
+    112,
+    1,
+    "SYS05 FX Rates",
+    "Rate to GBP Prior",
+    1152,
+    0.0,
+    1
+   ],
+   [
+    113,
+    1,
+    "SYS05 FX Rates",
+    "Rate Movement",
+    1152,
+    0.0,
+    1
+   ],
+   [
+    114,
+    1,
+    "SYS06 Region Attributes",
+    "Currency",
+    6,
+    0.0,
+    0
+   ],
+   [
+    115,
+    1,
+    "SYS06 Region Attributes",
+    "Region Code",
+    6,
+    0.0,
+    1
+   ],
+   [
+    116,
+    1,
+    "SYS06 Region Attributes",
+    "Region Manager",
+    6,
+    0.0,
+    0
+   ],
+   [
+    117,
+    1,
+    "SYS06 Region Attributes",
+    "Reportable?",
+    6,
+    0.0,
+    0
+   ],
+   [
+    118,
+    1,
+    "SYS07 Launch Flags",
+    "Launched?",
+    1512,
+    0.0,
+    1
+   ],
+   [
+    119,
+    1,
+    "SYS07 Launch Flags",
+    "Months Since Launch",
+    1512,
+    0.0,
+    1
+   ],
+   [
+    120,
+    1,
+    "INP01 Volumes",
+    "Units",
+    36288,
+    0.0,
+    0
+   ],
+   [
+    121,
+    1,
+    "INP01 Volumes",
+    "Price",
+    36288,
+    0.0,
+    0
+   ],
+   [
+    122,
+    1,
+    "INP01 Volumes",
+    "Discount %",
+    36288,
+    0.0,
+    0
+   ],
+   [
+    123,
+    1,
+    "INP01 Volumes",
+    "Returns %",
+    36288,
+    0.0,
+    0
+   ],
+   [
+    124,
+    1,
+    "INP01 Volumes",
+    "Volume Override",
+    36288,
+    0.0,
+    0
+   ],
+   [
+    125,
+    1,
+    "INP01 Volumes",
+    "Use Override?",
+    36288,
+    0.0,
+    0
+   ],
+   [
+    126,
+    1,
+    "INP01 Volumes",
+    "Comment",
+    36288,
+    0.0,
+    0
+   ],
+   [
+    127,
+    1,
+    "INP02 Opex Drivers",
+    "Rent",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    128,
+    1,
+    "INP02 Opex Drivers",
+    "Business Rates",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    129,
+    1,
+    "INP02 Opex Drivers",
+    "Utilities",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    130,
+    1,
+    "INP02 Opex Drivers",
+    "Cleaning",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    131,
+    1,
+    "INP02 Opex Drivers",
+    "Security",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    132,
+    1,
+    "INP02 Opex Drivers",
+    "Insurance",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    133,
+    1,
+    "INP02 Opex Drivers",
+    "Travel",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    134,
+    1,
+    "INP02 Opex Drivers",
+    "Subsistence",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    135,
+    1,
+    "INP02 Opex Drivers",
+    "Mileage",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    136,
+    1,
+    "INP02 Opex Drivers",
+    "Hotels",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    137,
+    1,
+    "INP02 Opex Drivers",
+    "Marketing Events",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    138,
+    1,
+    "INP02 Opex Drivers",
+    "Marketing Digital",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    139,
+    1,
+    "INP02 Opex Drivers",
+    "Marketing Print",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    140,
+    1,
+    "INP02 Opex Drivers",
+    "Agency Fees",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    141,
+    1,
+    "INP02 Opex Drivers",
+    "Software Licences",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    142,
+    1,
+    "INP02 Opex Drivers",
+    "Software Support",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    143,
+    1,
+    "INP02 Opex Drivers",
+    "Hardware",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    144,
+    1,
+    "INP02 Opex Drivers",
+    "Telecoms",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    145,
+    1,
+    "INP02 Opex Drivers",
+    "Mobile",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    146,
+    1,
+    "INP02 Opex Drivers",
+    "Postage",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    147,
+    1,
+    "INP02 Opex Drivers",
+    "Stationery",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    148,
+    1,
+    "INP02 Opex Drivers",
+    "Printing",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    149,
+    1,
+    "INP02 Opex Drivers",
+    "Legal Fees",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    150,
+    1,
+    "INP02 Opex Drivers",
+    "Audit Fees",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    151,
+    1,
+    "INP02 Opex Drivers",
+    "Consultancy",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    152,
+    1,
+    "INP02 Opex Drivers",
+    "Contractors",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    153,
+    1,
+    "INP02 Opex Drivers",
+    "Recruitment Fees",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    154,
+    1,
+    "INP02 Opex Drivers",
+    "Training",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    155,
+    1,
+    "INP02 Opex Drivers",
+    "Subscriptions",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    156,
+    1,
+    "INP02 Opex Drivers",
+    "Memberships",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    157,
+    1,
+    "INP02 Opex Drivers",
+    "Bank Charges",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    158,
+    1,
+    "INP02 Opex Drivers",
+    "Vehicle Lease",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    159,
+    1,
+    "INP02 Opex Drivers",
+    "Fuel",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    160,
+    1,
+    "INP02 Opex Drivers",
+    "Repairs",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    161,
+    1,
+    "INP02 Opex Drivers",
+    "Maintenance Contracts",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    162,
+    1,
+    "INP02 Opex Drivers",
+    "Waste",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    163,
+    1,
+    "INP02 Opex Drivers",
+    "Uniforms",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    164,
+    1,
+    "INP02 Opex Drivers",
+    "Safety Equipment",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    165,
+    1,
+    "INP02 Opex Drivers",
+    "Entertaining",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    166,
+    1,
+    "INP02 Opex Drivers",
+    "Gifts",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    167,
+    1,
+    "INP02 Opex Drivers",
+    "Donations",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    168,
+    1,
+    "INP02 Opex Drivers",
+    "Sponsorship",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    169,
+    1,
+    "INP02 Opex Drivers",
+    "Research",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    170,
+    1,
+    "INP02 Opex Drivers",
+    "Samples",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    171,
+    1,
+    "INP02 Opex Drivers",
+    "Freight Out",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    172,
+    1,
+    "INP02 Opex Drivers",
+    "Packaging",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    173,
+    1,
+    "INP02 Opex Drivers",
+    "Warehouse Rent",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    174,
+    1,
+    "INP02 Opex Drivers",
+    "Temp Labour",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    175,
+    1,
+    "INP02 Opex Drivers",
+    "Overtime Premium",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    176,
+    1,
+    "INP02 Opex Drivers",
+    "Other Opex",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    177,
+    1,
+    "INP02 Opex Drivers",
+    "Total Drivers",
+    19152,
+    0.15,
+    1
+   ],
+   [
+    178,
+    1,
+    "INP02 Opex Drivers",
+    "Property Costs",
+    19152,
+    0.02,
+    1
+   ],
+   [
+    179,
+    1,
+    "INP02 Opex Drivers",
+    "People Costs",
+    19152,
+    0.02,
+    1
+   ],
+   [
+    180,
+    1,
+    "INP02 Opex Drivers",
+    "Marketing Costs",
+    19152,
+    0.02,
+    1
+   ],
+   [
+    181,
+    1,
+    "INP02 Opex Drivers",
+    "IT Costs",
+    19152,
+    0.02,
+    1
+   ],
+   [
+    182,
+    1,
+    "INP02 Opex Drivers",
+    "Check",
+    19152,
+    0.02,
+    1
+   ],
+   [
+    183,
+    1,
+    "INP02 Opex Drivers",
+    "Has Drivers?",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    184,
+    1,
+    "INP02 Opex Drivers",
+    "Driver Count",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    185,
+    1,
+    "INP03 Headcount",
+    "FTE",
+    593712,
+    0.0,
+    0
+   ],
+   [
+    186,
+    1,
+    "INP03 Headcount",
+    "Salary",
+    593712,
+    0.0,
+    0
+   ],
+   [
+    187,
+    1,
+    "INP03 Headcount",
+    "Bonus %",
+    593712,
+    0.0,
+    0
+   ],
+   [
+    188,
+    1,
+    "INP03 Headcount",
+    "Monthly Salary",
+    593712,
+    0.18,
+    1
+   ],
+   [
+    189,
+    1,
+    "INP03 Headcount",
+    "NI Threshold",
+    593712,
+    0.18,
+    1
+   ],
+   [
+    190,
+    1,
+    "INP03 Headcount",
+    "NI Rate",
+    593712,
+    0.18,
+    1
+   ],
+   [
+    191,
+    1,
+    "INP03 Headcount",
+    "Employer NI",
+    593712,
+    0.58,
+    1
+   ],
+   [
+    192,
+    1,
+    "INP03 Headcount",
+    "Bonus",
+    593712,
+    0.27,
+    1
+   ],
+   [
+    193,
+    1,
+    "INP03 Headcount",
+    "Pension",
+    593712,
+    0.18,
+    1
+   ],
+   [
+    194,
+    1,
+    "INP03 Headcount",
+    "Total Cost",
+    593712,
+    0.55,
+    1
+   ],
+   [
+    195,
+    1,
+    "INP04 Capex",
+    "Capex Spend",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    196,
+    1,
+    "INP04 Capex",
+    "Useful Life Years",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    197,
+    1,
+    "INP04 Capex",
+    "Asset Class",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    198,
+    1,
+    "INP04 Capex",
+    "Project",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    199,
+    1,
+    "INP05 Balance Sheet Drivers",
+    "Debtor Days",
+    576,
+    0.0,
+    0
+   ],
+   [
+    200,
+    1,
+    "INP05 Balance Sheet Drivers",
+    "Creditor Days",
+    576,
+    0.0,
+    0
+   ],
+   [
+    201,
+    1,
+    "INP05 Balance Sheet Drivers",
+    "Stock Days",
+    576,
+    0.0,
+    0
+   ],
+   [
+    202,
+    1,
+    "INP05 Balance Sheet Drivers",
+    "Opening Cash Balance",
+    576,
+    0.0,
+    0
+   ],
+   [
+    203,
+    1,
+    "INP05 Balance Sheet Drivers",
+    "Tax Rate Override",
+    576,
+    0.0,
+    0
+   ],
+   [
+    204,
+    1,
+    "INP06 Unit Costs",
+    "Unit Cost",
+    6048,
+    0.0,
+    0
+   ],
+   [
+    205,
+    1,
+    "INP06 Unit Costs",
+    "Freight per Unit",
+    6048,
+    0.0,
+    0
+   ],
+   [
+    206,
+    1,
+    "INP06 Unit Costs",
+    "Landed Cost",
+    6048,
+    0.0,
+    1
+   ],
+   [
+    207,
+    1,
+    "DAT01 Actuals GL",
+    "Amount",
+    5017824,
+    0.0,
+    0
+   ],
+   [
+    208,
+    1,
+    "DAT01 Actuals GL",
+    "Source Journal",
+    5017824,
+    0.0,
+    0
+   ],
+   [
+    209,
+    1,
+    "DAT01 Actuals GL",
+    "Journal Cost Centre",
+    5017824,
+    6.17,
+    1
+   ],
+   [
+    210,
+    1,
+    "DAT01 Actuals GL",
+    "Loaded?",
+    5017824,
+    1.54,
+    1
+   ],
+   [
+    211,
+    1,
+    "DAT02 Actuals Volumes",
+    "Units Actual",
+    36288,
+    0.0,
+    0
+   ],
+   [
+    212,
+    1,
+    "DAT02 Actuals Volumes",
+    "Revenue Actual",
+    36288,
+    0.0,
+    0
+   ],
+   [
+    213,
+    1,
+    "CAL01 Volumes",
+    "Units",
+    36288,
+    0.05,
+    1
+   ],
+   [
+    214,
+    1,
+    "CAL01 Volumes",
+    "Returns",
+    36288,
+    0.02,
+    1
+   ],
+   [
+    215,
+    1,
+    "CAL01 Volumes",
+    "Net Units",
+    36288,
+    0.02,
+    1
+   ],
+   [
+    216,
+    1,
+    "CAL01 Volumes",
+    "Launched?",
+    6048,
+    0.0,
+    1
+   ],
+   [
+    217,
+    1,
+    "CAL01 Volumes",
+    "Sellable Units",
+    36288,
+    0.03,
+    1
+   ],
+   [
+    218,
+    1,
+    "CAL01 Volumes",
+    "Sellable Units Prior Year",
+    36288,
+    0.01,
+    1
+   ],
+   [
+    219,
+    1,
+    "CAL01 Volumes",
+    "Volume Growth",
+    36288,
+    0.02,
+    1
+   ],
+   [
+    220,
+    1,
+    "CAL02 Revenue",
+    "Gross Revenue",
+    36288,
+    0.02,
+    1
+   ],
+   [
+    221,
+    1,
+    "CAL02 Revenue",
+    "Discounts",
+    36288,
+    0.02,
+    1
+   ],
+   [
+    222,
+    1,
+    "CAL02 Revenue",
+    "Net Revenue",
+    36288,
+    0.02,
+    1
+   ],
+   [
+    223,
+    1,
+    "CAL02 Revenue",
+    "Revenue GBP",
+    36288,
+    0.07,
+    1
+   ],
+   [
+    224,
+    1,
+    "CAL02 Revenue",
+    "Revenue USD",
+    36288,
+    0.01,
+    1
+   ],
+   [
+    225,
+    1,
+    "CAL02 Revenue",
+    "VAT",
+    36288,
+    0.01,
+    1
+   ],
+   [
+    226,
+    1,
+    "CAL02 Revenue",
+    "Revenue per Unit",
+    36288,
+    0.02,
+    1
+   ],
+   [
+    227,
+    1,
+    "CAL02 Revenue",
+    "Average Price",
+    36288,
+    0.02,
+    1
+   ],
+   [
+    228,
+    1,
+    "CAL02 Revenue",
+    "Actual or Forecast",
+    36288,
+    0.02,
+    1
+   ],
+   [
+    229,
+    1,
+    "CAL02 Revenue",
+    "Revenue Label",
+    36288,
+    0.01,
+    1
+   ],
+   [
+    230,
+    1,
+    "CAL02 Revenue",
+    "Revenue Prior Year",
+    36288,
+    0.01,
+    1
+   ],
+   [
+    231,
+    1,
+    "CAL02 Revenue",
+    "Revenue Growth",
+    36288,
+    0.02,
+    1
+   ],
+   [
+    232,
+    1,
+    "CAL03 Opex",
+    "Actual Opex",
+    5017824,
+    3.7,
+    1
+   ],
+   [
+    233,
+    1,
+    "CAL03 Opex",
+    "Forecast Opex",
+    5017824,
+    16.04,
+    1
+   ],
+   [
+    234,
+    1,
+    "CAL03 Opex",
+    "Opex",
+    5017824,
+    4.94,
+    1
+   ],
+   [
+    235,
+    1,
+    "CAL03 Opex",
+    "Opex GBP",
+    5017824,
+    9.26,
+    1
+   ],
+   [
+    236,
+    1,
+    "CAL03 Opex",
+    "Opex Prior Year",
+    5017824,
+    1.54,
+    1
+   ],
+   [
+    237,
+    1,
+    "CAL03 Opex",
+    "Opex Variance",
+    5017824,
+    2.31,
+    1
+   ],
+   [
+    238,
+    1,
+    "CAL04 Margn",
+    "COGS",
+    36288,
+    0.02,
+    1
+   ],
+   [
+    239,
+    1,
+    "CAL04 Margn",
+    "Margin",
+    36288,
+    0.02,
+    1
+   ],
+   [
+    240,
+    1,
+    "CAL04 Margn",
+    "Margin %",
+    36288,
+    0.02,
+    1
+   ],
+   [
+    241,
+    1,
+    "CAL04 Margn",
+    "Margin GBP",
+    36288,
+    0.07,
+    1
+   ],
+   [
+    242,
+    1,
+    "CAL05 Opex OLD",
+    "Actual",
+    5017824,
+    3.7,
+    1
+   ],
+   [
+    243,
+    1,
+    "CAL05 Opex OLD",
+    "Rent Forecast",
+    5017824,
+    2.47,
+    1
+   ],
+   [
+    244,
+    1,
+    "CAL05 Opex OLD",
+    "Rates Forecast",
+    5017824,
+    2.47,
+    1
+   ],
+   [
+    245,
+    1,
+    "CAL05 Opex OLD",
+    "Utilities Forecast",
+    5017824,
+    2.47,
+    1
+   ],
+   [
+    246,
+    1,
+    "CAL05 Opex OLD",
+    "Travel Forecast",
+    5017824,
+    2.47,
+    1
+   ],
+   [
+    247,
+    1,
+    "CAL05 Opex OLD",
+    "Marketing Forecast",
+    5017824,
+    2.47,
+    1
+   ],
+   [
+    248,
+    1,
+    "CAL05 Opex OLD",
+    "Software Forecast",
+    5017824,
+    2.47,
+    1
+   ],
+   [
+    249,
+    1,
+    "CAL05 Opex OLD",
+    "Fees Forecast",
+    5017824,
+    2.47,
+    1
+   ],
+   [
+    250,
+    1,
+    "CAL05 Opex OLD",
+    "Other Forecast",
+    5017824,
+    2.47,
+    1
+   ],
+   [
+    251,
+    1,
+    "CAL05 Opex OLD",
+    "Forecast",
+    5017824,
+    6.94,
+    1
+   ],
+   [
+    252,
+    1,
+    "CAL05 Opex OLD",
+    "Opex",
+    5017824,
+    4.94,
+    1
+   ],
+   [
+    253,
+    1,
+    "CAL05 Opex OLD",
+    "Opex GBP",
+    5017824,
+    9.26,
+    1
+   ],
+   [
+    254,
+    1,
+    "CAL05 Opex OLD",
+    "Opex Cumulative",
+    5017824,
+    3.09,
+    1
+   ],
+   [
+    255,
+    1,
+    "CAL05 Opex OLD",
+    "Opex Run Rate",
+    5017824,
+    3.09,
+    1
+   ],
+   [
+    256,
+    1,
+    "CAL06 Department Summary",
+    "Revenue",
+    2592,
+    0.0,
+    1
+   ],
+   [
+    257,
+    1,
+    "CAL06 Department Summary",
+    "Opex",
+    2592,
+    0.0,
+    1
+   ],
+   [
+    258,
+    1,
+    "CAL06 Department Summary",
+    "Staff Cost",
+    2592,
+    0.0,
+    1
+   ],
+   [
+    259,
+    1,
+    "CAL06 Department Summary",
+    "FTE",
+    2592,
+    0.0,
+    1
+   ],
+   [
+    260,
+    1,
+    "CAL06 Department Summary",
+    "Benchmark Opex",
+    2592,
+    0.0,
+    1
+   ],
+   [
+    261,
+    1,
+    "CAL06 Department Summary",
+    "Cost per FTE",
+    2592,
+    0.0,
+    1
+   ],
+   [
+    262,
+    1,
+    "SYS09 Department Settings",
+    "Benchmark Account",
+    18,
+    0.0,
+    0
+   ],
+   [
+    263,
+    1,
+    "SYS09 Department Settings",
+    "Head of Department",
+    18,
+    0.0,
+    0
+   ],
+   [
+    264,
+    1,
+    "SYS09 Department Settings",
+    "Cost Centre Owner Approves?",
+    18,
+    0.0,
+    0
+   ],
+   [
+    265,
+    1,
+    "CAL07 P&L by Cost Centre",
+    "Revenue",
+    19152,
+    0.03,
+    1
+   ],
+   [
+    266,
+    1,
+    "CAL07 P&L by Cost Centre",
+    "COGS",
+    19152,
+    0.03,
+    1
+   ],
+   [
+    267,
+    1,
+    "CAL07 P&L by Cost Centre",
+    "Gross Margin",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    268,
+    1,
+    "CAL07 P&L by Cost Centre",
+    "Opex",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    269,
+    1,
+    "CAL07 P&L by Cost Centre",
+    "Staff Cost",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    270,
+    1,
+    "CAL07 P&L by Cost Centre",
+    "EBITDA",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    271,
+    1,
+    "CAL07 P&L by Cost Centre",
+    "Depreciation",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    272,
+    1,
+    "CAL07 P&L by Cost Centre",
+    "EBIT",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    273,
+    1,
+    "CAL07 P&L by Cost Centre",
+    "EBITDA Margin",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    274,
+    1,
+    "CAL07 P&L by Cost Centre",
+    "Opex Budget",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    275,
+    1,
+    "CAL07 P&L by Cost Centre",
+    "Opex Variance to Budget",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    276,
+    1,
+    "CAL08 Cash Flow",
+    "EBITDA",
+    576,
+    0.0,
+    1
+   ],
+   [
+    277,
+    1,
+    "CAL08 Cash Flow",
+    "Revenue",
+    576,
+    0.0,
+    1
+   ],
+   [
+    278,
+    1,
+    "CAL08 Cash Flow",
+    "Debtors",
+    576,
+    0.0,
+    1
+   ],
+   [
+    279,
+    1,
+    "CAL08 Cash Flow",
+    "Working Capital Movement",
+    576,
+    0.0,
+    1
+   ],
+   [
+    280,
+    1,
+    "CAL08 Cash Flow",
+    "Tax",
+    576,
+    0.0,
+    1
+   ],
+   [
+    281,
+    1,
+    "CAL08 Cash Flow",
+    "Capex",
+    576,
+    0.0,
+    1
+   ],
+   [
+    282,
+    1,
+    "CAL08 Cash Flow",
+    "Net Cash Flow",
+    576,
+    0.0,
+    1
+   ],
+   [
+    283,
+    1,
+    "CAL08 Cash Flow",
+    "Opening Cash",
+    576,
+    0.0,
+    1
+   ],
+   [
+    284,
+    1,
+    "CAL08 Cash Flow",
+    "Closing Cash",
+    576,
+    0.0,
+    1
+   ],
+   [
+    285,
+    1,
+    "CAL08 Cash Flow",
+    "Cash Negative?",
+    576,
+    0.0,
+    1
+   ],
+   [
+    286,
+    1,
+    "CAL10 Depreciation",
+    "Charge",
+    19152,
+    0.04,
+    1
+   ],
+   [
+    287,
+    1,
+    "CAL10 Depreciation",
+    "NBV",
+    19152,
+    0.02,
+    1
+   ],
+   [
+    288,
+    1,
+    "CAL11 Reporting Prep",
+    "Revenue",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    289,
+    1,
+    "CAL11 Reporting Prep",
+    "EBITDA",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    290,
+    1,
+    "CAL11 Reporting Prep",
+    "Opex",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    291,
+    1,
+    "CAL11 Reporting Prep",
+    "Staff Cost",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    292,
+    1,
+    "CAL11 Reporting Prep",
+    "Total Cost",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    293,
+    1,
+    "CAL12 Driver Phasing",
+    "Rent Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    294,
+    1,
+    "CAL12 Driver Phasing",
+    "Business Rates Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    295,
+    1,
+    "CAL12 Driver Phasing",
+    "Utilities Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    296,
+    1,
+    "CAL12 Driver Phasing",
+    "Cleaning Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    297,
+    1,
+    "CAL12 Driver Phasing",
+    "Security Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    298,
+    1,
+    "CAL12 Driver Phasing",
+    "Insurance Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    299,
+    1,
+    "CAL12 Driver Phasing",
+    "Travel Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    300,
+    1,
+    "CAL12 Driver Phasing",
+    "Subsistence Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    301,
+    1,
+    "CAL12 Driver Phasing",
+    "Mileage Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    302,
+    1,
+    "CAL12 Driver Phasing",
+    "Hotels Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    303,
+    1,
+    "CAL12 Driver Phasing",
+    "Marketing Events Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    304,
+    1,
+    "CAL12 Driver Phasing",
+    "Marketing Digital Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    305,
+    1,
+    "CAL12 Driver Phasing",
+    "Marketing Print Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    306,
+    1,
+    "CAL12 Driver Phasing",
+    "Agency Fees Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    307,
+    1,
+    "CAL12 Driver Phasing",
+    "Software Licences Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    308,
+    1,
+    "CAL12 Driver Phasing",
+    "Software Support Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    309,
+    1,
+    "CAL12 Driver Phasing",
+    "Hardware Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    310,
+    1,
+    "CAL12 Driver Phasing",
+    "Telecoms Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    311,
+    1,
+    "CAL12 Driver Phasing",
+    "Mobile Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    312,
+    1,
+    "CAL12 Driver Phasing",
+    "Postage Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    313,
+    1,
+    "CAL12 Driver Phasing",
+    "Stationery Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    314,
+    1,
+    "CAL12 Driver Phasing",
+    "Printing Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    315,
+    1,
+    "CAL12 Driver Phasing",
+    "Legal Fees Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    316,
+    1,
+    "CAL12 Driver Phasing",
+    "Audit Fees Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    317,
+    1,
+    "CAL12 Driver Phasing",
+    "Consultancy Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    318,
+    1,
+    "CAL12 Driver Phasing",
+    "Contractors Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    319,
+    1,
+    "CAL12 Driver Phasing",
+    "Recruitment Fees Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    320,
+    1,
+    "CAL12 Driver Phasing",
+    "Training Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    321,
+    1,
+    "CAL12 Driver Phasing",
+    "Subscriptions Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    322,
+    1,
+    "CAL12 Driver Phasing",
+    "Memberships Phased",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    323,
+    1,
+    "CAL12 Driver Phasing",
+    "Total Phased",
+    19152,
+    0.09,
+    1
+   ],
+   [
+    324,
+    1,
+    "OUT01 Management Pack",
+    "Revenue",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    325,
+    1,
+    "OUT01 Management Pack",
+    "EBITDA",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    326,
+    1,
+    "OUT01 Management Pack",
+    "Opex",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    327,
+    1,
+    "OUT01 Management Pack",
+    "Staff Cost",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    328,
+    1,
+    "OUT01 Management Pack",
+    "Total Cost",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    329,
+    1,
+    "OUT01 Management Pack",
+    "Headcount",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    330,
+    1,
+    "OUT01 Management Pack",
+    "Capex",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    331,
+    1,
+    "OUT01 Management Pack",
+    "Depreciation",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    332,
+    1,
+    "OUT01 Management Pack",
+    "Revenue YTD",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    333,
+    1,
+    "OUT01 Management Pack",
+    "EBITDA YTD",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    334,
+    1,
+    "OUT01 Management Pack",
+    "Phased Drivers",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    335,
+    1,
+    "OUT02 Board Pack",
+    "Revenue",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    336,
+    1,
+    "OUT02 Board Pack",
+    "EBITDA",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    337,
+    1,
+    "OUT02 Board Pack",
+    "Budget Revenue",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    338,
+    1,
+    "OUT02 Board Pack",
+    "Old Budget Revenue",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    339,
+    1,
+    "OUT02 Board Pack",
+    "Revenue Variance",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    340,
+    1,
+    "OUT02 Board Pack",
+    "Revenue Variance %",
+    19152,
+    0.01,
+    1
+   ],
+   [
+    341,
+    2,
+    "Inputs - Settings",
+    "Current Period",
+    1,
+    null,
+    0
+   ],
+   [
+    342,
+    2,
+    "Inputs - Settings",
+    "Forecast Start",
+    1,
+    null,
+    0
+   ],
+   [
+    343,
+    2,
+    "Inputs - Settings",
+    "NI Threshold",
+    1,
+    null,
+    0
+   ],
+   [
+    344,
+    2,
+    "Inputs - Settings",
+    "NI Rate",
+    1,
+    null,
+    0
+   ],
+   [
+    345,
+    2,
+    "Inputs - Settings",
+    "Pension Rate",
+    1,
+    null,
+    0
+   ],
+   [
+    346,
+    2,
+    "Inputs - Settings",
+    "Salary Inflation",
+    1,
+    null,
+    0
+   ],
+   [
+    347,
+    2,
+    "Inputs - Settings",
+    "Inflation Month",
+    1,
+    null,
+    0
+   ],
+   [
+    348,
+    2,
+    "Inputs - Calendar",
+    "Current Period?",
+    36,
+    null,
+    1
+   ],
+   [
+    349,
+    2,
+    "Inputs - Calendar",
+    "Actual?",
+    36,
+    null,
+    1
+   ],
+   [
+    350,
+    2,
+    "Inputs - Calendar",
+    "Days in Month",
+    36,
+    null,
+    1
+   ],
+   [
+    351,
+    2,
+    "Inputs - Calendar",
+    "Weekend Days",
+    36,
+    null,
+    0
+   ],
+   [
+    352,
+    2,
+    "Inputs - Calendar",
+    "Bank Holidays",
+    36,
+    null,
+    0
+   ],
+   [
+    353,
+    2,
+    "Inputs - Calendar",
+    "Working Days",
+    36,
+    null,
+    1
+   ],
+   [
+    354,
+    2,
+    "Inputs - Calendar",
+    "Inflation Applies?",
+    36,
+    null,
+    1
+   ],
+   [
+    355,
+    2,
+    "Data - Cost Centre Map",
+    "Department",
+    133,
+    null,
+    0
+   ],
+   [
+    356,
+    2,
+    "Data - Cost Centre Map",
+    "Region",
+    133,
+    null,
+    0
+   ],
+   [
+    357,
+    2,
+    "Data - Cost Centre Map",
+    "Active?",
+    133,
+    null,
+    0
+   ],
+   [
+    358,
+    2,
+    "Data - Cost Centre Map",
+    "CC Code",
+    133,
+    null,
+    1
+   ],
+   [
+    359,
+    2,
+    "Data - Employees",
+    "Employee Name",
+    66600,
+    null,
+    0
+   ],
+   [
+    360,
+    2,
+    "Data - Employees",
+    "Cost Centre",
+    66600,
+    null,
+    0
+   ],
+   [
+    361,
+    2,
+    "Data - Employees",
+    "Role",
+    66600,
+    null,
+    0
+   ],
+   [
+    362,
+    2,
+    "Data - Employees",
+    "Salary",
+    66600,
+    null,
+    0
+   ],
+   [
+    363,
+    2,
+    "Data - Employees",
+    "Start Date",
+    66600,
+    null,
+    0
+   ],
+   [
+    364,
+    2,
+    "Data - Employees",
+    "End Date",
+    66600,
+    null,
+    0
+   ],
+   [
+    365,
+    2,
+    "Data - Employees",
+    "FTE",
+    66600,
+    null,
+    0
+   ],
+   [
+    366,
+    2,
+    "Data - Employees",
+    "Active?",
+    66600,
+    null,
+    1
+   ],
+   [
+    367,
+    2,
+    "Data - Employees",
+    "Name and Role",
+    66600,
+    null,
+    1
+   ],
+   [
+    368,
+    2,
+    "Data - Employees",
+    "Leaver This Month?",
+    66600,
+    null,
+    1
+   ],
+   [
+    369,
+    2,
+    "Calcs - Cost",
+    "Salary",
+    266400,
+    null,
+    1
+   ],
+   [
+    370,
+    2,
+    "Calcs - Cost",
+    "Monthly Salary",
+    266400,
+    null,
+    1
+   ],
+   [
+    371,
+    2,
+    "Calcs - Cost",
+    "Inflated Salary",
+    266400,
+    null,
+    1
+   ],
+   [
+    372,
+    2,
+    "Calcs - Cost",
+    "NI Threshold",
+    266400,
+    null,
+    1
+   ],
+   [
+    373,
+    2,
+    "Calcs - Cost",
+    "NI Rate",
+    266400,
+    null,
+    1
+   ],
+   [
+    374,
+    2,
+    "Calcs - Cost",
+    "Employer NI",
+    266400,
+    null,
+    1
+   ],
+   [
+    375,
+    2,
+    "Calcs - Cost",
+    "Pension",
+    266400,
+    null,
+    1
+   ],
+   [
+    376,
+    2,
+    "Calcs - Cost",
+    "Bonus",
+    266400,
+    null,
+    1
+   ],
+   [
+    377,
+    2,
+    "Calcs - Cost",
+    "Total Cost",
+    266400,
+    null,
+    1
+   ],
+   [
+    378,
+    2,
+    "Calcs - Headcount by CC",
+    "FTE",
+    593712,
+    null,
+    1
+   ],
+   [
+    379,
+    2,
+    "Calcs - Headcount by CC",
+    "Total Cost",
+    593712,
+    null,
+    1
+   ],
+   [
+    380,
+    2,
+    "Calcs - Headcount by CC",
+    "Salary",
+    593712,
+    null,
+    1
+   ],
+   [
+    381,
+    2,
+    "Calcs - Headcount by CC",
+    "Average Salary",
+    593712,
+    null,
+    1
+   ],
+   [
+    382,
+    2,
+    "Calcs - Headcount by CC",
+    "Bonus %",
+    593712,
+    null,
+    1
+   ],
+   [
+    383,
+    2,
+    "Calcs - Attrition",
+    "Headcount",
+    4464,
+    null,
+    1
+   ],
+   [
+    384,
+    2,
+    "Calcs - Attrition",
+    "Leavers",
+    266400,
+    null,
+    1
+   ],
+   [
+    385,
+    2,
+    "Calcs - Attrition",
+    "Leavers by Role",
+    4464,
+    null,
+    1
+   ],
+   [
+    386,
+    2,
+    "Calcs - Attrition",
+    "Attrition %",
+    4464,
+    null,
+    1
+   ],
+   [
+    387,
+    2,
+    "Calcs - Attrition",
+    "Annualised Attrition",
+    4464,
+    null,
+    1
+   ],
+   [
+    388,
+    2,
+    "Reports - Headcount",
+    "FTE",
+    2592,
+    null,
+    1
+   ],
+   [
+    389,
+    2,
+    "Reports - Headcount",
+    "Total Cost",
+    2592,
+    null,
+    1
+   ],
+   [
+    390,
+    2,
+    "Reports - Headcount",
+    "Cost per FTE",
+    2592,
+    null,
+    1
+   ],
+   [
+    391,
+    2,
+    "Reports - Headcount",
+    "FTE Budget",
+    2592,
+    null,
+    1
+   ],
+   [
+    392,
+    2,
+    "Reports - Headcount",
+    "FTE Variance",
+    2592,
+    null,
+    1
+   ],
+   [
+    393,
+    2,
+    "zz Archive - 2021 Cost",
+    "Headcount",
+    4464,
+    null,
+    1
+   ],
+   [
+    394,
+    2,
+    "zz Archive - 2021 Cost",
+    "Cost",
+    4464,
+    null,
+    1
+   ],
+   [
+    395,
+    2,
+    "zz Archive - 2021 Cost",
+    "Cost per Head",
+    4464,
+    null,
+    1
+   ],
+   [
+    396,
+    3,
+    "SYS01 Time",
+    "Current Period?",
+    36,
+    1.87,
+    1
+   ],
+   [
+    397,
+    3,
+    "SYS01 Time",
+    "Period Label",
+    36,
+    0.93,
+    1
+   ],
+   [
+    398,
+    3,
+    "SYS00 Settings",
+    "Current Period",
+    1,
+    0.0,
+    0
+   ],
+   [
+    399,
+    3,
+    "SYS00 Settings",
+    "Pack Title",
+    1,
+    0.0,
+    0
+   ],
+   [
+    400,
+    3,
+    "DAT01 P&L",
+    "Revenue",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    401,
+    3,
+    "DAT01 P&L",
+    "COGS",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    402,
+    3,
+    "DAT01 P&L",
+    "Opex",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    403,
+    3,
+    "DAT01 P&L",
+    "Staff Cost",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    404,
+    3,
+    "DAT01 P&L",
+    "EBITDA",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    405,
+    3,
+    "DAT01 P&L",
+    "Depreciation",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    406,
+    3,
+    "DAT01 P&L",
+    "EBIT",
+    19152,
+    0.0,
+    0
+   ],
+   [
+    407,
+    3,
+    "DAT02 Board Lines",
+    "Revenue",
+    144,
+    0.0,
+    0
+   ],
+   [
+    408,
+    3,
+    "DAT02 Board Lines",
+    "EBITDA",
+    144,
+    0.0,
+    0
+   ],
+   [
+    409,
+    3,
+    "DAT02 Board Lines",
+    "Budget Revenue",
+    144,
+    0.0,
+    0
+   ],
+   [
+    410,
+    3,
+    "DAT02 Board Lines",
+    "Revenue Variance",
+    144,
+    0.0,
+    0
+   ],
+   [
+    411,
+    3,
+    "DAT03 Headcount",
+    "FTE",
+    648,
+    0.0,
+    0
+   ],
+   [
+    412,
+    3,
+    "DAT03 Headcount",
+    "Total Cost",
+    648,
+    0.0,
+    0
+   ],
+   [
+    413,
+    3,
+    "CAL01 KPIs",
+    "FTE",
+    144,
+    7.48,
+    1
+   ],
+   [
+    414,
+    3,
+    "CAL01 KPIs",
+    "Revenue per FTE",
+    144,
+    11.21,
+    1
+   ],
+   [
+    415,
+    3,
+    "CAL01 KPIs",
+    "Opex Ratio",
+    144,
+    11.21,
+    1
+   ],
+   [
+    416,
+    3,
+    "CAL01 KPIs",
+    "Revenue Prior Year",
+    144,
+    7.48,
+    1
+   ],
+   [
+    417,
+    3,
+    "CAL01 KPIs",
+    "Revenue Growth",
+    144,
+    11.21,
+    1
+   ],
+   [
+    418,
+    3,
+    "CAL01 KPIs",
+    "EBITDA Margin",
+    144,
+    11.21,
+    1
+   ],
+   [
+    419,
+    3,
+    "CAL01 KPIs",
+    "Revenue YTD",
+    144,
+    7.48,
+    1
+   ],
+   [
+    420,
+    3,
+    "OUT01 Board Dashboard",
+    "Revenue",
+    144,
+    7.48,
+    1
+   ],
+   [
+    421,
+    3,
+    "OUT01 Board Dashboard",
+    "EBITDA",
+    144,
+    7.48,
+    1
+   ],
+   [
+    422,
+    3,
+    "OUT01 Board Dashboard",
+    "Revenue per FTE",
+    144,
+    7.48,
+    1
+   ],
+   [
+    423,
+    3,
+    "OUT01 Board Dashboard",
+    "Revenue Growth",
+    144,
+    7.48,
+    1
+   ],
+   [
+    424,
+    3,
+    "OUT01 Board Dashboard",
+    "Commentary",
+    144,
+    0.0,
+    0
+   ],
+   [
+    425,
+    3,
+    "OUT01 Board Dashboard",
+    "Prepared By",
+    144,
+    0.0,
+    0
+   ]
+  ],
+  "edges": [
+   [
+    0,
+    5
+   ],
+   [
+    11,
+    9
+   ],
+   [
+    24,
+    21
+   ],
+   [
+    25,
+    21
+   ],
+   [
+    26,
+    21
+   ],
+   [
+    27,
+    24
+   ],
+   [
+    36,
+    35
+   ],
+   [
+    36,
+    34
+   ],
+   [
+    47,
+    43
+   ],
+   [
+    54,
+    43
+   ],
+   [
+    54,
+    39
+   ],
+   [
+    55,
+    43
+   ],
+   [
+    55,
+    40
+   ],
+   [
+    56,
+    43
+   ],
+   [
+    56,
+    41
+   ],
+   [
+    57,
+    56
+   ],
+   [
+    57,
+    55
+   ],
+   [
+    58,
+    8
+   ],
+   [
+    59,
+    40
+   ],
+   [
+    60,
+    59
+   ],
+   [
+    60,
+    58
+   ],
+   [
+    61,
+    60
+   ],
+   [
+    62,
+    60
+   ],
+   [
+    62,
+    61
+   ],
+   [
+    72,
+    63
+   ],
+   [
+    73,
+    64
+   ],
+   [
+    74,
+    73
+   ],
+   [
+    75,
+    65
+   ],
+   [
+    81,
+    80
+   ],
+   [
+    81,
+    78
+   ],
+   [
+    81,
+    79
+   ],
+   [
+    93,
+    86
+   ],
+   [
+    94,
+    90
+   ],
+   [
+    94,
+    93
+   ],
+   [
+    95,
+    85
+   ],
+   [
+    99,
+    96
+   ],
+   [
+    100,
+    96
+   ],
+   [
+    101,
+    96
+   ],
+   [
+    102,
+    96
+   ],
+   [
+    103,
+    99
+   ],
+   [
+    112,
+    110
+   ],
+   [
+    113,
+    112
+   ],
+   [
+    113,
+    110
+   ],
+   [
+    118,
+    105
+   ],
+   [
+    119,
+    118
+   ],
+   [
+    119,
+    105
+   ],
+   [
+    177,
+    171
+   ],
+   [
+    177,
+    145
+   ],
+   [
+    177,
+    172
+   ],
+   [
+    177,
+    135
+   ],
+   [
+    177,
+    138
+   ],
+   [
+    177,
+    164
+   ],
+   [
+    177,
+    153
+   ],
+   [
+    177,
+    155
+   ],
+   [
+    177,
+    162
+   ],
+   [
+    177,
+    127
+   ],
+   [
+    177,
+    128
+   ],
+   [
+    177,
+    151
+   ],
+   [
+    177,
+    139
+   ],
+   [
+    177,
+    163
+   ],
+   [
+    177,
+    134
+   ],
+   [
+    177,
+    148
+   ],
+   [
+    177,
+    166
+   ],
+   [
+    177,
+    160
+   ],
+   [
+    177,
+    175
+   ],
+   [
+    177,
+    173
+   ],
+   [
+    177,
+    176
+   ],
+   [
+    177,
+    159
+   ],
+   [
+    177,
+    165
+   ],
+   [
+    177,
+    157
+   ],
+   [
+    177,
+    150
+   ],
+   [
+    177,
+    146
+   ],
+   [
+    177,
+    129
+   ],
+   [
+    177,
+    169
+   ],
+   [
+    177,
+    167
+   ],
+   [
+    177,
+    140
+   ],
+   [
+    177,
+    136
+   ],
+   [
+    177,
+    130
+   ],
+   [
+    177,
+    143
+   ],
+   [
+    177,
+    131
+   ],
+   [
+    177,
+    156
+   ],
+   [
+    177,
+    133
+   ],
+   [
+    177,
+    174
+   ],
+   [
+    177,
+    144
+   ],
+   [
+    177,
+    168
+   ],
+   [
+    177,
+    141
+   ],
+   [
+    177,
+    137
+   ],
+   [
+    177,
+    147
+   ],
+   [
+    177,
+    152
+   ],
+   [
+    177,
+    158
+   ],
+   [
+    177,
+    132
+   ],
+   [
+    177,
+    142
+   ],
+   [
+    177,
+    149
+   ],
+   [
+    177,
+    154
+   ],
+   [
+    177,
+    170
+   ],
+   [
+    177,
+    161
+   ],
+   [
+    178,
+    127
+   ],
+   [
+    178,
+    128
+   ],
+   [
+    178,
+    129
+   ],
+   [
+    178,
+    132
+   ],
+   [
+    178,
+    130
+   ],
+   [
+    178,
+    131
+   ],
+   [
+    179,
+    134
+   ],
+   [
+    179,
+    135
+   ],
+   [
+    179,
+    136
+   ],
+   [
+    179,
+    153
+   ],
+   [
+    179,
+    154
+   ],
+   [
+    179,
+    133
+   ],
+   [
+    180,
+    168
+   ],
+   [
+    180,
+    139
+   ],
+   [
+    180,
+    137
+   ],
+   [
+    180,
+    140
+   ],
+   [
+    180,
+    138
+   ],
+   [
+    181,
+    141
+   ],
+   [
+    181,
+    145
+   ],
+   [
+    181,
+    142
+   ],
+   [
+    181,
+    143
+   ],
+   [
+    181,
+    144
+   ],
+   [
+    182,
+    178
+   ],
+   [
+    182,
+    179
+   ],
+   [
+    182,
+    177
+   ],
+   [
+    182,
+    181
+   ],
+   [
+    182,
+    180
+   ],
+   [
+    183,
+    177
+   ],
+   [
+    184,
+    183
+   ],
+   [
+    188,
+    186
+   ],
+   [
+    189,
+    68
+   ],
+   [
+    190,
+    69
+   ],
+   [
+    191,
+    189
+   ],
+   [
+    191,
+    188
+   ],
+   [
+    191,
+    190
+   ],
+   [
+    192,
+    188
+   ],
+   [
+    192,
+    187
+   ],
+   [
+    193,
+    188
+   ],
+   [
+    194,
+    185
+   ],
+   [
+    194,
+    191
+   ],
+   [
+    194,
+    192
+   ],
+   [
+    194,
+    188
+   ],
+   [
+    194,
+    193
+   ],
+   [
+    206,
+    205
+   ],
+   [
+    206,
+    204
+   ],
+   [
+    209,
+    208
+   ],
+   [
+    210,
+    207
+   ],
+   [
+    213,
+    125
+   ],
+   [
+    213,
+    211
+   ],
+   [
+    213,
+    124
+   ],
+   [
+    213,
+    120
+   ],
+   [
+    213,
+    73
+   ],
+   [
+    214,
+    123
+   ],
+   [
+    214,
+    213
+   ],
+   [
+    215,
+    214
+   ],
+   [
+    215,
+    213
+   ],
+   [
+    216,
+    118
+   ],
+   [
+    217,
+    215
+   ],
+   [
+    217,
+    216
+   ],
+   [
+    218,
+    217
+   ],
+   [
+    219,
+    218
+   ],
+   [
+    219,
+    217
+   ],
+   [
+    220,
+    121
+   ],
+   [
+    220,
+    217
+   ],
+   [
+    221,
+    220
+   ],
+   [
+    221,
+    122
+   ],
+   [
+    222,
+    220
+   ],
+   [
+    222,
+    221
+   ],
+   [
+    223,
+    222
+   ],
+   [
+    223,
+    114
+   ],
+   [
+    223,
+    110
+   ],
+   [
+    224,
+    223
+   ],
+   [
+    225,
+    222
+   ],
+   [
+    226,
+    222
+   ],
+   [
+    226,
+    215
+   ],
+   [
+    227,
+    222
+   ],
+   [
+    227,
+    215
+   ],
+   [
+    228,
+    73
+   ],
+   [
+    230,
+    223
+   ],
+   [
+    231,
+    230
+   ],
+   [
+    231,
+    223
+   ],
+   [
+    232,
+    207
+   ],
+   [
+    232,
+    100
+   ],
+   [
+    233,
+    127
+   ],
+   [
+    233,
+    128
+   ],
+   [
+    233,
+    151
+   ],
+   [
+    233,
+    150
+   ],
+   [
+    233,
+    141
+   ],
+   [
+    233,
+    129
+   ],
+   [
+    233,
+    137
+   ],
+   [
+    233,
+    134
+   ],
+   [
+    233,
+    143
+   ],
+   [
+    233,
+    138
+   ],
+   [
+    233,
+    153
+   ],
+   [
+    233,
+    133
+   ],
+   [
+    234,
+    233
+   ],
+   [
+    234,
+    232
+   ],
+   [
+    234,
+    73
+   ],
+   [
+    235,
+    88
+   ],
+   [
+    235,
+    110
+   ],
+   [
+    235,
+    234
+   ],
+   [
+    236,
+    235
+   ],
+   [
+    237,
+    236
+   ],
+   [
+    237,
+    235
+   ],
+   [
+    238,
+    206
+   ],
+   [
+    238,
+    217
+   ],
+   [
+    239,
+    222
+   ],
+   [
+    239,
+    238
+   ],
+   [
+    240,
+    222
+   ],
+   [
+    240,
+    239
+   ],
+   [
+    241,
+    114
+   ],
+   [
+    241,
+    239
+   ],
+   [
+    241,
+    110
+   ],
+   [
+    242,
+    207
+   ],
+   [
+    242,
+    73
+   ],
+   [
+    243,
+    127
+   ],
+   [
+    244,
+    128
+   ],
+   [
+    245,
+    129
+   ],
+   [
+    246,
+    133
+   ],
+   [
+    247,
+    137
+   ],
+   [
+    248,
+    141
+   ],
+   [
+    249,
+    151
+   ],
+   [
+    250,
+    176
+   ],
+   [
+    251,
+    246
+   ],
+   [
+    251,
+    248
+   ],
+   [
+    251,
+    250
+   ],
+   [
+    251,
+    245
+   ],
+   [
+    251,
+    247
+   ],
+   [
+    251,
+    243
+   ],
+   [
+    251,
+    249
+   ],
+   [
+    251,
+    244
+   ],
+   [
+    252,
+    251
+   ],
+   [
+    252,
+    242
+   ],
+   [
+    252,
+    73
+   ],
+   [
+    253,
+    252
+   ],
+   [
+    253,
+    88
+   ],
+   [
+    253,
+    110
+   ],
+   [
+    254,
+    253
+   ],
+   [
+    255,
+    253
+   ],
+   [
+    256,
+    265
+   ],
+   [
+    256,
+    85
+   ],
+   [
+    257,
+    268
+   ],
+   [
+    257,
+    85
+   ],
+   [
+    258,
+    85
+   ],
+   [
+    258,
+    269
+   ],
+   [
+    259,
+    85
+   ],
+   [
+    259,
+    185
+   ],
+   [
+    260,
+    85
+   ],
+   [
+    260,
+    262
+   ],
+   [
+    260,
+    235
+   ],
+   [
+    261,
+    257
+   ],
+   [
+    261,
+    258
+   ],
+   [
+    261,
+    259
+   ],
+   [
+    265,
+    108
+   ],
+   [
+    265,
+    223
+   ],
+   [
+    266,
+    238
+   ],
+   [
+    266,
+    108
+   ],
+   [
+    267,
+    265
+   ],
+   [
+    267,
+    266
+   ],
+   [
+    268,
+    235
+   ],
+   [
+    269,
+    194
+   ],
+   [
+    270,
+    268
+   ],
+   [
+    270,
+    269
+   ],
+   [
+    270,
+    267
+   ],
+   [
+    271,
+    286
+   ],
+   [
+    272,
+    270
+   ],
+   [
+    272,
+    271
+   ],
+   [
+    273,
+    265
+   ],
+   [
+    273,
+    270
+   ],
+   [
+    274,
+    268
+   ],
+   [
+    275,
+    268
+   ],
+   [
+    275,
+    274
+   ],
+   [
+    276,
+    87
+   ],
+   [
+    276,
+    270
+   ],
+   [
+    277,
+    265
+   ],
+   [
+    277,
+    87
+   ],
+   [
+    278,
+    199
+   ],
+   [
+    278,
+    277
+   ],
+   [
+    279,
+    278
+   ],
+   [
+    280,
+    276
+   ],
+   [
+    281,
+    87
+   ],
+   [
+    281,
+    195
+   ],
+   [
+    282,
+    281
+   ],
+   [
+    282,
+    276
+   ],
+   [
+    282,
+    280
+   ],
+   [
+    282,
+    279
+   ],
+   [
+    283,
+    202
+   ],
+   [
+    283,
+    284
+   ],
+   [
+    283,
+    75
+   ],
+   [
+    284,
+    282
+   ],
+   [
+    284,
+    283
+   ],
+   [
+    285,
+    284
+   ],
+   [
+    286,
+    196
+   ],
+   [
+    286,
+    195
+   ],
+   [
+    286,
+    197
+   ],
+   [
+    287,
+    286
+   ],
+   [
+    287,
+    195
+   ],
+   [
+    288,
+    265
+   ],
+   [
+    289,
+    270
+   ],
+   [
+    290,
+    268
+   ],
+   [
+    291,
+    269
+   ],
+   [
+    292,
+    290
+   ],
+   [
+    292,
+    291
+   ],
+   [
+    293,
+    127
+   ],
+   [
+    293,
+    73
+   ],
+   [
+    294,
+    128
+   ],
+   [
+    294,
+    73
+   ],
+   [
+    295,
+    129
+   ],
+   [
+    295,
+    73
+   ],
+   [
+    296,
+    130
+   ],
+   [
+    296,
+    73
+   ],
+   [
+    297,
+    131
+   ],
+   [
+    297,
+    73
+   ],
+   [
+    298,
+    132
+   ],
+   [
+    298,
+    73
+   ],
+   [
+    299,
+    133
+   ],
+   [
+    299,
+    73
+   ],
+   [
+    300,
+    134
+   ],
+   [
+    300,
+    73
+   ],
+   [
+    301,
+    135
+   ],
+   [
+    301,
+    73
+   ],
+   [
+    302,
+    136
+   ],
+   [
+    302,
+    73
+   ],
+   [
+    303,
+    137
+   ],
+   [
+    303,
+    73
+   ],
+   [
+    304,
+    138
+   ],
+   [
+    304,
+    73
+   ],
+   [
+    305,
+    139
+   ],
+   [
+    305,
+    73
+   ],
+   [
+    306,
+    140
+   ],
+   [
+    306,
+    73
+   ],
+   [
+    307,
+    141
+   ],
+   [
+    307,
+    73
+   ],
+   [
+    308,
+    142
+   ],
+   [
+    308,
+    73
+   ],
+   [
+    309,
+    143
+   ],
+   [
+    309,
+    73
+   ],
+   [
+    310,
+    144
+   ],
+   [
+    310,
+    73
+   ],
+   [
+    311,
+    145
+   ],
+   [
+    311,
+    73
+   ],
+   [
+    312,
+    146
+   ],
+   [
+    312,
+    73
+   ],
+   [
+    313,
+    147
+   ],
+   [
+    313,
+    73
+   ],
+   [
+    314,
+    148
+   ],
+   [
+    314,
+    73
+   ],
+   [
+    315,
+    149
+   ],
+   [
+    315,
+    73
+   ],
+   [
+    316,
+    150
+   ],
+   [
+    316,
+    73
+   ],
+   [
+    317,
+    151
+   ],
+   [
+    317,
+    73
+   ],
+   [
+    318,
+    152
+   ],
+   [
+    318,
+    73
+   ],
+   [
+    319,
+    153
+   ],
+   [
+    319,
+    73
+   ],
+   [
+    320,
+    154
+   ],
+   [
+    320,
+    73
+   ],
+   [
+    321,
+    155
+   ],
+   [
+    321,
+    73
+   ],
+   [
+    322,
+    156
+   ],
+   [
+    322,
+    73
+   ],
+   [
+    323,
+    301
+   ],
+   [
+    323,
+    297
+   ],
+   [
+    323,
+    319
+   ],
+   [
+    323,
+    296
+   ],
+   [
+    323,
+    304
+   ],
+   [
+    323,
+    306
+   ],
+   [
+    323,
+    309
+   ],
+   [
+    323,
+    320
+   ],
+   [
+    323,
+    295
+   ],
+   [
+    323,
+    298
+   ],
+   [
+    323,
+    305
+   ],
+   [
+    323,
+    308
+   ],
+   [
+    323,
+    316
+   ],
+   [
+    323,
+    302
+   ],
+   [
+    323,
+    314
+   ],
+   [
+    323,
+    294
+   ],
+   [
+    323,
+    300
+   ],
+   [
+    323,
+    299
+   ],
+   [
+    323,
+    303
+   ],
+   [
+    323,
+    311
+   ],
+   [
+    323,
+    322
+   ],
+   [
+    323,
+    307
+   ],
+   [
+    323,
+    315
+   ],
+   [
+    323,
+    317
+   ],
+   [
+    323,
+    312
+   ],
+   [
+    323,
+    310
+   ],
+   [
+    323,
+    321
+   ],
+   [
+    323,
+    293
+   ],
+   [
+    323,
+    318
+   ],
+   [
+    323,
+    313
+   ],
+   [
+    324,
+    288
+   ],
+   [
+    325,
+    289
+   ],
+   [
+    326,
+    290
+   ],
+   [
+    327,
+    291
+   ],
+   [
+    328,
+    292
+   ],
+   [
+    329,
+    185
+   ],
+   [
+    330,
+    195
+   ],
+   [
+    331,
+    286
+   ],
+   [
+    332,
+    324
+   ],
+   [
+    333,
+    325
+   ],
+   [
+    334,
+    323
+   ],
+   [
+    335,
+    324
+   ],
+   [
+    336,
+    325
+   ],
+   [
+    337,
+    324
+   ],
+   [
+    338,
+    324
+   ],
+   [
+    339,
+    337
+   ],
+   [
+    339,
+    335
+   ],
+   [
+    340,
+    337
+   ],
+   [
+    340,
+    339
+   ],
+   [
+    348,
+    341
+   ],
+   [
+    349,
+    342
+   ],
+   [
+    353,
+    350
+   ],
+   [
+    353,
+    351
+   ],
+   [
+    353,
+    352
+   ],
+   [
+    354,
+    347
+   ],
+   [
+    366,
+    364
+   ],
+   [
+    366,
+    363
+   ],
+   [
+    367,
+    359
+   ],
+   [
+    367,
+    361
+   ],
+   [
+    368,
+    364
+   ],
+   [
+    369,
+    362
+   ],
+   [
+    370,
+    369
+   ],
+   [
+    370,
+    366
+   ],
+   [
+    371,
+    346
+   ],
+   [
+    371,
+    354
+   ],
+   [
+    371,
+    370
+   ],
+   [
+    372,
+    343
+   ],
+   [
+    373,
+    344
+   ],
+   [
+    374,
+    373
+   ],
+   [
+    374,
+    372
+   ],
+   [
+    374,
+    370
+   ],
+   [
+    375,
+    345
+   ],
+   [
+    375,
+    371
+   ],
+   [
+    376,
+    371
+   ],
+   [
+    377,
+    375
+   ],
+   [
+    377,
+    374
+   ],
+   [
+    377,
+    376
+   ],
+   [
+    377,
+    371
+   ],
+   [
+    378,
+    365
+   ],
+   [
+    378,
+    360
+   ],
+   [
+    378,
+    361
+   ],
+   [
+    379,
+    377
+   ],
+   [
+    379,
+    360
+   ],
+   [
+    379,
+    361
+   ],
+   [
+    380,
+    361
+   ],
+   [
+    380,
+    360
+   ],
+   [
+    380,
+    371
+   ],
+   [
+    381,
+    378
+   ],
+   [
+    381,
+    380
+   ],
+   [
+    383,
+    365
+   ],
+   [
+    383,
+    361
+   ],
+   [
+    384,
+    368
+   ],
+   [
+    385,
+    384
+   ],
+   [
+    385,
+    361
+   ],
+   [
+    386,
+    385
+   ],
+   [
+    386,
+    383
+   ],
+   [
+    387,
+    385
+   ],
+   [
+    387,
+    383
+   ],
+   [
+    388,
+    378
+   ],
+   [
+    388,
+    355
+   ],
+   [
+    389,
+    379
+   ],
+   [
+    389,
+    355
+   ],
+   [
+    390,
+    388
+   ],
+   [
+    390,
+    389
+   ],
+   [
+    391,
+    388
+   ],
+   [
+    392,
+    388
+   ],
+   [
+    392,
+    391
+   ],
+   [
+    393,
+    365
+   ],
+   [
+    393,
+    361
+   ],
+   [
+    394,
+    377
+   ],
+   [
+    394,
+    361
+   ],
+   [
+    395,
+    393
+   ],
+   [
+    395,
+    394
+   ],
+   [
+    396,
+    398
+   ],
+   [
+    413,
+    411
+   ],
+   [
+    414,
+    413
+   ],
+   [
+    414,
+    407
+   ],
+   [
+    415,
+    400
+   ],
+   [
+    415,
+    402
+   ],
+   [
+    416,
+    407
+   ],
+   [
+    417,
+    416
+   ],
+   [
+    417,
+    407
+   ],
+   [
+    418,
+    408
+   ],
+   [
+    418,
+    407
+   ],
+   [
+    419,
+    407
+   ],
+   [
+    420,
+    407
+   ],
+   [
+    421,
+    408
+   ],
+   [
+    422,
+    414
+   ],
+   [
+    423,
+    417
+   ]
+  ],
+  "actions": [
+   [
+    {
+     "name": "Import GL from NetSuite",
+     "kind": "import",
+     "module": "DAT01 GL Transactions",
+     "target": "DAT01 GL Transactions",
+     "direction": "writes",
+     "processes": [
+      "Daily Load"
+     ],
+     "last_run": "2026-09-21"
+    },
+    {
+     "name": "Import Orders from Salesforce",
+     "kind": "import",
+     "module": "DAT06 Sales Orders",
+     "target": "DAT06 Sales Orders",
+     "direction": "writes",
+     "processes": [
+      "Daily Load"
+     ],
+     "last_run": "2026-09-21"
+    },
+    {
+     "name": "Import Pipeline from Salesforce",
+     "kind": "import",
+     "module": "DAT05 CRM Pipeline",
+     "target": "DAT05 CRM Pipeline",
+     "direction": "writes",
+     "processes": [
+      "Daily Load"
+     ],
+     "last_run": "2026-09-21"
+    },
+    {
+     "name": "Import Cost Centres from NetSuite",
+     "kind": "import",
+     "module": "DAT02 Cost Centre Master",
+     "target": "DAT02 Cost Centre Master",
+     "direction": "writes",
+     "processes": [
+      "Monthly Master Data"
+     ],
+     "last_run": "2026-09-01"
+    },
+    {
+     "name": "Import Accounts from NetSuite",
+     "kind": "import",
+     "module": "DAT03 Account Master",
+     "target": "DAT03 Account Master",
+     "direction": "writes",
+     "processes": [
+      "Monthly Master Data"
+     ],
+     "last_run": "2026-09-01"
+    },
+    {
+     "name": "Import Employees from Workday",
+     "kind": "import",
+     "module": "DAT08 Employee Master",
+     "target": "DAT08 Employee Master",
+     "direction": "writes",
+     "processes": [
+      "Monthly Master Data"
+     ],
+     "last_run": "2026-09-01"
+    },
+    {
+     "name": "Import Products from PIM file",
+     "kind": "import",
+     "module": "DAT04 Product Master",
+     "target": "DAT04 Product Master",
+     "direction": "writes",
+     "processes": [],
+     "last_run": "2023-06-14"
+    },
+    {
+     "name": "Import Customers from Salesforce",
+     "kind": "import",
+     "module": "DAT07 Customer Master",
+     "target": "DAT07 Customer Master",
+     "direction": "writes",
+     "processes": [],
+     "last_run": "2026-08-30"
+    },
+    {
+     "name": "Export GL to FP&A",
+     "kind": "export",
+     "module": "DAT01 GL Transactions",
+     "target": "DAT01 GL Transactions",
+     "direction": "reads",
+     "processes": [
+      "Publish to Spokes"
+     ],
+     "last_run": "2026-09-21"
+    },
+    {
+     "name": "Export Volumes to FP&A",
+     "kind": "export",
+     "module": "CAL01 Volume Summary",
+     "target": "CAL01 Volume Summary",
+     "direction": "reads",
+     "processes": [
+      "Publish to Spokes"
+     ],
+     "last_run": "2026-09-21"
+    },
+    {
+     "name": "Export Cost Centre Map to Workforce",
+     "kind": "export",
+     "module": "DAT02 Cost Centre Master",
+     "target": "DAT02 Cost Centre Master",
+     "direction": "reads",
+     "processes": [
+      "Publish to Spokes"
+     ],
+     "last_run": "2026-09-21"
+    },
+    {
+     "name": "Export Product Master to FP&A",
+     "kind": "export",
+     "module": "DAT04 Product Master",
+     "target": "DAT04 Product Master",
+     "direction": "reads",
+     "processes": [
+      "Publish to Spokes"
+     ],
+     "last_run": "2026-09-21"
+    },
+    {
+     "name": "Export Account Master to FP&A",
+     "kind": "export",
+     "module": "DAT03 Account Master",
+     "target": "DAT03 Account Master",
+     "direction": "reads",
+     "processes": [
+      "Publish to Spokes"
+     ],
+     "last_run": "2026-09-21"
+    },
+    {
+     "name": "Export Pipeline for Sales Ops",
+     "kind": "export",
+     "module": "DAT05 CRM Pipeline",
+     "target": "DAT05 CRM Pipeline",
+     "direction": "reads",
+     "processes": [],
+     "last_run": "2025-02-11"
+    }
+   ],
+   [
+    {
+     "name": "Import from Caldergate Data Hub - GL Actuals",
+     "kind": "import",
+     "module": "DAT01 Actuals GL",
+     "target": "DAT01 Actuals GL",
+     "direction": "writes",
+     "processes": [
+      "Monthly Actuals Load"
+     ],
+     "last_run": "2026-09-03"
+    },
+    {
+     "name": "Import from Caldergate Data Hub - Volumes",
+     "kind": "import",
+     "module": "DAT02 Actuals Volumes",
+     "target": "DAT02 Actuals Volumes",
+     "direction": "writes",
+     "processes": [
+      "Monthly Actuals Load"
+     ],
+     "last_run": "2026-09-03"
+    },
+    {
+     "name": "Import from Caldergate Data Hub - Cost Centres",
+     "kind": "import",
+     "module": "SYS02 Cost Centre Attributes",
+     "target": "SYS02 Cost Centre Attributes",
+     "direction": "writes",
+     "processes": [
+      "Master Data Refresh"
+     ],
+     "last_run": "2026-09-01"
+    },
+    {
+     "name": "Import from Caldergate Data Hub - Products",
+     "kind": "import",
+     "module": "SYS04 Product Attributes",
+     "target": "SYS04 Product Attributes",
+     "direction": "writes",
+     "processes": [
+      "Master Data Refresh"
+     ],
+     "last_run": "2026-09-01"
+    },
+    {
+     "name": "Import from Caldergate Data Hub - Accounts",
+     "kind": "import",
+     "module": "SYS03 Account Attributes",
+     "target": "SYS03 Account Attributes",
+     "direction": "writes",
+     "processes": [
+      "Master Data Refresh"
+     ],
+     "last_run": "2026-09-01"
+    },
+    {
+     "name": "Import from Workforce Planning - Headcount Cost",
+     "kind": "import",
+     "module": "INP03 Headcount",
+     "target": "INP03 Headcount",
+     "direction": "writes",
+     "processes": [
+      "Headcount Refresh"
+     ],
+     "last_run": "2026-09-05"
+    },
+    {
+     "name": "Import FX from Treasury file",
+     "kind": "import",
+     "module": "SYS05 FX Rates",
+     "target": "SYS05 FX Rates",
+     "direction": "writes",
+     "processes": [],
+     "last_run": "2023-11-02"
+    },
+    {
+     "name": "Import from Caldergate Hub v1 - Cost Centres",
+     "kind": "import",
+     "module": "SYS02 Cost Centre Attributes",
+     "target": "SYS02 Cost Centre Attributes",
+     "direction": "writes",
+     "processes": [],
+     "last_run": "2021-03-19"
+    },
+    {
+     "name": "Import Budget from Excel",
+     "kind": "import",
+     "module": "INP02 Opex Drivers",
+     "target": "INP02 Opex Drivers",
+     "direction": "writes",
+     "processes": [],
+     "last_run": "2025-11-20"
+    },
+    {
+     "name": "Export Board Pack",
+     "kind": "export",
+     "module": "OUT02 Board Pack",
+     "target": "OUT02 Board Pack",
+     "direction": "reads",
+     "processes": [
+      "Publish Board Pack"
+     ],
+     "last_run": "2026-09-08"
+    },
+    {
+     "name": "Export P&L to Board Reporting",
+     "kind": "export",
+     "module": "CAL07 P&L by Cost Centre",
+     "target": "CAL07 P&L by Cost Centre",
+     "direction": "reads",
+     "processes": [
+      "Publish Board Pack"
+     ],
+     "last_run": "2026-09-08"
+    },
+    {
+     "name": "Export Assumptions for Workforce",
+     "kind": "export",
+     "module": "SYS00 Model Settings",
+     "target": "SYS00 Model Settings",
+     "direction": "reads",
+     "processes": [],
+     "last_run": "2026-09-05"
+    },
+    {
+     "name": "Export Opex Drivers to Excel",
+     "kind": "export",
+     "module": "INP02 Opex Drivers",
+     "target": "INP02 Opex Drivers",
+     "direction": "reads",
+     "processes": [],
+     "last_run": "2024-05-30"
+    },
+    {
+     "name": "Copy Actual to Forecast",
+     "kind": "import",
+     "module": "INP01 Volumes",
+     "target": "INP01 Volumes",
+     "direction": "writes",
+     "processes": [
+      "Roll Forecast"
+     ],
+     "last_run": "2026-09-03"
+    }
+   ],
+   [
+    {
+     "name": "Import Employees from Workday",
+     "kind": "import",
+     "module": "Data - Employees",
+     "target": "Data - Employees",
+     "direction": "writes",
+     "processes": [
+      "Monthly Refresh"
+     ],
+     "last_run": "2026-09-04"
+    },
+    {
+     "name": "Import from Caldergate Data Hub - Cost Centre Map",
+     "kind": "import",
+     "module": "Data - Cost Centre Map",
+     "target": "Data - Cost Centre Map",
+     "direction": "writes",
+     "processes": [
+      "Monthly Refresh"
+     ],
+     "last_run": "2026-09-04"
+    },
+    {
+     "name": "Import from Caldergate FP&A - Assumptions",
+     "kind": "import",
+     "module": "Inputs - Settings",
+     "target": "Inputs - Settings",
+     "direction": "writes",
+     "processes": [],
+     "last_run": "2022-08-17"
+    },
+    {
+     "name": "Export Headcount Cost to FP&A",
+     "kind": "export",
+     "module": "Calcs - Headcount by CC",
+     "target": "Calcs - Headcount by CC",
+     "direction": "reads",
+     "processes": [
+      "Push to FP&A"
+     ],
+     "last_run": "2026-09-05"
+    },
+    {
+     "name": "Export Headcount by Department",
+     "kind": "export",
+     "module": "Reports - Headcount",
+     "target": "Reports - Headcount",
+     "direction": "reads",
+     "processes": [],
+     "last_run": "2026-09-08"
+    },
+    {
+     "name": "Export Leavers Report",
+     "kind": "export",
+     "module": "Calcs - Attrition",
+     "target": "Calcs - Attrition",
+     "direction": "reads",
+     "processes": [],
+     "last_run": "2024-12-19"
+    }
+   ],
+   [
+    {
+     "name": "Import from Caldergate FP&A - P&L by Cost Centre",
+     "kind": "import",
+     "module": "DAT01 P&L",
+     "target": "DAT01 P&L",
+     "direction": "writes",
+     "processes": [
+      "Refresh Pack"
+     ],
+     "last_run": "2026-09-08"
+    },
+    {
+     "name": "Import from Caldergate FP&A - Board Pack",
+     "kind": "import",
+     "module": "DAT02 Board Lines",
+     "target": "DAT02 Board Lines",
+     "direction": "writes",
+     "processes": [
+      "Refresh Pack"
+     ],
+     "last_run": "2026-09-08"
+    },
+    {
+     "name": "Import from Workforce Planning - Headcount by Department",
+     "kind": "import",
+     "module": "DAT03 Headcount",
+     "target": "DAT03 Headcount",
+     "direction": "writes",
+     "processes": [
+      "Refresh Pack"
+     ],
+     "last_run": "2026-09-08"
+    },
+    {
+     "name": "Export Board Pack PDF Data",
+     "kind": "export",
+     "module": "OUT01 Board Dashboard",
+     "target": "OUT01 Board Dashboard",
+     "direction": "reads",
+     "processes": [],
+     "last_run": "2026-09-08"
+    }
+   ]
+  ],
+  "feeds": [
+   {
+    "from": "Caldergate Data Hub",
+    "to": "Caldergate FP&A",
+    "actions": 5,
+    "targets": [
+     "DAT01 Actuals GL",
+     "DAT02 Actuals Volumes",
+     "SYS02 Cost Centre Attributes",
+     "SYS04 Product Attributes",
+     "SYS03 Account Attributes"
+    ],
+    "basis": "inferred from import action names"
+   },
+   {
+    "from": "Caldergate FP&A",
+    "to": "Board Reporting",
+    "actions": 2,
+    "targets": [
+     "DAT01 P&L",
+     "DAT02 Board Lines"
+    ],
+    "basis": "inferred from import action names"
+   },
+   {
+    "from": "Workforce Planning",
+    "to": "Caldergate FP&A",
+    "actions": 1,
+    "targets": [
+     "INP03 Headcount"
+    ],
+    "basis": "inferred from import action names"
+   },
+   {
+    "from": "Caldergate Data Hub",
+    "to": "Workforce Planning",
+    "actions": 1,
+    "targets": [
+     "Data - Cost Centre Map"
+    ],
+    "basis": "inferred from import action names"
+   },
+   {
+    "from": "Caldergate FP&A",
+    "to": "Workforce Planning",
+    "actions": 1,
+    "targets": [
+     "Inputs - Settings"
+    ],
+    "basis": "inferred from import action names"
+   },
+   {
+    "from": "Workforce Planning",
+    "to": "Board Reporting",
+    "actions": 1,
+    "targets": [
+     "DAT03 Headcount"
+    ],
+    "basis": "inferred from import action names"
+   }
+  ],
+  "coverage": [
+   {
+    "agreement": 1.0,
+    "anaplan_only": 0,
+    "unparsed": 0,
+    "has_actions": true,
+    "has_effort": true,
+    "referenced_by": true
+   },
+   {
+    "agreement": 1.0,
+    "anaplan_only": 0,
+    "unparsed": 0,
+    "has_actions": true,
+    "has_effort": true,
+    "referenced_by": true
+   },
+   {
+    "agreement": 1.0,
+    "anaplan_only": 0,
+    "unparsed": 0,
+    "has_actions": true,
+    "has_effort": false,
+    "referenced_by": true
+   },
+   {
+    "agreement": 1.0,
+    "anaplan_only": 0,
+    "unparsed": 0,
+    "has_actions": true,
+    "has_effort": true,
+    "referenced_by": true
+   }
+  ],
+  "edge_types": {
+   "ref": "line item reads line item (parsed formula reference; evidenced)",
+   "import": "import action writes a module (module level; from the Actions export)",
+   "export": "export action reads a module (module level; from the Actions export)",
+   "process": "action is a step of a process (membership, not data flow)",
+   "feed": "model feeds model (inferred from import action names; never line-item lineage)"
+  },
+  "suggested": {
+   "id": 73,
+   "model": "Caldergate FP&A",
+   "module": "SYS01 Time Settings",
+   "name": "Actual?",
+   "direct_readers": 36
+  }
  },
  "limitations": [
   "Pages, saved views, line item subsets, filters, access drivers and integrations are not in any export; each 'no consumer detected' finding lists the checks that remain.",
   "Export date unknown for every file; the latest recorded action run is not an export date."
  ],
  "summary_text": [
-  "4 Anaplan models, 426 line items, 145M cells as exported. Export date unknown. Latest recorded action run: 2026-09-21. Analysis generated 2026-09-22. Read from the exports only; pages, saved views and subsets are not in them, so 'no consumer detected' is a question, not a saving.",
-  "The investigations below were chosen for footprint and evidence strength and can proceed independently. Reference findings are hidden until asked for."
+  "4 Anaplan models, 426 line items, 145M cells as exported. Export date unknown. Latest recorded action run 2026-09-21. Analysis generated 2026-09-24."
  ],
+ "freshness": {
+  "export_date": null,
+  "latest_action_run": "2026-09-21",
+  "analysis_date": "2026-09-24",
+  "actions_missing": []
+ },
  "map": {
   "nodes": [
    {
@@ -506,20 +7136,20 @@
     "CAL06 Department Summary",
     "CAL08 Cash Flow"
    ],
-   "observed": "No formula outside these modules reads any of their line items and no export action reads them. Together they hold 70.3M cells and 50.8% of Caldergate FP&A's measured calculation effort. The five largest: `CAL05 Opex OLD`, `CAL06 Department Summary`, `CAL08 Cash Flow`.",
-   "why": "Pages, saved views, subsets and integrations are not in the exports, so each module is either read there or by nothing. The footprint says which to ask about first.",
+   "observed": "No formula outside these modules reads any of their line items, and no export action reads them. Together they hold 70.3M cells and 50.8% of Caldergate FP&A's measured calculation effort. The five largest: `CAL05 Opex OLD`, `CAL06 Department Summary`, `CAL08 Cash Flow`.",
+   "why": "No consumer was detected in the inspected relationships (parsed formula references, export actions). Pages, saved views, subsets and integrations are not in the exports, and incomplete parsing or missing metadata can hide a reader, so a consumer remains possible. The footprint says which to ask about first.",
    "scope": "3 modules, 30 line items",
    "benefit": "If no consumer is found: 70.3M cells as exported; 50.8% of Caldergate FP&A's measured calculation effort would no longer be held or measured. Per module in the table.",
    "benefit_kind": "conditional",
    "strength": "partial",
-   "basis": "No formula consumer detected (parsed references, checked against Referenced By); no export action. Dependency coverage for Caldergate FP&A: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).",
+   "basis": "No formula consumer detected (parsed references, checked against Referenced By); export actions: none detected. Dependency coverage for Caldergate FP&A: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).",
    "missing": [
     "UX pages and classic dashboards that show `each listed module` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)",
     "saved views on `each listed module`: another model can import from a saved view without any export action existing here",
     "line item subsets that include line items of `each listed module` (COLLECT sources are not in the export)",
     "filters, access drivers, DCA and integration (CloudWorks, API) references"
    ],
-   "next_step": "Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.",
+   "next_step": "Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the largest module first, then the rest of the five largest, and record a keep-or-retire recommendation for each.",
    "keep_design": "A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. A module containing matching line items is not a duplicate of the module they match until the unmatched line items and the consumers are accounted for.",
    "importance": "high",
    "complexity": "medium",
@@ -531,7 +7161,7 @@
     "| `CAL08 Cash Flow` | 10 | 5.8K | 0.0% |  |  |  |  | 0 / 0 |  |"
    ],
    "validation": [
-    "After a removal, the Line Items export no longer lists the module; workspace size falls by about its cells; every page listed in the check opens without a blank card."
+    "After a removal, the Line Items export no longer lists the module and every page listed in the check opens without a blank card. Cell counts are an observed footprint; any memory or open-time change is measured in the workspace, not assumed from cells."
    ],
    "rules": [
     "G-UNUSED",
@@ -545,10 +7175,19 @@
    "object_label": "3 modules, 30 line items",
    "implementation": [
     "Prerequisites: every consumer check returned none, retained data is not needed, and the model owner has accepted the recommendation.",
-    "Then: blank the formulas in a development copy, reconcile the outputs the owner names against production over a full cycle, obtain owner sign-off, and only then delete.",
+    "Then: in a development copy, make the proposed change (retire or repoint) while keeping the original module intact for comparison and recovery; reconcile the outputs the owner names against production over a full cycle; obtain owner sign-off; only then apply in production.",
     "A module containing matching line items: repoint any page from the module to the matching line items first, and account for the unmatched line items separately."
    ],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "CAL05 Opex OLD",
+    "CAL06 Department Summary",
+    "CAL08 Cash Flow"
+   ],
+   "preview_label": "All 3 modules",
+   "unit": "modules",
+   "action_usage": "none detected",
+   "uid": "u52455860ca"
   },
   {
    "id": "F2",
@@ -606,7 +7245,14 @@
    "implementation": [
     "Prerequisites: the mapping is stable and the owner accepts a module in place of the formula. Then build the mapping module in a development copy, replace the formula, reconcile every cell, sign-off."
    ],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "CAL03 Opex.Forecast Opex"
+   ],
+   "preview_label": "All 1 objects",
+   "unit": "objects",
+   "action_usage": "none detected",
+   "uid": "u2e1016a507"
   },
   {
    "id": "F3",
@@ -624,11 +7270,16 @@
     "DAT08 Employee Master.Employee Id",
     "DAT03 Account Master.Sign",
     "DAT07 Customer Master.Region Code",
-    "DAT03 Account Master.Revenue?"
+    "DAT03 Account Master.Revenue?",
+    "DAT03 Account Master.Opex?",
+    "DAT03 Account Master.COGS?",
+    "DAT07 Customer Master.Customer Code",
+    "DAT03 Account Master.Account Code",
+    "SYS02 Data Checks.Check Message"
    ],
    "observed": "Ten line items carry 99.9% of Caldergate Data Hub's measured calculation effort; the largest is `DAT01 GL Transactions.Loaded?` at 88.3%.",
    "why": "Effort is where a redesign would show. Effort shares are Anaplan's Calculation Effort column for this model only. The engine is not in the export: Classic measures across the whole model at open, Polaris over the last ten minutes. A share of effort is not a promise of faster recalculation after removal.",
-   "scope": "top 20 line items by effort",
+   "scope": "top 15 line items by effort share (the ten largest are summarised)",
    "benefit": "Observed footprint only; no reduction is claimed.",
    "benefit_kind": "footprint",
    "strength": "confirmed",
@@ -671,9 +7322,18 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "Ten line items carry 99.9% of Caldergate Data Hub's measured calculation effort, led by `DAT01 GL Transactions.Loaded?` at 88.3%; a concentration to investigate, not a saving.",
-   "object_label": "top 20 line items by effort share",
+   "object_label": "top 15 line items by effort share; ten summarised",
    "implementation": [],
-   "kind_label": "observation"
+   "kind_label": "observation",
+   "preview": [
+    "DAT01 GL Transactions.Loaded?",
+    "CAL01 Volume Summary.Units",
+    "CAL01 Volume Summary.Revenue"
+   ],
+   "preview_label": "Showing 3 of 15 line items",
+   "unit": "line items",
+   "action_usage": "none detected",
+   "uid": "u2e921d336b"
   },
   {
    "id": "F4",
@@ -714,7 +7374,14 @@
    "summary": "1 line items are read directly by 25 or more formulas.",
    "object_label": "1 line item",
    "implementation": [],
-   "kind_label": "observation"
+   "kind_label": "observation",
+   "preview": [
+    "SYS01 Time Settings.Actual?"
+   ],
+   "preview_label": "All 1 line items",
+   "unit": "line items",
+   "action_usage": "none detected",
+   "uid": "u1d513fb5a4"
   },
   {
    "id": "F5",
@@ -732,11 +7399,21 @@
     "CAL05 Opex OLD.Opex",
     "CAL03 Opex.Actual Opex",
     "CAL05 Opex OLD.Actual",
-    "CAL05 Opex OLD.Opex Cumulative"
+    "CAL05 Opex OLD.Opex Cumulative",
+    "CAL05 Opex OLD.Opex Run Rate",
+    "CAL05 Opex OLD.Rent Forecast",
+    "CAL05 Opex OLD.Rates Forecast",
+    "CAL05 Opex OLD.Utilities Forecast",
+    "CAL05 Opex OLD.Travel Forecast",
+    "CAL05 Opex OLD.Marketing Forecast",
+    "CAL05 Opex OLD.Software Forecast",
+    "CAL05 Opex OLD.Fees Forecast",
+    "CAL05 Opex OLD.Other Forecast",
+    "CAL03 Opex.Opex Variance"
    ],
    "observed": "Ten line items carry 68.0% of Caldergate FP&A's measured calculation effort; the largest is `CAL03 Opex.Forecast Opex` at 16.0%.",
    "why": "Effort is where a redesign would show. Effort shares are Anaplan's Calculation Effort column for this model only. The engine is not in the export: Classic measures across the whole model at open, Polaris over the last ten minutes. A share of effort is not a promise of faster recalculation after removal.",
-   "scope": "top 20 line items by effort",
+   "scope": "top 20 line items by effort share (the ten largest are summarised)",
    "benefit": "Observed footprint only; no reduction is claimed.",
    "benefit_kind": "footprint",
    "strength": "confirmed",
@@ -784,9 +7461,18 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "Ten line items carry 68.0% of Caldergate FP&A's measured calculation effort, led by `CAL03 Opex.Forecast Opex` at 16.0%; a concentration to investigate, not a saving.",
-   "object_label": "top 20 line items by effort share",
+   "object_label": "top 20 line items by effort share; ten summarised",
    "implementation": [],
-   "kind_label": "observation"
+   "kind_label": "observation",
+   "preview": [
+    "CAL03 Opex.Forecast Opex",
+    "CAL03 Opex.Opex GBP",
+    "CAL05 Opex OLD.Opex GBP"
+   ],
+   "preview_label": "Showing 3 of 20 line items",
+   "unit": "line items",
+   "action_usage": "none detected",
+   "uid": "u5b1f7c80d6"
   },
   {
    "id": "F6",
@@ -804,11 +7490,14 @@
     "CAL01 KPIs.Revenue YTD",
     "OUT01 Board Dashboard.Revenue",
     "OUT01 Board Dashboard.EBITDA",
-    "OUT01 Board Dashboard.Revenue per FTE"
+    "OUT01 Board Dashboard.Revenue per FTE",
+    "OUT01 Board Dashboard.Revenue Growth",
+    "SYS01 Time.Current Period?",
+    "SYS01 Time.Period Label"
    ],
    "observed": "Ten line items carry 89.7% of Board Reporting's measured calculation effort; the largest is `CAL01 KPIs.Revenue per FTE` at 11.2%.",
    "why": "Effort is where a redesign would show. Effort shares are Anaplan's Calculation Effort column for this model only. The engine is not in the export: Classic measures across the whole model at open, Polaris over the last ten minutes. A share of effort is not a promise of faster recalculation after removal.",
-   "scope": "top 20 line items by effort",
+   "scope": "top 13 line items by effort share (the ten largest are summarised)",
    "benefit": "Observed footprint only; no reduction is claimed.",
    "benefit_kind": "footprint",
    "strength": "confirmed",
@@ -849,9 +7538,18 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "Ten line items carry 89.7% of Board Reporting's measured calculation effort, led by `CAL01 KPIs.Revenue per FTE` at 11.2%; a concentration to investigate, not a saving.",
-   "object_label": "top 20 line items by effort share",
+   "object_label": "top 13 line items by effort share; ten summarised",
    "implementation": [],
-   "kind_label": "observation"
+   "kind_label": "observation",
+   "preview": [
+    "CAL01 KPIs.Revenue per FTE",
+    "CAL01 KPIs.Opex Ratio",
+    "CAL01 KPIs.Revenue Growth"
+   ],
+   "preview_label": "Showing 3 of 13 line items",
+   "unit": "line items",
+   "action_usage": "none detected",
+   "uid": "ufa9514b415"
   },
   {
    "id": "F7",
@@ -864,7 +7562,7 @@
     "CAL03 Opex",
     "CAL02 Revenue"
    ],
-   "observed": "5 calculated line items in 3 modules are read by no formula, not exported, not in an output-style module and have no matching line item elsewhere.",
+   "observed": "5 calculated line items in 3 modules are read by no formula, are not read by an export action, are not in an output-style module and have no matching line item elsewhere.",
    "why": "Each is computed and stored; if nothing reads it the footprint is spare. If a page reads it, it is an output that lives in a calculation module.",
    "scope": "5 line items in 3 modules",
    "benefit": "If no consumer is found: 15.1M cells as exported; 10.0% of Caldergate FP&A's measured calculation effort.",
@@ -896,12 +7594,21 @@
    "footprint_cells": 15126048,
    "footprint_effort": 10.04,
    "counts_benefit": true,
-   "summary": "5 calculated line items in 3 modules are read by no formula, not exported, not in an output-style module and have no matching line item elsewhere.",
-   "object_label": "3 objects",
+   "summary": "5 calculated line items in 3 modules are read by no formula, are not read by an export action, are not in an output-style module and have no matching line item elsewhere.",
+   "object_label": "3 modules",
    "implementation": [
-    "Prerequisites: consumer checks returned none and the owner accepts. Then blank in a development copy, reconcile named outputs over a cycle, owner sign-off, delete."
+    "Prerequisites: consumer checks returned none and the owner accepts. Then make the proposed change in a development copy with the originals kept for comparison, reconcile named outputs over a cycle, owner sign-off, apply."
    ],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "DAT01 Actuals GL",
+    "CAL03 Opex",
+    "CAL02 Revenue"
+   ],
+   "preview_label": "All 3 modules",
+   "unit": "modules",
+   "action_usage": "none detected",
+   "uid": "ue173b44790"
   },
   {
    "id": "F8",
@@ -912,20 +7619,20 @@
    "objects": [
     "SYS01 Time"
    ],
-   "observed": "No formula outside these modules reads any of their line items and no export action reads them. Together they hold 72 cells and 2.8% of Board Reporting's measured calculation effort. The five largest: `SYS01 Time`.",
-   "why": "Pages, saved views, subsets and integrations are not in the exports, so each module is either read there or by nothing. The footprint says which to ask about first.",
+   "observed": "No formula outside these modules reads any of their line items, and no export action reads them. Together they hold 72 cells and 2.8% of Board Reporting's measured calculation effort. The five largest: `SYS01 Time`.",
+   "why": "No consumer was detected in the inspected relationships (parsed formula references, export actions). Pages, saved views, subsets and integrations are not in the exports, and incomplete parsing or missing metadata can hide a reader, so a consumer remains possible. The footprint says which to ask about first.",
    "scope": "1 module, 2 line items",
    "benefit": "If no consumer is found: 72 cells as exported; 2.8% of Board Reporting's measured calculation effort would no longer be held or measured. Per module in the table.",
    "benefit_kind": "conditional",
    "strength": "partial",
-   "basis": "No formula consumer detected (parsed references, checked against Referenced By); no export action. Dependency coverage for Board Reporting: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).",
+   "basis": "No formula consumer detected (parsed references, checked against Referenced By); export actions: none detected. Dependency coverage for Board Reporting: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).",
    "missing": [
     "UX pages and classic dashboards that show `each listed module` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)",
     "saved views on `each listed module`: another model can import from a saved view without any export action existing here",
     "line item subsets that include line items of `each listed module` (COLLECT sources are not in the export)",
     "filters, access drivers, DCA and integration (CloudWorks, API) references"
    ],
-   "next_step": "Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.",
+   "next_step": "Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the largest module first, then the rest of the five largest, and record a keep-or-retire recommendation for each.",
    "keep_design": "A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. A module containing matching line items is not a duplicate of the module they match until the unmatched line items and the consumers are accounted for.",
    "importance": "medium",
    "complexity": "medium",
@@ -935,7 +7642,7 @@
     "| `SYS01 Time` | 2 | 72 | 2.8% |  |  |  |  | 0 / 0 |  |"
    ],
    "validation": [
-    "After a removal, the Line Items export no longer lists the module; workspace size falls by about its cells; every page listed in the check opens without a blank card."
+    "After a removal, the Line Items export no longer lists the module and every page listed in the check opens without a blank card. Cell counts are an observed footprint; any memory or open-time change is measured in the workspace, not assumed from cells."
    ],
    "rules": [
     "G-UNUSED",
@@ -949,10 +7656,17 @@
    "object_label": "1 module, 2 line items",
    "implementation": [
     "Prerequisites: every consumer check returned none, retained data is not needed, and the model owner has accepted the recommendation.",
-    "Then: blank the formulas in a development copy, reconcile the outputs the owner names against production over a full cycle, obtain owner sign-off, and only then delete.",
+    "Then: in a development copy, make the proposed change (retire or repoint) while keeping the original module intact for comparison and recovery; reconcile the outputs the owner names against production over a full cycle; obtain owner sign-off; only then apply in production.",
     "A module containing matching line items: repoint any page from the module to the matching line items first, and account for the unmatched line items separately."
    ],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "SYS01 Time"
+   ],
+   "preview_label": "All 1 modules",
+   "unit": "modules",
+   "action_usage": "none detected",
+   "uid": "u68e327651b"
   },
   {
    "id": "F9",
@@ -1024,7 +7738,16 @@
    "implementation": [
     "Prerequisites: no page, export or access reason for the copy; owner accepts. Then repoint readers in a development copy, reconcile, sign-off, remove."
    ],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "CAL07 P&L by Cost Centre.Depreciation",
+    "CAL11 Reporting Prep.Revenue",
+    "CAL11 Reporting Prep.EBITDA"
+   ],
+   "preview_label": "Showing 3 of 14 copy line items",
+   "unit": "copy line items",
+   "action_usage": "none detected",
+   "uid": "ue17c1b23f1"
   },
   {
    "id": "F10",
@@ -1069,11 +7792,20 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "4 chains where A copies B copies C.",
-   "object_label": "4 objects",
+   "object_label": "4 chains (head named)",
    "implementation": [
     "Prerequisites: the intermediate has no consumer and no interface role; owner accepts. Then repoint the head in a development copy, reconcile, sign-off."
    ],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "OUT01 Management Pack.Opex",
+    "OUT01 Management Pack.Staff Cost",
+    "OUT02 Board Pack.Revenue"
+   ],
+   "preview_label": "Showing 3 of 4 chains (head named)",
+   "unit": "chains (head named)",
+   "action_usage": "none detected",
+   "uid": "u36d5f0a2cd"
   },
   {
    "id": "F11",
@@ -1124,7 +7856,14 @@
     "Prerequisites: equivalence validated for the group, the reason for the second object ruled out, the owner accepts.",
     "Then: repoint each reader of the copy to the kept line item in a development copy, reconcile the outputs that read it, owner sign-off, remove the copy."
    ],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "CAL07 P&L by Cost Centre.Depreciation"
+   ],
+   "preview_label": "All 1 groups (kept line item named)",
+   "unit": "groups (kept line item named)",
+   "action_usage": "none detected",
+   "uid": "uce4a0322ed"
   },
   {
    "id": "F12",
@@ -1175,7 +7914,14 @@
     "Prerequisites: equivalence validated for the group, the reason for the second object ruled out, the owner accepts.",
     "Then: repoint each reader of the copy to the kept line item in a development copy, reconcile the outputs that read it, owner sign-off, remove the copy."
    ],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "Calcs - Attrition.Headcount"
+   ],
+   "preview_label": "All 1 groups (kept line item named)",
+   "unit": "groups (kept line item named)",
+   "action_usage": "none detected",
+   "uid": "u6d36fe3bfd"
   },
   {
    "id": "F13",
@@ -1219,9 +7965,17 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "2 line items compute a text value, a FINDITEM, a text join or a per-item function (ITEM, PARENT, NAME, CODE) in a line item with many cells.",
-   "object_label": "2 objects",
+   "object_label": "2 line items",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "DAT01 GL Transactions.Source System",
+    "DAT06 Sales Orders.Last Order Ref"
+   ],
+   "preview_label": "All 2 line items",
+   "unit": "line items",
+   "action_usage": "none detected",
+   "uid": "ud8fc5890e4"
   },
   {
    "id": "F14",
@@ -1258,9 +8012,16 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "1 formulas use DIVIDE().",
-   "object_label": "1 object",
+   "object_label": "1 formulas",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "CAL01 Volume Summary.Average Order Value"
+   ],
+   "preview_label": "All 1 formulas",
+   "unit": "formulas",
+   "action_usage": "none detected",
+   "uid": "uc2228a1386"
   },
   {
    "id": "F15",
@@ -1299,11 +8060,18 @@
    "footprint_effort": 0.0,
    "counts_benefit": true,
    "summary": "1 formulas combine SUM with LOOKUP or SELECT.",
-   "object_label": "1 object",
+   "object_label": "1 formulas",
    "implementation": [
     "Prerequisites: a development copy and a Calculation Effort reading before the change. Then split, reconcile values cell for cell, read effort again; keep the split only if it pays."
    ],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "CAL06 Department Summary.Benchmark Opex"
+   ],
+   "preview_label": "All 1 formulas",
+   "unit": "formulas",
+   "action_usage": "none detected",
+   "uid": "uc5be315817"
   },
   {
    "id": "F16",
@@ -1369,9 +8137,18 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "13 line items compute a text value, a FINDITEM, a text join or a per-item function (ITEM, PARENT, NAME, CODE) in a line item with many cells.",
-   "object_label": "13 objects",
+   "object_label": "13 line items",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "DAT01 Actuals GL.Source Journal",
+    "DAT01 Actuals GL.Journal Cost Centre",
+    "CAL02 Revenue.Revenue Label"
+   ],
+   "preview_label": "Showing 3 of 13 line items",
+   "unit": "line items",
+   "action_usage": "none detected",
+   "uid": "ubbfc6d3b51"
   },
   {
    "id": "F17",
@@ -1420,9 +8197,18 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "6 formulas contain numeric literals other than the usual structural ones (0, 1, 12, 100 and the like).",
-   "object_label": "6 objects",
+   "object_label": "6 formulas",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "CAL02 Revenue.Revenue USD",
+    "CAL02 Revenue.VAT",
+    "CAL08 Cash Flow.Debtors"
+   ],
+   "preview_label": "Showing 3 of 6 formulas",
+   "unit": "formulas",
+   "action_usage": "none detected",
+   "uid": "uc878d4c512"
   },
   {
    "id": "F18",
@@ -1459,9 +8245,16 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "1 line items are dimensioned differently from their module and are read by formulas.",
-   "object_label": "1 object",
+   "object_label": "1 line items",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "CAL01 Volumes.Launched?"
+   ],
+   "preview_label": "All 1 line items",
+   "unit": "line items",
+   "action_usage": "none detected",
+   "uid": "ubd52fd11d5"
   },
   {
    "id": "F19",
@@ -1496,7 +8289,14 @@
    "summary": "`INP02 Opex Drivers` has 58 line items.",
    "object_label": "1 object",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "INP02 Opex Drivers"
+   ],
+   "preview_label": "All 1 objects",
+   "unit": "objects",
+   "action_usage": "none detected",
+   "uid": "ub262c54f5a"
   },
   {
    "id": "F20",
@@ -1529,9 +8329,16 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "1 modules have no line items.",
-   "object_label": "1 object",
+   "object_label": "1 modules",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "CAL09 Scenario Planning"
+   ],
+   "preview_label": "All 1 modules",
+   "unit": "modules",
+   "action_usage": "none detected",
+   "uid": "u9bb98ad1b0"
   },
   {
    "id": "F21",
@@ -1568,9 +8375,16 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "1 formulas exceed 120 tokens.",
-   "object_label": "1 object",
+   "object_label": "1 formulas",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "CAL03 Opex.Forecast Opex"
+   ],
+   "preview_label": "All 1 formulas",
+   "unit": "formulas",
+   "action_usage": "none detected",
+   "uid": "u5c1b2989bf"
   },
   {
    "id": "F22",
@@ -1611,9 +8425,18 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "3 formulas select a specific time period or version with SELECT.",
-   "object_label": "3 objects",
+   "object_label": "3 formulas",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "CAL07 P&L by Cost Centre.Opex Budget",
+    "OUT02 Board Pack.Budget Revenue",
+    "OUT02 Board Pack.Old Budget Revenue"
+   ],
+   "preview_label": "All 3 formulas",
+   "unit": "formulas",
+   "action_usage": "none detected",
+   "uid": "u2d163ef2fa"
   },
   {
    "id": "F23",
@@ -1664,9 +8487,18 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "8 formulas use DIVIDE().",
-   "object_label": "8 objects",
+   "object_label": "8 formulas",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "CAL01 Volumes.Volume Growth",
+    "CAL02 Revenue.Average Price",
+    "CAL02 Revenue.Revenue Growth"
+   ],
+   "preview_label": "Showing 3 of 8 formulas",
+   "unit": "formulas",
+   "action_usage": "none detected",
+   "uid": "ude5bbc76be"
   },
   {
    "id": "F24",
@@ -1712,9 +8544,18 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "3 line items compute a text value, a FINDITEM, a text join or a per-item function (ITEM, PARENT, NAME, CODE) in a line item with many cells.",
-   "object_label": "3 objects",
+   "object_label": "3 line items",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "Data - Employees.Employee Name",
+    "Data - Employees.Name and Role",
+    "Data - Employees.Name and Role"
+   ],
+   "preview_label": "All 3 line items",
+   "unit": "line items",
+   "action_usage": "none detected",
+   "uid": "u9c035e5f9f"
   },
   {
    "id": "F25",
@@ -1757,9 +8598,18 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "3 formulas contain numeric literals other than the usual structural ones (0, 1, 12, 100 and the like).",
-   "object_label": "3 objects",
+   "object_label": "3 formulas",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "Calcs - Attrition.Annualised Attrition",
+    "Calcs - Cost.Bonus",
+    "Calcs - Headcount by CC.Bonus %"
+   ],
+   "preview_label": "All 3 formulas",
+   "unit": "formulas",
+   "action_usage": "none detected",
+   "uid": "uef51d71cd0"
   },
   {
    "id": "F26",
@@ -1796,9 +8646,16 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "1 line items are dimensioned differently from their module and are read by formulas.",
-   "object_label": "1 object",
+   "object_label": "1 line items",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "Calcs - Attrition.Leavers"
+   ],
+   "preview_label": "All 1 line items",
+   "unit": "line items",
+   "action_usage": "none detected",
+   "uid": "ub64681d531"
   },
   {
    "id": "F27",
@@ -1835,9 +8692,16 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "1 formulas select a specific time period or version with SELECT.",
-   "object_label": "1 object",
+   "object_label": "1 formulas",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "Reports - Headcount.FTE Budget"
+   ],
+   "preview_label": "All 1 formulas",
+   "unit": "formulas",
+   "action_usage": "none detected",
+   "uid": "udeea32f18e"
   },
   {
    "id": "F28",
@@ -1878,9 +8742,18 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "3 formulas use DIVIDE().",
-   "object_label": "3 objects",
+   "object_label": "3 formulas",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "Calcs - Headcount by CC.Average Salary",
+    "Reports - Headcount.Cost per FTE",
+    "zz Archive - 2021 Cost.Cost per Head"
+   ],
+   "preview_label": "All 3 formulas",
+   "unit": "formulas",
+   "action_usage": "none detected",
+   "uid": "u1081efc553"
   },
   {
    "id": "F29",
@@ -1921,9 +8794,18 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "3 formulas use DIVIDE().",
-   "object_label": "3 objects",
+   "object_label": "3 formulas",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "CAL01 KPIs.EBITDA Margin",
+    "CAL01 KPIs.Opex Ratio",
+    "CAL01 KPIs.Revenue Growth"
+   ],
+   "preview_label": "All 3 formulas",
+   "unit": "formulas",
+   "action_usage": "none detected",
+   "uid": "u12ad2551f6"
   },
   {
    "id": "F30",
@@ -1934,20 +8816,20 @@
    "objects": [
     "zz Archive - 2021 Cost"
    ],
-   "observed": "No formula outside these modules reads any of their line items and no export action reads them. Together they hold 13.4K cells. The five largest: `zz Archive - 2021 Cost`.",
-   "why": "Pages, saved views, subsets and integrations are not in the exports, so each module is either read there or by nothing. The footprint says which to ask about first.",
+   "observed": "No formula outside these modules reads any of their line items, and no export action reads them. Together they hold 13.4K cells. The five largest: `zz Archive - 2021 Cost`.",
+   "why": "No consumer was detected in the inspected relationships (parsed formula references, export actions). Pages, saved views, subsets and integrations are not in the exports, and incomplete parsing or missing metadata can hide a reader, so a consumer remains possible. The footprint says which to ask about first.",
    "scope": "1 module, 3 line items",
    "benefit": "If no consumer is found: 13.4K cells as exported would no longer be held or measured. Per module in the table.",
    "benefit_kind": "conditional",
    "strength": "partial",
-   "basis": "No formula consumer detected (parsed references, checked against Referenced By); no export action. Dependency coverage for Workforce Planning: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).",
+   "basis": "No formula consumer detected (parsed references, checked against Referenced By); export actions: none detected. Dependency coverage for Workforce Planning: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).",
    "missing": [
     "UX pages and classic dashboards that show `each listed module` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)",
     "saved views on `each listed module`: another model can import from a saved view without any export action existing here",
     "line item subsets that include line items of `each listed module` (COLLECT sources are not in the export)",
     "filters, access drivers, DCA and integration (CloudWorks, API) references"
    ],
-   "next_step": "Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.",
+   "next_step": "Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the largest module first, then the rest of the five largest, and record a keep-or-retire recommendation for each.",
    "keep_design": "A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. A module containing matching line items is not a duplicate of the module they match until the unmatched line items and the consumers are accounted for.",
    "importance": "low",
    "complexity": "medium",
@@ -1957,7 +8839,7 @@
     "| `zz Archive - 2021 Cost` | 3 | 13.4K | 0.0% |  |  |  |  | 0 / 0 | Old cost calc from go-live. Kept for reference. |"
    ],
    "validation": [
-    "After a removal, the Line Items export no longer lists the module; workspace size falls by about its cells; every page listed in the check opens without a blank card."
+    "After a removal, the Line Items export no longer lists the module and every page listed in the check opens without a blank card. Cell counts are an observed footprint; any memory or open-time change is measured in the workspace, not assumed from cells."
    ],
    "rules": [
     "G-UNUSED",
@@ -1971,10 +8853,17 @@
    "object_label": "1 module, 3 line items",
    "implementation": [
     "Prerequisites: every consumer check returned none, retained data is not needed, and the model owner has accepted the recommendation.",
-    "Then: blank the formulas in a development copy, reconcile the outputs the owner names against production over a full cycle, obtain owner sign-off, and only then delete.",
+    "Then: in a development copy, make the proposed change (retire or repoint) while keeping the original module intact for comparison and recovery; reconcile the outputs the owner names against production over a full cycle; obtain owner sign-off; only then apply in production.",
     "A module containing matching line items: repoint any page from the module to the matching line items first, and account for the unmatched line items separately."
    ],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "zz Archive - 2021 Cost"
+   ],
+   "preview_label": "All 1 modules",
+   "unit": "modules",
+   "action_usage": "none detected",
+   "uid": "u928b05f668"
   },
   {
    "id": "F31",
@@ -1986,20 +8875,20 @@
     "SYS01 Time Settings",
     "SYS02 Data Checks"
    ],
-   "observed": "No formula outside these modules reads any of their line items and no export action reads them. Together they hold 360 cells and 0.0% of Caldergate Data Hub's measured calculation effort. The five largest: `SYS01 Time Settings`, `SYS02 Data Checks`.",
-   "why": "Pages, saved views, subsets and integrations are not in the exports, so each module is either read there or by nothing. The footprint says which to ask about first.",
+   "observed": "No formula outside these modules reads any of their line items, and no export action reads them. Together they hold 360 cells and 0.0% of Caldergate Data Hub's measured calculation effort. The five largest: `SYS01 Time Settings`, `SYS02 Data Checks`.",
+   "why": "No consumer was detected in the inspected relationships (parsed formula references, export actions). Pages, saved views, subsets and integrations are not in the exports, and incomplete parsing or missing metadata can hide a reader, so a consumer remains possible. The footprint says which to ask about first.",
    "scope": "2 modules, 10 line items",
    "benefit": "If no consumer is found: 360 cells as exported; 0.0% of Caldergate Data Hub's measured calculation effort would no longer be held or measured. Per module in the table.",
    "benefit_kind": "conditional",
    "strength": "partial",
-   "basis": "No formula consumer detected (parsed references, checked against Referenced By); no export action. Dependency coverage for Caldergate Data Hub: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).",
+   "basis": "No formula consumer detected (parsed references, checked against Referenced By); export actions: none detected. Dependency coverage for Caldergate Data Hub: parsed-formula edges agree with Anaplan's Referenced By at 100% (0 edges Anaplan lists that the parse did not).",
    "missing": [
     "UX pages and classic dashboards that show `each listed module` (no export exists; the page builder or the Modules export's Used in Dashboards column for classic dashboards)",
     "saved views on `each listed module`: another model can import from a saved view without any export action existing here",
     "line item subsets that include line items of `each listed module` (COLLECT sources are not in the export)",
     "filters, access drivers, DCA and integration (CloudWorks, API) references"
    ],
-   "next_step": "Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.",
+   "next_step": "Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the largest module first, then the rest of the five largest, and record a keep-or-retire recommendation for each.",
    "keep_design": "A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. A module containing matching line items is not a duplicate of the module they match until the unmatched line items and the consumers are accounted for.",
    "importance": "low",
    "complexity": "medium",
@@ -2010,7 +8899,7 @@
     "| `SYS02 Data Checks` | 5 | 180 | 0.0% |  |  |  |  | 0 / 0 | Reconciliation flags read by the load dashboard. |"
    ],
    "validation": [
-    "After a removal, the Line Items export no longer lists the module; workspace size falls by about its cells; every page listed in the check opens without a blank card."
+    "After a removal, the Line Items export no longer lists the module and every page listed in the check opens without a blank card. Cell counts are an observed footprint; any memory or open-time change is measured in the workspace, not assumed from cells."
    ],
    "rules": [
     "G-UNUSED",
@@ -2024,10 +8913,18 @@
    "object_label": "2 modules, 10 line items",
    "implementation": [
     "Prerequisites: every consumer check returned none, retained data is not needed, and the model owner has accepted the recommendation.",
-    "Then: blank the formulas in a development copy, reconcile the outputs the owner names against production over a full cycle, obtain owner sign-off, and only then delete.",
+    "Then: in a development copy, make the proposed change (retire or repoint) while keeping the original module intact for comparison and recovery; reconcile the outputs the owner names against production over a full cycle; obtain owner sign-off; only then apply in production.",
     "A module containing matching line items: repoint any page from the module to the matching line items first, and account for the unmatched line items separately."
    ],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "SYS01 Time Settings",
+    "SYS02 Data Checks"
+   ],
+   "preview_label": "All 2 modules",
+   "unit": "modules",
+   "action_usage": "none detected",
+   "uid": "uc4d135a29e"
   },
   {
    "id": "F32",
@@ -2066,9 +8963,16 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "1 number line items with 10,000 cells or more have a summary method set and no formula reader.",
-   "object_label": "1 object",
+   "object_label": "1 line items",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "DAT05 CRM Pipeline.Weighted Pipeline"
+   ],
+   "preview_label": "All 1 line items",
+   "unit": "line items",
+   "action_usage": "none detected",
+   "uid": "ued658479c0"
   },
   {
    "id": "F33",
@@ -2113,9 +9017,18 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "Export date unknown.",
-   "object_label": "3 objects",
+   "object_label": "3 actions",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "Export Pipeline for Sales Ops",
+    "Import Customers from Salesforce",
+    "Import Products from PIM file"
+   ],
+   "preview_label": "All 3 actions",
+   "unit": "actions",
+   "action_usage": "none detected",
+   "uid": "u4c4bbeae98"
   },
   {
    "id": "F34",
@@ -2212,9 +9125,18 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "30 number line items with 10,000 cells or more have a summary method set and no formula reader.",
-   "object_label": "30 objects",
+   "object_label": "30 line items",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "CAL01 Volumes.Volume Growth",
+    "CAL02 Revenue.Average Price",
+    "CAL02 Revenue.Revenue Growth"
+   ],
+   "preview_label": "Showing 3 of 30 line items",
+   "unit": "line items",
+   "action_usage": "none detected",
+   "uid": "uc8ed36f6b1"
   },
   {
    "id": "F35",
@@ -2263,9 +9185,18 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "Export date unknown.",
-   "object_label": "5 objects",
+   "object_label": "5 actions",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "Export Assumptions for Workforce",
+    "Export Opex Drivers to Excel",
+    "Import Budget from Excel"
+   ],
+   "preview_label": "Showing 3 of 5 actions",
+   "unit": "actions",
+   "action_usage": "none detected",
+   "uid": "u11b82e7872"
   },
   {
    "id": "F36",
@@ -2304,9 +9235,16 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "1 number line items with 10,000 cells or more have a summary method set and no formula reader.",
-   "object_label": "1 object",
+   "object_label": "1 line items",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "Calcs - Headcount by CC.Average Salary"
+   ],
+   "preview_label": "All 1 line items",
+   "unit": "line items",
+   "action_usage": "none detected",
+   "uid": "u86061f87cd"
   },
   {
    "id": "F37",
@@ -2351,9 +9289,18 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "Export date unknown.",
-   "object_label": "3 objects",
+   "object_label": "3 actions",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "Export Headcount by Department",
+    "Export Leavers Report",
+    "Import from Caldergate FP&A - Assumptions"
+   ],
+   "preview_label": "All 3 actions",
+   "unit": "actions",
+   "action_usage": "none detected",
+   "uid": "u876e3b2be3"
   },
   {
    "id": "F38",
@@ -2400,9 +9347,18 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "5 number line items with 10,000 cells or more have a summary method set and no formula reader.",
-   "object_label": "5 objects",
+   "object_label": "5 line items",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "DAT01 P&L.COGS",
+    "DAT01 P&L.Depreciation",
+    "DAT01 P&L.EBIT"
+   ],
+   "preview_label": "Showing 3 of 5 line items",
+   "unit": "line items",
+   "action_usage": "none detected",
+   "uid": "u1ce82d8848"
   },
   {
    "id": "F39",
@@ -2443,9 +9399,16 @@
    "footprint_effort": null,
    "counts_benefit": true,
    "summary": "Export date unknown.",
-   "object_label": "1 object",
+   "object_label": "1 actions",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "Export Board Pack PDF Data"
+   ],
+   "preview_label": "All 1 actions",
+   "unit": "actions",
+   "action_usage": "none detected",
+   "uid": "u547c22180b"
   },
   {
    "id": "F40",
@@ -2501,13 +9464,22 @@
    "summary": "8 line items appear in more than one model with the same name and the same formula tree.",
    "object_label": "8 line item names",
    "implementation": [],
-   "kind_label": "review candidate"
+   "kind_label": "review candidate",
+   "preview": [
+    "COGS?",
+    "Current Period?",
+    "Employer NI"
+   ],
+   "preview_label": "Showing 3 of 8 line item names",
+   "unit": "line item names",
+   "action_usage": "none detected",
+   "uid": "ua61db16ff4"
   }
  ],
  "models": [
   {
    "name": "Caldergate Data Hub",
-   "folder": "examples\\caldergate-estate\\1 Caldergate Data Hub",
+   "folder": "C:\\Projects\\20260921_AnaplanEstate\\examples\\caldergate-estate\\1 Caldergate Data Hub",
    "facts": {
     "modules": 12,
     "line_items": 63,
@@ -3255,7 +10227,7 @@
   },
   {
    "name": "Caldergate FP&A",
-   "folder": "examples\\caldergate-estate\\2 Caldergate FP&A",
+   "folder": "C:\\Projects\\20260921_AnaplanEstate\\examples\\caldergate-estate\\2 Caldergate FP&A",
    "facts": {
     "modules": 30,
     "line_items": 278,
@@ -5766,7 +12738,7 @@
   },
   {
    "name": "Workforce Planning",
-   "folder": "examples\\caldergate-estate\\3 Workforce Planning",
+   "folder": "C:\\Projects\\20260921_AnaplanEstate\\examples\\caldergate-estate\\3 Workforce Planning",
    "facts": {
     "modules": 9,
     "line_items": 55,
@@ -6589,7 +13561,7 @@
   },
   {
    "name": "Board Reporting",
-   "folder": "examples\\caldergate-estate\\4 Board Reporting",
+   "folder": "C:\\Projects\\20260921_AnaplanEstate\\examples\\caldergate-estate\\4 Board Reporting",
    "facts": {
     "modules": 7,
     "line_items": 30,
@@ -7637,11 +14609,15 @@
   ],
   [
    "No consumer detected",
-   "No formula in the export references the object and no export action reads its module. Pages, saved views, line item subsets, filters, access drivers and integrations are not in the exports and can hold consumers. Not the same as unused."
+   "No formula in the export references the object and, where an Actions export was supplied, no export action reads its module (otherwise action usage is not assessed). Pages, saved views, line item subsets, filters, access drivers and integrations are not in the exports and can hold consumers; incomplete parsing can hide a reader. Not the same as unused."
   ],
   [
    "Referenced By agreement",
-   "Edges present in both the parsed dependency graph and Anaplan's Referenced By column, over edges present in either. High means the graph can be trusted for change impact; discrepancies are listed by cause."
+   "Agreement between two observed edge sets: edges present in both the parsed dependency graph and Anaplan's Referenced By column, over edges present in either. It measures how far the two agree, not what share of every dependency is known; 100% does not establish complete coverage of the estate. Discrepancies are listed by cause."
+  ],
+  [
+   "Observed footprint",
+   "The cells of the objects reached or named, each counted once. Not a saving, a changed value or a predicted runtime; those are measured after a validated change."
   ],
   [
    "Inferred",
@@ -7667,5 +14643,6 @@
   "Accepted exception",
   "Change planned",
   "Resolved"
- ]
+ ],
+ "validation_note": "Rules, ranking and presentation were developed around a small number of estates; the three-action, 450-word plan is a design choice, not an established optimum, and the ordering is a hypothesis to revise. Nothing here was validated in a live Anaplan model."
 }

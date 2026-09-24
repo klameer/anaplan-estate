@@ -32,12 +32,12 @@ def test_estate_run_edges_duplicates_actions():
 def test_render_and_cli(tmp_path, capsys):
     er = fleet.run(FX)
     md = fleet.render_markdown(er)
-    for h in ("# Anaplan estate: 2 models", "## Summary", "flowchart LR", "## Findings register", "## Methodology", "### Caldergate HR", "Rules skipped or limited"):
+    for h in ("# Anaplan estate: 2 models", "## Action plan", "flowchart LR", "## Findings register", "## Methodology", "### Caldergate HR", "Rules skipped or limited"):
         assert h in md
     main([str(FX), "--out", str(tmp_path / "e.md"), "--json", str(tmp_path / "e.json"), "--html", str(tmp_path / "e.html"), "--csv", str(tmp_path / "e.csv")])
     j = json.loads((tmp_path / "e.json").read_text(encoding="utf-8"))
     assert j["map"]["edges"][0]["to"] == "Caldergate HR" and j["map"]["edges"][0]["confirmed"] is False
-    assert (tmp_path / "e.html").stat().st_size > 10000 and (tmp_path / "e.csv").read_text(encoding="utf-8").startswith("id,area,title")
+    assert (tmp_path / "e.html").stat().st_size > 10000 and (tmp_path / "e.csv").read_text(encoding="utf-8").startswith("id,uid,area,title")
     main([str(FX), "--list"]); assert "Caldergate HR" in capsys.readouterr().out
 
 
@@ -78,7 +78,7 @@ def test_example_estate_findings():
         assert frag in titles, frag
     assert all(f.next_step and f.keep_design and f.basis for f in fs)
     md = fleet.render_markdown(er)
-    assert md.index("## Summary") < md.index("\n# Findings\n") < md.index("\n# Reference\n")
+    assert md.index("## Action plan") < md.index("\n# Findings\n") < md.index("\n# Reference\n")
     fp = next(m for m in er.models if m.name == "Caldergate FP&A")
     r = fp.redundancy.counts()
     assert r["aliases"] >= 10 and (r["orphan_modules"] + r["overlap"]) >= 1

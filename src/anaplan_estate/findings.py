@@ -83,6 +83,11 @@ class Finding:
     object_label: str = ""                               # accurate count label, e.g. "217 groups; 512 duplicate line items"
     implementation: list[str] = field(default_factory=list)  # change guidance with explicit prerequisites; kept apart from the next investigation step
     kind_label: str = "review candidate"                 # observation | review candidate
+    preview: list[str] = field(default_factory=list)     # the few objects shown before the full list; never the scope itself
+    preview_label: str = ""                              # "Showing 3 of 32 modules" / "All 4 modules"
+    unit: str = "objects"                                # noun for counts of `objects`
+    action_usage: str = "none detected"                  # none detected | not assessed (no Actions export) | n/a
+    uid: str = ""                                        # report-scoped stable identity (model + rules + leading object); survives renumbering
 
     def to_dict(self):
         return asdict(self)
@@ -168,6 +173,9 @@ def _per_model(er, m, nid) -> list[Finding]:
     for x in m.lint.findings:
         by_rule[x.rule].append(x)
     export_sources = set((f.get("actions") or {}).get("export_sources", []))
+    has_actions = bool(f.get("actions"))
+    action_usage = "none detected" if has_actions else "not assessed (no Actions export)"
+    export_clause = "no export action reads them" if has_actions else "export-action usage is not assessed (no Actions export was supplied)"
     has_modules = model.has_modules_export
     agree = f["referenced_by_check"]["agreement"]
     coverage_note = (f"Dependency coverage for {m.name}: parsed-formula edges agree with Anaplan's Referenced By at {agree:.0%} "
@@ -201,26 +209,26 @@ def _per_model(er, m, nid) -> list[Finding]:
         if any(s["collect"] for s in mods):
             missing.append("modules using COLLECT() draw on line item subsets the export does not describe")
         fd = new(area="usage", kind="retire", title=f"{_pl(len(mods), 'module')} with no consumer detected in the inspected dependency types",
-                 objects=[s["module"] for s in top],
-                 observed=f"No formula outside these modules reads any of their line items and no export action reads them. Together they hold {_c(total_cells)} cells"
+                 objects=[s["module"] for s in mods], preview=[s["module"] for s in top], unit="modules", action_usage=action_usage,
+                 observed=f"No formula outside these modules reads any of their line items, and {export_clause}. Together they hold {_c(total_cells)} cells"
                           + (f" and {total_eff:.1f}% of {m.name}'s measured calculation effort" if has_effort and total_eff else "") + f". The five largest: {', '.join(_q(s['module']) for s in top)}."
                           + (f" {len(with_twin)} of them contain line items whose formula and context match a line item in a module that is read ({matched_items} matching line items); {len(complete)} match line for line, so no module is a proven duplicate of another." if with_twin else ""),
-                 why="Pages, saved views, subsets and integrations are not in the exports, so each module is either read there or by nothing. The footprint says which to ask about first.",
+                 why="No consumer was detected in the inspected relationships (parsed formula references" + (", export actions" if has_actions else "") + "). Pages, saved views, subsets and integrations are not in the exports, and incomplete parsing or missing metadata can hide a reader, so a consumer remains possible. The footprint says which to ask about first.",
                  scope=f"{_pl(len(mods), 'module')}, {sum(s['line_items'] for s in mods)} line items",
                  benefit=f"If no consumer is found: {_footprint(total_cells, total_eff, m.name, has_effort)} would no longer be held or measured. Per module in the table.",
                  benefit_kind="conditional", strength=strength,
-                 basis=f"No formula consumer detected (parsed references, checked against Referenced By); no export action. {coverage_note}",
+                 basis=f"No formula consumer detected (parsed references, checked against Referenced By); export actions: {action_usage}. {coverage_note}",
                  missing=missing,
-                 next_step="Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the five largest modules, then record a keep-or-retire recommendation for each.",
+                 next_step="Complete the consumer and retention checks (pages, saved views, line item subsets, integrations, access drivers, retained data) for the largest module first, then the rest of the five largest, and record a keep-or-retire recommendation for each.",
                  keep_design="A module read only by pages, a view another model imports, or an audit-retained snapshot is doing its job with no formula reader. Retained data in an import target may be needed for history. A module containing matching line items is not a duplicate of the module they match until the unmatched line items and the consumers are accounted for.",
                  summary=f"{_pl(len(mods), 'module')} holding {_c(total_cells)} cells" + (f" and {total_eff:.1f}% of measured effort" if has_effort and total_eff else "") + " have no formula or export consumer in the exports.",
                  object_label=f"{_pl(len(mods), 'module')}, {sum(s['line_items'] for s in mods):,} line items",
                  implementation=["Prerequisites: every consumer check returned none, retained data is not needed, and the model owner has accepted the recommendation.",
-                                 "Then: blank the formulas in a development copy, reconcile the outputs the owner names against production over a full cycle, obtain owner sign-off, and only then delete.",
+                                 "Then: in a development copy, make the proposed change (retire or repoint) while keeping the original module intact for comparison and recovery; reconcile the outputs the owner names against production over a full cycle; obtain owner sign-off; only then apply in production.",
                                  "A module containing matching line items: repoint any page from the module to the matching line items first, and account for the unmatched line items separately."],
                  importance="high" if (total_cells >= 50_000_000 or total_eff >= 5) else "medium" if (total_cells >= 1_000_000 or total_eff >= 1) else "low",
                  complexity="medium", evidence=rows, rules=["G-UNUSED", "REDUNDANT-EXACT"],
-                 validation=["After a removal, the Line Items export no longer lists the module; workspace size falls by about its cells; every page listed in the check opens without a blank card."],
+                 validation=["After a removal, the Line Items export no longer lists the module and every page listed in the check opens without a blank card. Cell counts are an observed footprint; any memory or open-time change is measured in the workspace, not assumed from cells."],
                  footprint_cells=total_cells, footprint_effort=(total_eff if has_effort else None))
         fd._modules = {s["module"] for s in mods}
 
@@ -232,14 +240,15 @@ def _per_model(er, m, nid) -> list[Finding]:
             rows.append(f"| {_q(u['module'])} | {', '.join(_q(x) for x in u['items'])} | {_c(u['cells'])} | {u['effort']:.1f}% |")
         n = sum(len(u["items"]) for u in big); cells = sum(u["cells"] for u in big); eff = sum(u["effort"] for u in big)
         new(area="usage", kind="retire", title="Calculated line items with no consumer detected, outside output modules",
-            objects=[u["module"] for u in big], observed=f"{n} calculated line items in {len(big)} modules are read by no formula, not exported, not in an output-style module and have no matching line item elsewhere.",
+            objects=[u["module"] for u in big], unit="modules", action_usage=action_usage,
+            observed=f"{n} calculated line items in {len(big)} modules are read by no formula, " + ("are not read by an export action, " if has_actions else "have export-action usage not assessed (no Actions export), ") + "are not in an output-style module and have no matching line item elsewhere.",
             why="Each is computed and stored; if nothing reads it the footprint is spare. If a page reads it, it is an output that lives in a calculation module.",
             scope=f"{_pl(n, 'line item')} in {_pl(len(big), 'module')}",
             benefit=f"If no consumer is found: {_footprint(cells, eff, m.name, has_effort)}.", benefit_kind="conditional",
             strength="partial" if not weak_graph else "inferred", basis=f"Parsed references and export actions only. {coverage_note}",
             missing=["pages, saved views, line item subsets and integrations for each listed module", "the " + str(len(red.output_like)) + " unreferenced line items that look like outputs by module name, format or time scale are not listed here"],
             next_step="Complete the consumer and retention checks (pages, saved views, subsets, integrations, retained data) for the largest module's line items, then record a keep-or-retire recommendation for each.",
-            implementation=["Prerequisites: consumer checks returned none and the owner accepts. Then blank in a development copy, reconcile named outputs over a cycle, owner sign-off, delete."],
+            implementation=["Prerequisites: consumer checks returned none and the owner accepts. Then make the proposed change in a development copy with the originals kept for comparison, reconcile named outputs over a cycle, owner sign-off, apply."],
             keep_design="A line item read only by a page is not spare. A calculation kept for audit or reconciliation can be right to keep even if nothing reads it now.",
             importance="medium" if cells >= 10_000_000 else "low", complexity="medium", evidence=rows, rules=["G-UNUSED"],
             validation=["Re-run this report after removal: the list shrinks to the line items a page needs."], footprint_cells=cells, footprint_effort=(eff if has_effort else None))
@@ -254,7 +263,7 @@ def _per_model(er, m, nid) -> list[Finding]:
             rows.append(f"| {_q(keep['key'])} | {', '.join(_q(i['key']) for i in rest)} | {ctx} | {', '.join(sorted({i['summary'] for i in e['items']}))} | {_c(e['redundant_cells'])} | {e['readers_to_repoint']} |")
         rows += ["", "Formulas (one per group):", ""] + [f"- {_q(e['items'][0]['key'])}: `{e['formula']}`" for e in red.exact]
         new(area="maintain", kind="merge", title="Same calculation made more than once under different names",
-            objects=[e["items"][0]["key"] for e in red.exact],
+            objects=[e["items"][0]["key"] for e in red.exact], unit="groups (kept line item named)",
             observed=f"{c['exact_redundant']} calculated line items in {c['exact_groups']} groups have the same resolved formula and the same context (dimensions, time scale, time range, versions, data type, summary, formula scope) as another line item in the model. Together the copies hold {_c(c['exact_cells'])} cells.",
             why="Two copies of one calculation drift apart when one is changed. Where a page or process needs the second name, the copy is doing a job; where it does not, readers can share one.",
             scope=f"{_pl(c['exact_redundant'], 'line item')} in {_pl(c['exact_groups'], 'group')}; {sum(e['readers_to_repoint'] for e in red.exact)} formulas would be re-pointed",
@@ -292,9 +301,9 @@ def _per_model(er, m, nid) -> list[Finding]:
         c = red.counts()
         rows = ["| Alias | Copies | Cells | Readers to repoint | Summary (alias / source) | Module exported |", "|---|---|---|---|---|---|"]
         for a in red.aliases:
-            rows.append(f"| {_q(a['item'])} | {_q(a['target'])} | {_c(a['cells'])} | {a['readers']} | {a['summary']} / {a['target_summary']} | {'yes' if a['exported'] else 'no'} |")
+            rows.append(f"| {_q(a['item'])} | {_q(a['target'])} | {_c(a['cells'])} | {a['readers']} | {a['summary']} / {a['target_summary']} | {('yes' if a['exported'] else 'no') if has_actions else 'not assessed'} |")
         new(area="maintain", kind="collapse", title="Line items that only copy another line item",
-            objects=[a["item"] for a in red.aliases],
+            objects=[a["item"] for a in red.aliases], unit="copy line items", action_usage=action_usage,
             observed=f"{c['aliases']} line items have the formula `B = A` with the same context as A. Together they hold {_c(c['alias_cells'])} cells.",
             why="A copy gives a page a friendlier name, moves a value into a module with different access, or provides a stable name for an export. Where none of those applies, its readers could read the source.",
             scope=f"{_pl(c['aliases'], 'line item')}; {sum(a['readers'] for a in red.aliases)} formulas read them",
@@ -315,7 +324,7 @@ def _per_model(er, m, nid) -> list[Finding]:
         for n in cross:
             rows.append(f"| {_q(n['a'])} | {_q(n['b'])} | `{n['differs'][0]}` vs `{n['differs'][1]}` | `{n['formula_a']}` | `{n['formula_b']}` |")
         new(area="maintain", kind="merge", title="Formulas that differ in exactly one place",
-            objects=[n["a"] for n in cross],
+            objects=[n["a"] for n in cross], unit="pairs (first line item named)",
             observed=f"{len(cross)} pairs of line items in different modules share a formula skeleton and context and differ in one leaf: a constant, a reference or a list item.",
             why="This is what copy, paste and tweak leaves behind. The difference may be exactly the point (a different rate, a different driver) or drift between two versions of one rule. The exports cannot say which.",
             scope=f"{_pl(len(cross), 'pair')}", benefit="not quantified from the exports", benefit_kind="none", strength="inferred",
@@ -332,7 +341,7 @@ def _per_model(er, m, nid) -> list[Finding]:
         for ch in chains:
             rows.append(f"| {_q(ch[0][0] + '.' + ch[0][1])} | {len(ch)} | {_q(ch[-1][0] + '.' + ch[-1][1])} | {', '.join(_q(k[0] + '.' + k[1]) for k in ch[1:-1])} |")
         cells = sum(model.line_items[k].cell_count for ch in chains for k in ch[1:-1] if k in model.line_items)
-        new(area="dependency", kind="collapse", title="Pass-through chains", objects=[f"{ch[0][0]}.{ch[0][1]}" for ch in chains],
+        new(area="dependency", kind="collapse", title="Pass-through chains", objects=[f"{ch[0][0]}.{ch[0][1]}" for ch in chains], unit="chains (head named)",
             observed=f"{len(chains)} chains where A copies B copies C. Intermediate line items hold {_c(cells)} cells.",
             why="Each step is a stored copy and a place a change of source must be repeated. Anaplan's checklist advises against chains. An intermediate can also be a deliberate interface: a reporting layer, a security boundary, a stable import source for another model.",
             scope=f"{_pl(len(chains), 'chain')}", benefit=f"Footprint of the intermediates: {_c(cells)} cells.", benefit_kind="footprint",
@@ -350,7 +359,7 @@ def _per_model(er, m, nid) -> list[Finding]:
         for k, n in hubs:
             imp = g.impact(k)
             rows.append(f"| {_q(k[0] + '.' + k[1])} | {n} | {len(imp)} | {len({x[0] for x in imp})} |")
-        new(area="dependency", kind="hub", title="Line items with the widest change impact", objects=[f"{k[0]}.{k[1]}" for k, _ in hubs],
+        new(area="dependency", kind="hub", title="Line items with the widest change impact", objects=[f"{k[0]}.{k[1]}" for k, _ in hubs], unit="line items",
             observed=f"{len(hubs)} line items are read directly by 25 or more formulas.",
             why="A change to any of these moves numbers across the model. Not a fault: a fact for change control and for choosing what to test after a release.",
             scope=f"{_pl(len(hubs), 'line item')}", benefit="not applicable", benefit_kind="none", strength="confirmed" if not weak_graph else "partial",
@@ -367,15 +376,15 @@ def _per_model(er, m, nid) -> list[Finding]:
             rows.append(f"| {_q(name)} | {eff:.2f}% | {_c(cells)} | `{(li.formula if li else formula)}` |")
         rows += ["", "By module: " + ", ".join(f"{_q(n)} {v:.1f}%" for n, v in f["effort_by_module"])]
         new(area="capacity", kind="capacity", title="Where measured calculation effort concentrates",
-            objects=[name for name, *_ in f["effort_top"][:10]],
+            objects=[name for name, *_ in f["effort_top"]], preview=[name for name, *_ in f["effort_top"][:3]], unit="line items",
             observed=f"Ten line items carry {f['effort_top10_share']}% of {m.name}'s measured calculation effort; the largest is {_q(f['effort_top'][0][0])} at {f['effort_top'][0][1]:.1f}%.",
             why="Effort is where a redesign would show. " + _effort_note(m),
-            scope="top 20 line items by effort", benefit="Observed footprint only; no reduction is claimed.", benefit_kind="footprint",
+            scope=f"top {len(f['effort_top'])} line items by effort share (the ten largest are summarised)", benefit="Observed footprint only; no reduction is claimed.", benefit_kind="footprint",
             strength="confirmed", basis="Anaplan's Calculation Effort column as exported.", missing=["engine (Classic or Polaris)", "when the measurement was taken"],
             next_step="Read the formulas of the top five and match each against the other findings that name it (SUM with LOOKUP, IF chains, text in large modules); decide which one to trial in a development copy first.",
             keep_design="High effort in the line item that does the model's main job is expected.", importance="medium", complexity="medium", evidence=rows, rules=["EFFORT"], kind_label="observation",
             summary=f"Ten line items carry {f['effort_top10_share']}% of {m.name}'s measured calculation effort, led by {_q(f['effort_top'][0][0])} at {f['effort_top'][0][1]:.1f}%; a concentration to investigate, not a saving.",
-            object_label="top 20 line items by effort share", footprint_effort=None)
+            object_label=f"top {len(f['effort_top'])} line items by effort share; ten summarised", footprint_effort=None)
 
     # ---- capacity: SUM with LOOKUP/SELECT
     if by_rule.get("F-MIXED-CLAUSE"):
@@ -385,7 +394,7 @@ def _per_model(er, m, nid) -> list[Finding]:
             li = model.line_items.get((x.module, x.line_item))
             rows.append(f"| {_q(x.object)} | {x.message} | {(f'{li.calc_effort:.2f}%' if li and has_effort else 'n/a')} | `{li.formula if li else ''}` |")
         eff = sum(model.line_items[(x.module, x.line_item)].calc_effort for x in xs if (x.module, x.line_item) in model.line_items)
-        new(area="capacity", kind="fix", title="SUM combined with LOOKUP or SELECT in one formula", objects=[x.object for x in xs],
+        new(area="capacity", kind="fix", title="SUM combined with LOOKUP or SELECT in one formula", objects=[x.object for x in xs], unit="formulas",
             observed=f"{len(xs)} formulas combine SUM with LOOKUP or SELECT. Anaplan's documentation: \"{DOCS['lookup'][2]}\" and \"{DOCS['select'][2].split('.')[0]}.\"",
             why="The documented concern is calculation time. Whether splitting a particular formula helps is not guaranteed; the documented approach is one line item to aggregate and another to look up or select from it.",
             scope=f"{_pl(len(xs), 'formula')}" + (f"; together {eff:.1f}% of {m.name}'s measured effort" if has_effort else ""),
@@ -403,7 +412,7 @@ def _per_model(er, m, nid) -> list[Finding]:
         for x in heavy:
             li = model.line_items.get((x.module, x.line_item))
             rows.append(f"| {_q(x.object)} | {RULES[x.rule].title} | {_c(li.cell_count) if li else ''} | {(f'{li.calc_effort:.2f}%' if li and has_effort else 'n/a')} | `{li.formula if li else ''}` |")
-        new(area="capacity", kind="tidy", title="Text, FINDITEM and per-item functions in large multi-dimensional line items", objects=[x.object for x in heavy],
+        new(area="capacity", kind="tidy", title="Text, FINDITEM and per-item functions in large multi-dimensional line items", objects=[x.object for x in heavy], unit="line items",
             observed=f"{len(heavy)} line items compute a text value, a FINDITEM, a text join or a per-item function (ITEM, PARENT, NAME, CODE) in a line item with many cells.",
             why="Computed once per cell here; computed once per list item in a one-dimension system module. Anaplan's checklist recommends the system module.",
             scope=f"{_pl(len(heavy), 'line item')}", benefit="Observed footprint only; improvement would be measured after the change.", benefit_kind="footprint",
@@ -439,7 +448,7 @@ def _per_model(er, m, nid) -> list[Finding]:
             li = model.line_items.get((x.module, x.line_item))
             rows.append(f"| {_q(x.object)} | {x.value.replace(',', ', ')} | `{li.formula if li else ''}` |")
         vals = Counter(v for x in xs for v in x.value.split(",") if v)
-        new(area="maintain", kind="refactor", title="Numeric literals inside formulas", objects=[x.object for x in xs],
+        new(area="maintain", kind="refactor", title="Numeric literals inside formulas", objects=[x.object for x in xs], unit="formulas",
             observed=f"{len(xs)} formulas contain numeric literals other than the usual structural ones (0, 1, 12, 100 and the like). Most repeated: {', '.join(f'{v} ({n})' for v, n in vals.most_common(5))}.",
             why="A literal that is an assumption (a rate, a threshold, a conversion) cannot be seen or changed without a builder. The same literal can mean different things in different formulas, so each occurrence needs its own reading before anything is shared.",
             scope=f"{_pl(len(xs), 'formula')}", benefit="not quantified from the exports", benefit_kind="none", strength="confirmed", basis="Parsed numeric leaves.",
@@ -454,7 +463,7 @@ def _per_model(er, m, nid) -> list[Finding]:
         for x in xs:
             li = model.line_items.get((x.module, x.line_item)); mod = model.modules.get(x.module)
             rows.append(f"| {_q(x.object)} | {', '.join(li.applies_to) if li else ''} | {', '.join(mod.applies_to) if mod else ''} | {x.value} |")
-        new(area="maintain", kind="tidy", title="Subsidiary views used in calculation", objects=[x.object for x in xs],
+        new(area="maintain", kind="tidy", title="Subsidiary views used in calculation", objects=[x.object for x in xs], unit="line items",
             observed=f"{len(xs)} line items are dimensioned differently from their module and are read by formulas.",
             why="The line item's dimensions are not visible at module level, so a reader can misjudge what a reference returns, and the engine maps between the two dimension sets on every read. Anaplan's checklist: display and export only.",
             scope=f"{_pl(len(xs), 'line item')}; {sum(int(x.value or 0) for x in xs)} readers", benefit="not quantified from the exports", benefit_kind="none",
@@ -466,7 +475,7 @@ def _per_model(er, m, nid) -> list[Finding]:
     if by_rule.get("A-SUMMARY-ON"):
         xs = by_rule["A-SUMMARY-ON"]
         rows = ["| Line item | Summary | Cells |", "|---|---|---|"] + [f"| {_q(x.object)} | {x.value} | {_c(model.line_items[(x.module, x.line_item)].cell_count) if (x.module, x.line_item) in model.line_items else ''} |" for x in xs]
-        new(area="maintain", kind="tidy", title="Summary methods on large line items no formula reads", objects=[x.object for x in xs],
+        new(area="maintain", kind="tidy", title="Summary methods on large line items no formula reads", objects=[x.object for x in xs], unit="line items",
             observed=f"{len(xs)} number line items with 10,000 cells or more have a summary method set and no formula reader.",
             why="Summaries are calculated on every parent of every dimension. Only a page or export could need the totals; the exports cannot show whether one does.",
             scope=f"{_pl(len(xs), 'line item')}", benefit="not quantified from the exports", benefit_kind="none", strength="partial",
@@ -487,14 +496,14 @@ def _per_model(er, m, nid) -> list[Finding]:
         fd._module = x.module
     if by_rule.get("G-EMPTY-MODULE"):
         xs = by_rule["G-EMPTY-MODULE"]
-        new(area="maintain", kind="tidy", title="Modules with no line items", objects=[x.module for x in xs],
+        new(area="maintain", kind="tidy", title="Modules with no line items", objects=[x.module for x in xs], unit="modules",
             observed=f"{len(xs)} modules have no line items.", why="Usually a leftover from a build that moved on.", scope=f"{_pl(len(xs), 'module')}",
             benefit="not applicable", benefit_kind="none", strength="confirmed", basis="Line Items export.", missing=[], next_step="Confirm nothing is planned for them, then decide whether to remove them.",
             keep_design="A placeholder for planned work, if noted.", importance="low", complexity="low", rules=["G-EMPTY-MODULE"])
     if by_rule.get("F-LONG"):
         xs = by_rule["F-LONG"]
         rows = ["| Line item | Tokens | Formula |", "|---|---|---|"] + [f"| {_q(x.object)} | {x.value} | `{model.line_items[(x.module, x.line_item)].formula if (x.module, x.line_item) in model.line_items else ''}` |" for x in xs]
-        new(area="maintain", kind="refactor", title="Very long formulas", objects=[x.object for x in xs],
+        new(area="maintain", kind="refactor", title="Very long formulas", objects=[x.object for x in xs], unit="formulas",
             observed=f"{len(xs)} formulas exceed 120 tokens.", why="Hard to review and to test. Anaplan's checklist: a formula should be explainable in one sentence.",
             scope=f"{_pl(len(xs), 'formula')}", benefit="not quantified from the exports", benefit_kind="none", strength="confirmed", basis="Token count.", missing=[],
             next_step="Add a note to each explaining what it does; split only where a named intermediate would help a reader.",
@@ -502,7 +511,7 @@ def _per_model(er, m, nid) -> list[Finding]:
     if by_rule.get("F-SELECT-TIME"):
         xs = by_rule["F-SELECT-TIME"]
         rows = ["| Line item | Selection | Formula |", "|---|---|---|"] + [f"| {_q(x.object)} | {x.message} | `{model.line_items[(x.module, x.line_item)].formula if (x.module, x.line_item) in model.line_items else ''}` |" for x in xs]
-        new(area="maintain", kind="refactor", title="Hard-coded time period or version selections", objects=[x.object for x in xs],
+        new(area="maintain", kind="refactor", title="Hard-coded time period or version selections", objects=[x.object for x in xs], unit="formulas",
             observed=f"{len(xs)} formulas select a specific time period or version with SELECT.",
             why=f"Anaplan's SELECT page: \"{DOCS['select'][2].split('. ')[2] if len(DOCS['select'][2].split('. ')) > 2 else 'not recommended with non-generic time periods'}.\" The hard-coded element must be revisited when the timescale or versions change.",
             scope=f"{_pl(len(xs), 'formula')}", benefit="not quantified from the exports", benefit_kind="none", strength="confirmed", basis="Parsed SELECT clauses.", missing=[],
@@ -511,7 +520,7 @@ def _per_model(er, m, nid) -> list[Finding]:
     if by_rule.get("F-DIVIDE-FN"):
         xs = by_rule["F-DIVIDE-FN"]
         rows = ["| Line item | Formula |", "|---|---|"] + [f"| {_q(x.object)} | `{model.line_items[(x.module, x.line_item)].formula if (x.module, x.line_item) in model.line_items else ''}` |" for x in xs]
-        new(area="maintain", kind="fix", title="DIVIDE() where a zero divisor shows Infinity", objects=[x.object for x in xs],
+        new(area="maintain", kind="fix", title="DIVIDE() where a zero divisor shows Infinity", objects=[x.object for x in xs], unit="formulas",
             observed=f"{len(xs)} formulas use DIVIDE(). Anaplan's documentation: \"{DOCS['operators'][2]}\" and \"{DOCS['divide'][2]}\"",
             why="Neither behaviour is an error. Where a divisor can be zero, the page shows Infinity or NaN with DIVIDE() and zero with /. This is a display decision for the owner, not a defect.",
             scope=f"{_pl(len(xs), 'formula')}", benefit="not applicable", benefit_kind="none", strength="confirmed", basis="Official documentation, consulted 2026-09-22; function calls parsed.", missing=[],
@@ -527,7 +536,7 @@ def _per_model(er, m, nid) -> list[Finding]:
         for name in sorted(listed, key=lambda n: (acts.get(n).last_run if acts.get(n) else "")):
             act = acts.get(name)
             rows.append(f"| {_q(name)} | {act.kind if act else ''} | {act.last_run[:10] if act and act.last_run else 'none recorded'} | {'no' if name in a['not_in_process'] else 'yes'} | {_q(act.target) if act and act.target else ''} |")
-        new(area="integration", kind="schedule", title="Imports and exports with no recent recorded run or outside every process", objects=sorted(listed),
+        new(area="integration", kind="schedule", title="Imports and exports with no recent recorded run or outside every process", objects=sorted(listed), unit="actions",
             observed=f"Export date unknown. Latest recorded action run: {a['snapshot'] or 'none'}. {len(a['no_recent_run'])} imports and exports have no recorded run since {a['stale_cutoff'] or 'n/a'} ({a['stale_months']} months before the latest recorded run), {len(a['never_recorded'])} have no recorded run at all, and {len(a['not_in_process'])} are not in any process.",
             why="An action outside a process can still run from a page, the Actions pane or the API; a run date older than the window may be right for a quarterly or annual load. What the list gives is the set to ask about, not a verdict.",
             scope=f"{_pl(len(listed), 'action')}", benefit="not quantified from the exports", benefit_kind="none", strength="partial",
@@ -541,7 +550,7 @@ def _per_model(er, m, nid) -> list[Finding]:
     if by_rule.get("F-PARSE"):
         xs = by_rule["F-PARSE"]
         rows = ["| Line item | Parser message | Formula |", "|---|---|---|"] + [f"| {_q(x.object)} | {x.message} | `{model.line_items[(x.module, x.line_item)].formula if (x.module, x.line_item) in model.line_items else ''}` |" for x in xs]
-        new(area="dependency", kind="fix", title="Formulas the parser did not follow (analysis limitation)", objects=[x.object for x in xs],
+        new(area="dependency", kind="fix", title="Formulas the parser did not follow (analysis limitation)", objects=[x.object for x in xs], unit="formulas",
             observed=f"{len(xs)} formulas were not parsed, so their references are missing from the dependency graph.",
             why="Counts of readers, hubs and 'no consumer detected' that touch these line items are incomplete. This is a limitation of the analysis; it is not evidence of a model defect.",
             scope=f"{_pl(len(xs), 'formula')}", benefit="not applicable", benefit_kind="none", strength="confirmed", basis="Parser output.", missing=["the references inside these formulas"],
@@ -569,7 +578,7 @@ def _estate(er, nid) -> list[Finding]:
         rows = ["| Line item | Models | Formula |", "|---|---|---|"] + [f"| {_q(d['line_item'])} | {', '.join(d['models'])} | `{d['formula']}` |" for d in er.duplicates]
         nid[0] += 1
         out.append(Finding(id=f"F{nid[0]}", area="maintain", kind="dedupe", title="Same line item name and formula in more than one model", model="Estate",
-                           objects=[d["line_item"] for d in er.duplicates],
+                           objects=[d["line_item"] for d in er.duplicates], unit="line item names",
                            observed=f"{len(er.duplicates)} line items appear in more than one model with the same name and the same formula tree.",
                            why="The same text can operate on different local data (a filter over a local list, a local rate), so identical formulas are not automatically one calculation. Where they are one calculation, a change must be made in each copy.",
                            scope=f"{_pl(len(er.duplicates), 'line item')} across {len({mm for d in er.duplicates for mm in d['models']})} models", benefit="not quantified from the exports", benefit_kind="none",
@@ -592,14 +601,33 @@ def build(er) -> list[Finding]:
             first = re.split(r"(?<=[.!?])\s+", x.observed.strip(), maxsplit=1)[0]
             x.summary = first
         if not x.object_label:
-            x.object_label = _pl(len(x.objects), "object")
+            x.object_label = f"{len(x.objects):,} {x.unit}" if x.unit != "objects" else _pl(len(x.objects), "object")
+        if not x.preview:
+            x.preview = x.objects[:3]
+        x.preview_label = (f"All {len(x.objects)} {x.unit}" if len(x.preview) >= len(x.objects) else f"Showing {len(x.preview)} of {len(x.objects)} {x.unit}")
+        x.uid = stable_uid(x)
     fs.sort(key=lambda x: (IMPORTANCE_ORDER[x.importance], STRENGTH_ORDER[x.strength], -(x.footprint_cells or 0), -(x.footprint_effort or 0)))
     for i, x in enumerate(fs, 1):
         old = x.id
         x.id = f"F{i}"
         for y in fs:
             y.related = [x.id if r == old else r for r in y.related]
+    seen = Counter(x.uid for x in fs)
+    dup = {u for u, n in seen.items() if n > 1}
+    if dup:
+        k = Counter()
+        for x in fs:
+            if x.uid in dup:
+                k[x.uid] += 1; x.uid = f"{x.uid}-{k[x.uid]}"
     return fs
+
+
+def stable_uid(x: Finding) -> str:
+    """Identity that survives renumbering between runs: model, rules, title and the leading object. Two findings that
+    share all four in one report get a suffix, so a note never lands on the wrong one within a report."""
+    import hashlib
+    base = f"{x.model}|{'+'.join(x.rules)}|{x.title}|{x.objects[0] if x.objects else ''}"
+    return "u" + hashlib.sha1(base.encode("utf-8")).hexdigest()[:10]
 
 
 def by_area(fs: list[Finding]):
