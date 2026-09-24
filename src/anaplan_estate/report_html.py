@@ -52,7 +52,7 @@ p{max-width:78ch;margin:6px 0}
 ol.actions{list-style:none;padding:0;margin:0;counter-reset:a}
 li.action{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--accent);border-radius:8px;padding:12px 16px;margin:10px 0;counter-increment:a}
 li.action h2{margin:0 0 4px;font-size:17px}li.action h2:before{content:counter(a) ". ";color:var(--muted)}
-li.action .role{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+li.action .role{margin:0 0 8px}li.action .model{display:inline-block;background:var(--accent);color:#fff;font-size:12.5px;font-weight:600;padding:2px 9px;border-radius:999px}
 li.action dl{margin:0}li.action dt{font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:8px}li.action dd{margin:2px 0 0}
 li.action ol{margin:2px 0 0;padding-left:20px}li.action ol li{margin:2px 0}
 li.action .notice{background:var(--notice);border-radius:6px;padding:6px 10px;font-size:13px;margin:8px 0 0}
@@ -109,7 +109,7 @@ footer{margin-top:36px;border-top:1px solid var(--rule);padding-top:12px;font-si
  body{background:#fff;color:#111;font-size:10.5pt;line-height:1.3}.page{max-width:none;padding:0}p{margin:3px 0}
  nav.views,.controls,.noprint,.review,.hit,#ix-results,footer .links-help,body:not(.print-full) footer{display:none!important}
  header.top{margin-bottom:6px;padding-bottom:4px}header.top h1{font-size:17pt;margin:0}header.top .attrib,header.top .lead{font-size:9.5pt;margin:2px 0}
- li.action{padding:5px 9px;margin:5px 0;page-break-inside:avoid;border:1px solid #bbb;border-left:3px solid #0E5E6F}li.action h2{font-size:12pt;margin:0 0 2px}li.action .role{font-size:8pt;margin:0 0 3px}
+ li.action{padding:5px 9px;margin:5px 0;page-break-inside:avoid;border:1px solid #bbb;border-left:3px solid #0E5E6F}li.action h2{font-size:12pt;margin:0 0 2px}li.action .role{margin:0 0 3px}li.action .model{font-size:9pt;background:#0E5E6F;color:#fff}
  li.action dt{margin-top:3px;font-size:8.5pt}li.action dd,li.action ol li,li.action .notice,li.action .links{font-size:10pt}li.action .notice{padding:3px 8px;margin:4px 0 0}li.action .links{margin:4px 0 0}li.action ol li{margin:1px 0}
  #plan>.fnote{font-size:9pt;margin:4px 0}footer{margin-top:10px;padding-top:6px;font-size:9pt}
  body:not(.print-full) #impact,body:not(.print-full) #evidence{display:none!important}
@@ -515,7 +515,7 @@ def _action_card(i: int, a: dict, rep: dict, nidx: dict, midx: dict) -> str:
         nums = [f'<a href="#A{keys.index(k) + 1}">action {keys.index(k) + 1}</a>' for k in a["depends_on"] if k in keys]
         depends = f' &middot; After: {", ".join(nums)}' if nums else ""
     notices = "".join(f'<p class="notice">{_e(n)}</p>' for n in a["notices"])
-    return (f'<li class="action" id="A{i}"><h2>{_e(a["title"])}</h2><p class="role">{_e(a["role"])} &middot; {a["kind"]}, evidence {a["strength"]}</p>'
+    return (f'<li class="action" id="A{i}"><h2>{_e(a["title"])}</h2><p class="role"><span class="model">{_e(a["model"])}</span></p>'
             f'<dl><dt>Why</dt><dd>{_e(a["why"])}</dd><dt>Steps</dt><dd><ol>{"".join(f"<li>{_e(s)}</li>" for s in a["steps"])}</ol></dd><dt>Done when</dt><dd>{_e(a["done_when"])}</dd></dl>'
             f'{notices}<p class="links">Evidence: {ev or "none"}{(" &middot; " + dep) if dep else ""}{depends}</p></li>')
 
