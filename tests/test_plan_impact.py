@@ -63,9 +63,12 @@ def test_plan_merges_overlaps_and_names_bounded_objects():
     # the leftover module is a suggested action (a consumer check), stated as footprint not saving
     ret = next(a for a in acts if a["key"].startswith("retire:"))
     assert "CAL05 Opex OLD" in ret["objects"] and "not a saving" in ret["why"] and ret["kind"] == "investigation"
-    # the hotspot join names the objects rather than asking the reader to join them
+    # the hotspot join names the objects rather than asking the reader to join them, and the card lists them with their formulas
     hot = next(a for a in acts if a["key"].startswith("hotspot-"))
     assert hot["objects"] and all("." in o for o in hot["objects"])
+    assert [d["object"] for d in hot["detail"]] == hot["objects"] and all(d["formula"] for d in hot["detail"])
+    card = h[h.index(f'<li class="action" id="A{acts.index(hot) + 1}"'):]; card = card[:card.index("</li></ol>") if "</li></ol>" in card else len(card)]
+    assert '<table class="det">' in card and report_html._e(hot["detail"][0]["formula"]) in card and "listed under Evidence" not in card
 
 
 def _cand(key, strength, kind, n_objects, cells=None, effort=None):

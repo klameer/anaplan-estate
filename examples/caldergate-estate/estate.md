@@ -20,6 +20,10 @@ Formulas that take a large share of a model's measured calculation effort and ma
 
 **Why.** A formula built as a long chain of 'if this then that' tests checks every branch for every cell, and each new case means editing the formula. The same mapping held as rows in a small table module, read with one lookup, is quicker to calculate and can be maintained without a builder. In Caldergate FP&A, the line item 'Forecast Opex' in the module 'CAL03 Opex' carries 16.0% of the model's measured calculation effort.
 
+| Line item | Module | Effort | Cells | Formula |
+|---|---|---|---|---|
+| Forecast Opex | CAL03 Opex | 16.0% | 5.0M | `IF ITEM(Accounts) = Accounts.'6100 Rent' THEN 'INP02 Opex Drivers'.Rent ELSE IF ITEM(Accounts) = Accounts.'6110 Rates' THEN 'INP02 Opex Drivers'.Business Rates ELSE IF ITEM(Accounts) = Accounts.'6120 Utilities' THEN 'INP02 Opex Drivers'.Utilities ELSE IF ITEM(Accounts) = Accounts.'6200 Travel' THEN 'INP02 Opex Drivers'.Travel ELSE IF ITEM(Accounts) = Accounts.'6210 Subsistence' THEN 'INP02 Opex Drivers'.Subsistence ELSE IF ITEM(Accounts) = Accounts.'6300 Marketing' THEN 'INP02 Opex Drivers'.Marketing Events ELSE IF ITEM(Accounts) = Accounts.'6310 Digital' THEN 'INP02 Opex Drivers'.Marketing Digital ELSE IF ITEM(Accounts) = Accounts.'6400 Software' THEN 'INP02 Opex Drivers'.Software Licences ELSE IF ITEM(Accounts) = Accounts.'6410 Hardware' THEN 'INP02 Opex Drivers'.Hardware ELSE IF ITEM(Accounts) = Accounts.'6500 Professional Fees' THEN 'INP02 Opex Drivers'.Consultancy ELSE IF ITEM(Accounts) = Accounts.'6510 Audit' THEN 'INP02 Opex Drivers'.Audit Fees ELSE IF ITEM(Accounts) = Accounts.'6600 Recruitment' THEN 'INP02 Opex Drivers'.Recruitment Fees ELSE 0` |
+
 **Steps.**
 
 1. In a development copy, load the 'case to value' table (it is written out under Evidence) into a small mapping module keyed by the list the tests refer to.
@@ -30,9 +34,13 @@ Formulas that take a large share of a model's measured calculation effort and ma
 
 Role: model builder, Caldergate FP&A. Evidence: [F2](#F2), [F5](#F5), [F16](#F16), [F21](#F21).
 
-#### 2. Stop working out text labels on every cell in Caldergate FP&A (1 formula)
+#### 2. Stop repeating text-to-item lookups (FINDITEM) on every cell in Caldergate FP&A (1 formula)
 
-**Why.** Anaplan runs a formula once for every cell of a module. When the formula only produces a label (a text value such as a period code) that is the same across a whole row, working it out for every cell of a large grid is wasted effort. Moving the formula into a small helper module that has only the list the label depends on means it is worked out once per item and simply looked up from there. In Caldergate FP&A this applies to the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL': together 5.0M cells and 6.2% of the model's measured calculation effort.
+**Why.** Anaplan runs a formula once for every cell of a module. When a formula only turns a text value into a label or a list item (for example a month code into a Time item), and that answer is the same for every cell that shares the code, working it out on every cell of a large grid is wasted effort. Moving the formula into a small helper module that has only the list the answer depends on means it is worked out once per item and simply looked up from there. In Caldergate FP&A this applies to the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL': together 5.0M cells and 6.2% of the model's measured calculation effort.
+
+| Line item | Module | Effort | Cells | Formula |
+|---|---|---|---|---|
+| Journal Cost Centre | DAT01 Actuals GL | 6.2% | 5.0M | `FINDITEM(Cost Centres, Source Journal)` |
 
 **Steps.**
 
@@ -40,7 +48,7 @@ Role: model builder, Caldergate FP&A. Evidence: [F2](#F2), [F5](#F5), [F16](#F16
 2. In a development copy of the model, create a small system module with just that list, put the formula there, and point the places that used the old formula at the new one. Keep the old line item until the check below passes.
 3. Compare the results before and after, and read the Calculation Effort column before and after.
 
-**Done when.** Every value that used the label still matches the original, cell for cell, and the measured effort share has fallen.
+**Done when.** Every value that used the result still matches the original, cell for cell, and the measured effort share has fallen.
 
 Role: model builder, Caldergate FP&A. Evidence: [F5](#F5), [F16](#F16).
 
@@ -115,9 +123,17 @@ The heaviest calculations in a model that match no known pattern: a place to loo
 
 **Why.** Anaplan records how much of a model's calculation effort each line item takes. In Caldergate Data Hub, ten line items take 99.9% of it, led by the line item 'Loaded?' in the module 'DAT01 GL Transactions' at 88.3%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: heavy calculation is often simply the model doing its main job.
 
+| Line item | Module | Effort | Cells | Formula |
+|---|---|---|---|---|
+| Loaded? | DAT01 GL Transactions | 88.3% | 1.3M | `Journal Count > 0` |
+| Units | CAL01 Volume Summary | 2.9% | 9.1K | `'DAT06 Sales Orders'.Units[SUM: 'DAT07 Customer Master'.Region]` |
+| Revenue | CAL01 Volume Summary | 2.9% | 9.1K | `'DAT06 Sales Orders'.Order Revenue[SUM: 'DAT07 Customer Master'.Region]` |
+| Orders | CAL01 Volume Summary | 2.9% | 9.1K | `'DAT06 Sales Orders'.Order Count[SUM: 'DAT07 Customer Master'.Region]` |
+| Weighted Pipeline | DAT05 CRM Pipeline | 1.8% | 17.3K | `Open Pipeline * Probability` |
+
 **Steps.**
 
-1. With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.
+1. With the owner, read the five heaviest formulas (listed below) and note what each one is for and how often it changes.
 2. For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).
 3. Try at most one change in a development copy, reading Calculation Effort before and after.
 
@@ -130,9 +146,17 @@ Role: model builder, Caldergate Data Hub. Evidence: [F3](#F3).
 
 **Why.** Anaplan records how much of a model's calculation effort each line item takes. In Board Reporting, ten line items take 89.7% of it, led by the line item 'Revenue per FTE' in the module 'CAL01 KPIs' at 11.2%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: heavy calculation is often simply the model doing its main job.
 
+| Line item | Module | Effort | Cells | Formula |
+|---|---|---|---|---|
+| Revenue per FTE | CAL01 KPIs | 11.2% | 144 | `'DAT02 Board Lines'.Revenue / FTE` |
+| Opex Ratio | CAL01 KPIs | 11.2% | 144 | `DIVIDE('DAT01 P&L'.Opex, 'DAT01 P&L'.Revenue)` |
+| Revenue Growth | CAL01 KPIs | 11.2% | 144 | `DIVIDE('DAT02 Board Lines'.Revenue - Revenue Prior Year, Revenue Prior Year)` |
+| EBITDA Margin | CAL01 KPIs | 11.2% | 144 | `DIVIDE('DAT02 Board Lines'.EBITDA, 'DAT02 Board Lines'.Revenue)` |
+| FTE | CAL01 KPIs | 7.5% | 144 | `'DAT03 Headcount'.FTE` |
+
 **Steps.**
 
-1. With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.
+1. With the owner, read the five heaviest formulas (listed below) and note what each one is for and how often it changes.
 2. For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).
 3. Try at most one change in a development copy, reading Calculation Effort before and after.
 
@@ -149,6 +173,11 @@ The same calculation kept under more than one name; one copy can be dropped once
 
 **Why.** The same calculation exists more than once under different names, with the same formula and the same dimensions. Two copies can drift apart when one is changed, and each copy takes space and calculation time. In Caldergate FP&A, the line item 'Depreciation' in the module 'OUT01 Management Pack' is the same calculation as the line item 'Depreciation' in the module 'CAL07 P&L by Cost Centre'; the copies occupy 19.2K cells and 0 other formulas read them.
 
+| Line item | Module | Effort | Cells | Formula |
+|---|---|---|---|---|
+| Depreciation | CAL07 P&L by Cost Centre |  | 19.2K | `'CAL10 Depreciation'.Charge` |
+| Depreciation | OUT01 Management Pack |  | 19.2K | `'CAL10 Depreciation'.Charge` |
+
 **Steps.**
 
 1. Ask the owner and page builder whether any copy exists for a reason: a page that shows it under that name, an export column, or different access rights.
@@ -163,6 +192,11 @@ Role: model builder, Caldergate FP&A. Evidence: [F11](#F11).
 #### 7. Remove 1 duplicate copy of one calculation in Workforce Planning
 
 **Why.** The same calculation exists more than once under different names, with the same formula and the same dimensions. Two copies can drift apart when one is changed, and each copy takes space and calculation time. In Workforce Planning, the line item 'Headcount' in the module 'zz Archive - 2021 Cost' is the same calculation as the line item 'Headcount' in the module 'Calcs - Attrition'; the copies occupy 4.5K cells and 1 other formulas read them.
+
+| Line item | Module | Effort | Cells | Formula |
+|---|---|---|---|---|
+| Headcount | Calcs - Attrition |  | 4.5K | `'Data - Employees'.FTE[SUM: 'Data - Employees'.Role]` |
+| Headcount | zz Archive - 2021 Cost |  | 4.5K | `'Data - Employees'.FTE[SUM: 'Data - Employees'.Role]` |
 
 **Steps.**
 
@@ -232,7 +266,7 @@ flowchart LR
 | Rank | Candidate | Evidence | Kind | Scope | Footprint |
 |---|---|---|---|---|---|
 | 1 | Replace the long chain of IF tests in the line item 'Forecast Opex' in the module 'CAL03 Opex' with a lookup table | confirmed | change | bounded (1) | 5.0M cells |
-| 2 | Stop working out text labels on every cell in Caldergate FP&A (1 formula) | confirmed | change | bounded (1) | 5.0M cells |
+| 2 | Stop repeating text-to-item lookups (FINDITEM) on every cell in Caldergate FP&A (1 formula) | confirmed | change | bounded (1) | 5.0M cells |
 | 3 | Find out whether anyone still uses the module 'CAL05 Opex OLD' in Caldergate FP&A | partial | investigation | bounded (1) | 70.2M cells |
 | 4 | Look at the five heaviest calculations in Caldergate Data Hub | confirmed | investigation | bounded (5) | 1.3M cells |
 | 5 | Find out whether anyone still uses the module 'SYS01 Time' in Board Reporting | partial | investigation | bounded (1) | 72 cells |

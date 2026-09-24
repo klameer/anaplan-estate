@@ -59,6 +59,7 @@ class Candidate:
     worth: bool = True                                    # met the bar (WORTH); the rest are shown after it, labelled
     why_not: str = ""                                     # why it fell below the bar
     group: str = ""                                       # key of GROUPS
+    detail: list[dict] = field(default_factory=list)      # the named objects, one row each: object, module, effort, cells, formula (shown on the card)
 
     @property
     def bounded(self) -> bool:
@@ -166,21 +167,25 @@ def _hotspot_candidates(er, fmap, mi, m) -> list[Candidate]:
         first, first_eff = items[0][0], items[0][1]
         ids = sorted({i for n in names for i in fmap.get((m.name, n), [])} | ({eff_id} if eff_id else set()), key=lambda s: int(s[1:]))
         n = len(names)
-        others = (f" and {n - 1} similar line item{'s' if n > 2 else ''} (listed under Evidence)" if n > 1 else "")
+        others = (f" and {n - 1} similar line item{'s' if n > 2 else ''} (all listed below)" if n > 1 else "")
         explorer = [mi, _li(first, m)[0], _li(first, m)[1] or None]
+        detail = [{"object": nm, "module": _li(nm, m)[0], "name": _li(nm, m)[1], "effort": e, "cells": c,
+                   "formula": (m.model.line_items[_li(nm, m)].formula if _li(nm, m) in m.model.line_items else "")} for nm, e, c in items]
         if fam == "text":
+            kinds = {r for nm in names for r in by_obj.get(nm, []) if r in TEXT_RULES}
+            what = ("text-to-item lookups (FINDITEM)" if kinds == {"A-FINDITEM"} else "text or per-item formulas (labels, text joins, FINDITEM, ITEM or NAME)")
             c = Candidate(key=f"hotspot-text:{m.name}", kind="change",
-                          title=f"Stop working out text labels on every cell in {m.name} ({_pl(n, 'formula')})",
-                          why=(f"Anaplan runs a formula once for every cell of a module. When the formula only produces a label (a text value such as a period code) "
-                               f"that is the same across a whole row, working it out for every cell of a large grid is wasted effort. Moving the formula into a small helper module "
-                               f"that has only the list the label depends on means it is worked out once per item and simply looked up from there. "
+                          title=f"Stop repeating {what} on every cell in {m.name} ({_pl(n, 'formula')})",
+                          why=(f"Anaplan runs a formula once for every cell of a module. When a formula only turns a text value into a label or a list item (for example a month code into a Time item), "
+                               f"and that answer is the same for every cell that shares the code, working it out on every cell of a large grid is wasted effort. Moving the formula into a small helper module "
+                               f"that has only the list the answer depends on means it is worked out once per item and simply looked up from there. "
                                f"In {m.name} this applies to {_named(first, m)}{others}: together {_c(cells)} cells and {eff:.1f}% of the model's measured calculation effort."),
                           steps=[f"Open {_named(first, m)} ({first_eff:.1f}% of measured effort) and note which list its value actually changes with (often Time, or one list).",
                                  "In a development copy of the model, create a small system module with just that list, put the formula there, and point the places that used the old formula at the new one. Keep the old line item until the check below passes.",
                                  "Compare the results before and after, and read the Calculation Effort column before and after."],
-                          done_when="Every value that used the label still matches the original, cell for cell, and the measured effort share has fallen.",
+                          done_when="Every value that used the result still matches the original, cell for cell, and the measured effort share has fallen.",
                           role=f"model builder, {m.name}", model=m.name, objects=names, finding_ids=ids, strength="confirmed",
-                          footprint_cells=cells, footprint_effort=eff, explorer=explorer)
+                          footprint_cells=cells, footprint_effort=eff, explorer=explorer, detail=detail)
         elif fam == "mixed":
             c = Candidate(key=f"hotspot-mixed:{m.name}", kind="change",
                           title=f"Split the heavy 'add up and look up' formulas in {m.name} ({_pl(n, 'formula')})",
@@ -192,7 +197,7 @@ def _hotspot_candidates(er, fmap, mi, m) -> list[Candidate]:
                                  "Keep the split only where the effort share falls; then do the next formula."],
                           done_when="Values match the original cell for cell and the measured effort share has fallen.",
                           role=f"model builder, {m.name}", model=m.name, objects=names, finding_ids=ids, strength="confirmed",
-                          footprint_cells=cells, footprint_effort=eff, explorer=explorer)
+                          footprint_cells=cells, footprint_effort=eff, explorer=explorer, detail=detail)
         else:
             c = Candidate(key=f"hotspot-if:{m.name}", kind="change",
                           title=f"Replace the long chain of IF tests in {_named(first, m)} with a lookup table",
@@ -204,7 +209,7 @@ def _hotspot_candidates(er, fmap, mi, m) -> list[Candidate]:
                                  "Export the line item before and after and confirm every cell is equal."],
                           done_when="Every cell is equal before and after, and the table holds every case the chain held.",
                           role=f"model builder, {m.name}", model=m.name, objects=names, finding_ids=ids, strength="confirmed",
-                          footprint_cells=cells, footprint_effort=eff, explorer=explorer)
+                          footprint_cells=cells, footprint_effort=eff, explorer=explorer, detail=detail)
         out.append(c)
     if not out:
         first = top[0][0]
@@ -213,13 +218,15 @@ def _hotspot_candidates(er, fmap, mi, m) -> list[Candidate]:
                              why=(f"Anaplan records how much of a model's calculation effort each line item takes. In {m.name}, ten line items take {f['effort_top10_share']}% of it, "
                                   f"led by {_named(first, m)} at {top[0][1]:.1f}%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: "
                                   f"heavy calculation is often simply the model doing its main job."),
-                             steps=[f"With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.",
+                             steps=[f"With the owner, read the five heaviest formulas (listed below) and note what each one is for and how often it changes.",
                                     "For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).",
                                     "Try at most one change in a development copy, reading Calculation Effort before and after."],
                              done_when="Each of the five has a recorded decision (keep, or one named change to trial) agreed with the owner.",
                              role=f"model builder, {m.name}", model=m.name, objects=[n for n, *_ in top[:5]], finding_ids=[eff_id] if eff_id else [], strength="confirmed",
                              footprint_cells=sum(t[2] for t in top[:5]), footprint_effort=None,   # concentration is not a change footprint; banded by cells only
-                             explorer=[mi, _li(first, m)[0], _li(first, m)[1] or None]))
+                             explorer=[mi, _li(first, m)[0], _li(first, m)[1] or None],
+                             detail=[{"object": t[0], "module": _li(t[0], m)[0], "name": _li(t[0], m)[1], "effort": t[1], "cells": t[2],
+                                      "formula": (m.model.line_items[_li(t[0], m)].formula if _li(t[0], m) in m.model.line_items else t[3])} for t in top[:5]]))
     return out
 
 
@@ -273,7 +280,9 @@ def _duplicate_candidate(er, fmap, mi, m) -> Candidate | None:
                      done_when="Everything that read the copies gives the same values from the kept line item, and the copies are gone with no blank page or missing export column.",
                      role=f"model builder, {m.name}", model=m.name, objects=names, finding_ids=ids,
                      strength=(x.strength if x else "confirmed"), footprint_cells=g["redundant_cells"],
-                     explorer=[mi, keep["module"], keep["name"]])
+                     explorer=[mi, keep["module"], keep["name"]],
+                     detail=[{"object": i["key"], "module": i["module"], "name": i["name"], "effort": None, "cells": i["cells"], "formula": i["formula"],
+                              "role": "kept" if i is keep else "copy"} for i in g["items"]])
 
 
 def _if_chain_candidate(er, fmap, mi, m) -> Candidate | None:

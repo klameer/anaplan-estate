@@ -62,20 +62,30 @@
     "worth": true,
     "why_not": "",
     "group": "speed",
+    "detail": [
+     {
+      "object": "CAL03 Opex.Forecast Opex",
+      "module": "CAL03 Opex",
+      "name": "Forecast Opex",
+      "effort": 16.04,
+      "cells": 5017824,
+      "formula": "IF ITEM(Accounts) = Accounts.'6100 Rent' THEN 'INP02 Opex Drivers'.Rent ELSE IF ITEM(Accounts) = Accounts.'6110 Rates' THEN 'INP02 Opex Drivers'.Business Rates ELSE IF ITEM(Accounts) = Accounts.'6120 Utilities' THEN 'INP02 Opex Drivers'.Utilities ELSE IF ITEM(Accounts) = Accounts.'6200 Travel' THEN 'INP02 Opex Drivers'.Travel ELSE IF ITEM(Accounts) = Accounts.'6210 Subsistence' THEN 'INP02 Opex Drivers'.Subsistence ELSE IF ITEM(Accounts) = Accounts.'6300 Marketing' THEN 'INP02 Opex Drivers'.Marketing Events ELSE IF ITEM(Accounts) = Accounts.'6310 Digital' THEN 'INP02 Opex Drivers'.Marketing Digital ELSE IF ITEM(Accounts) = Accounts.'6400 Software' THEN 'INP02 Opex Drivers'.Software Licences ELSE IF ITEM(Accounts) = Accounts.'6410 Hardware' THEN 'INP02 Opex Drivers'.Hardware ELSE IF ITEM(Accounts) = Accounts.'6500 Professional Fees' THEN 'INP02 Opex Drivers'.Consultancy ELSE IF ITEM(Accounts) = Accounts.'6510 Audit' THEN 'INP02 Opex Drivers'.Audit Fees ELSE IF ITEM(Accounts) = Accounts.'6600 Recruitment' THEN 'INP02 Opex Drivers'.Recruitment Fees ELSE 0"
+     }
+    ],
     "bounded": true,
     "footprint_measured": true
    },
    {
     "key": "hotspot-text:Caldergate FP&A",
     "kind": "change",
-    "title": "Stop working out text labels on every cell in Caldergate FP&A (1 formula)",
-    "why": "Anaplan runs a formula once for every cell of a module. When the formula only produces a label (a text value such as a period code) that is the same across a whole row, working it out for every cell of a large grid is wasted effort. Moving the formula into a small helper module that has only the list the label depends on means it is worked out once per item and simply looked up from there. In Caldergate FP&A this applies to the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL': together 5.0M cells and 6.2% of the model's measured calculation effort.",
+    "title": "Stop repeating text-to-item lookups (FINDITEM) on every cell in Caldergate FP&A (1 formula)",
+    "why": "Anaplan runs a formula once for every cell of a module. When a formula only turns a text value into a label or a list item (for example a month code into a Time item), and that answer is the same for every cell that shares the code, working it out on every cell of a large grid is wasted effort. Moving the formula into a small helper module that has only the list the answer depends on means it is worked out once per item and simply looked up from there. In Caldergate FP&A this applies to the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL': together 5.0M cells and 6.2% of the model's measured calculation effort.",
     "steps": [
      "Open the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL' (6.2% of measured effort) and note which list its value actually changes with (often Time, or one list).",
      "In a development copy of the model, create a small system module with just that list, put the formula there, and point the places that used the old formula at the new one. Keep the old line item until the check below passes.",
      "Compare the results before and after, and read the Calculation Effort column before and after."
     ],
-    "done_when": "Every value that used the label still matches the original, cell for cell, and the measured effort share has fallen.",
+    "done_when": "Every value that used the result still matches the original, cell for cell, and the measured effort share has fallen.",
     "role": "model builder, Caldergate FP&A",
     "model": "Caldergate FP&A",
     "objects": [
@@ -99,6 +109,16 @@
     "worth": true,
     "why_not": "",
     "group": "speed",
+    "detail": [
+     {
+      "object": "DAT01 Actuals GL.Journal Cost Centre",
+      "module": "DAT01 Actuals GL",
+      "name": "Journal Cost Centre",
+      "effort": 6.17,
+      "cells": 5017824,
+      "formula": "FINDITEM(Cost Centres, Source Journal)"
+     }
+    ],
     "bounded": true,
     "footprint_measured": true
    },
@@ -135,6 +155,7 @@
     "worth": true,
     "why_not": "",
     "group": "usage",
+    "detail": [],
     "bounded": true,
     "footprint_measured": true
    },
@@ -144,7 +165,7 @@
     "title": "Look at the five heaviest calculations in Caldergate Data Hub",
     "why": "Anaplan records how much of a model's calculation effort each line item takes. In Caldergate Data Hub, ten line items take 99.9% of it, led by the line item 'Loaded?' in the module 'DAT01 GL Transactions' at 88.3%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: heavy calculation is often simply the model doing its main job.",
     "steps": [
-     "With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.",
+     "With the owner, read the five heaviest formulas (listed below) and note what each one is for and how often it changes.",
      "For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).",
      "Try at most one change in a development copy, reading Calculation Effort before and after."
     ],
@@ -175,6 +196,48 @@
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
     "group": "look",
+    "detail": [
+     {
+      "object": "DAT01 GL Transactions.Loaded?",
+      "module": "DAT01 GL Transactions",
+      "name": "Loaded?",
+      "effort": 88.35,
+      "cells": 1254456,
+      "formula": "Journal Count > 0"
+     },
+     {
+      "object": "CAL01 Volume Summary.Units",
+      "module": "CAL01 Volume Summary",
+      "name": "Units",
+      "effort": 2.88,
+      "cells": 9072,
+      "formula": "'DAT06 Sales Orders'.Units[SUM: 'DAT07 Customer Master'.Region]"
+     },
+     {
+      "object": "CAL01 Volume Summary.Revenue",
+      "module": "CAL01 Volume Summary",
+      "name": "Revenue",
+      "effort": 2.88,
+      "cells": 9072,
+      "formula": "'DAT06 Sales Orders'.Order Revenue[SUM: 'DAT07 Customer Master'.Region]"
+     },
+     {
+      "object": "CAL01 Volume Summary.Orders",
+      "module": "CAL01 Volume Summary",
+      "name": "Orders",
+      "effort": 2.88,
+      "cells": 9072,
+      "formula": "'DAT06 Sales Orders'.Order Count[SUM: 'DAT07 Customer Master'.Region]"
+     },
+     {
+      "object": "DAT05 CRM Pipeline.Weighted Pipeline",
+      "module": "DAT05 CRM Pipeline",
+      "name": "Weighted Pipeline",
+      "effort": 1.83,
+      "cells": 17280,
+      "formula": "Open Pipeline * Probability"
+     }
+    ],
     "bounded": true,
     "footprint_measured": true
    },
@@ -211,6 +274,7 @@
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
     "group": "usage",
+    "detail": [],
     "bounded": true,
     "footprint_measured": true
    },
@@ -248,6 +312,26 @@
     "worth": false,
     "why_not": "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work",
     "group": "duplicate",
+    "detail": [
+     {
+      "object": "CAL07 P&L by Cost Centre.Depreciation",
+      "module": "CAL07 P&L by Cost Centre",
+      "name": "Depreciation",
+      "effort": null,
+      "cells": 19152,
+      "formula": "'CAL10 Depreciation'.Charge",
+      "role": "kept"
+     },
+     {
+      "object": "OUT01 Management Pack.Depreciation",
+      "module": "OUT01 Management Pack",
+      "name": "Depreciation",
+      "effort": null,
+      "cells": 19152,
+      "formula": "'CAL10 Depreciation'.Charge",
+      "role": "copy"
+     }
+    ],
     "bounded": true,
     "footprint_measured": true
    },
@@ -289,6 +373,26 @@
     "worth": false,
     "why_not": "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work",
     "group": "duplicate",
+    "detail": [
+     {
+      "object": "Calcs - Attrition.Headcount",
+      "module": "Calcs - Attrition",
+      "name": "Headcount",
+      "effort": null,
+      "cells": 4464,
+      "formula": "'Data - Employees'.FTE[SUM: 'Data - Employees'.Role]",
+      "role": "kept"
+     },
+     {
+      "object": "zz Archive - 2021 Cost.Headcount",
+      "module": "zz Archive - 2021 Cost",
+      "name": "Headcount",
+      "effort": null,
+      "cells": 4464,
+      "formula": "'Data - Employees'.FTE[SUM: 'Data - Employees'.Role]",
+      "role": "copy"
+     }
+    ],
     "bounded": true,
     "footprint_measured": true
    },
@@ -298,7 +402,7 @@
     "title": "Look at the five heaviest calculations in Board Reporting",
     "why": "Anaplan records how much of a model's calculation effort each line item takes. In Board Reporting, ten line items take 89.7% of it, led by the line item 'Revenue per FTE' in the module 'CAL01 KPIs' at 11.2%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: heavy calculation is often simply the model doing its main job.",
     "steps": [
-     "With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.",
+     "With the owner, read the five heaviest formulas (listed below) and note what each one is for and how often it changes.",
      "For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).",
      "Try at most one change in a development copy, reading Calculation Effort before and after."
     ],
@@ -329,6 +433,48 @@
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
     "group": "look",
+    "detail": [
+     {
+      "object": "CAL01 KPIs.Revenue per FTE",
+      "module": "CAL01 KPIs",
+      "name": "Revenue per FTE",
+      "effort": 11.21,
+      "cells": 144,
+      "formula": "'DAT02 Board Lines'.Revenue / FTE"
+     },
+     {
+      "object": "CAL01 KPIs.Opex Ratio",
+      "module": "CAL01 KPIs",
+      "name": "Opex Ratio",
+      "effort": 11.21,
+      "cells": 144,
+      "formula": "DIVIDE('DAT01 P&L'.Opex, 'DAT01 P&L'.Revenue)"
+     },
+     {
+      "object": "CAL01 KPIs.Revenue Growth",
+      "module": "CAL01 KPIs",
+      "name": "Revenue Growth",
+      "effort": 11.21,
+      "cells": 144,
+      "formula": "DIVIDE('DAT02 Board Lines'.Revenue - Revenue Prior Year, Revenue Prior Year)"
+     },
+     {
+      "object": "CAL01 KPIs.EBITDA Margin",
+      "module": "CAL01 KPIs",
+      "name": "EBITDA Margin",
+      "effort": 11.21,
+      "cells": 144,
+      "formula": "DIVIDE('DAT02 Board Lines'.EBITDA, 'DAT02 Board Lines'.Revenue)"
+     },
+     {
+      "object": "CAL01 KPIs.FTE",
+      "module": "CAL01 KPIs",
+      "name": "FTE",
+      "effort": 7.48,
+      "cells": 144,
+      "formula": "'DAT03 Headcount'.FTE"
+     }
+    ],
     "bounded": true,
     "footprint_measured": true
    },
@@ -365,6 +511,7 @@
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
     "group": "usage",
+    "detail": [],
     "bounded": true,
     "footprint_measured": true
    },
@@ -401,6 +548,7 @@
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
     "group": "usage",
+    "detail": [],
     "bounded": true,
     "footprint_measured": true
    }
@@ -442,20 +590,30 @@
     "worth": true,
     "why_not": "",
     "group": "speed",
+    "detail": [
+     {
+      "object": "CAL03 Opex.Forecast Opex",
+      "module": "CAL03 Opex",
+      "name": "Forecast Opex",
+      "effort": 16.04,
+      "cells": 5017824,
+      "formula": "IF ITEM(Accounts) = Accounts.'6100 Rent' THEN 'INP02 Opex Drivers'.Rent ELSE IF ITEM(Accounts) = Accounts.'6110 Rates' THEN 'INP02 Opex Drivers'.Business Rates ELSE IF ITEM(Accounts) = Accounts.'6120 Utilities' THEN 'INP02 Opex Drivers'.Utilities ELSE IF ITEM(Accounts) = Accounts.'6200 Travel' THEN 'INP02 Opex Drivers'.Travel ELSE IF ITEM(Accounts) = Accounts.'6210 Subsistence' THEN 'INP02 Opex Drivers'.Subsistence ELSE IF ITEM(Accounts) = Accounts.'6300 Marketing' THEN 'INP02 Opex Drivers'.Marketing Events ELSE IF ITEM(Accounts) = Accounts.'6310 Digital' THEN 'INP02 Opex Drivers'.Marketing Digital ELSE IF ITEM(Accounts) = Accounts.'6400 Software' THEN 'INP02 Opex Drivers'.Software Licences ELSE IF ITEM(Accounts) = Accounts.'6410 Hardware' THEN 'INP02 Opex Drivers'.Hardware ELSE IF ITEM(Accounts) = Accounts.'6500 Professional Fees' THEN 'INP02 Opex Drivers'.Consultancy ELSE IF ITEM(Accounts) = Accounts.'6510 Audit' THEN 'INP02 Opex Drivers'.Audit Fees ELSE IF ITEM(Accounts) = Accounts.'6600 Recruitment' THEN 'INP02 Opex Drivers'.Recruitment Fees ELSE 0"
+     }
+    ],
     "bounded": true,
     "footprint_measured": true
    },
    {
     "key": "hotspot-text:Caldergate FP&A",
     "kind": "change",
-    "title": "Stop working out text labels on every cell in Caldergate FP&A (1 formula)",
-    "why": "Anaplan runs a formula once for every cell of a module. When the formula only produces a label (a text value such as a period code) that is the same across a whole row, working it out for every cell of a large grid is wasted effort. Moving the formula into a small helper module that has only the list the label depends on means it is worked out once per item and simply looked up from there. In Caldergate FP&A this applies to the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL': together 5.0M cells and 6.2% of the model's measured calculation effort.",
+    "title": "Stop repeating text-to-item lookups (FINDITEM) on every cell in Caldergate FP&A (1 formula)",
+    "why": "Anaplan runs a formula once for every cell of a module. When a formula only turns a text value into a label or a list item (for example a month code into a Time item), and that answer is the same for every cell that shares the code, working it out on every cell of a large grid is wasted effort. Moving the formula into a small helper module that has only the list the answer depends on means it is worked out once per item and simply looked up from there. In Caldergate FP&A this applies to the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL': together 5.0M cells and 6.2% of the model's measured calculation effort.",
     "steps": [
      "Open the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL' (6.2% of measured effort) and note which list its value actually changes with (often Time, or one list).",
      "In a development copy of the model, create a small system module with just that list, put the formula there, and point the places that used the old formula at the new one. Keep the old line item until the check below passes.",
      "Compare the results before and after, and read the Calculation Effort column before and after."
     ],
-    "done_when": "Every value that used the label still matches the original, cell for cell, and the measured effort share has fallen.",
+    "done_when": "Every value that used the result still matches the original, cell for cell, and the measured effort share has fallen.",
     "role": "model builder, Caldergate FP&A",
     "model": "Caldergate FP&A",
     "objects": [
@@ -479,6 +637,16 @@
     "worth": true,
     "why_not": "",
     "group": "speed",
+    "detail": [
+     {
+      "object": "DAT01 Actuals GL.Journal Cost Centre",
+      "module": "DAT01 Actuals GL",
+      "name": "Journal Cost Centre",
+      "effort": 6.17,
+      "cells": 5017824,
+      "formula": "FINDITEM(Cost Centres, Source Journal)"
+     }
+    ],
     "bounded": true,
     "footprint_measured": true
    },
@@ -515,6 +683,7 @@
     "worth": true,
     "why_not": "",
     "group": "usage",
+    "detail": [],
     "bounded": true,
     "footprint_measured": true
    },
@@ -524,7 +693,7 @@
     "title": "Look at the five heaviest calculations in Caldergate Data Hub",
     "why": "Anaplan records how much of a model's calculation effort each line item takes. In Caldergate Data Hub, ten line items take 99.9% of it, led by the line item 'Loaded?' in the module 'DAT01 GL Transactions' at 88.3%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: heavy calculation is often simply the model doing its main job.",
     "steps": [
-     "With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.",
+     "With the owner, read the five heaviest formulas (listed below) and note what each one is for and how often it changes.",
      "For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).",
      "Try at most one change in a development copy, reading Calculation Effort before and after."
     ],
@@ -555,6 +724,48 @@
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
     "group": "look",
+    "detail": [
+     {
+      "object": "DAT01 GL Transactions.Loaded?",
+      "module": "DAT01 GL Transactions",
+      "name": "Loaded?",
+      "effort": 88.35,
+      "cells": 1254456,
+      "formula": "Journal Count > 0"
+     },
+     {
+      "object": "CAL01 Volume Summary.Units",
+      "module": "CAL01 Volume Summary",
+      "name": "Units",
+      "effort": 2.88,
+      "cells": 9072,
+      "formula": "'DAT06 Sales Orders'.Units[SUM: 'DAT07 Customer Master'.Region]"
+     },
+     {
+      "object": "CAL01 Volume Summary.Revenue",
+      "module": "CAL01 Volume Summary",
+      "name": "Revenue",
+      "effort": 2.88,
+      "cells": 9072,
+      "formula": "'DAT06 Sales Orders'.Order Revenue[SUM: 'DAT07 Customer Master'.Region]"
+     },
+     {
+      "object": "CAL01 Volume Summary.Orders",
+      "module": "CAL01 Volume Summary",
+      "name": "Orders",
+      "effort": 2.88,
+      "cells": 9072,
+      "formula": "'DAT06 Sales Orders'.Order Count[SUM: 'DAT07 Customer Master'.Region]"
+     },
+     {
+      "object": "DAT05 CRM Pipeline.Weighted Pipeline",
+      "module": "DAT05 CRM Pipeline",
+      "name": "Weighted Pipeline",
+      "effort": 1.83,
+      "cells": 17280,
+      "formula": "Open Pipeline * Probability"
+     }
+    ],
     "bounded": true,
     "footprint_measured": true
    },
@@ -591,6 +802,7 @@
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
     "group": "usage",
+    "detail": [],
     "bounded": true,
     "footprint_measured": true
    },
@@ -628,6 +840,26 @@
     "worth": false,
     "why_not": "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work",
     "group": "duplicate",
+    "detail": [
+     {
+      "object": "CAL07 P&L by Cost Centre.Depreciation",
+      "module": "CAL07 P&L by Cost Centre",
+      "name": "Depreciation",
+      "effort": null,
+      "cells": 19152,
+      "formula": "'CAL10 Depreciation'.Charge",
+      "role": "kept"
+     },
+     {
+      "object": "OUT01 Management Pack.Depreciation",
+      "module": "OUT01 Management Pack",
+      "name": "Depreciation",
+      "effort": null,
+      "cells": 19152,
+      "formula": "'CAL10 Depreciation'.Charge",
+      "role": "copy"
+     }
+    ],
     "bounded": true,
     "footprint_measured": true
    },
@@ -669,6 +901,26 @@
     "worth": false,
     "why_not": "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work",
     "group": "duplicate",
+    "detail": [
+     {
+      "object": "Calcs - Attrition.Headcount",
+      "module": "Calcs - Attrition",
+      "name": "Headcount",
+      "effort": null,
+      "cells": 4464,
+      "formula": "'Data - Employees'.FTE[SUM: 'Data - Employees'.Role]",
+      "role": "kept"
+     },
+     {
+      "object": "zz Archive - 2021 Cost.Headcount",
+      "module": "zz Archive - 2021 Cost",
+      "name": "Headcount",
+      "effort": null,
+      "cells": 4464,
+      "formula": "'Data - Employees'.FTE[SUM: 'Data - Employees'.Role]",
+      "role": "copy"
+     }
+    ],
     "bounded": true,
     "footprint_measured": true
    },
@@ -678,7 +930,7 @@
     "title": "Look at the five heaviest calculations in Board Reporting",
     "why": "Anaplan records how much of a model's calculation effort each line item takes. In Board Reporting, ten line items take 89.7% of it, led by the line item 'Revenue per FTE' in the module 'CAL01 KPIs' at 11.2%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: heavy calculation is often simply the model doing its main job.",
     "steps": [
-     "With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.",
+     "With the owner, read the five heaviest formulas (listed below) and note what each one is for and how often it changes.",
      "For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).",
      "Try at most one change in a development copy, reading Calculation Effort before and after."
     ],
@@ -709,6 +961,48 @@
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
     "group": "look",
+    "detail": [
+     {
+      "object": "CAL01 KPIs.Revenue per FTE",
+      "module": "CAL01 KPIs",
+      "name": "Revenue per FTE",
+      "effort": 11.21,
+      "cells": 144,
+      "formula": "'DAT02 Board Lines'.Revenue / FTE"
+     },
+     {
+      "object": "CAL01 KPIs.Opex Ratio",
+      "module": "CAL01 KPIs",
+      "name": "Opex Ratio",
+      "effort": 11.21,
+      "cells": 144,
+      "formula": "DIVIDE('DAT01 P&L'.Opex, 'DAT01 P&L'.Revenue)"
+     },
+     {
+      "object": "CAL01 KPIs.Revenue Growth",
+      "module": "CAL01 KPIs",
+      "name": "Revenue Growth",
+      "effort": 11.21,
+      "cells": 144,
+      "formula": "DIVIDE('DAT02 Board Lines'.Revenue - Revenue Prior Year, Revenue Prior Year)"
+     },
+     {
+      "object": "CAL01 KPIs.EBITDA Margin",
+      "module": "CAL01 KPIs",
+      "name": "EBITDA Margin",
+      "effort": 11.21,
+      "cells": 144,
+      "formula": "DIVIDE('DAT02 Board Lines'.EBITDA, 'DAT02 Board Lines'.Revenue)"
+     },
+     {
+      "object": "CAL01 KPIs.FTE",
+      "module": "CAL01 KPIs",
+      "name": "FTE",
+      "effort": 7.48,
+      "cells": 144,
+      "formula": "'DAT03 Headcount'.FTE"
+     }
+    ],
     "bounded": true,
     "footprint_measured": true
    },
@@ -745,6 +1039,7 @@
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
     "group": "usage",
+    "detail": [],
     "bounded": true,
     "footprint_measured": true
    },
@@ -781,6 +1076,7 @@
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
     "group": "usage",
+    "detail": [],
     "bounded": true,
     "footprint_measured": true
    }
@@ -885,20 +1181,30 @@
    "worth": true,
    "why_not": "",
    "group": "speed",
+   "detail": [
+    {
+     "object": "CAL03 Opex.Forecast Opex",
+     "module": "CAL03 Opex",
+     "name": "Forecast Opex",
+     "effort": 16.04,
+     "cells": 5017824,
+     "formula": "IF ITEM(Accounts) = Accounts.'6100 Rent' THEN 'INP02 Opex Drivers'.Rent ELSE IF ITEM(Accounts) = Accounts.'6110 Rates' THEN 'INP02 Opex Drivers'.Business Rates ELSE IF ITEM(Accounts) = Accounts.'6120 Utilities' THEN 'INP02 Opex Drivers'.Utilities ELSE IF ITEM(Accounts) = Accounts.'6200 Travel' THEN 'INP02 Opex Drivers'.Travel ELSE IF ITEM(Accounts) = Accounts.'6210 Subsistence' THEN 'INP02 Opex Drivers'.Subsistence ELSE IF ITEM(Accounts) = Accounts.'6300 Marketing' THEN 'INP02 Opex Drivers'.Marketing Events ELSE IF ITEM(Accounts) = Accounts.'6310 Digital' THEN 'INP02 Opex Drivers'.Marketing Digital ELSE IF ITEM(Accounts) = Accounts.'6400 Software' THEN 'INP02 Opex Drivers'.Software Licences ELSE IF ITEM(Accounts) = Accounts.'6410 Hardware' THEN 'INP02 Opex Drivers'.Hardware ELSE IF ITEM(Accounts) = Accounts.'6500 Professional Fees' THEN 'INP02 Opex Drivers'.Consultancy ELSE IF ITEM(Accounts) = Accounts.'6510 Audit' THEN 'INP02 Opex Drivers'.Audit Fees ELSE IF ITEM(Accounts) = Accounts.'6600 Recruitment' THEN 'INP02 Opex Drivers'.Recruitment Fees ELSE 0"
+    }
+   ],
    "bounded": true,
    "footprint_measured": true
   },
   {
    "key": "hotspot-text:Caldergate FP&A",
    "kind": "change",
-   "title": "Stop working out text labels on every cell in Caldergate FP&A (1 formula)",
-   "why": "Anaplan runs a formula once for every cell of a module. When the formula only produces a label (a text value such as a period code) that is the same across a whole row, working it out for every cell of a large grid is wasted effort. Moving the formula into a small helper module that has only the list the label depends on means it is worked out once per item and simply looked up from there. In Caldergate FP&A this applies to the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL': together 5.0M cells and 6.2% of the model's measured calculation effort.",
+   "title": "Stop repeating text-to-item lookups (FINDITEM) on every cell in Caldergate FP&A (1 formula)",
+   "why": "Anaplan runs a formula once for every cell of a module. When a formula only turns a text value into a label or a list item (for example a month code into a Time item), and that answer is the same for every cell that shares the code, working it out on every cell of a large grid is wasted effort. Moving the formula into a small helper module that has only the list the answer depends on means it is worked out once per item and simply looked up from there. In Caldergate FP&A this applies to the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL': together 5.0M cells and 6.2% of the model's measured calculation effort.",
    "steps": [
     "Open the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL' (6.2% of measured effort) and note which list its value actually changes with (often Time, or one list).",
     "In a development copy of the model, create a small system module with just that list, put the formula there, and point the places that used the old formula at the new one. Keep the old line item until the check below passes.",
     "Compare the results before and after, and read the Calculation Effort column before and after."
    ],
-   "done_when": "Every value that used the label still matches the original, cell for cell, and the measured effort share has fallen.",
+   "done_when": "Every value that used the result still matches the original, cell for cell, and the measured effort share has fallen.",
    "role": "model builder, Caldergate FP&A",
    "model": "Caldergate FP&A",
    "objects": [
@@ -922,6 +1228,16 @@
    "worth": true,
    "why_not": "",
    "group": "speed",
+   "detail": [
+    {
+     "object": "DAT01 Actuals GL.Journal Cost Centre",
+     "module": "DAT01 Actuals GL",
+     "name": "Journal Cost Centre",
+     "effort": 6.17,
+     "cells": 5017824,
+     "formula": "FINDITEM(Cost Centres, Source Journal)"
+    }
+   ],
    "bounded": true,
    "footprint_measured": true
   },
@@ -958,6 +1274,7 @@
    "worth": true,
    "why_not": "",
    "group": "usage",
+   "detail": [],
    "bounded": true,
    "footprint_measured": true
   },
@@ -967,7 +1284,7 @@
    "title": "Look at the five heaviest calculations in Caldergate Data Hub",
    "why": "Anaplan records how much of a model's calculation effort each line item takes. In Caldergate Data Hub, ten line items take 99.9% of it, led by the line item 'Loaded?' in the module 'DAT01 GL Transactions' at 88.3%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: heavy calculation is often simply the model doing its main job.",
    "steps": [
-    "With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.",
+    "With the owner, read the five heaviest formulas (listed below) and note what each one is for and how often it changes.",
     "For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).",
     "Try at most one change in a development copy, reading Calculation Effort before and after."
    ],
@@ -998,6 +1315,48 @@
    "worth": false,
    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
    "group": "look",
+   "detail": [
+    {
+     "object": "DAT01 GL Transactions.Loaded?",
+     "module": "DAT01 GL Transactions",
+     "name": "Loaded?",
+     "effort": 88.35,
+     "cells": 1254456,
+     "formula": "Journal Count > 0"
+    },
+    {
+     "object": "CAL01 Volume Summary.Units",
+     "module": "CAL01 Volume Summary",
+     "name": "Units",
+     "effort": 2.88,
+     "cells": 9072,
+     "formula": "'DAT06 Sales Orders'.Units[SUM: 'DAT07 Customer Master'.Region]"
+    },
+    {
+     "object": "CAL01 Volume Summary.Revenue",
+     "module": "CAL01 Volume Summary",
+     "name": "Revenue",
+     "effort": 2.88,
+     "cells": 9072,
+     "formula": "'DAT06 Sales Orders'.Order Revenue[SUM: 'DAT07 Customer Master'.Region]"
+    },
+    {
+     "object": "CAL01 Volume Summary.Orders",
+     "module": "CAL01 Volume Summary",
+     "name": "Orders",
+     "effort": 2.88,
+     "cells": 9072,
+     "formula": "'DAT06 Sales Orders'.Order Count[SUM: 'DAT07 Customer Master'.Region]"
+    },
+    {
+     "object": "DAT05 CRM Pipeline.Weighted Pipeline",
+     "module": "DAT05 CRM Pipeline",
+     "name": "Weighted Pipeline",
+     "effort": 1.83,
+     "cells": 17280,
+     "formula": "Open Pipeline * Probability"
+    }
+   ],
    "bounded": true,
    "footprint_measured": true
   },
@@ -1034,6 +1393,7 @@
    "worth": false,
    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
    "group": "usage",
+   "detail": [],
    "bounded": true,
    "footprint_measured": true
   },
@@ -1071,6 +1431,26 @@
    "worth": false,
    "why_not": "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work",
    "group": "duplicate",
+   "detail": [
+    {
+     "object": "CAL07 P&L by Cost Centre.Depreciation",
+     "module": "CAL07 P&L by Cost Centre",
+     "name": "Depreciation",
+     "effort": null,
+     "cells": 19152,
+     "formula": "'CAL10 Depreciation'.Charge",
+     "role": "kept"
+    },
+    {
+     "object": "OUT01 Management Pack.Depreciation",
+     "module": "OUT01 Management Pack",
+     "name": "Depreciation",
+     "effort": null,
+     "cells": 19152,
+     "formula": "'CAL10 Depreciation'.Charge",
+     "role": "copy"
+    }
+   ],
    "bounded": true,
    "footprint_measured": true
   },
@@ -1112,6 +1492,26 @@
    "worth": false,
    "why_not": "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work",
    "group": "duplicate",
+   "detail": [
+    {
+     "object": "Calcs - Attrition.Headcount",
+     "module": "Calcs - Attrition",
+     "name": "Headcount",
+     "effort": null,
+     "cells": 4464,
+     "formula": "'Data - Employees'.FTE[SUM: 'Data - Employees'.Role]",
+     "role": "kept"
+    },
+    {
+     "object": "zz Archive - 2021 Cost.Headcount",
+     "module": "zz Archive - 2021 Cost",
+     "name": "Headcount",
+     "effort": null,
+     "cells": 4464,
+     "formula": "'Data - Employees'.FTE[SUM: 'Data - Employees'.Role]",
+     "role": "copy"
+    }
+   ],
    "bounded": true,
    "footprint_measured": true
   },
@@ -1121,7 +1521,7 @@
    "title": "Look at the five heaviest calculations in Board Reporting",
    "why": "Anaplan records how much of a model's calculation effort each line item takes. In Board Reporting, ten line items take 89.7% of it, led by the line item 'Revenue per FTE' in the module 'CAL01 KPIs' at 11.2%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: heavy calculation is often simply the model doing its main job.",
    "steps": [
-    "With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.",
+    "With the owner, read the five heaviest formulas (listed below) and note what each one is for and how often it changes.",
     "For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).",
     "Try at most one change in a development copy, reading Calculation Effort before and after."
    ],
@@ -1152,6 +1552,48 @@
    "worth": false,
    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
    "group": "look",
+   "detail": [
+    {
+     "object": "CAL01 KPIs.Revenue per FTE",
+     "module": "CAL01 KPIs",
+     "name": "Revenue per FTE",
+     "effort": 11.21,
+     "cells": 144,
+     "formula": "'DAT02 Board Lines'.Revenue / FTE"
+    },
+    {
+     "object": "CAL01 KPIs.Opex Ratio",
+     "module": "CAL01 KPIs",
+     "name": "Opex Ratio",
+     "effort": 11.21,
+     "cells": 144,
+     "formula": "DIVIDE('DAT01 P&L'.Opex, 'DAT01 P&L'.Revenue)"
+    },
+    {
+     "object": "CAL01 KPIs.Revenue Growth",
+     "module": "CAL01 KPIs",
+     "name": "Revenue Growth",
+     "effort": 11.21,
+     "cells": 144,
+     "formula": "DIVIDE('DAT02 Board Lines'.Revenue - Revenue Prior Year, Revenue Prior Year)"
+    },
+    {
+     "object": "CAL01 KPIs.EBITDA Margin",
+     "module": "CAL01 KPIs",
+     "name": "EBITDA Margin",
+     "effort": 11.21,
+     "cells": 144,
+     "formula": "DIVIDE('DAT02 Board Lines'.EBITDA, 'DAT02 Board Lines'.Revenue)"
+    },
+    {
+     "object": "CAL01 KPIs.FTE",
+     "module": "CAL01 KPIs",
+     "name": "FTE",
+     "effort": 7.48,
+     "cells": 144,
+     "formula": "'DAT03 Headcount'.FTE"
+    }
+   ],
    "bounded": true,
    "footprint_measured": true
   },
@@ -1188,6 +1630,7 @@
    "worth": false,
    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
    "group": "usage",
+   "detail": [],
    "bounded": true,
    "footprint_measured": true
   },
@@ -1224,6 +1667,7 @@
    "worth": false,
    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
    "group": "usage",
+   "detail": [],
    "bounded": true,
    "footprint_measured": true
   }
@@ -5105,11 +5549,11 @@
    ],
    [
     36,
-    35
+    34
    ],
    [
     36,
-    34
+    35
    ],
    [
     47,
@@ -5125,19 +5569,19 @@
    ],
    [
     55,
-    43
-   ],
-   [
-    55,
     40
    ],
    [
-    56,
+    55,
     43
    ],
    [
     56,
     41
+   ],
+   [
+    56,
+    43
    ],
    [
     57,
@@ -5157,11 +5601,11 @@
    ],
    [
     60,
-    59
+    58
    ],
    [
     60,
-    58
+    59
    ],
    [
     61,
@@ -5169,11 +5613,11 @@
    ],
    [
     62,
-    60
+    61
    ],
    [
     62,
-    61
+    60
    ],
    [
     72,
@@ -5193,11 +5637,11 @@
    ],
    [
     81,
-    79
+    78
    ],
    [
     81,
-    78
+    79
    ],
    [
     81,
@@ -5245,11 +5689,11 @@
    ],
    [
     113,
-    112
+    110
    ],
    [
     113,
-    110
+    112
    ],
    [
     118,
@@ -5257,31 +5701,23 @@
    ],
    [
     119,
-    118
-   ],
-   [
-    119,
     105
    ],
    [
-    177,
-    148
+    119,
+    118
    ],
    [
     177,
-    173
+    146
    ],
    [
     177,
-    129
+    128
    ],
    [
     177,
-    135
-   ],
-   [
-    177,
-    151
+    161
    ],
    [
     177,
@@ -5293,111 +5729,11 @@
    ],
    [
     177,
-    146
-   ],
-   [
-    177,
-    176
-   ],
-   [
-    177,
-    142
-   ],
-   [
-    177,
-    147
-   ],
-   [
-    177,
-    174
-   ],
-   [
-    177,
-    175
-   ],
-   [
-    177,
-    157
-   ],
-   [
-    177,
-    166
-   ],
-   [
-    177,
-    163
-   ],
-   [
-    177,
-    145
-   ],
-   [
-    177,
-    132
-   ],
-   [
-    177,
-    149
-   ],
-   [
-    177,
-    160
-   ],
-   [
-    177,
-    167
-   ],
-   [
-    177,
-    169
-   ],
-   [
-    177,
-    130
-   ],
-   [
-    177,
-    144
-   ],
-   [
-    177,
-    143
-   ],
-   [
-    177,
-    127
-   ],
-   [
-    177,
-    154
-   ],
-   [
-    177,
-    156
-   ],
-   [
-    177,
     133
    ],
    [
     177,
-    131
-   ],
-   [
-    177,
-    141
-   ],
-   [
-    177,
-    152
-   ],
-   [
-    177,
-    164
-   ],
-   [
-    177,
-    171
+    155
    ],
    [
     177,
@@ -5409,35 +5745,31 @@
    ],
    [
     177,
-    134
-   ],
-   [
-    177,
-    155
-   ],
-   [
-    177,
-    136
-   ],
-   [
-    177,
     150
    ],
    [
     177,
-    162
+    165
    ],
    [
     177,
-    140
+    149
    ],
    [
     177,
-    128
+    154
    ],
    [
     177,
-    153
+    166
+   ],
+   [
+    177,
+    152
+   ],
+   [
+    177,
+    163
    ],
    [
     177,
@@ -5445,15 +5777,27 @@
    ],
    [
     177,
-    161
+    147
    ],
    [
     177,
-    158
+    156
    ],
    [
     177,
-    139
+    175
+   ],
+   [
+    177,
+    176
+   ],
+   [
+    177,
+    131
+   ],
+   [
+    177,
+    144
    ],
    [
     177,
@@ -5461,7 +5805,107 @@
    ],
    [
     177,
-    165
+    160
+   ],
+   [
+    177,
+    129
+   ],
+   [
+    177,
+    157
+   ],
+   [
+    177,
+    127
+   ],
+   [
+    177,
+    151
+   ],
+   [
+    177,
+    174
+   ],
+   [
+    177,
+    139
+   ],
+   [
+    177,
+    153
+   ],
+   [
+    177,
+    145
+   ],
+   [
+    177,
+    143
+   ],
+   [
+    177,
+    162
+   ],
+   [
+    177,
+    164
+   ],
+   [
+    177,
+    134
+   ],
+   [
+    177,
+    158
+   ],
+   [
+    177,
+    136
+   ],
+   [
+    177,
+    173
+   ],
+   [
+    177,
+    141
+   ],
+   [
+    177,
+    169
+   ],
+   [
+    177,
+    135
+   ],
+   [
+    177,
+    171
+   ],
+   [
+    177,
+    167
+   ],
+   [
+    177,
+    132
+   ],
+   [
+    177,
+    148
+   ],
+   [
+    177,
+    130
+   ],
+   [
+    177,
+    142
+   ],
+   [
+    177,
+    140
    ],
    [
     178,
@@ -5469,15 +5913,11 @@
    ],
    [
     178,
-    132
-   ],
-   [
-    178,
     128
    ],
    [
     178,
-    131
+    132
    ],
    [
     178,
@@ -5485,11 +5925,11 @@
    ],
    [
     178,
-    127
+    131
    ],
    [
-    179,
-    154
+    178,
+    127
    ],
    [
     179,
@@ -5509,6 +5949,10 @@
    ],
    [
     179,
+    154
+   ],
+   [
+    179,
     136
    ],
    [
@@ -5517,7 +5961,7 @@
    ],
    [
     180,
-    140
+    139
    ],
    [
     180,
@@ -5529,11 +5973,19 @@
    ],
    [
     180,
-    139
+    140
    ],
    [
     181,
     145
+   ],
+   [
+    181,
+    143
+   ],
+   [
+    181,
+    144
    ],
    [
     181,
@@ -5544,12 +5996,8 @@
     141
    ],
    [
-    181,
-    144
-   ],
-   [
-    181,
-    143
+    182,
+    180
    ],
    [
     182,
@@ -5561,15 +6009,11 @@
    ],
    [
     182,
-    181
-   ],
-   [
-    182,
-    180
-   ],
-   [
-    182,
     179
+   ],
+   [
+    182,
+    181
    ],
    [
     183,
@@ -5597,11 +6041,11 @@
    ],
    [
     191,
-    190
+    188
    ],
    [
     191,
-    188
+    190
    ],
    [
     192,
@@ -5617,15 +6061,15 @@
    ],
    [
     194,
-    185
-   ],
-   [
-    194,
     188
    ],
    [
     194,
     192
+   ],
+   [
+    194,
+    185
    ],
    [
     194,
@@ -5637,11 +6081,11 @@
    ],
    [
     206,
-    205
+    204
    ],
    [
     206,
-    204
+    205
    ],
    [
     209,
@@ -5657,6 +6101,10 @@
    ],
    [
     213,
+    124
+   ],
+   [
+    213,
     73
    ],
    [
@@ -5665,27 +6113,23 @@
    ],
    [
     213,
-    124
-   ],
-   [
-    213,
     125
-   ],
-   [
-    214,
-    213
    ],
    [
     214,
     123
    ],
    [
-    215,
-    214
+    214,
+    213
    ],
    [
     215,
     213
+   ],
+   [
+    215,
+    214
    ],
    [
     216,
@@ -5741,11 +6185,11 @@
    ],
    [
     223,
-    222
+    110
    ],
    [
     223,
-    110
+    222
    ],
    [
     224,
@@ -5757,19 +6201,19 @@
    ],
    [
     226,
-    222
+    215
    ],
    [
     226,
-    215
-   ],
-   [
-    227,
     222
    ],
    [
     227,
     215
+   ],
+   [
+    227,
+    222
    ],
    [
     228,
@@ -5789,11 +6233,11 @@
    ],
    [
     232,
-    207
+    100
    ],
    [
     232,
-    100
+    207
    ],
    [
     233,
@@ -5801,11 +6245,7 @@
    ],
    [
     233,
-    151
-   ],
-   [
-    233,
-    150
+    128
    ],
    [
     233,
@@ -5813,11 +6253,7 @@
    ],
    [
     233,
-    128
-   ],
-   [
-    233,
-    141
+    151
    ],
    [
     233,
@@ -5833,7 +6269,7 @@
    ],
    [
     233,
-    134
+    150
    ],
    [
     233,
@@ -5841,15 +6277,23 @@
    ],
    [
     233,
+    134
+   ],
+   [
+    233,
     127
    ],
    [
-    234,
-    232
+    233,
+    141
    ],
    [
     234,
     73
+   ],
+   [
+    234,
+    232
    ],
    [
     234,
@@ -5897,10 +6341,14 @@
    ],
    [
     240,
-    222
+    239
    ],
    [
     240,
+    222
+   ],
+   [
+    241,
     239
    ],
    [
@@ -5912,16 +6360,12 @@
     110
    ],
    [
-    241,
-    239
+    242,
+    73
    ],
    [
     242,
     207
-   ],
-   [
-    242,
-    73
    ],
    [
     243,
@@ -5957,7 +6401,15 @@
    ],
    [
     251,
-    245
+    244
+   ],
+   [
+    251,
+    248
+   ],
+   [
+    251,
+    246
    ],
    [
     251,
@@ -5969,23 +6421,19 @@
    ],
    [
     251,
-    244
+    245
    ],
    [
     251,
-    246
-   ],
-   [
-    251,
-    248
+    243
    ],
    [
     251,
     249
    ],
    [
-    251,
-    243
+    252,
+    251
    ],
    [
     252,
@@ -5994,10 +6442,6 @@
    [
     252,
     73
-   ],
-   [
-    252,
-    251
    ],
    [
     253,
@@ -6029,27 +6473,31 @@
    ],
    [
     257,
-    85
+    268
    ],
    [
     257,
-    268
+    85
+   ],
+   [
+    258,
+    85
    ],
    [
     258,
     269
    ],
    [
-    258,
-    85
-   ],
-   [
-    259,
-    85
-   ],
-   [
     259,
     185
+   ],
+   [
+    259,
+    85
+   ],
+   [
+    260,
+    235
    ],
    [
     260,
@@ -6060,20 +6508,16 @@
     262
    ],
    [
-    260,
-    235
-   ],
-   [
     261,
     258
    ],
    [
     261,
-    257
+    259
    ],
    [
     261,
-    259
+    257
    ],
    [
     265,
@@ -6109,10 +6553,6 @@
    ],
    [
     270,
-    269
-   ],
-   [
-    270,
     268
    ],
    [
@@ -6120,16 +6560,20 @@
     267
    ],
    [
+    270,
+    269
+   ],
+   [
     271,
     286
    ],
    [
     272,
-    270
+    271
    ],
    [
     272,
-    271
+    270
    ],
    [
     273,
@@ -6145,19 +6589,19 @@
    ],
    [
     275,
-    274
-   ],
-   [
-    275,
     268
    ],
    [
-    276,
-    270
+    275,
+    274
    ],
    [
     276,
     87
+   ],
+   [
+    276,
+    270
    ],
    [
     277,
@@ -6169,11 +6613,11 @@
    ],
    [
     278,
-    277
+    199
    ],
    [
     278,
-    199
+    277
    ],
    [
     279,
@@ -6193,11 +6637,11 @@
    ],
    [
     282,
-    276
+    279
    ],
    [
     282,
-    279
+    280
    ],
    [
     282,
@@ -6205,7 +6649,11 @@
    ],
    [
     282,
-    280
+    276
+   ],
+   [
+    283,
+    202
    ],
    [
     283,
@@ -6214,10 +6662,6 @@
    [
     283,
     75
-   ],
-   [
-    283,
-    202
    ],
    [
     284,
@@ -6233,23 +6677,23 @@
    ],
    [
     286,
-    197
-   ],
-   [
-    286,
-    195
-   ],
-   [
-    286,
     196
    ],
    [
-    287,
+    286,
     195
+   ],
+   [
+    286,
+    197
    ],
    [
     287,
     286
+   ],
+   [
+    287,
+    195
    ],
    [
     288,
@@ -6269,11 +6713,11 @@
    ],
    [
     292,
-    291
+    290
    ],
    [
     292,
-    290
+    291
    ],
    [
     293,
@@ -6285,11 +6729,11 @@
    ],
    [
     294,
-    128
+    73
    ],
    [
     294,
-    73
+    128
    ],
    [
     295,
@@ -6309,11 +6753,11 @@
    ],
    [
     297,
-    131
+    73
    ],
    [
     297,
-    73
+    131
    ],
    [
     298,
@@ -6373,11 +6817,11 @@
    ],
    [
     305,
-    139
+    73
    ],
    [
     305,
-    73
+    139
    ],
    [
     306,
@@ -6389,27 +6833,27 @@
    ],
    [
     307,
-    141
+    73
    ],
    [
     307,
-    73
-   ],
-   [
-    308,
-    73
+    141
    ],
    [
     308,
     142
    ],
    [
-    309,
-    143
+    308,
+    73
    ],
    [
     309,
     73
+   ],
+   [
+    309,
+    143
    ],
    [
     310,
@@ -6437,11 +6881,11 @@
    ],
    [
     313,
-    73
+    147
    ],
    [
     313,
-    147
+    73
    ],
    [
     314,
@@ -6477,11 +6921,11 @@
    ],
    [
     318,
-    152
+    73
    ],
    [
     318,
-    73
+    152
    ],
    [
     319,
@@ -6493,10 +6937,14 @@
    ],
    [
     320,
-    154
+    73
    ],
    [
     320,
+    154
+   ],
+   [
+    321,
     73
    ],
    [
@@ -6504,24 +6952,12 @@
     155
    ],
    [
-    321,
-    73
-   ],
-   [
-    322,
-    73
-   ],
-   [
     322,
     156
    ],
    [
-    323,
-    321
-   ],
-   [
-    323,
-    322
+    322,
+    73
    ],
    [
     323,
@@ -6529,87 +6965,7 @@
    ],
    [
     323,
-    295
-   ],
-   [
-    323,
-    308
-   ],
-   [
-    323,
-    306
-   ],
-   [
-    323,
-    320
-   ],
-   [
-    323,
-    314
-   ],
-   [
-    323,
-    296
-   ],
-   [
-    323,
-    298
-   ],
-   [
-    323,
     299
-   ],
-   [
-    323,
-    300
-   ],
-   [
-    323,
-    318
-   ],
-   [
-    323,
-    317
-   ],
-   [
-    323,
-    319
-   ],
-   [
-    323,
-    303
-   ],
-   [
-    323,
-    301
-   ],
-   [
-    323,
-    294
-   ],
-   [
-    323,
-    313
-   ],
-   [
-    323,
-    304
-   ],
-   [
-    323,
-    310
-   ],
-   [
-    323,
-    316
-   ],
-   [
-    323,
-    293
-   ],
-   [
-    323,
-    302
    ],
    [
     323,
@@ -6617,7 +6973,79 @@
    ],
    [
     323,
+    316
+   ],
+   [
+    323,
+    303
+   ],
+   [
+    323,
+    306
+   ],
+   [
+    323,
+    298
+   ],
+   [
+    323,
+    318
+   ],
+   [
+    323,
+    321
+   ],
+   [
+    323,
+    314
+   ],
+   [
+    323,
+    317
+   ],
+   [
+    323,
+    301
+   ],
+   [
+    323,
     311
+   ],
+   [
+    323,
+    300
+   ],
+   [
+    323,
+    313
+   ],
+   [
+    323,
+    322
+   ],
+   [
+    323,
+    293
+   ],
+   [
+    323,
+    295
+   ],
+   [
+    323,
+    320
+   ],
+   [
+    323,
+    302
+   ],
+   [
+    323,
+    310
+   ],
+   [
+    323,
+    319
    ],
    [
     323,
@@ -6625,15 +7053,31 @@
    ],
    [
     323,
-    297
-   ],
-   [
-    323,
     315
    ],
    [
     323,
+    297
+   ],
+   [
+    323,
+    296
+   ],
+   [
+    323,
+    304
+   ],
+   [
+    323,
     307
+   ],
+   [
+    323,
+    294
+   ],
+   [
+    323,
+    308
    ],
    [
     324,
@@ -6697,11 +7141,11 @@
    ],
    [
     339,
-    337
+    335
    ],
    [
     339,
-    335
+    337
    ],
    [
     340,
@@ -6721,7 +7165,7 @@
    ],
    [
     353,
-    351
+    352
    ],
    [
     353,
@@ -6729,7 +7173,7 @@
    ],
    [
     353,
-    352
+    351
    ],
    [
     354,
@@ -6737,19 +7181,19 @@
    ],
    [
     366,
-    364
-   ],
-   [
-    366,
     363
    ],
    [
-    367,
-    359
+    366,
+    364
    ],
    [
     367,
     361
+   ],
+   [
+    367,
+    359
    ],
    [
     368,
@@ -6769,11 +7213,11 @@
    ],
    [
     371,
-    346
+    370
    ],
    [
     371,
-    370
+    346
    ],
    [
     371,
@@ -6793,27 +7237,23 @@
    ],
    [
     374,
-    372
+    373
    ],
    [
     374,
-    373
+    372
+   ],
+   [
+    375,
+    371
    ],
    [
     375,
     345
    ],
    [
-    375,
-    371
-   ],
-   [
     376,
     371
-   ],
-   [
-    377,
-    375
    ],
    [
     377,
@@ -6826,6 +7266,10 @@
    [
     377,
     371
+   ],
+   [
+    377,
+    375
    ],
    [
     378,
@@ -6841,10 +7285,6 @@
    ],
    [
     379,
-    377
-   ],
-   [
-    379,
     361
    ],
    [
@@ -6852,8 +7292,8 @@
     360
    ],
    [
-    380,
-    360
+    379,
+    377
    ],
    [
     380,
@@ -6862,6 +7302,10 @@
    [
     380,
     371
+   ],
+   [
+    380,
+    360
    ],
    [
     381,
@@ -6937,11 +7381,11 @@
    ],
    [
     392,
-    391
+    388
    ],
    [
     392,
-    388
+    391
    ],
    [
     393,
@@ -6953,19 +7397,19 @@
    ],
    [
     394,
-    377
-   ],
-   [
-    394,
     361
    ],
    [
-    395,
-    394
+    394,
+    377
    ],
    [
     395,
     393
+   ],
+   [
+    395,
+    394
    ],
    [
     396,
@@ -6977,11 +7421,11 @@
    ],
    [
     414,
-    407
+    413
    ],
    [
     414,
-    413
+    407
    ],
    [
     415,
@@ -6997,19 +7441,19 @@
    ],
    [
     417,
-    407
+    416
    ],
    [
     417,
-    416
+    407
+   ],
+   [
+    418,
+    407
    ],
    [
     418,
     408
-   ],
-   [
-    418,
-    407
    ],
    [
     419,

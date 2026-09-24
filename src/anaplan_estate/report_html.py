@@ -56,6 +56,7 @@ li.action .role{margin:0 0 8px}li.action .model{display:inline-block;background:
 li.action dl{margin:0}li.action dt{font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:8px}li.action dd{margin:2px 0 0}
 li.action ol{margin:2px 0 0;padding-left:20px}li.action ol li{margin:2px 0}
 li.action .notice{background:var(--notice);border-radius:6px;padding:6px 10px;font-size:13px;margin:8px 0 0}
+li.action table.det{font-size:12.5px}li.action table.det code{font-size:11.5px;white-space:pre-wrap}li.action .wrap{margin:4px 0}
 li.action.below{border-left-color:var(--rule);opacity:.92}li.action .notice.below{background:var(--soft)}h3.group-h{margin-top:22px;font-size:17px}
 .banner{background:var(--notice);border:1px solid var(--rule);border-radius:8px;padding:8px 12px;font-size:13px;margin:0 0 12px}.banner ul{margin:4px 0 0;padding-left:18px}
 .summary{margin:4px 0 14px}table.sum{font-size:14px}table.sum td,table.sum th{padding:5px 8px}table.sum tr.tot td{font-weight:600;border-top:2px solid var(--rule)}
@@ -553,10 +554,18 @@ def _action_card(i: int, a: dict, rep: dict, nidx: dict, midx: dict) -> str:
         nums = [f'<a href="#A{keys.index(k) + 1}">action {keys.index(k) + 1}</a>' for k in a["depends_on"] if k in keys]
         depends = f' &middot; After: {", ".join(nums)}' if nums else ""
     notices = "".join(f'<p class="notice">{_e(n)}</p>' for n in a["notices"])
+    det = ""
+    if a.get("detail"):
+        has_eff = any(d.get("effort") is not None for d in a["detail"]); has_role = any(d.get("role") for d in a["detail"])
+        det = ('<dt>The ' + (f'{len(a["detail"])} line items' if len(a["detail"]) != 1 else 'line item') + '</dt><dd><div class="wrap"><table class="det"><thead><tr><th>Line item</th><th>Module</th>'
+               + ('<th>Role</th>' if has_role else '') + ('<th>Effort</th>' if has_eff else '') + '<th>Cells</th><th>Formula</th></tr></thead><tbody>'
+               + "".join(f'<tr><td>{_e(d["name"] or d["object"])}</td><td>{_e(d["module"])}</td>' + (f'<td>{_e(d.get("role", ""))}</td>' if has_role else '')
+                         + (f'<td>{(f"{d["effort"]:.1f}%" if d.get("effort") is not None else "")}</td>' if has_eff else '') + f'<td>{_c(d["cells"])}</td><td><code>{_e(d["formula"])}</code></td></tr>' for d in a["detail"])
+               + '</tbody></table></div></dd>')
     if not a.get("worth", True):
         notices = f'<p class="notice below">Below the bar: {_e(a["why_not"])}.</p>' + notices
     return (f'<li class="action{"" if a.get("worth", True) else " below"}" id="A{i}"><h2><span class="n">{i}.</span> {_e(a["title"])}</h2><p class="role"><span class="model">{_e(a["model"])}</span></p>'
-            f'<dl><dt>Why</dt><dd>{_e(a["why"])}</dd><dt>Steps</dt><dd><ol>{"".join(f"<li>{_e(s)}</li>" for s in a["steps"])}</ol></dd><dt>Done when</dt><dd>{_e(a["done_when"])}</dd></dl>'
+            f'<dl><dt>Why</dt><dd>{_e(a["why"])}</dd>{det}<dt>Steps</dt><dd><ol>{"".join(f"<li>{_e(s)}</li>" for s in a["steps"])}</ol></dd><dt>Done when</dt><dd>{_e(a["done_when"])}</dd></dl>'
             f'{notices}<p class="links">Evidence: {ev or "none"}{(" &middot; " + dep) if dep else ""}{depends}</p></li>')
 
 
