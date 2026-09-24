@@ -16,7 +16,7 @@ pip install "https://github.com/klameer/anaplan-estate/archive/refs/heads/master
 anaplan-estate my-estate-folder --html estate.html
 ```
 
-Or upload the exports on the hosted page (address set at deployment) and get the same report back. A sample estate to try either way: [examples/caldergate-estate.zip](examples/caldergate-estate.zip).
+Or upload the exports at [anaplan-estate.codelessops.com](https://anaplan-estate.codelessops.com) and get the same report back. A sample estate to try either way: [examples/caldergate-estate.zip](examples/caldergate-estate.zip).
 
 Automated findings and candidate recommendations for a whole estate of
 Anaplan models, from the grid exports, run on your own machine. Nothing
@@ -47,10 +47,9 @@ design is reasonable.
 
 Two ways to get the report, same engine, same output:
 
-- **Online**: open the upload page (a Railway service behind a CodelessOps
-  subdomain; the exact address is set when it is deployed), upload a zip of
-  your estate folder or add models one by one, and the report comes back as
-  one HTML file. Files are written to a temporary folder for the seconds the
+- **Online**: open [anaplan-estate.codelessops.com](https://anaplan-estate.codelessops.com),
+  upload a zip of your estate folder or add models one by one, and the
+  report comes back as one HTML file. Files are written to a temporary folder for the seconds the
   analysis takes and deleted before the response is sent; nothing is stored
   and no names or formulas are logged. There is no account.
 - **Locally**, if you would rather nothing leaves your machine:
