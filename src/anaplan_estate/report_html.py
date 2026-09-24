@@ -333,6 +333,18 @@ def _e(s) -> str:
     return html.escape(str(s), quote=True)
 
 
+def _pct(v) -> str:
+    return f"{v:.1f}%" if v is not None else ""
+
+
+def _eff_of_model(v) -> str:
+    return f"; {v:.1f}% of its model" if v else ""
+
+
+def _doc_links(docs) -> str:
+    return "<br>".join("<a href=" + _e(d["url"]) + ">" + _e(d["title"]) + "</a>: <span class=muted>" + _e(d["quote"]) + "</span>" for d in docs)
+
+
 def _inline(s: str) -> str:
     """Inline markdown subset: `code`, **bold**, [text](#anchor)."""
     s = _e(s)
@@ -560,7 +572,7 @@ def _action_card(i: int, a: dict, rep: dict, nidx: dict, midx: dict) -> str:
         det = ('<dt>The ' + (f'{len(a["detail"])} line items' if len(a["detail"]) != 1 else 'line item') + '</dt><dd><div class="wrap"><table class="det"><thead><tr><th>Line item</th><th>Module</th>'
                + ('<th>Role</th>' if has_role else '') + ('<th>Effort</th>' if has_eff else '') + '<th>Cells</th><th>Formula</th></tr></thead><tbody>'
                + "".join(f'<tr><td>{_e(d["name"] or d["object"])}</td><td>{_e(d["module"])}</td>' + (f'<td>{_e(d.get("role", ""))}</td>' if has_role else '')
-                         + (f'<td>{(f"{d["effort"]:.1f}%" if d.get("effort") is not None else "")}</td>' if has_eff else '') + f'<td>{_c(d["cells"])}</td><td><code>{_e(d["formula"])}</code></td></tr>' for d in a["detail"])
+                         + (f'<td>{_pct(d.get("effort"))}</td>' if has_eff else '') + f'<td>{_c(d["cells"])}</td><td><code>{_e(d["formula"])}</code></td></tr>' for d in a["detail"])
                + '</tbody></table></div></dd>')
     if not a.get("worth", True):
         notices = f'<p class="notice below">Below the bar: {_e(a["why_not"])}.</p>' + notices
@@ -639,9 +651,9 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
     out.append('<h3 id="catalogue">Findings catalogue</h3><p class="muted">Every finding, compact. Open one for the working detail: what was found, the proposed step, preconditions, dependencies, the validation plan, reasons to keep the design, all affected objects and the evidence. Search covers every object name, evidence row and formula. Status and note are yours; <span class="store-note">they are stored in this browser only and travel only through the working register download.</span></p>')
     out.append('<div class="controls noprint" role="search"><label class="sr" for="q">Search findings</label><input id="q" type="search" placeholder="Search titles, IDs, models, object names, formulas">'
                f'<select id="f-model" aria-label="Model"><option value="">All models</option>{"".join(f"<option>{_e(m)}</option>" for m in models)}</select>'
-               f'<select id="f-area" aria-label="Decision area"><option value="">All decision areas</option>{"".join(f"<option value={a['key']}>{_e(a['label'])}</option>" for a in rep['areas'])}</select>'
+               '<select id="f-area" aria-label="Decision area"><option value="">All decision areas</option>' + "".join(f"<option value={a['key']}>{_e(a['label'])}</option>" for a in rep["areas"]) + "</select>"
                '<select id="f-strength" aria-label="Evidence status"><option value="">Any evidence</option><option>confirmed</option><option>partial</option><option>inferred</option></select>'
-               f'<select id="f-status" aria-label="Review status"><option value="">Any status</option>{"".join(f"<option>{_e(s)}</option>" for s in rep['statuses'])}</select>'
+               '<select id="f-status" aria-label="Review status"><option value="">Any status</option>' + "".join(f"<option>{_e(s)}</option>" for s in rep["statuses"]) + "</select>"
                '<select id="f-sort" aria-label="Sort by"><option value="importance">Sort: importance, evidence, cells (unavailable last)</option><option value="cells">Sort: footprint cells (unavailable last)</option><option value="strength">Sort: evidence strength</option><option value="model">Sort: model</option><option value="id">Sort: ID</option></select>'
                '<label><input type="checkbox" id="f-low"> show low-importance findings</label><button type="button" id="f-clear" class="btn">Clear</button><span class="count" id="f-count"></span></div><p class="fnote" id="f-msg" aria-live="polite"></p>')
     out.append('<div class="wrap"><table class="cat"><thead><tr><th>ID</th><th>Finding</th><th>Model</th><th>Next action</th><th>Evidence</th><th>Status</th></tr></thead><tbody>')
@@ -663,7 +675,7 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
     if pl["candidates"]:
         out.append('<details><summary>All candidates in rank order (' + str(len(pl["candidates"])) + ')</summary><div class="wrap"><table><thead><tr><th>#</th><th>Candidate</th><th>Evidence</th><th>Kind</th><th>Scope</th><th>Footprint</th><th>Depends on</th></tr></thead><tbody>'
                    + "".join(f'<tr><td>{i}</td><td>{_e(c["title"])}<br><span class="fnote">{" ".join(f"<a href=#{f}>{f}</a>" for f in c["finding_ids"])}</span></td><td>{c["strength"]}</td><td>{c["kind"]}</td><td>{"bounded" if c["bounded"] else "open"} ({len(c["objects"])})</td>'
-                             f'<td>{(_c(c["footprint_cells"]) + " cells") if c["footprint_cells"] else "not measured"}{(f"; {c['footprint_effort']:.1f}% of its model" if c["footprint_effort"] else "")}</td><td>{_e(", ".join(c["depends_on"])) or ""}</td></tr>' for i, c in enumerate(pl["candidates"], 1))
+                             f'<td>{(_c(c["footprint_cells"]) + " cells") if c["footprint_cells"] else "not measured"}{_eff_of_model(c["footprint_effort"])}</td><td>{_e(", ".join(c["depends_on"])) or ""}</td></tr>' for i, c in enumerate(pl["candidates"], 1))
                    + "</tbody></table></div></details>")
     out.append(f'<p class="fnote">{_e(rep["validation_note"])}</p>')
     # coverage + observations + limitations
@@ -740,7 +752,7 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
     out.append('<h3 id="methodology">Methodology</h3><p class="muted">Every rule that ran, its source, and the official documentation it rests on (consulted 2026-09-22). Rule results are automated readings of the exports; nothing here was validated in a live Anaplan model.</p>')
     out.append('<details><summary>Rules and documentation (' + str(len(rep["methodology"])) + ')</summary><div class="wrap"><table><thead><tr><th>Rule</th><th>Severity</th><th>Source</th><th>Description</th><th>Planual</th><th>Documentation</th></tr></thead><tbody>' +
                "".join(f'<tr><td>{r["id"]}<br><span class="muted">{_e(r["title"])}</span></td><td>{r["severity"]}</td><td>{r["source"]}</td><td>{_e(r["description"])}</td><td>{_e("; ".join(r["planual"]))}</td>'
-                       f'<td>{"<br>".join(f"<a href={_e(d["url"])}>{_e(d["title"])}</a>: <span class=muted>{_e(d["quote"])}</span>" for d in r["docs"])}</td></tr>' for r in rep["methodology"]) + "</tbody></table></div></details>")
+                       f'<td>{_doc_links(r["docs"])}</td></tr>' for r in rep["methodology"]) + "</tbody></table></div></details>")
     out.append("<h4>Evidence strength labels</h4><ul>" + "".join(f"<li><strong>{k}.</strong> {_e(v)}</li>" for k, v in rep["strength_text"].items()) + "</ul>")
     out.append('<h3 id="glossary">Glossary</h3><ul>' + "".join(f"<li><strong>{_e(t)}.</strong> {_e(d)}</li>" for t, d in rep["glossary"]) + "</ul>")
     # register

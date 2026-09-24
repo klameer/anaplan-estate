@@ -39,6 +39,10 @@ def _n(x):
     return f"{x:,}" if isinstance(x, int) else str(x)
 
 
+def _eff(v) -> str:
+    return f"{v:.1f}%" if v is not None else ""
+
+
 def _slug(t: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", t.lower()).strip("-")
 
@@ -251,7 +255,7 @@ def render_markdown(er) -> str:
             a = amap[k]; i = num[k]
             out += [f"#### {i}. {a['title']}", "", f"**Why.** {a['why']}", ""]
             if a.get("detail"):
-                out += ["| Line item | Module | Effort | Cells | Formula |", "|---|---|---|---|---|"] + [f"| {d['name'] or d['object']} | {d['module']} | {(f'{d['effort']:.1f}%' if d.get('effort') is not None else '')} | {_c(d['cells'])} | `{d['formula']}` |" for d in a["detail"]] + [""]
+                out += ["| Line item | Module | Effort | Cells | Formula |", "|---|---|---|---|---|"] + [f"| {d['name'] or d['object']} | {d['module']} | {_eff(d.get('effort'))} | {_c(d['cells'])} | `{d['formula']}` |" for d in a["detail"]] + [""]
             out += ["**Steps.**", ""] + [f"{j}. {st}" for j, st in enumerate(a["steps"], 1)] + ["",
                     f"**Done when.** {a['done_when']}", "", f"Role: {a['role']}. Evidence: {', '.join(f'[{x}](#{x})' for x in a['finding_ids']) or 'none'}."
                     + (f" Depends on: {', '.join(a['depends_on'])}." if a["depends_on"] else "")]
@@ -309,7 +313,8 @@ def render_markdown(er) -> str:
         out += ["## Dimensions shared across models", "", ", ".join(f"{d} ({len(ms)})" for d, ms in rep["shared_dims"]), ""]
     out += ["## Methodology", "", "| Rule | Severity | Source | Description | Planual | Documentation |", "|---|---|---|---|---|---|"]
     for r in rep["methodology"]:
-        out.append(f"| {r['id']} {r['title']} | {r['severity']} | {r['source']} | {r['description']} | {', '.join(r['planual'])} | {', '.join(f'[{d['title']}]({d['url']})' for d in r['docs'])} |")
+        docs = ", ".join("[" + d["title"] + "](" + d["url"] + ")" for d in r["docs"])
+        out.append(f"| {r['id']} {r['title']} | {r['severity']} | {r['source']} | {r['description']} | {', '.join(r['planual'])} | {docs} |")
     out += ["", "## Glossary", ""] + [f"- **{t}.** {d}" for t, d in rep["glossary"]]
     out += ["", "## Validation status", "", rep["validation_note"], ""]
     links = rep["links"]
