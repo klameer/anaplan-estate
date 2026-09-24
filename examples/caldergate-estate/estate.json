@@ -29,115 +29,10 @@
    {
     "key": "hotspot-text:Caldergate FP&A",
     "kind": "change",
-    "title": "Compute 1 text or per-item line item once in a system module in Caldergate FP&A",
-    "why": "6.2% of Caldergate FP&A's measured effort sits in 1 line item that computes a text or per-item value on every cell (5.0M cells); a system module computes it once per list item.",
+    "title": "Move the text formula DAT01 Actuals GL.Journal Cost Centre into a system module in Caldergate FP&A",
+    "why": "DAT01 Actuals GL.Journal Cost Centre builds a text or per-item value on every cell of a multi-dimensional module (5.0M cells) and carries 6.2% of Caldergate FP&A's measured effort; in a module dimensioned only by the list the value varies by, each is calculated once per list item and read from there.",
     "steps": [
-     "Read DAT01 Actuals GL.Journal Cost Centre (6.2%): name the list its value varies by.",
-     "In a development copy, compute it in a SYS module on that list and repoint the readers; keep the original until reconciled.",
-     "Record Calculation Effort before and after."
-    ],
-    "done_when": "Readers reconcile cell for cell and the measured effort share falls.",
-    "role": "model builder, Caldergate FP&A",
-    "model": "Caldergate FP&A",
-    "objects": [
-     "DAT01 Actuals GL.Journal Cost Centre"
-    ],
-    "finding_ids": [
-     "F5",
-     "F16"
-    ],
-    "strength": "confirmed",
-    "footprint_cells": 5017824,
-    "footprint_effort": 6.2,
-    "notices": [],
-    "depends_on": [],
-    "explorer": [
-     1,
-     "DAT01 Actuals GL",
-     "Journal Cost Centre"
-    ],
-    "rank_reason": "#1: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 6.2% of its model's effort",
-    "bounded": true,
-    "footprint_measured": true
-   },
-   {
-    "key": "hotspot-if:Caldergate FP&A",
-    "kind": "change",
-    "title": "Replace the IF chain in CAL03 Opex.Forecast Opex with a mapping module and LOOKUP",
-    "why": "CAL03 Opex.Forecast Opex carries 16.0% of Caldergate FP&A's measured effort and evaluates every IF branch for every cell; a mapping module makes each case a row, not a formula edit.",
-    "steps": [
-     "In a development copy, load the branch-to-value table (in the evidence) into a mapping module on the list the branches test.",
-     "Replace the chain in CAL03 Opex.Forecast Opex with one LOOKUP; keep the original formula in a note until reconciled.",
-     "Export the line item before and after; every cell equal."
-    ],
-    "done_when": "Every cell is equal before and after and the mapping module holds every case the chain held.",
-    "role": "model builder, Caldergate FP&A",
-    "model": "Caldergate FP&A",
-    "objects": [
-     "CAL03 Opex.Forecast Opex"
-    ],
-    "finding_ids": [
-     "F2",
-     "F5",
-     "F16",
-     "F21"
-    ],
-    "strength": "confirmed",
-    "footprint_cells": 5017824,
-    "footprint_effort": 16.0,
-    "notices": [],
-    "depends_on": [],
-    "explorer": [
-     1,
-     "CAL03 Opex",
-     "Forecast Opex"
-    ],
-    "rank_reason": "#2: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 16.0% of its model's effort",
-    "bounded": true,
-    "footprint_measured": true
-   },
-   {
-    "key": "retire:Caldergate FP&A",
-    "kind": "investigation",
-    "title": "Check for consumers of CAL05 Opex OLD in Caldergate FP&A before keeping or retiring it",
-    "why": "No formula outside it reads its 14 line items and no export action reads it; it holds 70.2M cells and 50.8% of Caldergate FP&A's measured effort: an observed footprint, not a saving.",
-    "steps": [
-     "Ask the page builder which pages, saved views and line item subsets use CAL05 Opex OLD.",
-     "Check whether another model imports from a saved view on it.",
-     "Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off."
-    ],
-    "done_when": "Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.",
-    "role": "model owner with a page builder, Caldergate FP&A",
-    "model": "Caldergate FP&A",
-    "objects": [
-     "CAL05 Opex OLD"
-    ],
-    "finding_ids": [
-     "F1"
-    ],
-    "strength": "partial",
-    "footprint_cells": 70249536,
-    "footprint_effort": 50.78,
-    "notices": [],
-    "depends_on": [],
-    "explorer": [
-     1,
-     "CAL05 Opex OLD",
-     null
-    ],
-    "rank_reason": "#3: evidence partial; bounded scope; materiality high; investigation; 70.2M cells; 50.8% of its model's effort",
-    "bounded": true,
-    "footprint_measured": true
-   }
-  ],
-  "candidates": [
-   {
-    "key": "hotspot-text:Caldergate FP&A",
-    "kind": "change",
-    "title": "Compute 1 text or per-item line item once in a system module in Caldergate FP&A",
-    "why": "6.2% of Caldergate FP&A's measured effort sits in 1 line item that computes a text or per-item value on every cell (5.0M cells); a system module computes it once per list item.",
-    "steps": [
-     "Read DAT01 Actuals GL.Journal Cost Centre (6.2%): name the list its value varies by.",
+     "Read DAT01 Actuals GL.Journal Cost Centre (6.2%): name the list its value varies by (often Time or one list).",
      "In a development copy, compute it in a SYS module on that list and repoint the readers; keep the original until reconciled.",
      "Record Calculation Effort before and after."
     ],
@@ -267,7 +162,7 @@
      "DAT01 GL Transactions",
      "Loaded?"
     ],
-    "rank_reason": "evidence confirmed; bounded scope; materiality medium; investigation; 1.3M cells",
+    "rank_reason": "#4: evidence confirmed; bounded scope; materiality medium; investigation; 1.3M cells",
     "bounded": true,
     "footprint_measured": true
    },
@@ -300,7 +195,182 @@
      "SYS01 Time",
      null
     ],
-    "rank_reason": "evidence partial; bounded scope; materiality medium; investigation; 72 cells; 2.8% of its model's effort",
+    "rank_reason": "#5: evidence partial; bounded scope; materiality medium; investigation; 72 cells; 2.8% of its model's effort",
+    "bounded": true,
+    "footprint_measured": true
+   }
+  ],
+  "candidates": [
+   {
+    "key": "hotspot-text:Caldergate FP&A",
+    "kind": "change",
+    "title": "Move the text formula DAT01 Actuals GL.Journal Cost Centre into a system module in Caldergate FP&A",
+    "why": "DAT01 Actuals GL.Journal Cost Centre builds a text or per-item value on every cell of a multi-dimensional module (5.0M cells) and carries 6.2% of Caldergate FP&A's measured effort; in a module dimensioned only by the list the value varies by, each is calculated once per list item and read from there.",
+    "steps": [
+     "Read DAT01 Actuals GL.Journal Cost Centre (6.2%): name the list its value varies by (often Time or one list).",
+     "In a development copy, compute it in a SYS module on that list and repoint the readers; keep the original until reconciled.",
+     "Record Calculation Effort before and after."
+    ],
+    "done_when": "Readers reconcile cell for cell and the measured effort share falls.",
+    "role": "model builder, Caldergate FP&A",
+    "model": "Caldergate FP&A",
+    "objects": [
+     "DAT01 Actuals GL.Journal Cost Centre"
+    ],
+    "finding_ids": [
+     "F5",
+     "F16"
+    ],
+    "strength": "confirmed",
+    "footprint_cells": 5017824,
+    "footprint_effort": 6.2,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     1,
+     "DAT01 Actuals GL",
+     "Journal Cost Centre"
+    ],
+    "rank_reason": "#1: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 6.2% of its model's effort",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "hotspot-if:Caldergate FP&A",
+    "kind": "change",
+    "title": "Replace the IF chain in CAL03 Opex.Forecast Opex with a mapping module and LOOKUP",
+    "why": "CAL03 Opex.Forecast Opex carries 16.0% of Caldergate FP&A's measured effort and evaluates every IF branch for every cell; a mapping module makes each case a row, not a formula edit.",
+    "steps": [
+     "In a development copy, load the branch-to-value table (in the evidence) into a mapping module on the list the branches test.",
+     "Replace the chain in CAL03 Opex.Forecast Opex with one LOOKUP; keep the original formula in a note until reconciled.",
+     "Export the line item before and after; every cell equal."
+    ],
+    "done_when": "Every cell is equal before and after and the mapping module holds every case the chain held.",
+    "role": "model builder, Caldergate FP&A",
+    "model": "Caldergate FP&A",
+    "objects": [
+     "CAL03 Opex.Forecast Opex"
+    ],
+    "finding_ids": [
+     "F2",
+     "F5",
+     "F16",
+     "F21"
+    ],
+    "strength": "confirmed",
+    "footprint_cells": 5017824,
+    "footprint_effort": 16.0,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     1,
+     "CAL03 Opex",
+     "Forecast Opex"
+    ],
+    "rank_reason": "#2: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 16.0% of its model's effort",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "retire:Caldergate FP&A",
+    "kind": "investigation",
+    "title": "Check for consumers of CAL05 Opex OLD in Caldergate FP&A before keeping or retiring it",
+    "why": "No formula outside it reads its 14 line items and no export action reads it; it holds 70.2M cells and 50.8% of Caldergate FP&A's measured effort: an observed footprint, not a saving.",
+    "steps": [
+     "Ask the page builder which pages, saved views and line item subsets use CAL05 Opex OLD.",
+     "Check whether another model imports from a saved view on it.",
+     "Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off."
+    ],
+    "done_when": "Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.",
+    "role": "model owner with a page builder, Caldergate FP&A",
+    "model": "Caldergate FP&A",
+    "objects": [
+     "CAL05 Opex OLD"
+    ],
+    "finding_ids": [
+     "F1"
+    ],
+    "strength": "partial",
+    "footprint_cells": 70249536,
+    "footprint_effort": 50.78,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     1,
+     "CAL05 Opex OLD",
+     null
+    ],
+    "rank_reason": "#3: evidence partial; bounded scope; materiality high; investigation; 70.2M cells; 50.8% of its model's effort",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "hotspot-investigate:Caldergate Data Hub",
+    "kind": "investigation",
+    "title": "Read the five largest calculation hotspots in Caldergate Data Hub",
+    "why": "Ten line items carry 99.9% of Caldergate Data Hub's measured effort and none matches a rule finding, so concentration is the only evidence: a place to look, not a change to make.",
+    "steps": [
+     "Read the five largest with the owner, led by DAT01 GL Transactions.Loaded? (88.3%): what each computes and how often it changes.",
+     "Note where a documented pattern applies (SUM with LOOKUP, text per cell, IF chains) or the effort is the model's main job.",
+     "Choose at most one to trial in a development copy, with Calculation Effort read before and after."
+    ],
+    "done_when": "Each of the five has a recorded reading (keep, or one named change to trial) agreed with the owner.",
+    "role": "model builder, Caldergate Data Hub",
+    "model": "Caldergate Data Hub",
+    "objects": [
+     "DAT01 GL Transactions.Loaded?",
+     "CAL01 Volume Summary.Units",
+     "CAL01 Volume Summary.Revenue",
+     "CAL01 Volume Summary.Orders",
+     "DAT05 CRM Pipeline.Weighted Pipeline"
+    ],
+    "finding_ids": [
+     "F3"
+    ],
+    "strength": "confirmed",
+    "footprint_cells": 1298952,
+    "footprint_effort": null,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     0,
+     "DAT01 GL Transactions",
+     "Loaded?"
+    ],
+    "rank_reason": "#4: evidence confirmed; bounded scope; materiality medium; investigation; 1.3M cells",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "retire:Board Reporting",
+    "kind": "investigation",
+    "title": "Check for consumers of SYS01 Time in Board Reporting before keeping or retiring it",
+    "why": "No formula outside it reads its 2 line items and no export action reads it; it holds 72 cells and 2.8% of Board Reporting's measured effort: an observed footprint, not a saving.",
+    "steps": [
+     "Ask the page builder which pages, saved views and line item subsets use SYS01 Time.",
+     "Check whether another model imports from a saved view on it.",
+     "Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off."
+    ],
+    "done_when": "Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.",
+    "role": "model owner with a page builder, Board Reporting",
+    "model": "Board Reporting",
+    "objects": [
+     "SYS01 Time"
+    ],
+    "finding_ids": [
+     "F8"
+    ],
+    "strength": "partial",
+    "footprint_cells": 72,
+    "footprint_effort": 2.8,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     3,
+     "SYS01 Time",
+     null
+    ],
+    "rank_reason": "#5: evidence partial; bounded scope; materiality medium; investigation; 72 cells; 2.8% of its model's effort",
     "bounded": true,
     "footprint_measured": true
    },
@@ -489,17 +559,17 @@
    "Then the larger observed footprint in cells, then the title. Ties never depend on the order the files were read.",
    "Overlapping findings on the same objects are merged into one decision; a change whose objects sit in a module with no consumer detected depends on that consumer check, which is then placed first."
   ],
-  "limit": 3,
+  "limit": 5,
   "none": null
  },
  "investigations": [
   {
    "key": "hotspot-text:Caldergate FP&A",
    "kind": "change",
-   "title": "Compute 1 text or per-item line item once in a system module in Caldergate FP&A",
-   "why": "6.2% of Caldergate FP&A's measured effort sits in 1 line item that computes a text or per-item value on every cell (5.0M cells); a system module computes it once per list item.",
+   "title": "Move the text formula DAT01 Actuals GL.Journal Cost Centre into a system module in Caldergate FP&A",
+   "why": "DAT01 Actuals GL.Journal Cost Centre builds a text or per-item value on every cell of a multi-dimensional module (5.0M cells) and carries 6.2% of Caldergate FP&A's measured effort; in a module dimensioned only by the list the value varies by, each is calculated once per list item and read from there.",
    "steps": [
-    "Read DAT01 Actuals GL.Journal Cost Centre (6.2%): name the list its value varies by.",
+    "Read DAT01 Actuals GL.Journal Cost Centre (6.2%): name the list its value varies by (often Time or one list).",
     "In a development copy, compute it in a SYS module on that list and repoint the readers; keep the original until reconciled.",
     "Record Calculation Effort before and after."
    ],
@@ -593,6 +663,76 @@
     null
    ],
    "rank_reason": "#3: evidence partial; bounded scope; materiality high; investigation; 70.2M cells; 50.8% of its model's effort",
+   "bounded": true,
+   "footprint_measured": true
+  },
+  {
+   "key": "hotspot-investigate:Caldergate Data Hub",
+   "kind": "investigation",
+   "title": "Read the five largest calculation hotspots in Caldergate Data Hub",
+   "why": "Ten line items carry 99.9% of Caldergate Data Hub's measured effort and none matches a rule finding, so concentration is the only evidence: a place to look, not a change to make.",
+   "steps": [
+    "Read the five largest with the owner, led by DAT01 GL Transactions.Loaded? (88.3%): what each computes and how often it changes.",
+    "Note where a documented pattern applies (SUM with LOOKUP, text per cell, IF chains) or the effort is the model's main job.",
+    "Choose at most one to trial in a development copy, with Calculation Effort read before and after."
+   ],
+   "done_when": "Each of the five has a recorded reading (keep, or one named change to trial) agreed with the owner.",
+   "role": "model builder, Caldergate Data Hub",
+   "model": "Caldergate Data Hub",
+   "objects": [
+    "DAT01 GL Transactions.Loaded?",
+    "CAL01 Volume Summary.Units",
+    "CAL01 Volume Summary.Revenue",
+    "CAL01 Volume Summary.Orders",
+    "DAT05 CRM Pipeline.Weighted Pipeline"
+   ],
+   "finding_ids": [
+    "F3"
+   ],
+   "strength": "confirmed",
+   "footprint_cells": 1298952,
+   "footprint_effort": null,
+   "notices": [],
+   "depends_on": [],
+   "explorer": [
+    0,
+    "DAT01 GL Transactions",
+    "Loaded?"
+   ],
+   "rank_reason": "#4: evidence confirmed; bounded scope; materiality medium; investigation; 1.3M cells",
+   "bounded": true,
+   "footprint_measured": true
+  },
+  {
+   "key": "retire:Board Reporting",
+   "kind": "investigation",
+   "title": "Check for consumers of SYS01 Time in Board Reporting before keeping or retiring it",
+   "why": "No formula outside it reads its 2 line items and no export action reads it; it holds 72 cells and 2.8% of Board Reporting's measured effort: an observed footprint, not a saving.",
+   "steps": [
+    "Ask the page builder which pages, saved views and line item subsets use SYS01 Time.",
+    "Check whether another model imports from a saved view on it.",
+    "Record keep or retire. If retire: change a development copy with the original intact, reconcile the owner's named outputs over a cycle, sign off."
+   ],
+   "done_when": "Every consumer check has a recorded answer and the owner has signed a keep-or-retire decision.",
+   "role": "model owner with a page builder, Board Reporting",
+   "model": "Board Reporting",
+   "objects": [
+    "SYS01 Time"
+   ],
+   "finding_ids": [
+    "F8"
+   ],
+   "strength": "partial",
+   "footprint_cells": 72,
+   "footprint_effort": 2.8,
+   "notices": [],
+   "depends_on": [],
+   "explorer": [
+    3,
+    "SYS01 Time",
+    null
+   ],
+   "rank_reason": "#5: evidence partial; bounded scope; materiality medium; investigation; 72 cells; 2.8% of its model's effort",
    "bounded": true,
    "footprint_measured": true
   }
@@ -4474,11 +4614,11 @@
    ],
    [
     36,
-    35
+    34
    ],
    [
     36,
-    34
+    35
    ],
    [
     47,
@@ -4486,11 +4626,11 @@
    ],
    [
     54,
-    43
+    39
    ],
    [
     54,
-    39
+    43
    ],
    [
     55,
@@ -4502,11 +4642,11 @@
    ],
    [
     56,
-    43
+    41
    ],
    [
     56,
-    41
+    43
    ],
    [
     57,
@@ -4526,11 +4666,11 @@
    ],
    [
     60,
-    59
+    58
    ],
    [
     60,
-    58
+    59
    ],
    [
     61,
@@ -4562,11 +4702,11 @@
    ],
    [
     81,
-    80
+    78
    ],
    [
     81,
-    78
+    80
    ],
    [
     81,
@@ -4634,11 +4774,7 @@
    ],
    [
     177,
-    171
-   ],
-   [
-    177,
-    145
+    161
    ],
    [
     177,
@@ -4646,27 +4782,11 @@
    ],
    [
     177,
-    135
-   ],
-   [
-    177,
-    138
-   ],
-   [
-    177,
-    164
-   ],
-   [
-    177,
     153
    ],
    [
     177,
-    155
-   ],
-   [
-    177,
-    162
+    140
    ],
    [
     177,
@@ -4674,35 +4794,15 @@
    ],
    [
     177,
-    128
+    159
    ],
    [
     177,
-    151
+    136
    ],
    [
     177,
-    139
-   ],
-   [
-    177,
-    163
-   ],
-   [
-    177,
-    134
-   ],
-   [
-    177,
-    148
-   ],
-   [
-    177,
-    166
-   ],
-   [
-    177,
-    160
+    149
    ],
    [
     177,
@@ -4710,23 +4810,43 @@
    ],
    [
     177,
-    173
+    139
    ],
    [
     177,
-    176
+    130
    ],
    [
     177,
-    159
+    169
    ],
    [
     177,
-    165
+    142
    ],
    [
     177,
-    157
+    133
+   ],
+   [
+    177,
+    143
+   ],
+   [
+    177,
+    168
+   ],
+   [
+    177,
+    163
+   ],
+   [
+    177,
+    170
+   ],
+   [
+    177,
+    152
    ],
    [
     177,
@@ -4738,87 +4858,19 @@
    ],
    [
     177,
-    129
-   ],
-   [
-    177,
-    169
-   ],
-   [
-    177,
     167
    ],
    [
     177,
-    140
+    173
    ],
    [
     177,
-    136
+    164
    ],
    [
     177,
-    130
-   ],
-   [
-    177,
-    143
-   ],
-   [
-    177,
-    131
-   ],
-   [
-    177,
-    156
-   ],
-   [
-    177,
-    133
-   ],
-   [
-    177,
-    174
-   ],
-   [
-    177,
-    144
-   ],
-   [
-    177,
-    168
-   ],
-   [
-    177,
-    141
-   ],
-   [
-    177,
-    137
-   ],
-   [
-    177,
-    147
-   ],
-   [
-    177,
-    152
-   ],
-   [
-    177,
-    158
-   ],
-   [
-    177,
-    132
-   ],
-   [
-    177,
-    142
-   ],
-   [
-    177,
-    149
+    138
    ],
    [
     177,
@@ -4826,15 +4878,107 @@
    ],
    [
     177,
-    170
+    128
    ],
    [
     177,
-    161
+    166
+   ],
+   [
+    177,
+    129
+   ],
+   [
+    177,
+    145
+   ],
+   [
+    177,
+    162
+   ],
+   [
+    177,
+    155
+   ],
+   [
+    177,
+    157
+   ],
+   [
+    177,
+    156
+   ],
+   [
+    177,
+    158
+   ],
+   [
+    177,
+    151
+   ],
+   [
+    177,
+    160
+   ],
+   [
+    177,
+    171
+   ],
+   [
+    177,
+    135
+   ],
+   [
+    177,
+    147
+   ],
+   [
+    177,
+    148
+   ],
+   [
+    177,
+    132
+   ],
+   [
+    177,
+    137
+   ],
+   [
+    177,
+    176
+   ],
+   [
+    177,
+    134
+   ],
+   [
+    177,
+    141
+   ],
+   [
+    177,
+    174
+   ],
+   [
+    177,
+    131
+   ],
+   [
+    177,
+    165
+   ],
+   [
+    177,
+    144
    ],
    [
     178,
-    127
+    130
+   ],
+   [
+    178,
+    132
    ],
    [
     178,
@@ -4846,31 +4990,15 @@
    ],
    [
     178,
-    132
-   ],
-   [
-    178,
-    130
-   ],
-   [
-    178,
     131
+   ],
+   [
+    178,
+    127
    ],
    [
     179,
     134
-   ],
-   [
-    179,
-    135
-   ],
-   [
-    179,
-    136
-   ],
-   [
-    179,
-    153
    ],
    [
     179,
@@ -4881,6 +5009,30 @@
     133
    ],
    [
+    179,
+    153
+   ],
+   [
+    179,
+    136
+   ],
+   [
+    179,
+    135
+   ],
+   [
+    180,
+    137
+   ],
+   [
+    180,
+    138
+   ],
+   [
+    180,
+    140
+   ],
+   [
     180,
     168
    ],
@@ -4889,16 +5041,8 @@
     139
    ],
    [
-    180,
-    137
-   ],
-   [
-    180,
-    140
-   ],
-   [
-    180,
-    138
+    181,
+    142
    ],
    [
     181,
@@ -4910,10 +5054,6 @@
    ],
    [
     181,
-    142
-   ],
-   [
-    181,
     143
    ],
    [
@@ -4922,11 +5062,7 @@
    ],
    [
     182,
-    178
-   ],
-   [
-    182,
-    179
+    181
    ],
    [
     182,
@@ -4934,11 +5070,15 @@
    ],
    [
     182,
-    181
+    180
    ],
    [
     182,
-    180
+    179
+   ],
+   [
+    182,
+    178
    ],
    [
     183,
@@ -4962,11 +5102,11 @@
    ],
    [
     191,
-    189
+    188
    ],
    [
     191,
-    188
+    189
    ],
    [
     191,
@@ -4986,11 +5126,11 @@
    ],
    [
     194,
-    185
+    188
    ],
    [
     194,
-    191
+    193
    ],
    [
     194,
@@ -4998,11 +5138,11 @@
    ],
    [
     194,
-    188
+    191
    ],
    [
     194,
-    193
+    185
    ],
    [
     206,
@@ -5022,7 +5162,7 @@
    ],
    [
     213,
-    125
+    73
    ],
    [
     213,
@@ -5030,15 +5170,15 @@
    ],
    [
     213,
-    124
-   ],
-   [
-    213,
     120
    ],
    [
     213,
-    73
+    125
+   ],
+   [
+    213,
+    124
    ],
    [
     214,
@@ -5074,10 +5214,14 @@
    ],
    [
     219,
-    218
+    217
    ],
    [
     219,
+    218
+   ],
+   [
+    220,
     217
    ],
    [
@@ -5085,19 +5229,11 @@
     121
    ],
    [
-    220,
-    217
-   ],
-   [
-    221,
-    220
-   ],
-   [
     221,
     122
    ],
    [
-    222,
+    221,
     220
    ],
    [
@@ -5105,8 +5241,8 @@
     221
    ],
    [
-    223,
-    222
+    222,
+    220
    ],
    [
     223,
@@ -5115,6 +5251,10 @@
    [
     223,
     110
+   ],
+   [
+    223,
+    222
    ],
    [
     224,
@@ -5126,19 +5266,19 @@
    ],
    [
     226,
-    222
+    215
    ],
    [
     226,
-    215
-   ],
-   [
-    227,
     222
    ],
    [
     227,
     215
+   ],
+   [
+    227,
+    222
    ],
    [
     228,
@@ -5158,15 +5298,27 @@
    ],
    [
     232,
-    207
-   ],
-   [
-    232,
     100
    ],
    [
+    232,
+    207
+   ],
+   [
     233,
-    127
+    137
+   ],
+   [
+    233,
+    138
+   ],
+   [
+    233,
+    134
+   ],
+   [
+    233,
+    133
    ],
    [
     233,
@@ -5174,11 +5326,7 @@
    ],
    [
     233,
-    151
-   ],
-   [
-    233,
-    150
+    153
    ],
    [
     233,
@@ -5190,27 +5338,19 @@
    ],
    [
     233,
-    137
-   ],
-   [
-    233,
-    134
-   ],
-   [
-    233,
     143
    ],
    [
     233,
-    138
+    127
    ],
    [
     233,
-    153
+    151
    ],
    [
     233,
-    133
+    150
    ],
    [
     234,
@@ -5218,11 +5358,11 @@
    ],
    [
     234,
-    232
+    73
    ],
    [
     234,
-    73
+    232
    ],
    [
     235,
@@ -5250,26 +5390,30 @@
    ],
    [
     238,
-    206
-   ],
-   [
-    238,
     217
    ],
    [
-    239,
-    222
+    238,
+    206
    ],
    [
     239,
     238
    ],
    [
-    240,
+    239,
     222
    ],
    [
     240,
+    239
+   ],
+   [
+    240,
+    222
+   ],
+   [
+    241,
     239
    ],
    [
@@ -5278,19 +5422,15 @@
    ],
    [
     241,
-    239
-   ],
-   [
-    241,
     110
    ],
    [
     242,
-    207
+    73
    ],
    [
     242,
-    73
+    207
    ],
    [
     243,
@@ -5326,15 +5466,7 @@
    ],
    [
     251,
-    246
-   ],
-   [
-    251,
-    248
-   ],
-   [
-    251,
-    250
+    249
    ],
    [
     251,
@@ -5342,7 +5474,15 @@
    ],
    [
     251,
+    246
+   ],
+   [
+    251,
     247
+   ],
+   [
+    251,
+    244
    ],
    [
     251,
@@ -5350,15 +5490,15 @@
    ],
    [
     251,
-    249
+    250
    ],
    [
     251,
-    244
+    248
    ],
    [
     252,
-    251
+    73
    ],
    [
     252,
@@ -5366,7 +5506,7 @@
    ],
    [
     252,
-    73
+    251
    ],
    [
     253,
@@ -5374,11 +5514,11 @@
    ],
    [
     253,
-    88
+    110
    ],
    [
     253,
-    110
+    88
    ],
    [
     254,
@@ -5390,11 +5530,11 @@
    ],
    [
     256,
-    265
+    85
    ],
    [
     256,
-    85
+    265
    ],
    [
     257,
@@ -5422,11 +5562,11 @@
    ],
    [
     260,
-    85
+    262
    ],
    [
     260,
-    262
+    85
    ],
    [
     260,
@@ -5438,19 +5578,19 @@
    ],
    [
     261,
-    258
-   ],
-   [
-    261,
     259
    ],
    [
-    265,
-    108
+    261,
+    258
    ],
    [
     265,
     223
+   ],
+   [
+    265,
+    108
    ],
    [
     266,
@@ -5462,11 +5602,11 @@
    ],
    [
     267,
-    265
+    266
    ],
    [
     267,
-    266
+    265
    ],
    [
     268,
@@ -5478,15 +5618,15 @@
    ],
    [
     270,
+    267
+   ],
+   [
+    270,
     268
    ],
    [
     270,
     269
-   ],
-   [
-    270,
-    267
    ],
    [
     271,
@@ -5502,11 +5642,11 @@
    ],
    [
     273,
-    265
+    270
    ],
    [
     273,
-    270
+    265
    ],
    [
     274,
@@ -5514,19 +5654,19 @@
    ],
    [
     275,
-    268
-   ],
-   [
-    275,
     274
    ],
    [
-    276,
-    87
+    275,
+    268
    ],
    [
     276,
     270
+   ],
+   [
+    276,
+    87
    ],
    [
     277,
@@ -5554,11 +5694,15 @@
    ],
    [
     281,
-    87
+    195
    ],
    [
     281,
-    195
+    87
+   ],
+   [
+    282,
+    279
    ],
    [
     282,
@@ -5573,8 +5717,8 @@
     280
    ],
    [
-    282,
-    279
+    283,
+    75
    ],
    [
     283,
@@ -5583,10 +5727,6 @@
    [
     283,
     284
-   ],
-   [
-    283,
-    75
    ],
    [
     284,
@@ -5602,11 +5742,11 @@
    ],
    [
     286,
-    196
+    195
    ],
    [
     286,
-    195
+    196
    ],
    [
     286,
@@ -5614,11 +5754,11 @@
    ],
    [
     287,
-    286
+    195
    ],
    [
     287,
-    195
+    286
    ],
    [
     288,
@@ -5638,11 +5778,11 @@
    ],
    [
     292,
-    290
+    291
    ],
    [
     292,
-    291
+    290
    ],
    [
     293,
@@ -5662,10 +5802,14 @@
    ],
    [
     295,
-    129
+    73
    ],
    [
     295,
+    129
+   ],
+   [
+    296,
     73
    ],
    [
@@ -5673,7 +5817,7 @@
     130
    ],
    [
-    296,
+    297,
     73
    ],
    [
@@ -5681,7 +5825,7 @@
     131
    ],
    [
-    297,
+    298,
     73
    ],
    [
@@ -5689,7 +5833,7 @@
     132
    ],
    [
-    298,
+    299,
     73
    ],
    [
@@ -5697,7 +5841,7 @@
     133
    ],
    [
-    299,
+    300,
     73
    ],
    [
@@ -5705,7 +5849,7 @@
     134
    ],
    [
-    300,
+    301,
     73
    ],
    [
@@ -5713,7 +5857,7 @@
     135
    ],
    [
-    301,
+    302,
     73
    ],
    [
@@ -5721,7 +5865,7 @@
     136
    ],
    [
-    302,
+    303,
     73
    ],
    [
@@ -5729,7 +5873,7 @@
     137
    ],
    [
-    303,
+    304,
     73
    ],
    [
@@ -5737,7 +5881,7 @@
     138
    ],
    [
-    304,
+    305,
     73
    ],
    [
@@ -5745,7 +5889,7 @@
     139
    ],
    [
-    305,
+    306,
     73
    ],
    [
@@ -5753,7 +5897,7 @@
     140
    ],
    [
-    306,
+    307,
     73
    ],
    [
@@ -5761,7 +5905,7 @@
     141
    ],
    [
-    307,
+    308,
     73
    ],
    [
@@ -5769,7 +5913,7 @@
     142
    ],
    [
-    308,
+    309,
     73
    ],
    [
@@ -5777,7 +5921,7 @@
     143
    ],
    [
-    309,
+    310,
     73
    ],
    [
@@ -5785,7 +5929,7 @@
     144
    ],
    [
-    310,
+    311,
     73
    ],
    [
@@ -5793,7 +5937,7 @@
     145
    ],
    [
-    311,
+    312,
     73
    ],
    [
@@ -5801,7 +5945,7 @@
     146
    ],
    [
-    312,
+    313,
     73
    ],
    [
@@ -5809,7 +5953,7 @@
     147
    ],
    [
-    313,
+    314,
     73
    ],
    [
@@ -5817,7 +5961,7 @@
     148
    ],
    [
-    314,
+    315,
     73
    ],
    [
@@ -5825,7 +5969,7 @@
     149
    ],
    [
-    315,
+    316,
     73
    ],
    [
@@ -5833,7 +5977,7 @@
     150
    ],
    [
-    316,
+    317,
     73
    ],
    [
@@ -5841,7 +5985,7 @@
     151
    ],
    [
-    317,
+    318,
     73
    ],
    [
@@ -5849,7 +5993,7 @@
     152
    ],
    [
-    318,
+    319,
     73
    ],
    [
@@ -5857,16 +6001,12 @@
     153
    ],
    [
-    319,
+    320,
     73
    ],
    [
     320,
     154
-   ],
-   [
-    320,
-    73
    ],
    [
     321,
@@ -5878,79 +6018,11 @@
    ],
    [
     322,
-    156
-   ],
-   [
-    322,
     73
    ],
    [
-    323,
-    301
-   ],
-   [
-    323,
-    297
-   ],
-   [
-    323,
-    319
-   ],
-   [
-    323,
-    296
-   ],
-   [
-    323,
-    304
-   ],
-   [
-    323,
-    306
-   ],
-   [
-    323,
-    309
-   ],
-   [
-    323,
-    320
-   ],
-   [
-    323,
-    295
-   ],
-   [
-    323,
-    298
-   ],
-   [
-    323,
-    305
-   ],
-   [
-    323,
-    308
-   ],
-   [
-    323,
-    316
-   ],
-   [
-    323,
-    302
-   ],
-   [
-    323,
-    314
-   ],
-   [
-    323,
-    294
-   ],
-   [
-    323,
-    300
+    322,
+    156
    ],
    [
     323,
@@ -5958,11 +6030,11 @@
    ],
    [
     323,
-    303
+    316
    ],
    [
     323,
-    311
+    305
    ],
    [
     323,
@@ -5970,11 +6042,11 @@
    ],
    [
     323,
-    307
+    298
    ],
    [
     323,
-    315
+    301
    ],
    [
     323,
@@ -5982,11 +6054,27 @@
    ],
    [
     323,
-    312
+    295
    ],
    [
     323,
-    310
+    302
+   ],
+   [
+    323,
+    307
+   ],
+   [
+    323,
+    311
+   ],
+   [
+    323,
+    296
+   ],
+   [
+    323,
+    312
    ],
    [
     323,
@@ -5994,7 +6082,15 @@
    ],
    [
     323,
-    293
+    313
+   ],
+   [
+    323,
+    304
+   ],
+   [
+    323,
+    303
    ],
    [
     323,
@@ -6002,7 +6098,51 @@
    ],
    [
     323,
-    313
+    294
+   ],
+   [
+    323,
+    320
+   ],
+   [
+    323,
+    319
+   ],
+   [
+    323,
+    314
+   ],
+   [
+    323,
+    315
+   ],
+   [
+    323,
+    306
+   ],
+   [
+    323,
+    297
+   ],
+   [
+    323,
+    293
+   ],
+   [
+    323,
+    300
+   ],
+   [
+    323,
+    310
+   ],
+   [
+    323,
+    308
+   ],
+   [
+    323,
+    309
    ],
    [
     324,
@@ -6066,19 +6206,19 @@
    ],
    [
     339,
-    337
-   ],
-   [
-    339,
     335
    ],
    [
-    340,
+    339,
     337
    ],
    [
     340,
     339
+   ],
+   [
+    340,
+    337
    ],
    [
     348,
@@ -6090,6 +6230,10 @@
    ],
    [
     353,
+    352
+   ],
+   [
+    353,
     350
    ],
    [
@@ -6097,28 +6241,24 @@
     351
    ],
    [
-    353,
-    352
-   ],
-   [
     354,
     347
-   ],
-   [
-    366,
-    364
    ],
    [
     366,
     363
    ],
    [
-    367,
-    359
+    366,
+    364
    ],
    [
     367,
     361
+   ],
+   [
+    367,
+    359
    ],
    [
     368,
@@ -6130,11 +6270,11 @@
    ],
    [
     370,
-    369
+    366
    ],
    [
     370,
-    366
+    369
    ],
    [
     371,
@@ -6142,11 +6282,11 @@
    ],
    [
     371,
-    354
+    370
    ],
    [
     371,
-    370
+    354
    ],
    [
     372,
@@ -6158,7 +6298,7 @@
    ],
    [
     374,
-    373
+    370
    ],
    [
     374,
@@ -6166,27 +6306,19 @@
    ],
    [
     374,
-    370
+    373
+   ],
+   [
+    375,
+    371
    ],
    [
     375,
     345
    ],
    [
-    375,
-    371
-   ],
-   [
     376,
     371
-   ],
-   [
-    377,
-    375
-   ],
-   [
-    377,
-    374
    ],
    [
     377,
@@ -6197,8 +6329,12 @@
     371
    ],
    [
-    378,
-    365
+    377,
+    374
+   ],
+   [
+    377,
+    375
    ],
    [
     378,
@@ -6207,6 +6343,10 @@
    [
     378,
     361
+   ],
+   [
+    378,
+    365
    ],
    [
     379,
@@ -6214,23 +6354,23 @@
    ],
    [
     379,
-    360
+    361
    ],
    [
     379,
-    361
-   ],
-   [
-    380,
-    361
-   ],
-   [
-    380,
     360
    ],
    [
     380,
     371
+   ],
+   [
+    380,
+    361
+   ],
+   [
+    380,
+    360
    ],
    [
     381,
@@ -6242,11 +6382,11 @@
    ],
    [
     383,
-    365
+    361
    ],
    [
     383,
-    361
+    365
    ],
    [
     384,
@@ -6254,11 +6394,11 @@
    ],
    [
     385,
-    384
+    361
    ],
    [
     385,
-    361
+    384
    ],
    [
     386,
@@ -6286,11 +6426,11 @@
    ],
    [
     389,
-    379
+    355
    ],
    [
     389,
-    355
+    379
    ],
    [
     390,
@@ -6306,19 +6446,19 @@
    ],
    [
     392,
-    388
-   ],
-   [
-    392,
     391
    ],
    [
-    393,
-    365
+    392,
+    388
    ],
    [
     393,
     361
+   ],
+   [
+    393,
+    365
    ],
    [
     394,
@@ -6354,11 +6494,11 @@
    ],
    [
     415,
-    400
+    402
    ],
    [
     415,
-    402
+    400
    ],
    [
     416,

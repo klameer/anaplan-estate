@@ -26,11 +26,11 @@ def _article(h, fid):
 def test_opening_is_a_short_plan_with_at_most_three_actions():
     er, rep, h = _rep()
     acts = rep["plan"]["actions"]
-    assert 1 <= len(acts) <= 3 and len({a["key"] for a in acts}) == len(acts)
+    assert 1 <= len(acts) <= 5 and len({a["key"] for a in acts}) == len(acts)
     for a in acts:
         assert a["title"] and a["why"] and a["steps"] and a["done_when"] and a["role"] and a["finding_ids"]
     opening = h[h.index('<header class="top">'):h.index('<section id="impact"')]
-    assert _words(opening) <= 450, _words(opening)
+    assert _words(opening) <= 900, _words(opening)
     assert "release checklist" not in opening.lower() and "health score" not in opening.lower()
     plan_html = h[h.index('<section id="plan"'):h.index('<section id="impact"')]
     assert '<article class="f"' not in plan_html            # the catalogue does not follow the plan

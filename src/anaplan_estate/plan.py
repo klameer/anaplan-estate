@@ -3,7 +3,7 @@ an explainable, deterministic ordering, and written as compact cards (do this / 
 steps / done when).
 
 Selection is separate from presentation: `candidates` produces generic records with
-evidence fields; `select` orders them and keeps at most three; the renderers only
+evidence fields; `select` orders them and keeps at most five; the renderers only
 format. Nothing here names this or that estate: generators read rule ids, effort
 shares, cell counts and evidence strength, and the same code returns fewer than
 three cards (or none, with the next data check) when the evidence is thin.
@@ -144,11 +144,14 @@ def _hotspot_candidates(er, fmap, mi, m) -> list[Candidate]:
         ids = sorted({i for n in names for i in fmap.get((m.name, n), [])} | ({eff_id} if eff_id else set()), key=lambda s: int(s[1:]))
         mod = first.split(".", 1)[0] if "." in first else first
         if fam == "text":
-            what = _pl(len(names), "text or per-item line item")
+            n = len(names)
             c = Candidate(key=f"hotspot-text:{m.name}", kind="change",
-                          title=f"Compute {what} once in a system module in {m.name}",
-                          why=f"{eff:.1f}% of {m.name}'s measured effort sits in {len(names)} line item{'s that compute' if len(names) != 1 else ' that computes'} a text or per-item value on every cell ({_c(cells)} cells); a system module computes it once per list item.",
-                          steps=[f"Read {first} ({first_eff:.1f}%): name the list its value varies by.",
+                          title=(f"Move {n} text formulas that run on every cell into a system module in {m.name}" if n != 1
+                                 else f"Move the text formula {first} into a system module in {m.name}"),
+                          why=(f"{first}" + (f" and {n - 1} similar line item{'s' if n > 2 else ''}" if n > 1 else "") +
+                               f" {'build' if n > 1 else 'builds'} a text or per-item value on every cell of a multi-dimensional module ({_c(cells)} cells) and {'carry' if n > 1 else 'carries'} {eff:.1f}% of {m.name}'s measured effort; "
+                               "in a module dimensioned only by the list the value varies by, each is calculated once per list item and read from there."),
+                          steps=[f"Read {first} ({first_eff:.1f}%): name the list its value varies by (often Time or one list).",
                                  "In a development copy, compute it in a SYS module on that list and repoint the readers; keep the original until reconciled.",
                                  "Record Calculation Effort before and after."],
                           done_when="Readers reconcile cell for cell and the measured effort share falls.",
@@ -291,7 +294,7 @@ def candidates(er) -> list[Candidate]:
     return sorted(out, key=rank_key)
 
 
-def select(er, limit: int = 3) -> dict:
+def select(er, limit: int = 5) -> dict:
     """At most `limit` cards, ordered; a dependency selected alongside its dependant is placed first."""
     ranked = candidates(er)
     by_key = {c.key: c for c in ranked}

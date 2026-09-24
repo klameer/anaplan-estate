@@ -19,7 +19,7 @@ def test_summary_has_scope_actions_and_limits():
     words = sum(len(p.split()) for p in rep["summary_text"])
     assert 10 <= words <= 60                                    # one scope and freshness line
     assert 3 <= len(rep["observations"]) <= 4
-    assert 1 <= len(rep["plan"]["actions"]) <= 3
+    assert 1 <= len(rep["plan"]["actions"]) <= 5
     for a in rep["plan"]["actions"]:
         assert a["title"] and a["role"] and a["steps"] and a["done_when"] and a["finding_ids"]
     ret = next(a for a in rep["plan"]["actions"] if a["key"].startswith("retire:"))
