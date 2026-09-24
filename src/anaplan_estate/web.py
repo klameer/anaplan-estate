@@ -47,7 +47,15 @@ WORKERS = int(os.environ.get("ESTATE_WORKERS", str(min(4, os.cpu_count() or 1)))
 QUEUE_WAIT_S = float(os.environ.get("ESTATE_QUEUE_WAIT_S", "20"))
 RATE_PER_HOUR = int(os.environ.get("ESTATE_RATE_PER_HOUR", "30"))
 LINKS = {"feedback_url": os.environ.get("ESTATE_FEEDBACK_URL", ""), "source_url": os.environ.get("ESTATE_SOURCE_URL", ""), "help_url": os.environ.get("ESTATE_HELP_URL", "")}
-EXAMPLE = Path(__file__).resolve().parents[2] / "examples" / "caldergate-estate"
+def _find_example() -> Path:
+    """The fictional example estate: ESTATE_EXAMPLE_DIR, else the checkout the service runs from, else next to the source tree."""
+    for c in (Path(os.environ.get("ESTATE_EXAMPLE_DIR", "")), Path.cwd() / "examples" / "caldergate-estate", Path(__file__).resolve().parents[2] / "examples" / "caldergate-estate"):
+        if str(c) not in ("", ".") and c.is_dir():
+            return c
+    return Path(__file__).resolve().parents[2] / "examples" / "caldergate-estate"
+
+
+EXAMPLE = _find_example()
 CHUNK = 1024 * 256
 
 app = FastAPI(title="Anaplan estate review", docs_url=None, redoc_url=None, openapi_url=None)
