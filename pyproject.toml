@@ -11,8 +11,13 @@ requires-python = ">=3.10"
 license = "MIT"
 dependencies = ["anaplan-grammar"]
 
+[project.optional-dependencies]
+web = ["fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9"]
+dev = ["pytest>=8", "httpx>=0.27"]
+
 [project.scripts]
 anaplan-estate = "anaplan_estate.cli:main"
+anaplan-estate-web = "anaplan_estate.web:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/anaplan_estate"]

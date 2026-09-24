@@ -1,0 +1,10 @@
+.git
+out/
+corpus/
+__pycache__/
+*.pyc
+.pytest_cache/
+tests/
+examples/caldergate-estate/estate.html
+examples/caldergate-estate/estate.json
+examples/caldergate-estate/estate.md

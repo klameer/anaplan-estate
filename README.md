@@ -26,6 +26,30 @@ recommendations are labelled apart; every finding carries its evidence
 strength, what the exports cannot tell, and when keeping the current
 design is reasonable.
 
+## Use it online, or run it yourself
+
+Two ways to get the report, same engine, same output:
+
+- **Online**: open the upload page (a Railway service behind a CodelessOps
+  subdomain; the exact address is set when it is deployed), upload a zip of
+  your estate folder or add models one by one, and the report comes back as
+  one HTML file. Files are written to a temporary folder for the seconds the
+  analysis takes and deleted before the response is sent; nothing is stored
+  and no names or formulas are logged. There is no account.
+- **Locally**, if you would rather nothing leaves your machine:
+
+```bash
+pip install "https://github.com/klameer/anaplan-grammar/archive/refs/heads/main.zip"
+pip install "https://github.com/klameer/anaplan-estate/archive/refs/heads/main.zip"
+anaplan-estate my-estate-folder --html estate.html
+```
+
+The same upload page can be run locally too: `pip install ".[web]"` then
+`anaplan-estate-web` (or `uvicorn anaplan_estate.web:app`), open
+http://localhost:8000. `Dockerfile` and `railway.toml` describe the hosted
+service; limits and links come from `ESTATE_MAX_MB`, `ESTATE_MAX_MODELS`,
+`ESTATE_TIMEOUT_S`, `ESTATE_FEEDBACK_URL`, `ESTATE_SOURCE_URL`, `ESTATE_HELP_URL`.
+
 ## Try it first on the example estate
 
 Four fictional models built to look inherited: two consultancies, three
