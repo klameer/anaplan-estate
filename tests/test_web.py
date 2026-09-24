@@ -103,3 +103,22 @@ def test_example_route_is_cached():
     assert r.status_code == 200 and "fictional example" in r.text
     t = time.time(); r2 = client.get("/example"); second = time.time() - t
     assert r2.text == r.text and second < first
+
+
+def test_usage_counts_without_personal_data(monkeypatch, tmp_path):
+    from anaplan_estate import usage as um
+    monkeypatch.setattr(um, "STATS_TOKEN", "t0k")
+    monkeypatch.setattr(um, "STATS_DIR", str(tmp_path))
+    um.usage.__init__()
+    assert client.get("/stats").status_code == 404 and client.get("/stats?token=wrong").status_code == 404
+    client.get("/")
+    client.post("/report", files={"estate_zip": ("estate.zip", _zip([EX / "4 Board Reporting"]), "application/zip")})
+    client.post("/report", data={"title": "x"})
+    s = client.get("/stats?token=t0k").json()
+    today = s["today"]
+    assert today["page_views"] == 1 and today["reports_ok"] == 1 and today["reports"]["400"] == 1 and today["distinct_visitors"] == 1
+    assert today["models"] == 1 and today["line_items"] > 0 and today["duration_ms_p50"] is not None
+    blob = str(s)
+    assert "testclient" not in blob and "127.0.0.1" not in blob and "Board Reporting" not in blob
+    um.usage.flush()
+    assert (tmp_path / "usage.jsonl").exists() and "reports_ok" in (tmp_path / "usage.jsonl").read_text()

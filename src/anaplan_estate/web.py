@@ -31,12 +31,14 @@ The example report is built once per process and cached. Links come from
 ESTATE_FEEDBACK_URL, ESTATE_SOURCE_URL, ESTATE_HELP_URL; absent means omitted.
 """
 from __future__ import annotations
-import asyncio, csv, html, io, multiprocessing, os, re, shutil, tempfile, threading, time, zipfile
+import asyncio, csv, html, io, json, multiprocessing, os, re, secrets, shutil, tempfile, threading, time, zipfile
 from collections import deque
 from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse
 from starlette.background import BackgroundTask
+from . import usage as usage_mod
+from .usage import usage
 
 MAX_MB = float(os.environ.get("ESTATE_MAX_MB", "80"))
 MAX_MODELS = int(os.environ.get("ESTATE_MAX_MODELS", "12"))
@@ -100,7 +102,8 @@ anaplan-estate my-estate-folder --html estate.html</pre>
 
 
 @app.get("/", response_class=HTMLResponse)
-def index():
+def index(request: Request):
+    usage.visit(_client(request))
     rows = "".join(f"""<div class=row><div><label>Model name</label><input type=text name=model_name placeholder="e.g. FP&amp;A"></div>
 <div><label>Line Items export (required)</label><input type=file name=line_items accept=".csv,text/csv"></div>
 <div><label>Actions export (optional)</label><input type=file name=actions accept=".csv,text/csv"></div>
@@ -251,6 +254,7 @@ def _worker(root: str, title: str, links: dict, out_path: str, err_path: str) ->
         if title:
             rep["title"] = title
         Path(out_path).write_text(report_html.render(rep, csv_text=report.register_csv(rep)), encoding="utf-8")
+        Path(out_path).with_name("meta.json").write_text(json.dumps({"models": len(er.models), "line_items": rep["scope"]["line_items"]}), encoding="utf-8")
     except BaseException as e:            # SystemExit from the loader included
         Path(err_path).write_text(f"{type(e).__name__}: {e}", encoding="utf-8")
 
@@ -282,8 +286,13 @@ async def _analyse(root: Path, title: str, tmp: Path):
         _slots.release()
     if err:
         return _error(504 if err.startswith("The analysis took") else 400, err)
-    return FileResponse(out_path, media_type="text/html; charset=utf-8", headers={"Content-Disposition": 'inline; filename="estate.html"', "Cache-Control": "no-store"},
+    resp = FileResponse(out_path, media_type="text/html; charset=utf-8", headers={"Content-Disposition": 'inline; filename="estate.html"', "Cache-Control": "no-store"},
                         background=BackgroundTask(shutil.rmtree, tmp, ignore_errors=True))
+    try:
+        resp.usage_meta = json.loads((tmp / "meta.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        resp.usage_meta = {}
+    return resp
 
 
 def _files(form, key) -> list:
@@ -293,7 +302,33 @@ def _files(form, key) -> list:
 
 @app.post("/report")
 async def build_report(request: Request):
-    if not _rate_ok(_client(request)):
+    """Counts the request for the usage summary (outcome, sizes, duration; never content), then hands over."""
+    t = time.time(); client = _client(request)
+    resp = await _build_report(request, client)
+    meta = getattr(resp, "usage_meta", {}) or {}
+    cl = request.headers.get("content-length", "")
+    usage.report(client, "ok" if resp.status_code == 200 else str(resp.status_code), models=meta.get("models", 0), line_items=meta.get("line_items", 0),
+                 upload_bytes=int(cl) if cl.isdigit() else 0, duration_ms=int((time.time() - t) * 1000))
+    return resp
+
+
+@app.get("/stats")
+def stats(request: Request):
+    """Usage summary for the operator: today in memory plus the daily history file. Off unless ESTATE_STATS_TOKEN is set."""
+    token = usage_mod.STATS_TOKEN
+    given = request.query_params.get("token") or request.headers.get("x-stats-token", "")
+    if not token or not secrets.compare_digest(given, token):
+        return PlainTextResponse("not found", status_code=404)
+    return {"today": usage.summary(), "history": usage.history(), "note": "no personal data: outcomes, counts, size buckets, durations; visitors counted with a daily random key that is never stored"}
+
+
+@app.router.on_shutdown.append
+def _flush_usage():
+    usage.flush()
+
+
+async def _build_report(request: Request, client: str):
+    if not _rate_ok(client):
         return _error(429, f"More than {RATE_PER_HOUR} reports from this address in an hour. Try again later, or run the tool locally.", retry_after=600)
     cl = request.headers.get("content-length")
     if cl and cl.isdigit() and int(cl) > MAX_MB * 1024 * 1024 * 1.05:

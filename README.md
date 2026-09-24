@@ -48,7 +48,14 @@ The same upload page can be run locally too: `pip install ".[web]"` then
 `anaplan-estate-web` (or `uvicorn anaplan_estate.web:app`), open
 http://localhost:8000. `Dockerfile` and `railway.toml` describe the hosted
 service; limits and links come from `ESTATE_MAX_MB`, `ESTATE_MAX_MODELS`,
-`ESTATE_TIMEOUT_S`, `ESTATE_FEEDBACK_URL`, `ESTATE_SOURCE_URL`, `ESTATE_HELP_URL`.
+`ESTATE_TIMEOUT_S`, `ESTATE_WORKERS`, `ESTATE_RATE_PER_HOUR`, `ESTATE_FEEDBACK_URL`,
+`ESTATE_SOURCE_URL`, `ESTATE_HELP_URL`.
+
+Usage of the hosted service is counted without personal data: per report,
+the outcome, model and line-item counts, an upload-size bucket and the
+duration; visitors per day via a random daily key that is never stored.
+Set `ESTATE_STATS_TOKEN` to enable `GET /stats?token=...` and
+`ESTATE_STATS_DIR` (a mounted volume) to keep one summary line per day.
 
 ## Try it first on the example estate
 
