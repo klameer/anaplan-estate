@@ -431,13 +431,13 @@ def _per_model(er, m, nid) -> list[Finding]:
             rows += [f"| {lst} item | Value |", "|---|---|"] + [f"| {k.split('.', 1)[1] if '.' in k else k} | `{v}` |" for k, v in mapping]
         new(area="maintain", kind="refactor", title="IF chain that encodes a lookup table" if mapping else "Formula with many IF branches", objects=[x.object],
             observed=f"{x.message}." + (f" The branches map {mapping[0][0].split('.')[0]} items to values; the table below is what the formula encodes." if mapping else ""),
-            why="Every branch is evaluated for every cell, and every new case is a formula edit. Anaplan's checklist: refactor above 10 IF conditions." + (f" This line item carries {li.calc_effort:.1f}% of the model's measured effort." if li and has_effort and li.calc_effort else ""),
+            why="Every new case is a formula edit, and a long chain is hard to check. Anaplan's checklist: refactor above 10 IF conditions. Whether a mapping module also calculates faster depends on the engine and the formula (IF stops at the first true branch), so measure rather than assume." + (f" This line item carries {li.calc_effort:.1f}% of the model's measured effort." if li and has_effort and li.calc_effort else ""),
             scope="1 line item; " + _pl(len(g.rev.get((x.module, x.line_item), ())), "reader"),
             benefit="Observed effort share only; improvement would be measured after the change.", benefit_kind="footprint" if li and li.calc_effort else "none",
             strength="confirmed", basis="Parsed formula.", missing=["whether the mapping is stable enough to hold in a module"],
             next_step=("Load the table into a mapping module and replace the chain with one LOOKUP; compare values before and after." if mapping else "Split the conditions into named Boolean line items."),
-            keep_design="A short, stable chain that a finance user can read may be clearer than a mapping module.", importance="medium" if li and li.calc_effort >= 5 else "low", complexity="medium",
-            evidence=rows, rules=["A-IF-COUNT"], footprint_effort=(li.calc_effort if li and has_effort and li.calc_effort else None), validation=["Export the line item before and after; every cell equal."],
+            keep_design="A short, stable chain that a finance user can read may be clearer than a mapping module, and a chain that usually exits at an early branch may already be cheap.", importance="medium" if li and li.calc_effort >= 5 else "low", complexity="medium",
+            evidence=rows, rules=["A-IF-COUNT"], footprint_effort=(li.calc_effort if li and has_effort and li.calc_effort else None), validation=["Export the line item before and after; every cell equal.", "Calculation Effort read before and after; keep the change only if it is no worse."],
             implementation=["Prerequisites: the mapping is stable and the owner accepts a module in place of the formula. Then build the mapping module in a development copy, replace the formula, reconcile every cell, sign-off."])
 
     # ---- maintain: hard-coded constants

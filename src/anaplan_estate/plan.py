@@ -24,6 +24,10 @@ from collections import defaultdict
 from .findings import _c, _pl, STRENGTH_ORDER
 
 BOUNDED = 10          # a scope of this many named objects or fewer counts as bounded
+
+IF_WHY = ("A long chain of 'if this then that' tests is hard to maintain: each new case means editing the formula, and the mapping is easier to check when it sits as rows in a small table "
+          "read with one lookup. Whether the table also calculates faster depends on the engine and the formula (Anaplan documents that IF stops at the first true branch), so treat the "
+          "performance side as something to measure, not assume. ")
 TEXT_RULES = ("A-TEXT-FORMAT", "A-FINDITEM", "A-TEXT-JOIN", "A-SYSTEMS-FN")
 
 RANKING = [
@@ -200,14 +204,12 @@ def _hotspot_candidates(er, fmap, mi, m) -> list[Candidate]:
                           footprint_cells=cells, footprint_effort=eff, explorer=explorer, detail=detail)
         else:
             c = Candidate(key=f"hotspot-if:{m.name}", kind="change",
-                          title=f"Replace the long chain of IF tests in {_named(first, m)} with a lookup table",
-                          why=(f"A formula built as a long chain of 'if this then that' tests checks every branch for every cell, and each new case means editing the formula. "
-                               f"The same mapping held as rows in a small table module, read with one lookup, is quicker to calculate and can be maintained without a builder. "
-                               f"In {m.name}, {_named(first, m)} carries {first_eff:.1f}% of the model's measured calculation effort."),
-                          steps=["In a development copy, load the 'case to value' table (it is written out under Evidence) into a small mapping module keyed by the list the tests refer to.",
+                          title=f"Consider replacing the long chain of IF tests in {_named(first, m)} with a lookup table",
+                          why=(IF_WHY + f"In {m.name}, {_named(first, m)} carries {first_eff:.1f}% of the model's measured calculation effort, which is why it is worth a trial."),
+                          steps=["In a development copy, load the 'case to value' table (listed below) into a small mapping module keyed by the list the tests refer to.",
                                  f"Replace the chain in {_named(first, m)} with a single lookup on that table; keep the old formula in a note until the check below passes.",
-                                 "Export the line item before and after and confirm every cell is equal."],
-                          done_when="Every cell is equal before and after, and the table holds every case the chain held.",
+                                 "Export the line item before and after and confirm every cell is equal; read Calculation Effort before and after and keep the change only if it is at least as good."],
+                          done_when="Every cell is equal before and after, the table holds every case the chain held, and the measured effort is no worse.",
                           role=f"model builder, {m.name}", model=m.name, objects=names, finding_ids=ids, strength="confirmed",
                           footprint_cells=cells, footprint_effort=eff, explorer=explorer, detail=detail)
         out.append(c)
@@ -292,14 +294,13 @@ def _if_chain_candidate(er, fmap, mi, m) -> Candidate | None:
     x = sorted(xs, key=lambda x: (-(x.footprint_effort or 0), x.objects[0]))[0]
     first = x.objects[0]
     return Candidate(key=f"if:{m.name}:{first}", kind="change",
-                     title=f"Replace the long chain of IF tests in {_named(first, m)} with a lookup table",
-                     why=("A formula built as a long chain of 'if this then that' tests checks every branch for every cell, and each new case means editing the formula. "
-                          "The same mapping held as rows in a small table module, read with one lookup, is easier to maintain without a builder"
-                          + (f" and, in {m.name}, the line item carries {x.footprint_effort:.1f}% of the model's measured calculation effort" if x.footprint_effort else "") + "."),
+                     title=f"Consider replacing the long chain of IF tests in {_named(first, m)} with a lookup table",
+                     why=(IF_WHY + f"In {m.name}, this is a maintainability candidate"
+                          + (f"; the line item carries {x.footprint_effort:.1f}% of the model's measured calculation effort" if x.footprint_effort else "") + "."),
                      steps=["In a development copy, load the 'case to value' table (written out under Evidence) into a small mapping module keyed by the list the tests refer to.",
                             f"Replace the chain in {_named(first, m)} with a single lookup on that table; keep the old formula in a note until the check below passes.",
-                            "Export the line item before and after and confirm every cell is equal."],
-                     done_when="Every cell is equal before and after, and the table holds every case the chain held.",
+                            "Export the line item before and after and confirm every cell is equal; read Calculation Effort before and after."],
+                     done_when="Every cell is equal before and after, the table holds every case the chain held, and the measured effort is no worse.",
                      role=f"model builder, {m.name}", model=m.name, objects=[first], finding_ids=[x.id], strength=x.strength,
                      footprint_effort=x.footprint_effort, explorer=[mi, _li(first, m)[0], _li(first, m)[1] or None])
 
@@ -380,7 +381,11 @@ def why_not(c: Candidate) -> str:
     if c.kind == "change" and b > 1:
         return "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work"
     if c.kind == "investigation" and b > 0:
-        return "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet"
+        if c.key.startswith("hotspot-investigate:"):
+            return (f"this is an observation of where calculation time goes, not a change with a measured benefit; the five line items hold {_c(c.footprint_cells or 0)} cells "
+                    "(under 50M), so it is not worth someone's time before the actions above")
+        return (f"the module holds {_c(c.footprint_cells or 0)} cells" + (f" and {c.footprint_effort:.1f}% of its model's measured effort" if c.footprint_effort else "")
+                + ", below the 50M cells or 5% of effort at which a consumer check is worth someone's time before the actions above")
     return ""
 
 

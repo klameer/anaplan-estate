@@ -32,6 +32,11 @@ def test_initial_reading_path_is_short_and_actionable():
     worth = [a["worth"] for a in acts]
     assert worth == sorted(worth, reverse=True) and rep["plan"]["met_bar"] == sum(worth)     # met-the-bar first, then the rest, each with a reason
     assert all(a["why_not"] for a in acts if not a["worth"]) and all(not a["why_not"] for a in acts if a["worth"])
+    for a in acts:                                           # an exclusion reason never contradicts the card's own figures
+        if a["key"].startswith("hotspot-investigate:") and not a["worth"]:
+            assert "cells" in a["why_not"] and "5%" not in a["why_not"]
+        if "IF tests" in a["title"]:
+            assert "measure" in a["why"] and "quicker" not in a["why"] and "every branch for every cell" not in a["why"]
     groups = rep["plan"]["groups"]
     plan_html = h[h.index('<section id="plan"'):h.index('<section id="impact"')]
     assert plan_html.index('<table class="sum">') < plan_html.index('<li class="action') and f'{rep["plan"]["met_bar"]} of {rep["plan"]["considered"]}' in plan_html

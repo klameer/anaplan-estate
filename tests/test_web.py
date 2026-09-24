@@ -24,10 +24,22 @@ def _tmp_dirs():
     return set(p.name for p in pathlib.Path(web.tempfile.gettempdir()).glob("estate-*"))
 
 
-def test_index_explains_privacy_and_local_option():
+def test_index_leads_with_the_example_then_the_form():
     r = client.get("/")
-    assert r.status_code == 200 and "What happens to your files" in r.text and "run it locally" in r.text.lower() and 'action="/report"' in r.text
-    assert client.get("/health").text == "ok" and client.head("/health").status_code == 200
+    h = r.text
+    assert r.status_code == 200 and 'action="/report"' in h and client.get("/health").text == "ok" and client.head("/health").status_code == 200
+    assert h.index("Explore an example") < h.index("Review my estate") < h.index("What could changing this line item affect?") < h.index('id="review"' if 'id="review"' in h else "id=review") < h.index("deleted as soon as the report is sent")
+    assert h.count('class="row model"') == 1 and "Add another model" in h and "Or upload one zip" in h
+    assert "adds import and export relationships" in h and "adds module notes" in h
+    assert "/static/example-impact.png" in h and "anaplan-estate-web" in h and "localhost:8000" in h
+    assert "CodelessOps" in h[h.index("<body"):h.index("<body") + 400]        # the provider is visible at the top
+
+
+def test_example_change_impact_redirects_to_the_target_line_item():
+    web._example_cache.clear()
+    r = client.get("/example/change-impact", follow_redirects=False)
+    assert r.status_code == 302 and r.headers["location"].startswith("/example#impact=") and r.headers["location"].split("=")[1].isdigit()
+    assert client.get("/static/example-impact.png").status_code == 200
 
 
 def test_zip_upload_returns_the_report_and_cleans_up():

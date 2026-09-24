@@ -35,7 +35,7 @@ import asyncio, csv, html, io, json, multiprocessing, os, re, secrets, shutil, t
 from collections import deque
 from pathlib import Path
 from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse
+from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, RedirectResponse, Response
 from starlette.background import BackgroundTask
 from . import usage as usage_mod
 from .usage import usage
@@ -47,6 +47,10 @@ WORKERS = int(os.environ.get("ESTATE_WORKERS", str(min(4, os.cpu_count() or 1)))
 QUEUE_WAIT_S = float(os.environ.get("ESTATE_QUEUE_WAIT_S", "20"))
 RATE_PER_HOUR = int(os.environ.get("ESTATE_RATE_PER_HOUR", "30"))
 LINKS = {"feedback_url": os.environ.get("ESTATE_FEEDBACK_URL", ""), "source_url": os.environ.get("ESTATE_SOURCE_URL", ""), "help_url": os.environ.get("ESTATE_HELP_URL", "")}
+CONTACT_URL = os.environ.get("ESTATE_CONTACT_URL", "")          # a private way to reach the maintainer, for people who do not use GitHub
+BRAND_URL = os.environ.get("ESTATE_BRAND_URL", "https://codelessops.com")
+EXAMPLE_TARGET = ("CAL03 Opex", "Forecast Opex")               # the line item the example opens on: "what could changing this affect?"
+STATIC = Path(__file__).resolve().parent / "static"
 def _find_example() -> Path:
     """The fictional example estate: ESTATE_EXAMPLE_DIR, else the checkout the service runs from, else next to the source tree."""
     for c in (Path(os.environ.get("ESTATE_EXAMPLE_DIR", "")), Path.cwd() / "examples" / "caldergate-estate", Path(__file__).resolve().parents[2] / "examples" / "caldergate-estate"):
@@ -78,7 +82,14 @@ label{display:block;font-size:13px;margin:8px 0 2px;color:var(--muted)}input[typ
 @media (max-width:640px){.row{grid-template-columns:1fr}}
 button{font:inherit;font-size:14px;padding:8px 14px;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink);cursor:pointer}button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
 a{color:var(--accent)}code{font-family:Consolas,monospace;font-size:12.5px;background:var(--soft);padding:1px 4px;border-radius:3px}pre{background:var(--soft);padding:10px;border-radius:6px;overflow-x:auto;font-size:12.5px}
-footer{margin-top:36px;border-top:1px solid var(--rule);padding-top:10px;font-size:12.5px;color:var(--muted)}#busy{display:none}
+footer{margin-top:36px;border-top:1px solid var(--rule);padding-top:10px;font-size:12.5px;color:var(--muted)}
+.brand{font-family:Consolas,monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}.brand a{color:var(--accent);text-decoration:none;font-weight:600}
+.cta{margin:14px 0 22px}.btn{display:inline-block;font:inherit;font-size:14px;padding:8px 14px;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.cta .btn{font-size:15px;padding:10px 18px;margin-right:8px}
+section.demo{margin:8px 0 26px}section.demo img{display:block;width:100%;max-width:900px;border:1px solid var(--rule);border-radius:8px;margin:10px 0}
+#review{scroll-margin-top:12px}.req{color:var(--accent);font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-left:4px}.opt{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-left:4px}
+.hint{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}.row.missing input.li{outline:2px solid #C0392B;outline-offset:1px}
+.err{color:#C0392B;font-weight:600}details#zipalt{margin:10px 0}details#zipalt summary{cursor:pointer;font-weight:600;font-size:13.5px}
 """
 
 
@@ -91,48 +102,71 @@ def _page(body: str, title: str = "Anaplan estate review") -> str:
 
 
 def _footer() -> str:
-    bits = ["Free and open source. Maintained by CodelessOps; contributions welcome."]
+    bits = [f'Free and open source. Maintained by <a href="{_e(BRAND_URL)}">CodelessOps</a>; contributions welcome.']
     if LINKS["source_url"]:
         bits.append(f'<a href="{_e(LINKS["source_url"])}">Source</a>.')
     if LINKS["feedback_url"]:
-        bits.append(f'Something missing or not quite right? <a href="{_e(LINKS["feedback_url"])}">Suggest an improvement</a>.')
+        bits.append(f'Something missing or not quite right? <a href="{_e(LINKS["feedback_url"])}">Suggest an improvement</a> (public, needs a GitHub account)' + (f' or <a href="{_e(CONTACT_URL)}">get in touch privately</a>.' if CONTACT_URL else "."))
+    elif CONTACT_URL:
+        bits.append(f'Something missing or not quite right? <a href="{_e(CONTACT_URL)}">Get in touch</a>.')
     return "<footer><p>" + " ".join(bits) + "</p></footer>"
 
 
 def _local_instructions() -> str:
     src = LINKS["source_url"]
-    return f"""<h2 id=local>Rather not upload? Run it on your own machine</h2>
-<p>The same engine, the same report, nothing leaves your computer. You need Python 3.10 or newer.</p>
+    return f"""<section><h2 id=local>Rather not upload? Run this same page on your own machine</h2>
+<p>The same engine, the same page, nothing leaves your computer. You need Python 3.10 or newer.</p>
 <pre>pip install "https://github.com/klameer/anaplan-grammar/archive/refs/heads/master.zip"
-pip install "https://github.com/klameer/anaplan-estate/archive/refs/heads/master.zip"
-anaplan-estate my-estate-folder --html estate.html</pre>
-<p class=fnote>Put one folder per model inside <code>my-estate-folder</code>, each holding its <code>Line Items.csv</code> and, if you have them, <code>Actions.csv</code> and <code>Modules.csv</code>. Then open <code>estate.html</code>.{(f' Source: <a href="{_e(src)}">{_e(src)}</a>.' if src else '')}</p>"""
+pip install "anaplan-estate[web] @ https://github.com/klameer/anaplan-estate/archive/refs/heads/master.zip"
+anaplan-estate-web</pre>
+<p class=fnote>Then open <a href="http://localhost:8000">localhost:8000</a> and use it exactly as here. For a command-line run instead: <code>anaplan-estate my-estate-folder --html estate.html</code>, with one folder per model inside <code>my-estate-folder</code>.{(f' Source: <a href="{_e(src)}">{_e(src)}</a>.' if src else '')}</p></section>"""
 
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
     usage.visit(_client(request))
-    rows = "".join(f"""<div class=row><div><label>Model name</label><input type=text name=model_name placeholder="e.g. FP&amp;A"></div>
-<div><label>Line Items export (required)</label><input type=file name=line_items accept=".csv,text/csv"></div>
-<div><label>Actions export (optional)</label><input type=file name=actions accept=".csv,text/csv"></div>
-<div><label>Modules export (optional)</label><input type=file name=modules accept=".csv,text/csv"></div></div>""" for _ in range(3))
-    body = f"""<h1>Anaplan estate review</h1><p class=muted>Find what to improve in Anaplan. See what a change could affect.</p>
-<p>Upload the grid exports of one or more models and get a self-contained report: an action plan in plain language, a change-impact explorer, and every finding with its evidence. Nothing to install, no account.</p>
-<div class=notice><strong>What happens to your files.</strong> They are written to a temporary folder on the server for the few seconds the analysis takes, then deleted as soon as the report has been sent. Nothing is stored, and file names, model names and formulas are never logged. If that is still more than you want to share, <a href="#local">run it locally instead</a>.</div>
-<h2>How to export</h2><p>In each model, as a workspace administrator: <strong>Model Settings &gt; Modules &gt; Line Items tab &gt; Export</strong> (every column; this is the only required file), and optionally <strong>Model Settings &gt; Actions &gt; Export</strong> (imports, exports, processes, model feeds) and the <strong>Modules</strong> grid export (module notes). English column headers; comma, semicolon or tab delimited.</p>
-<form method="post" action="/report" enctype="multipart/form-data" class="card" onsubmit="document.getElementById('busy').style.display='block';this.querySelector('button.primary').disabled=true">
-<label>Report title (the estate name)</label><input type=text name=title placeholder="e.g. Acme Anaplan estate" maxlength=120>
-<h2 style="margin-top:14px">Option A: one zip of the whole estate</h2><p class=fnote>One folder per model inside the zip, each holding that model's <code>Line Items*.csv</code> and optionally <code>Actions*.csv</code> and <code>Modules*.csv</code>. Folder names become model names.</p>
-<input type=file name=estate_zip accept=".zip,application/zip">
-<h2 style="margin-top:18px">Option B: add models one by one</h2><div id=rows>{rows}</div>
-<p><button type=button onclick="var r=document.querySelector('#rows .row').cloneNode(true);r.querySelectorAll('input').forEach(function(i){{i.value=''}});document.getElementById('rows').appendChild(r)">Add another model</button></p>
-<p class=fnote>Limits: {MAX_MB:.0f} MB in total, {MAX_MODELS} models, about {TIMEOUT_S:.0f} seconds of analysis. Very large estates: run locally.</p>
-<p><button type=submit class=primary>Build the report</button> <a href="/example" style="margin-left:12px">or see the report for a fictional example estate</a></p>
-<p id=busy class=fnote>Building the report: a few seconds for a small model, up to a minute for a large estate.</p>
-</form>
+    row = """<div class="row model"><div><label>Model name</label><input type=text name=model_name placeholder="e.g. FP&amp;A"></div>
+<div><label>Line Items export <span class=req>required</span></label><input type=file name=line_items accept=".csv,text/csv" class=li></div>
+<div><label>Actions export <span class=opt>optional</span></label><input type=file name=actions accept=".csv,text/csv"><span class=hint>adds import and export relationships, processes and model feeds</span></div>
+<div><label>Modules export <span class=opt>optional</span></label><input type=file name=modules accept=".csv,text/csv"><span class=hint>adds module notes</span></div></div>"""
+    contact = (f'<p>Prefer a conversation? <a href="{_e(CONTACT_URL)}">Get in touch privately</a> if you would rather CodelessOps ran the report with you, or want help reading what it found.</p>' if CONTACT_URL else "")
+    body = f"""<p class=brand><a href="{_e(BRAND_URL)}">CodelessOps</a> &middot; Anaplan estate review</p>
+<h1>Find what to improve in Anaplan. See what a change could affect.</h1>
+<p class=muted>A free report from your models' standard exports: an action plan in plain language, a change-impact explorer, and every finding with its evidence. No account, nothing installed, nothing kept.</p>
+<p class=cta><a class="btn primary" href="/example/change-impact">Explore an example</a> <a class="btn" href="#review">Review my estate</a></p>
+<section class=demo><h2>What could changing this line item affect?</h2>
+<p>The example is a fictional four-model estate. Open it on <strong>Forecast Opex</strong> in the FP&amp;A model and the explorer shows the 27 line items across 7 modules that read it, how far away each is, the exports that would carry the change to other models, and one path for any of them. Then the action plan tells you what is worth doing first and why.</p>
+<a href="/example/change-impact"><img src="/static/example-impact.png" alt="The change-impact view for Forecast Opex in the example estate: 27 line items across 7 modules depend on it, up to 8 steps away" loading="lazy"></a>
+<p class=fnote>Everything in the example is <a href="/example">open to explore</a>: the action plan, the dependency diagram, the findings and their formulas.</p></section>
+<section id=review><h2>Review my estate</h2>
+<p>Export each model's <strong>Line Items</strong> grid (Model Settings &gt; Modules &gt; Line Items tab &gt; Export, every column). That is the only file needed; Actions and Modules exports add more when you have them.</p>
+<form method="post" action="/report" enctype="multipart/form-data" class="card" id=f novalidate>
+<div id=rows>{row}</div>
+<p><button type=button class=btn id=add>Add another model</button></p>
+<details id=zipalt><summary>Or upload one zip of the whole estate</summary><p class=fnote>One folder per model inside the zip, each holding that model's <code>Line Items*.csv</code> and optionally <code>Actions*.csv</code> and <code>Modules*.csv</code>. Folder names become model names.</p><input type=file name=estate_zip accept=".zip,application/zip" id=zip></details>
+<label>Report title (the estate name, optional)</label><input type=text name=title placeholder="e.g. Acme Anaplan estate" maxlength=120>
+<p class=err id=err role=alert hidden></p>
+<p><button type=submit class="btn primary">Build the report</button> <span class=fnote id=busy hidden>Building the report: a few seconds for a small model, up to a minute for a large estate.</span></p>
+<p class=fnote>Your files are written to a temporary folder for the seconds the analysis takes and deleted as soon as the report is sent. Nothing is stored; file names, model names and formulas are never logged. Limits: {MAX_MB:.0f} MB, {MAX_MODELS} models, about {TIMEOUT_S:.0f} seconds. If you would rather nothing left your machine, <a href="#local">run it locally</a>.</p>
+</form></section>
 {_local_instructions()}
+<section><h2>Then</h2><p>The report is complete on its own: every action carries its steps, its evidence and a completion check, and the explorer answers the dependency questions. {contact}</p></section>
 <p class=fnote>The findings and the change-impact explorer apply to any model the exports describe. The action cards match a small set of known patterns and will be few or absent on an estate whose problems lie elsewhere; the report says so. Rules and ranking were developed on a small number of estates and are a hypothesis to test, not a verdict.</p>
-{_footer()}"""
+{_footer()}
+<script>
+(function(){{
+ var rows=document.getElementById('rows'),tpl=rows.firstElementChild.cloneNode(true);
+ document.getElementById('add').addEventListener('click',function(){{var r=tpl.cloneNode(true);r.querySelectorAll('input').forEach(function(i){{i.value=''}});rows.appendChild(r);r.querySelector('input[type=text]').focus()}});
+ var f=document.getElementById('f'),err=document.getElementById('err');
+ f.addEventListener('submit',function(e){{
+   var zip=document.getElementById('zip'),hasZip=zip&&zip.files&&zip.files.length>0;
+   var lis=Array.prototype.slice.call(document.querySelectorAll('input.li')),hasLi=lis.some(function(i){{return i.files&&i.files.length>0}});
+   document.querySelectorAll('.row.model').forEach(function(r){{r.classList.remove('missing')}});
+   if(!hasZip&&!hasLi){{e.preventDefault();err.hidden=false;err.textContent='Add at least one Line Items export (or a zip of the estate) before building the report.';var r=document.querySelector('.row.model');r.classList.add('missing');r.querySelector('input.li').focus();return}}
+   err.hidden=true;document.getElementById('busy').hidden=false;f.querySelector('button[type=submit]').disabled=true;
+ }});
+}})();
+</script>"""
     return HTMLResponse(_page(body))
 
 
@@ -254,7 +288,7 @@ def _quick_check(path: Path) -> str | None:
 
 # ---------------------------------------------------------------- the analysis, in its own process
 
-def _worker(root: str, title: str, links: dict, out_path: str, err_path: str) -> None:
+def _worker(root: str, title: str, links: dict, out_path: str, err_path: str, target=None) -> None:
     try:
         from . import fleet, report, report_html
         er = fleet.run(root)
@@ -262,14 +296,17 @@ def _worker(root: str, title: str, links: dict, out_path: str, err_path: str) ->
         if title:
             rep["title"] = title
         Path(out_path).write_text(report_html.render(rep, csv_text=report.register_csv(rep)), encoding="utf-8")
-        Path(out_path).with_name("meta.json").write_text(json.dumps({"models": len(er.models), "line_items": rep["scope"]["line_items"]}), encoding="utf-8")
+        meta = {"models": len(er.models), "line_items": rep["scope"]["line_items"]}
+        if target:
+            meta["target_id"] = next((n[0] for n in rep["graph"]["nodes"] if (n[2], n[3]) == tuple(target)), None)
+        Path(out_path).with_name("meta.json").write_text(json.dumps(meta), encoding="utf-8")
     except BaseException as e:            # SystemExit from the loader included
         Path(err_path).write_text(f"{type(e).__name__}: {e}", encoding="utf-8")
 
 
-def _run_in_subprocess(root: Path, title: str, out_path: Path, err_path: Path) -> str | None:
+def _run_in_subprocess(root: Path, title: str, out_path: Path, err_path: Path, target=None) -> str | None:
     """Blocking; called from a thread. Returns an error message or None."""
-    p = _ctx.Process(target=_worker, args=(str(root), title, LINKS, str(out_path), str(err_path)), daemon=True)
+    p = _ctx.Process(target=_worker, args=(str(root), title, LINKS, str(out_path), str(err_path), target), daemon=True)
     p.start(); p.join(TIMEOUT_S)
     if p.is_alive():
         p.terminate(); p.join(5)
@@ -393,21 +430,51 @@ async def _build_report(request: Request, client: str):
             shutil.rmtree(tmp, ignore_errors=True)
 
 
+async def _ensure_example():
+    if "html" in _example_cache:
+        return None
+    if not EXAMPLE.is_dir():
+        return "The example estate is not installed on this server."
+    tmp = Path(tempfile.mkdtemp(prefix="estate-ex-"))
+    try:
+        out_path, err_path = tmp / "estate.html", tmp / "error.txt"
+        err = await asyncio.to_thread(_run_in_subprocess, EXAMPLE, "Caldergate Distribution Group: Anaplan estate (fictional example)", out_path, err_path, EXAMPLE_TARGET)
+        if err:
+            return err
+        _example_cache["html"] = out_path.read_text(encoding="utf-8")
+        try:
+            _example_cache["target_id"] = json.loads((tmp / "meta.json").read_text(encoding="utf-8")).get("target_id")
+        except (OSError, ValueError):
+            _example_cache["target_id"] = None
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    return None
+
+
 @app.get("/example", response_class=HTMLResponse)
 async def example():
-    if "html" not in _example_cache:
-        if not EXAMPLE.is_dir():
-            return _error(404, "The example estate is not installed on this server.")
-        tmp = Path(tempfile.mkdtemp(prefix="estate-ex-"))
-        try:
-            out_path, err_path = tmp / "estate.html", tmp / "error.txt"
-            err = await asyncio.to_thread(_run_in_subprocess, EXAMPLE, "Caldergate Distribution Group: Anaplan estate (fictional example)", out_path, err_path)
-            if err:
-                return _error(500, err)
-            _example_cache["html"] = out_path.read_text(encoding="utf-8")
-        finally:
-            shutil.rmtree(tmp, ignore_errors=True)
+    err = await _ensure_example()
+    if err:
+        return _error(500 if "not installed" not in err else 404, err)
     return HTMLResponse(_example_cache["html"], headers={"Cache-Control": "public, max-age=3600"})
+
+
+@app.get("/example/change-impact")
+async def example_change_impact():
+    """The example opened on one concrete question: what could changing Forecast Opex affect?"""
+    err = await _ensure_example()
+    if err:
+        return _error(500 if "not installed" not in err else 404, err)
+    tid = _example_cache.get("target_id")
+    return RedirectResponse(f"/example#impact={tid}" if tid is not None else "/example#impact", status_code=302)
+
+
+@app.get("/static/example-impact.png")
+def example_screenshot():
+    f = STATIC / "example-impact.png"
+    if not f.exists():
+        return Response(status_code=404)
+    return FileResponse(f, media_type="image/png", headers={"Cache-Control": "public, max-age=86400"})
 
 
 def main():
