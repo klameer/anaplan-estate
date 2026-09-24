@@ -34,7 +34,7 @@ Role: model builder, Caldergate FP&A. Evidence: [F5](#F5), [F16](#F16).
 
 ### 3. Find out whether anyone still uses the module 'CAL05 Opex OLD' in Caldergate FP&A
 
-**Why.** A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. Until someone checks, it can neither be removed nor trusted. In Caldergate FP&A, no formula outside 'CAL05 Opex OLD' reads any of its 14 line items and no export reads it; it occupies 70.2M cells and 50.8% of the model's measured calculation effort. That is what it takes up now, not a saving.
+**Why.** A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. Until someone checks, it can neither be removed nor trusted. In Caldergate FP&A, no formula outside the module 'CAL05 Opex OLD' reads any of its 14 line items and no export reads it; it occupies 70.2M cells and 50.8% of the model's measured calculation effort. That is what it takes up now, not a saving.
 
 **Steps.**
 

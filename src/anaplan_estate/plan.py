@@ -241,7 +241,7 @@ def _retire_candidate(er, fmap, mi, m) -> Candidate | None:
     return Candidate(key=f"retire:{m.name}", kind="investigation",
                      title=f"Find out whether anyone still uses the module '{s['module']}' in {m.name}",
                      why=(f"A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. "
-                          f"Until someone checks, it can neither be removed nor trusted. In {m.name}, no formula outside '{s['module']}' reads any of its {s['line_items']} line items"
+                          f"Until someone checks, it can neither be removed nor trusted. In {m.name}, no formula outside the module '{s['module']}' reads any of its {s['line_items']} line items"
                           + (" and no export reads it" if has_actions else "") + f"; it occupies {fp}. That is what it takes up now, not a saving."),
                      steps=steps, done_when="Every question above has a recorded answer and the owner has signed a keep-or-retire decision.",
                      role=f"model owner with a page builder, {m.name}", model=m.name, objects=[s["module"]], finding_ids=ids,
