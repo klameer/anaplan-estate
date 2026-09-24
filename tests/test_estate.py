@@ -25,7 +25,7 @@ def test_estate_run_edges_duplicates_actions():
     pl = next(m for m in er.models if m.name == "Caldergate Planning")
     assert pl.facts["actions"]["stale_count"] == 1                    # FX import last run 2024
     rc = pl.facts["referenced_by_check"]; assert rc["agreement"] is not None and rc["agree"] > 0   # fixture column is fictional; real exports score it
-    assert "A-SUBSIDIARY" in pl.facts["rules_skipped"]                # no Modules export
+    assert "H-NOTES" in pl.facts["rules_skipped"] and "A-SUBSIDIARY" not in pl.facts["rules_skipped"]   # no Modules export: notes skipped, module dimensions inferred
     d = er.to_dict(); assert len(d["models"]) == 2 and d["edges"][0]["basis"].startswith("inferred")
 
 

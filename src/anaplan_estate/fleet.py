@@ -37,7 +37,7 @@ from . import findings as findlist
 
 _FROM = re.compile(r"\bfrom\s+(.+?)(?:\s+(?:into|to)\b|\s+-\s|$)", re.I)
 _DIRNUM = re.compile(r"^\d+\s+")
-NEEDS_MODULES = ("A-SUBSIDIARY", "H-NOTES")   # rules that return nothing without the Modules export
+NEEDS_MODULES = ("H-NOTES",)   # rules that return nothing without the Modules export (module notes are only there)
 _DIRTAIL = re.compile(r"\s+(Model\s+)?Documentation$|\s+Model$", re.I)
 
 
@@ -261,7 +261,7 @@ def _coverage(spec: dict, m: Model, g: Graph, lr: LintResult, facts: dict) -> di
              "actions": Path(spec["actions"]).name if spec.get("actions") else None}
     skipped = []
     if not m.has_modules_export:
-        skipped += [(r, "needs the Modules export (module-level Applies To and Notes)") for r in NEEDS_MODULES]
+        skipped += [(r, "needs the Modules export (module notes are not in the Line Items export)") for r in NEEDS_MODULES]
     if not spec.get("actions"):
         skipped.append(("actions", "no Actions export: imports, exports, processes, run dates and model-to-model feeds not analysed"))
     if not facts["has_effort"]:
@@ -274,6 +274,10 @@ def _coverage(spec: dict, m: Model, g: Graph, lr: LintResult, facts: dict) -> di
     confirmed = ["formula references (parsed from Formula)", "Referenced By (Anaplan's column, used as the check)"]
     if m.has_modules_export:
         confirmed.append("module dimensions and notes (Modules export)")
+    else:
+        inferred_dims = sum(1 for mod in m.modules.values() if mod.dims_inferred)
+        if inferred_dims:
+            confirmed.append(f"module dimensions for {inferred_dims} modules, taken as the dimensions most of their line items share (no Modules export)")
     if spec.get("actions"):
         confirmed += ["import target modules and export source modules (Action column)", "process membership and most recent run per action"]
     inferred = ["model-to-model feeds, from the words after 'from' in import action names", "external source names, from the same words"] if spec.get("actions") else []

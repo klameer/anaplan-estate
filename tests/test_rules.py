@@ -222,7 +222,7 @@ def test_missing_actions_export_gives_accurate_coverage(tmp_path):
     cov = er.models[0].facts["coverage"]
     assert cov["files"]["actions"] is None and cov["snapshot_actions"] == ""
     skipped = dict(cov["rules_skipped"])
-    assert "actions" in skipped and "A-SUBSIDIARY" in skipped and "H-NOTES" in skipped
+    assert "actions" in skipped and "A-SUBSIDIARY" not in skipped and "H-NOTES" in skipped
     assert cov["inferred"] == [] and er.models[0].facts["actions"] is None
 
 

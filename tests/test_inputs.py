@@ -101,6 +101,18 @@ def test_large_estate_light_mode_drops_search_index_and_says_so():
     assert "Large estate" not in full and report_html.LIGHT_ABOVE == 25_000
 
 
+def test_subsidiary_views_found_without_modules_export(tmp_path):
+    import shutil
+    shutil.copytree(EX, tmp_path / "FPA")
+    for f in (tmp_path / "FPA").rglob("Modules*.csv"):
+        f.unlink()
+    m = fleet.run(tmp_path).models[0]
+    subs = [x for x in m.lint.findings if x.rule == "A-SUBSIDIARY"]
+    assert any(x.line_item == "Launched?" and x.module == "CAL01 Volumes" for x in subs) and all("inferred" in x.message for x in subs)
+    assert "A-SUBSIDIARY" not in [r for r, _ in m.facts["coverage"]["rules_skipped"]] and any(r == "H-NOTES" for r, _ in m.facts["coverage"]["rules_skipped"])
+    assert any("taken as the dimensions" in c for c in m.facts["coverage"]["confirmed"])
+
+
 def test_generality_note_is_on_the_plan():
     er = fleet.run(EX.parent)
     rep = report.build(er)

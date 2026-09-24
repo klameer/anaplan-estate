@@ -467,7 +467,7 @@ def _per_model(er, m, nid) -> list[Finding]:
             observed=f"{len(xs)} line items are dimensioned differently from their module and are read by formulas.",
             why="The line item's dimensions are not visible at module level, so a reader can misjudge what a reference returns, and the engine maps between the two dimension sets on every read. Anaplan's checklist: display and export only.",
             scope=f"{_pl(len(xs), 'line item')}; {sum(int(x.value or 0) for x in xs)} readers", benefit="not quantified from the exports", benefit_kind="none",
-            strength="confirmed", basis="Line item Applies To versus module Applies To (Modules export).", missing=[],
+            strength="confirmed" if model.has_modules_export else "partial", basis="Line item Applies To versus module Applies To" + (" (Modules export)." if model.has_modules_export else " (module dimensions taken as the majority of its line items; no Modules export)."), missing=[] if model.has_modules_export else ["the Modules export, to confirm the module dimensions"],
             next_step="For each, decide whether a module dimensioned as the line item is would make its readers clearer.",
             keep_design="A single small flag in an otherwise consistent module can be the least confusing option.", importance="low", complexity="medium", evidence=rows, rules=["A-SUBSIDIARY"])
 

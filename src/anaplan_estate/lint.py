@@ -184,15 +184,15 @@ def r_text(m: Model, g: Graph, t):
 @rule("A-SUBSIDIARY", "Subsidiary view on a calculation line item", "major", "ANAPLAN",
       "A line item whose Applies To differs from its module's is a subsidiary view. The concern: its dimensions are not visible at module level, so readers and the next builder can misjudge what a reference returns, and the engine maps between the two dimension sets on every read. Anaplan's checklist: display and export only.", planual=("2.01-06",))
 def r_subsidiary(m: Model, g: Graph, t):
-    if not m.has_modules_export:
-        return
+    """Module dimensions come from the Modules export when supplied; otherwise from the majority of the module's own
+    line items (model.impute_module_dimensions), and the finding says so."""
     for k, li in m.line_items.items():
         mod = m.modules.get(li.module)
         if li.is_header or not mod or not mod.applies_to or not li.applies_to:
             continue
         if set(li.applies_to) != set(mod.applies_to) and li.formula and g.rev.get(k):
             yield Finding("A-SUBSIDIARY", "major", li.module, li.name,
-                          f"applies to {', '.join(li.applies_to)} in a module on {', '.join(mod.applies_to)}; used by {len(g.rev[k])} formulas",
+                          f"applies to {', '.join(li.applies_to)} in a module on {', '.join(mod.applies_to)}" + (" (module dimensions inferred from its other line items)" if mod.dims_inferred else "") + f"; used by {len(g.rev[k])} formulas",
                           "Consider a module dimensioned as the line item is, if the readers would be clearer for it.", "ANAPLAN", str(len(g.rev[k])))
 
 

@@ -95,6 +95,7 @@ class Module:
     cell_count: int = 0
     line_items: list[str] = field(default_factory=list)
     notes: str = ""
+    dims_inferred: bool = False   # applies_to taken as the dimensions most of its line items share (no Modules export)
 
 
 @dataclass
@@ -270,9 +271,28 @@ def load_modules(path: str | Path, model: Model) -> None:
             model.dimensions.update(m.applies_to)
 
 
+def impute_module_dimensions(model: Model) -> None:
+    """Without a Modules export, take each module's dimensions as the Applies To that most of its line items share
+    (the export shows every line item's effective dimensions). Only when a clear majority agrees; a module split
+    down the middle keeps no inferred dimensions, so nothing in it is called a subsidiary view."""
+    from collections import Counter
+    for name, mod in model.modules.items():
+        if mod.applies_to:
+            continue
+        dims = Counter(tuple(sorted(model.line_items[(name, n)].applies_to)) for n in mod.line_items
+                       if (name, n) in model.line_items and not model.line_items[(name, n)].is_header and model.line_items[(name, n)].applies_to)
+        if not dims:
+            continue
+        top, cnt = dims.most_common(1)[0]
+        if cnt * 2 > sum(dims.values()):
+            mod.applies_to = top; mod.dims_inferred = True
+
+
 def load_model(line_items_csv: str | Path, modules_csv: str | Path | None = None, name: str = "") -> Model:
     model = Model(name=name)
     load_line_items(line_items_csv, model)
     if modules_csv:
         load_modules(modules_csv, model)
+    else:
+        impute_module_dimensions(model)
     return model
