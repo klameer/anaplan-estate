@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+- Hosted page at anaplan-estate.codelessops.com: the example first ("what
+  could changing Forecast Opex affect?"), two buttons under the headline,
+  a one-model form with the zip as the alternative, inline validation, the
+  local browser interface first in the local instructions, a private
+  contact route beside the public feedback route.
+- IF-chain advice framed as a refactoring candidate whose performance is
+  measured, not assumed; below-the-bar reasons state the figures actually
+  used.
+- Service: fail-fast upload checks, per-request subprocess with a bounded
+  pool, usage counted without personal data, example cached.
+
 ## 0.1.0 (2026-09-24)
 
 First release.
