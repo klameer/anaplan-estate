@@ -102,6 +102,9 @@ footer{margin-top:36px;border-top:1px solid var(--rule);padding-top:12px;font-si
 .legend{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 16px;margin:6px 0}
 .legend .k{display:inline-block;width:22px;border-top:2px solid var(--accent);vertical-align:middle;margin-right:4px}.legend .k.dash{border-top-style:dashed}.legend .k.dot{border-top-style:dotted}
 .path{font-family:var(--mono);font-size:12px;background:var(--soft);padding:6px 8px;border-radius:6px;margin:6px 0;word-break:break-word}
+.ixd-wrap{overflow-x:auto;background:var(--card);border:1px solid var(--rule);border-radius:8px;padding:6px}svg.ixd{display:block;min-width:600px;max-width:100%;height:auto;font-family:var(--sans)}
+svg.ixd rect.ixd-n{fill:var(--soft);stroke:var(--rule)}svg.ixd rect.ixd-sel{fill:var(--accent);stroke:var(--accent)}svg.ixd a:hover rect.ixd-n{stroke:var(--accent)}
+svg.ixd rect.ixd-more{fill:none;stroke:var(--rule);stroke-dasharray:3 3}svg.ixd text{fill:var(--ink)}svg.ixd rect.ixd-sel+text{fill:#fff}
 @media (max-width:640px){dl.fields{grid-template-columns:1fr}nav.views{position:static}.ix-col{flex-basis:200px}}
 @media print{
  :root{--bg:#fff;--ink:#111;--muted:#444;--rule:#bbb;--soft:#f2f2f2;--accent:#0E5E6F;--card:#fff;--notice:#f7f2e6}
@@ -225,6 +228,35 @@ JS = r"""
  function selectItem(id){var n=NI[id];if(!n)return false;cur={kind:'item',ids:[id],mi:n[1],module:n[2],name:n[3]};ixq.value=label(n);ixr.innerHTML='';render();return true}
  function selectModule(mi,module){var ids=N.filter(function(n){return n[1]===mi&&n[2]===module}).map(function(n){return n[0]});if(!ids.length)return false;cur={kind:'module',ids:ids,mi:mi,module:module,name:null};ixq.value=module;ixr.innerHTML='';render();return true}
  function actionsFor(mi,modset){var acts=G.actions[mi];if(acts===null||acts===undefined)return null;return acts.filter(function(a){return a.module&&modset[a.module]})}
+ function diagram(){var D=Math.min(parseInt(ixdepth.value)||2,3);var up=reach(cur.ids,'upstream',D),dn=reach(cur.ids,'downstream',D);
+   var CAP=14,ROW=22,COLW=230,GAP=40,cols=[];
+   function side(r,sign){for(var d=1;d<=D;d++){var ids=Object.keys(r.dist).filter(function(i){return r.dist[i]===d}).map(Number).sort(function(a,b){return NI[a][2].localeCompare(NI[b][2])||NI[a][3].localeCompare(NI[b][3])});
+     if(!ids.length)break;var shown=ids.slice(0,ids.length>CAP?CAP-1:CAP),extra=ids.length-shown.length;cols.push({sign:sign,d:d,ids:shown,extra:extra,all:ids,par:r.par})}}
+   side(up,-1);side(dn,1);
+   var left=cols.filter(function(c){return c.sign<0}).sort(function(a,b){return b.d-a.d}),right=cols.filter(function(c){return c.sign>0}).sort(function(a,b){return a.d-b.d});
+   var order=left.concat([{sign:0,d:0,ids:cur.ids.slice(0,1),extra:0,centre:true}]).concat(right);
+   var rows=Math.max.apply(null,order.map(function(c){return c.ids.length+(c.extra?1:0)}).concat([1]));
+   var H=rows*ROW+60,W=order.length*(COLW+GAP)+20,pos={};
+   order.forEach(function(c,ci){var n=c.ids.length+(c.extra?1:0),y0=30+(rows-n)*ROW/2;c.x=10+ci*(COLW+GAP);c.ids.forEach(function(i,k){pos[i]=[c.x,y0+k*ROW]});c.extraY=y0+c.ids.length*ROW;c.y0=y0});
+   var svg=['<svg class="ixd" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Dependency diagram">'];
+   svg.push('<defs><marker id="ixarr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor" opacity=".6"/></marker></defs>');
+   order.forEach(function(c){var lbl=c.centre?'selected':(c.sign<0?'depends on, distance '+c.d:'depended on by, distance '+c.d);svg.push('<text x="'+(c.x+COLW/2)+'" y="16" font-size="10.5" text-anchor="middle" fill="currentColor" opacity=".7">'+esc(lbl)+'</text>')});
+   function anchor(i,sideRight){var p=pos[i];if(!p)return null;return [p[0]+(sideRight?COLW:0),p[1]+ROW/2-2]}
+   function col(i){return order.filter(function(c){return c.ids.indexOf(i)>=0})[0]}
+   cols.forEach(function(c){var pool=c.ids.concat(c.extra?['x'+c.sign+c.d]:[]);
+     c.all.forEach(function(i){var p=c.par[i];var from=(c.ids.indexOf(i)>=0)?i:('x'+c.sign+c.d);var to=(p in pos)?p:(c.centre?null:null);
+       var pc=cols.filter(function(cc){return cc.sign===c.sign&&cc.d===c.d-1})[0];if(c.d===1)to=cur.ids[0];else if(pc){to=(pc.ids.indexOf(p)>=0)?p:('x'+pc.sign+pc.d)}
+       if(to===null||to===undefined)return;var key=from+'>'+to;if(c._seen&&c._seen[key])return;c._seen=c._seen||{};c._seen[key]=1;
+       var A=(typeof from==='string')?[c.x+(c.sign<0?COLW:0),c.extraY+ROW/2-2]:anchor(from,c.sign<0);
+       var B;if(typeof to==='string'){var tc=cols.filter(function(cc){return 'x'+cc.sign+cc.d===to})[0];B=[tc.x+(c.sign<0?0:COLW),tc.extraY+ROW/2-2]}else{B=anchor(to,c.sign>0)}
+       if(!A||!B)return;var a=c.sign<0?A:B,b=c.sign<0?B:A;  /* arrows point in the direction data flows: source -> reader */
+       svg.push('<path d="M'+a[0]+','+a[1]+' C'+(a[0]+GAP/2)+','+a[1]+' '+(b[0]-GAP/2)+','+b[1]+' '+b[0]+','+b[1]+'" fill="none" stroke="currentColor" stroke-width="1" opacity=".45" marker-end="url(#ixarr)"/>')})});
+   function node(x,y,text,title,cls,href){var t=text.length>34?text.slice(0,33)+'…':text;return '<a href="'+href+'"><rect x="'+x+'" y="'+y+'" width="'+COLW+'" height="'+(ROW-4)+'" rx="4" class="'+cls+'"/><text x="'+(x+6)+'" y="'+(y+13)+'" font-size="11" font-family="var(--mono)">'+esc(t)+'<title>'+esc(title)+'</title></text></a>'}
+   order.forEach(function(c){c.ids.forEach(function(i){var n=NI[i],p=pos[i];svg.push(node(p[0],p[1],c.centre?(cur.kind==='item'?n[3]:cur.module):n[3],label(n)+' ('+G.models[n[1]]+')',c.centre?'ixd-sel':'ixd-n','#impact='+(c.centre&&cur.kind==='module'?'m'+cur.mi+':'+encodeURIComponent(cur.module):i)))});
+     if(c.extra)svg.push('<rect x="'+c.x+'" y="'+c.extraY+'" width="'+COLW+'" height="'+(ROW-4)+'" rx="4" class="ixd-more"/><text x="'+(c.x+6)+'" y="'+(c.extraY+13)+'" font-size="11" fill="currentColor">+'+c.extra+' more (see table)</text>')});
+   svg.push('</svg>');
+   var note='<p class="fnote">Diagram: what the selection depends on to the left, what depends on it to the right, up to distance '+D+' each way'+(cols.some(function(c){return c.extra})?'; long columns are cut at '+CAP+' with the rest in the table':'')+'. Arrows follow the data: from a source to the line item that reads it. Click a box to re-centre. Line items only; actions and model feeds are listed above.</p>';
+   return '<h3>Diagram</h3>'+note+'<div class="ixd-wrap">'+svg.join('')+'</div>'}
  function render(){if(!cur)return;var dir=dirNow(),dv=ixdepth.value,depth=dv==='all'?null:parseInt(dv);
    var full=reach(cur.ids,dir,null),shown=depth===null?full:reach(cur.ids,dir,depth);
    var ids=Object.keys(full.dist).map(Number);var direct=0,indirect=0,cells=0,maxd=0,byd={};
@@ -258,7 +290,7 @@ JS = r"""
      g+=mods.slice(0,12).map(modCard).join('');
      if(mods.length>12)g+='<details class="ix-mod"><summary>'+(mods.length-12)+' more modules</summary>'+mods.slice(12).map(modCard).join('')+'</details>';
      g+='</div>'}
-   g+='</div>';ixg.innerHTML=g;
+   g+='</div>';ixg.innerHTML=diagram()+'<h3>By module and distance ('+(dir==='downstream'?'what depends on this':'what this depends on')+')</h3>'+g;
    /* table */
    var LIM=300,sorted=ids.slice().sort(function(a,b){return full.dist[a]-full.dist[b]||label(NI[a]).localeCompare(label(NI[b]))});
    function rowsHtml(lim){return sorted.slice(0,lim).map(function(i){var n=NI[i],p=full.par[i];return '<tr><td><a href="#impact='+i+'">'+esc(n[3])+'</a></td><td>line item</td><td>'+esc(G.models[n[1]])+' / '+esc(n[2])+'</td><td>'+full.dist[i]+'</td><td>'+(p!==undefined?(dir==='downstream'?'reads ':'read by ')+'<code>'+esc(label(NI[p]))+'</code> (formula reference)':'')+'</td><td>'+fmt(n[4])+'</td><td><button type="button" class="btn" data-path="'+i+'">path</button></td></tr>'}).join('')}
