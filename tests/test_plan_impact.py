@@ -33,6 +33,8 @@ def test_initial_reading_path_is_short_and_actionable():
     assert worth == sorted(worth, reverse=True) and rep["plan"]["met_bar"] == sum(worth)     # met-the-bar first, then the rest, each with a reason
     assert all(a["why_not"] for a in acts if not a["worth"]) and all(not a["why_not"] for a in acts if a["worth"])
     groups = rep["plan"]["groups"]
+    plan_html = h[h.index('<section id="plan"'):h.index('<section id="impact"')]
+    assert plan_html.index('<table class="sum">') < plan_html.index('<li class="action') and f'{rep["plan"]["met_bar"]} of {rep["plan"]["considered"]}' in plan_html
     assert sorted(k for g in groups for k in g["keys"]) == sorted(a["key"] for a in acts) and all(a["group"] for a in acts)
     assert groups[0]["keys"][0] == acts[0]["key"]                          # the group holding the top action comes first
     cards = re.findall(r'<li class="action(?: below)?" id="A\d+">', h)
@@ -44,7 +46,7 @@ def test_initial_reading_path_is_short_and_actionable():
         assert first_obj > 80                                          # a plain explanation comes before the first named object
     # no findings catalogue follows the plan on the initial path
     plan_html = h[h.index('<section id="plan"'):h.index('<section id="impact"')]
-    assert '<article class="f"' not in plan_html and "<table" not in plan_html
+    assert '<article class="f"' not in plan_html and plan_html.count("<table") == 1
     assert 'id="evidence" class="view" role="tabpanel" aria-label="Evidence" hidden' in h
     assert "Request route" not in h and "--service-url" not in h
 

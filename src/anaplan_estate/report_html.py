@@ -57,6 +57,7 @@ li.action dl{margin:0}li.action dt{font-weight:600;font-size:12.5px;text-transfo
 li.action ol{margin:2px 0 0;padding-left:20px}li.action ol li{margin:2px 0}
 li.action .notice{background:var(--notice);border-radius:6px;padding:6px 10px;font-size:13px;margin:8px 0 0}
 li.action.below{border-left-color:var(--rule);opacity:.92}li.action .notice.below{background:var(--soft)}h3.group-h{margin-top:22px;font-size:17px}
+.summary{margin:4px 0 14px}table.sum{font-size:14px}table.sum td,table.sum th{padding:5px 8px}table.sum tr.tot td{font-weight:600;border-top:2px solid var(--rule)}
 li.action .links{font-size:12.5px;margin:8px 0 0}li.action .links a{margin-right:10px}
 .badge{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid var(--rule);color:var(--muted);margin-right:4px;white-space:nowrap}
 .badge.imp-high{border-color:var(--high);color:var(--high)}.badge.imp-medium{border-color:var(--med);color:var(--med)}.badge.imp-low{border-color:var(--low);color:var(--low)}
@@ -582,9 +583,13 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
     if pl["actions"]:
         amap = {a["key"]: a for a in pl["actions"]}
         num = {a["key"]: i for i, a in enumerate(pl["actions"], 1)}
+        rows = "".join(f'<tr><td><a href="#group-{g["key"]}">{_e(g["title"])}</a></td><td>{g["met_bar"]} of {len(g["keys"])}</td>'
+                       f'<td>{_e(", ".join(sorted({amap[k]["model"] for k in g["keys"] if amap[k]["worth"]})) or "none")}</td></tr>' for g in pl["groups"])
+        out.append(f'<div class="summary"><table class="sum"><thead><tr><th>Group</th><th>Met the bar</th><th>Models with an action worth doing</th></tr></thead><tbody>{rows}'
+                   f'<tr class="tot"><td>All candidates</td><td>{pl["met_bar"]} of {pl["considered"]}</td><td></td></tr></tbody></table></div>')
         for g in pl["groups"]:
             items = [amap[k] for k in g["keys"]]
-            out.append(f'<h3 class="group-h">{_e(g["title"])} <span class="muted">({g["met_bar"]} of {len(items)} met the bar)</span></h3><p class="fnote">{_e(g["blurb"])}</p>'
+            out.append(f'<h3 class="group-h" id="group-{g["key"]}">{_e(g["title"])} <span class="muted">({g["met_bar"]} of {len(items)} met the bar)</span></h3><p class="fnote">{_e(g["blurb"])}</p>'
                        '<ol class="actions">' + "".join(_action_card(num[a["key"]], a, rep, nidx, midx) for a in items) + "</ol>")
     else:
         out.append(f'<p><strong>{_e(pl["none"]["message"])}</strong></p><p>Next data check: {_e(pl["none"]["next_check"])}.</p>')

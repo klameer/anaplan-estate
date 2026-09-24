@@ -236,6 +236,9 @@ def render_markdown(er) -> str:
     pl = rep["plan"]
     if pl["actions"]:
       amap = {a["key"]: a for a in pl["actions"]}; num = {a["key"]: i for i, a in enumerate(pl["actions"], 1)}
+      out += ["| Group | Met the bar | Models with an action worth doing |", "|---|---|---|"]
+      out += [f"| {g['title']} | {g['met_bar']} of {len(g['keys'])} | {', '.join(sorted({amap[k]['model'] for k in g['keys'] if amap[k]['worth']})) or 'none'} |" for g in pl["groups"]]
+      out += [f"| All candidates | {pl['met_bar']} of {pl['considered']} | |", ""]
       for g in pl["groups"]:
         out += [f"### {g['title']} ({g['met_bar']} of {len(g['keys'])} met the bar)", "", g["blurb"], ""]
         for k in g["keys"]:

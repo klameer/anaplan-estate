@@ -4,6 +4,14 @@ Generated with CodelessOps Estate Review. 4 Anaplan models, 426 line items, 145M
 
 ## Action plan
 
+| Group | Met the bar | Models with an action worth doing |
+|---|---|---|
+| Make heavy calculations cheaper | 2 of 2 | Caldergate FP&A |
+| Check whether modules are still used | 1 of 4 | Caldergate FP&A |
+| Look at where the calculation time goes | 0 of 2 | none |
+| Remove duplicated calculations | 0 of 2 | none |
+| All candidates | 3 of 10 | |
+
 ### Make heavy calculations cheaper (2 of 2 met the bar)
 
 Formulas that take a large share of a model's measured calculation effort and match a pattern with a known, safer alternative.
