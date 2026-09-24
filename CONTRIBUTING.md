@@ -14,7 +14,7 @@ matters; you do not need to attach anything to be heard.
 ## Running it
 
 ```bash
-pip install "https://github.com/klameer/anaplan-grammar/archive/refs/heads/main.zip"
+pip install "https://github.com/klameer/anaplan-grammar/archive/refs/heads/master.zip"
 pip install -e ".[web,dev]"
 python -m pytest -q tests
 anaplan-estate examples/caldergate-estate --html estate.html

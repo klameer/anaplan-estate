@@ -11,8 +11,8 @@ Find what to improve in Anaplan. See what a change could affect.
 Three commands, one HTML file, nothing leaves your machine:
 
 ```bash
-pip install "https://github.com/klameer/anaplan-grammar/archive/refs/heads/main.zip"
-pip install "https://github.com/klameer/anaplan-estate/archive/refs/heads/main.zip"
+pip install "https://github.com/klameer/anaplan-grammar/archive/refs/heads/master.zip"
+pip install "https://github.com/klameer/anaplan-estate/archive/refs/heads/master.zip"
 anaplan-estate my-estate-folder --html estate.html
 ```
 
@@ -56,8 +56,8 @@ Two ways to get the report, same engine, same output:
 - **Locally**, if you would rather nothing leaves your machine:
 
 ```bash
-pip install "https://github.com/klameer/anaplan-grammar/archive/refs/heads/main.zip"
-pip install "https://github.com/klameer/anaplan-estate/archive/refs/heads/main.zip"
+pip install "https://github.com/klameer/anaplan-grammar/archive/refs/heads/master.zip"
+pip install "https://github.com/klameer/anaplan-estate/archive/refs/heads/master.zip"
 anaplan-estate my-estate-folder --html estate.html
 ```
 

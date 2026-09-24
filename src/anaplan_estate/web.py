@@ -95,8 +95,8 @@ def _local_instructions() -> str:
     src = LINKS["source_url"]
     return f"""<h2 id=local>Rather not upload? Run it on your own machine</h2>
 <p>The same engine, the same report, nothing leaves your computer. You need Python 3.10 or newer.</p>
-<pre>pip install "https://github.com/klameer/anaplan-grammar/archive/refs/heads/main.zip"
-pip install "https://github.com/klameer/anaplan-estate/archive/refs/heads/main.zip"
+<pre>pip install "https://github.com/klameer/anaplan-grammar/archive/refs/heads/master.zip"
+pip install "https://github.com/klameer/anaplan-estate/archive/refs/heads/master.zip"
 anaplan-estate my-estate-folder --html estate.html</pre>
 <p class=fnote>Put one folder per model inside <code>my-estate-folder</code>, each holding its <code>Line Items.csv</code> and, if you have them, <code>Actions.csv</code> and <code>Modules.csv</code>. Then open <code>estate.html</code>.{(f' Source: <a href="{_e(src)}">{_e(src)}</a>.' if src else '')}</p>"""
 
