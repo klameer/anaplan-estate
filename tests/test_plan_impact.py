@@ -28,7 +28,10 @@ def test_initial_reading_path_is_short_and_actionable():
     er, rep, h = _rep()
     opening = h[h.index('<header class="top">'):h.index('<section id="impact"')]
     acts = rep["plan"]["actions"]
-    assert len(acts) >= 1 and all(plan.worth_doing(plan.Candidate(**{k: v for k, v in a.items() if k not in ("bounded", "footprint_measured")})) or a["key"] in {d for b in acts for d in b["depends_on"]} for a in acts)
+    assert len(acts) == rep["plan"]["considered"] >= 1
+    worth = [a["worth"] for a in acts]
+    assert worth == sorted(worth, reverse=True) and rep["plan"]["met_bar"] == sum(worth)     # met-the-bar first, then the rest, each with a reason
+    assert all(a["why_not"] for a in acts if not a["worth"]) and all(not a["why_not"] for a in acts if a["worth"])
     cards = re.findall(r'<li class="action" id="A\d+">', h)
     assert len(cards) == len(acts)
     for a in acts:
@@ -82,7 +85,7 @@ def test_select_can_return_fewer_than_three_and_explains_next_check(tmp_path):
         "B,Mod,\"{\"\"dataType\"\":\"\"NUMBER\"\"}\",A * 2,L,Month,All,SUM,100,\n", encoding="utf-8")
     er = fleet.run(tmp_path)
     sel = select(er)
-    assert len(sel["actions"]) <= 1
+    assert sel["met_bar"] <= 1
     if not sel["actions"]:
         assert sel["none"]["next_check"] and "Calculation Effort" in sel["none"]["next_check"]
 

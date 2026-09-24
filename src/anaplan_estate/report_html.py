@@ -49,13 +49,14 @@ h4{font-size:14px;font-weight:600;margin:12px 0 4px}
 p{max-width:78ch;margin:6px 0}
 .muted{color:var(--muted)}.fnote{font-size:12.5px;color:var(--muted)}
 .view{margin-bottom:24px}
-ol.actions{list-style:none;padding:0;margin:0;counter-reset:a}
-li.action{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--accent);border-radius:8px;padding:12px 16px;margin:10px 0;counter-increment:a}
-li.action h2{margin:0 0 4px;font-size:17px}li.action h2:before{content:counter(a) ". ";color:var(--muted)}
+ol.actions{list-style:none;padding:0;margin:0}
+li.action{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--accent);border-radius:8px;padding:12px 16px;margin:10px 0}
+li.action h2{margin:0 0 4px;font-size:17px}li.action h2 .n{color:var(--muted)}
 li.action .role{margin:0 0 8px}li.action .model{display:inline-block;background:var(--accent);color:#fff;font-size:12.5px;font-weight:600;padding:2px 9px;border-radius:999px}
 li.action dl{margin:0}li.action dt{font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:8px}li.action dd{margin:2px 0 0}
 li.action ol{margin:2px 0 0;padding-left:20px}li.action ol li{margin:2px 0}
 li.action .notice{background:var(--notice);border-radius:6px;padding:6px 10px;font-size:13px;margin:8px 0 0}
+li.action.below{border-left-color:var(--rule);opacity:.92}li.action .notice.below{background:var(--soft)}h3.below-h{margin-top:22px}
 li.action .links{font-size:12.5px;margin:8px 0 0}li.action .links a{margin-right:10px}
 .badge{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid var(--rule);color:var(--muted);margin-right:4px;white-space:nowrap}
 .badge.imp-high{border-color:var(--high);color:var(--high)}.badge.imp-medium{border-color:var(--med);color:var(--med)}.badge.imp-low{border-color:var(--low);color:var(--low)}
@@ -547,7 +548,9 @@ def _action_card(i: int, a: dict, rep: dict, nidx: dict, midx: dict) -> str:
         nums = [f'<a href="#A{keys.index(k) + 1}">action {keys.index(k) + 1}</a>' for k in a["depends_on"] if k in keys]
         depends = f' &middot; After: {", ".join(nums)}' if nums else ""
     notices = "".join(f'<p class="notice">{_e(n)}</p>' for n in a["notices"])
-    return (f'<li class="action" id="A{i}"><h2>{_e(a["title"])}</h2><p class="role"><span class="model">{_e(a["model"])}</span></p>'
+    if not a.get("worth", True):
+        notices = f'<p class="notice below">Below the bar: {_e(a["why_not"])}.</p>' + notices
+    return (f'<li class="action{"" if a.get("worth", True) else " below"}" id="A{i}"><h2><span class="n">{i}.</span> {_e(a["title"])}</h2><p class="role"><span class="model">{_e(a["model"])}</span></p>'
             f'<dl><dt>Why</dt><dd>{_e(a["why"])}</dd><dt>Steps</dt><dd><ol>{"".join(f"<li>{_e(s)}</li>" for s in a["steps"])}</ol></dd><dt>Done when</dt><dd>{_e(a["done_when"])}</dd></dl>'
             f'{notices}<p class="links">Evidence: {ev or "none"}{(" &middot; " + dep) if dep else ""}{depends}</p></li>')
 
@@ -577,10 +580,14 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
     pl = rep["plan"]
     out.append('<section id="plan" class="view" role="tabpanel" aria-label="Action plan">')
     if pl["actions"]:
-        out.append('<ol class="actions">' + "".join(_action_card(i, a, rep, nidx, midx) for i, a in enumerate(pl["actions"], 1)) + "</ol>")
+        above = [a for a in pl["actions"] if a.get("worth", True)]; below = [a for a in pl["actions"] if not a.get("worth", True)]
+        out.append('<ol class="actions">' + "".join(_action_card(i, a, rep, nidx, midx) for i, a in enumerate(above, 1)) + "</ol>")
+        if below:
+            out.append(f'<h3 class="below-h">Also considered, below the bar ({len(below)})</h3><p class="fnote">Kept visible so nothing is hidden; each says why it was placed here. <a href="#ranking">What the bar is</a>.</p>'
+                       '<ol class="actions" start="' + str(len(above) + 1) + '">' + "".join(_action_card(len(above) + i, a, rep, nidx, midx) for i, a in enumerate(below, 1)) + "</ol>")
     else:
         out.append(f'<p><strong>{_e(pl["none"]["message"])}</strong></p><p>Next data check: {_e(pl["none"]["next_check"])}.</p>')
-    out.append(f'<p class="fnote">{len(pl["actions"])} of {pl["considered"]} candidates met the bar for being worth doing; the order is a hypothesis, not a verdict. '
+    out.append(f'<p class="fnote">All {pl["considered"]} candidates are shown; {pl["met_bar"]} met the bar for being worth doing. The order is a hypothesis, not a verdict. '
                '<a href="#ranking">How chosen</a> &middot; <a href="#coverage">Coverage</a> &middot; <a href="#catalogue">All findings</a></p></section>')
     # ---------------- Change impact
     out.append('<section id="impact" class="view" role="tabpanel" aria-label="Change impact" hidden><h2>Change impact</h2>'
@@ -621,7 +628,7 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
             out.append(f'<details><summary>{fid}. {_e(fmap[fid]["title"])}</summary>' + _finding(fmap[fid], rep, nidx, midx) + "</details>")
     out.append("</div>")
     # ranking
-    out.append(f'<h3 id="ranking">How the actions were chosen</h3><p>{pl["considered"]} candidate{"s were" if pl["considered"] != 1 else " was"} built from the findings; {len(pl["actions"])} met the bar for being worth doing. The number is not fixed.</p>'
+    out.append(f'<h3 id="ranking">How the actions were chosen</h3><p>{pl["considered"]} candidate{"s were" if pl["considered"] != 1 else " was"} built from the findings and all are shown; {pl["met_bar"]} met the bar for being worth doing, the rest are listed after them with the reason. The number is not fixed.</p>'
                '<h4>What counts as worth doing</h4><ul>' + "".join(f"<li>{_e(r)}</li>" for r in pl["worth"]) + "</ul><h4>Order</h4><ul>" + "".join(f"<li>{_e(r)}</li>" for r in pl["ranking"]) + "</ul>")
     if pl["candidates"]:
         out.append('<details><summary>All candidates in rank order (' + str(len(pl["candidates"])) + ')</summary><div class="wrap"><table><thead><tr><th>#</th><th>Candidate</th><th>Evidence</th><th>Kind</th><th>Scope</th><th>Footprint</th><th>Depends on</th></tr></thead><tbody>'

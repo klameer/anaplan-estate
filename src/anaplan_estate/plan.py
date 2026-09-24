@@ -56,6 +56,8 @@ class Candidate:
     depends_on: list[str] = field(default_factory=list)   # keys of candidates to complete first
     explorer: list | None = None                          # [model_index, module, name|None] for the Change impact link
     rank_reason: str = ""
+    worth: bool = True                                    # met the bar (WORTH); the rest are shown after it, labelled
+    why_not: str = ""                                     # why it fell below the bar
 
     @property
     def bounded(self) -> bool:
@@ -334,28 +336,46 @@ WORTH = [
 
 
 def worth_doing(c: Candidate) -> bool:
-    if c.strength == "inferred" or not c.bounded:
-        return False
+    return not why_not(c)
+
+
+def why_not(c: Candidate) -> str:
+    """Empty when the candidate meets the bar; otherwise the reason, in plain words."""
+    if c.strength == "inferred":
+        return "the evidence is only inferred from names, so this is a hypothesis to test rather than something to act on"
+    if not c.bounded:
+        return f"the scope is open-ended ({len(c.objects)} objects), not a named object or small group"
     b = band(c)
-    return b <= 1 if c.kind == "change" else b == 0
+    if c.kind == "change" and b > 1:
+        return "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work"
+    if c.kind == "investigation" and b > 0:
+        return "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet"
+    return ""
 
 
 def select(er, limit: int | None = None) -> dict:
-    """Every candidate that is worth doing, in rank order; `limit` caps the count only when given.
-    A prerequisite is placed before the action that needs it."""
+    """Every candidate, in rank order: those that meet the bar first (a prerequisite placed before the action that
+    needs it), then the rest labelled with why they fell below it. `limit` caps the count only when given."""
     ranked = candidates(er)
     by_key = {c.key: c for c in ranked}
+    for c in ranked:
+        c.why_not = why_not(c); c.worth = not c.why_not
+    for c in ranked:                                   # a prerequisite of an action above the bar is above the bar too
+        if c.worth:
+            for d in c.depends_on:
+                if d in by_key and not by_key[d].worth:
+                    by_key[d].worth = True; by_key[d].why_not = ""
     chosen: list[Candidate] = []
     for c in ranked:
-        if limit is not None and len(chosen) >= limit:
-            break
-        if not worth_doing(c):
+        if not c.worth:
             continue
         for d in [by_key[d] for d in c.depends_on if d in by_key and by_key[d] not in chosen]:
-            if limit is None or len(chosen) < limit:
-                chosen.append(d)
-        if c not in chosen and (limit is None or len(chosen) < limit) and all(by_key[d] in chosen for d in c.depends_on if d in by_key):
+            chosen.append(d)
+        if c not in chosen:
             chosen.append(c)
+    chosen += [c for c in ranked if not c.worth]
+    if limit is not None:
+        chosen = chosen[:limit]
     for i, c in enumerate(chosen, 1):
         c.rank_reason = f"#{i}: " + c.rank_reason
     nothing = None
@@ -369,4 +389,4 @@ def select(er, limit: int | None = None) -> dict:
             checks.append("no finding met the bar for a bounded, evidenced action worth doing; the catalogue under Evidence lists everything that was observed")
         nothing = {"message": "No action is suggested from these exports.", "next_check": "; ".join(checks)}
     return {"actions": [c.to_dict() for c in chosen], "candidates": [c.to_dict() for c in ranked], "ranking": RANKING, "worth": WORTH, "limit": limit,
-            "considered": len(ranked), "none": nothing}
+            "considered": len(ranked), "met_bar": sum(1 for c in chosen if c.worth), "none": nothing}

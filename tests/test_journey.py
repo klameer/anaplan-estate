@@ -26,7 +26,7 @@ def _article(h, fid):
 def test_opening_is_a_plan_of_actions_worth_doing():
     er, rep, h = _rep()
     acts = rep["plan"]["actions"]
-    assert len(acts) >= 1 and len({a["key"] for a in acts}) == len(acts) and rep["plan"]["considered"] >= len(acts)
+    assert len(acts) >= 1 and len({a["key"] for a in acts}) == len(acts) and rep["plan"]["considered"] == len(acts) and rep["plan"]["met_bar"] >= 1
     for a in acts:
         assert a["title"] and a["why"] and a["steps"] and a["done_when"] and a["role"] and a["finding_ids"]
     opening = h[h.index('<header class="top">'):h.index('<section id="impact"')]

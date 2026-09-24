@@ -239,7 +239,7 @@ def render_markdown(er) -> str:
             out += [f"### {i}. {a['title']}", "", f"**Why.** {a['why']}", "", "**Steps.**", ""] + [f"{j}. {st}" for j, st in enumerate(a["steps"], 1)] + ["",
                     f"**Done when.** {a['done_when']}", "", f"Role: {a['role']}. Evidence: {', '.join(f'[{x}](#{x})' for x in a['finding_ids']) or 'none'}."
                     + (f" Depends on: {', '.join(a['depends_on'])}." if a["depends_on"] else "")]
-            out += [f"- Note: {n}" for n in a["notices"]] + [""]
+            out += ([f"- Below the bar: {a['why_not']}."] if not a.get("worth", True) else []) + [f"- Note: {n}" for n in a["notices"]] + [""]
     else:
         out += [pl["none"]["message"], "", f"Next data check: {pl['none']['next_check']}.", ""]
     out += ["Suggested starting points from the supplied exports; the ordering is a hypothesis (see Evidence: how the actions were chosen).", ""]
@@ -255,7 +255,7 @@ def render_markdown(er) -> str:
         for e in rep["map"]["edges"]:
             out.append(f"  {ids[e['from']]} -.->|{e['actions']} inferred| {ids[e['to']]}")
         out += ["```", ""]
-    out += ["## How the actions were chosen", "", f"{pl['considered']} candidates were built from the findings; {len(pl['actions'])} met the bar for being worth doing. The number is not fixed.", "",
+    out += ["## How the actions were chosen", "", f"{pl['considered']} candidates were built from the findings and all are shown; {pl['met_bar']} met the bar for being worth doing. The number is not fixed.", "",
             "**What counts as worth doing**", ""] + [f"- {r}" for r in pl["worth"]] + ["", "**Order**", ""] + [f"- {r}" for r in pl["ranking"]] + [""]
     if pl["candidates"]:
         out += ["| Rank | Candidate | Evidence | Kind | Scope | Footprint |", "|---|---|---|---|---|---|"]

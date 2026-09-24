@@ -59,6 +59,8 @@
      "Forecast Opex"
     ],
     "rank_reason": "#1: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 16.0% of its model's effort",
+    "worth": true,
+    "why_not": "",
     "bounded": true,
     "footprint_measured": true
    },
@@ -93,6 +95,8 @@
      "Journal Cost Centre"
     ],
     "rank_reason": "#2: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 6.2% of its model's effort",
+    "worth": true,
+    "why_not": "",
     "bounded": true,
     "footprint_measured": true
    },
@@ -126,6 +130,267 @@
      null
     ],
     "rank_reason": "#3: evidence partial; bounded scope; materiality high; investigation; 70.2M cells; 50.8% of its model's effort",
+    "worth": true,
+    "why_not": "",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "hotspot-investigate:Caldergate Data Hub",
+    "kind": "investigation",
+    "title": "Look at the five heaviest calculations in Caldergate Data Hub",
+    "why": "Anaplan records how much of a model's calculation effort each line item takes. In Caldergate Data Hub, ten line items take 99.9% of it, led by the line item 'Loaded?' in the module 'DAT01 GL Transactions' at 88.3%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: heavy calculation is often simply the model doing its main job.",
+    "steps": [
+     "With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.",
+     "For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).",
+     "Try at most one change in a development copy, reading Calculation Effort before and after."
+    ],
+    "done_when": "Each of the five has a recorded decision (keep, or one named change to trial) agreed with the owner.",
+    "role": "model builder, Caldergate Data Hub",
+    "model": "Caldergate Data Hub",
+    "objects": [
+     "DAT01 GL Transactions.Loaded?",
+     "CAL01 Volume Summary.Units",
+     "CAL01 Volume Summary.Revenue",
+     "CAL01 Volume Summary.Orders",
+     "DAT05 CRM Pipeline.Weighted Pipeline"
+    ],
+    "finding_ids": [
+     "F3"
+    ],
+    "strength": "confirmed",
+    "footprint_cells": 1298952,
+    "footprint_effort": null,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     0,
+     "DAT01 GL Transactions",
+     "Loaded?"
+    ],
+    "rank_reason": "#4: evidence confirmed; bounded scope; materiality medium; investigation; 1.3M cells",
+    "worth": false,
+    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "retire:Board Reporting",
+    "kind": "investigation",
+    "title": "Find out whether anyone still uses the module 'SYS01 Time' in Board Reporting",
+    "why": "A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. Until someone checks, it can neither be removed nor trusted. In Board Reporting, no formula outside the module 'SYS01 Time' reads any of its 2 line items and no export reads it; it occupies 72 cells and 2.8% of the model's measured calculation effort. That is what it takes up now, not a saving.",
+    "steps": [
+     "Ask the page builder whether any page, dashboard, saved view or line item subset still uses 'SYS01 Time'.",
+     "Ask whether another model imports from a saved view on it.",
+     "Record the decision: keep, or retire. If retire: make the change in a development copy first, keep the original for comparison, check the owner's key outputs over a full cycle, then sign off."
+    ],
+    "done_when": "Every question above has a recorded answer and the owner has signed a keep-or-retire decision.",
+    "role": "model owner with a page builder, Board Reporting",
+    "model": "Board Reporting",
+    "objects": [
+     "SYS01 Time"
+    ],
+    "finding_ids": [
+     "F8"
+    ],
+    "strength": "partial",
+    "footprint_cells": 72,
+    "footprint_effort": 2.8,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     3,
+     "SYS01 Time",
+     null
+    ],
+    "rank_reason": "#5: evidence partial; bounded scope; materiality medium; investigation; 72 cells; 2.8% of its model's effort",
+    "worth": false,
+    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "duplicate:Caldergate FP&A",
+    "kind": "change",
+    "title": "Remove 1 duplicate copy of one calculation in Caldergate FP&A",
+    "why": "The same calculation exists more than once under different names, with the same formula and the same dimensions. Two copies can drift apart when one is changed, and each copy takes space and calculation time. In Caldergate FP&A, the line item 'Depreciation' in the module 'OUT01 Management Pack' is the same calculation as the line item 'Depreciation' in the module 'CAL07 P&L by Cost Centre'; the copies occupy 19.2K cells and 0 other formulas read them.",
+    "steps": [
+     "Ask the owner and page builder whether any copy exists for a reason: a page that shows it under that name, an export column, or different access rights.",
+     "In a development copy, point the 0 formulas that read the copies at the line item 'Depreciation' in the module 'CAL07 P&L by Cost Centre' instead; keep the copies until the check below passes.",
+     "Compare the outputs that depend on them cell for cell, get sign-off, then remove the copies."
+    ],
+    "done_when": "Everything that read the copies gives the same values from the kept line item, and the copies are gone with no blank page or missing export column.",
+    "role": "model builder, Caldergate FP&A",
+    "model": "Caldergate FP&A",
+    "objects": [
+     "CAL07 P&L by Cost Centre.Depreciation",
+     "OUT01 Management Pack.Depreciation"
+    ],
+    "finding_ids": [
+     "F11"
+    ],
+    "strength": "confirmed",
+    "footprint_cells": 19152,
+    "footprint_effort": null,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     1,
+     "CAL07 P&L by Cost Centre",
+     "Depreciation"
+    ],
+    "rank_reason": "#6: evidence confirmed; bounded scope; materiality low; change; 19.2K cells",
+    "worth": false,
+    "why_not": "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "duplicate:Workforce Planning",
+    "kind": "change",
+    "title": "Remove 1 duplicate copy of one calculation in Workforce Planning",
+    "why": "The same calculation exists more than once under different names, with the same formula and the same dimensions. Two copies can drift apart when one is changed, and each copy takes space and calculation time. In Workforce Planning, the line item 'Headcount' in the module 'zz Archive - 2021 Cost' is the same calculation as the line item 'Headcount' in the module 'Calcs - Attrition'; the copies occupy 4.5K cells and 1 other formulas read them.",
+    "steps": [
+     "Ask the owner and page builder whether any copy exists for a reason: a page that shows it under that name, an export column, or different access rights.",
+     "In a development copy, point the 1 formulas that read the copies at the line item 'Headcount' in the module 'Calcs - Attrition' instead; keep the copies until the check below passes.",
+     "Compare the outputs that depend on them cell for cell, get sign-off, then remove the copies."
+    ],
+    "done_when": "Everything that read the copies gives the same values from the kept line item, and the copies are gone with no blank page or missing export column.",
+    "role": "model builder, Workforce Planning",
+    "model": "Workforce Planning",
+    "objects": [
+     "Calcs - Attrition.Headcount",
+     "zz Archive - 2021 Cost.Headcount"
+    ],
+    "finding_ids": [
+     "F12"
+    ],
+    "strength": "confirmed",
+    "footprint_cells": 4464,
+    "footprint_effort": null,
+    "notices": [
+     "The module 'zz Archive - 2021 Cost' may no longer be used: do that check first, since a retired module needs no tuning."
+    ],
+    "depends_on": [
+     "retire:Workforce Planning"
+    ],
+    "explorer": [
+     2,
+     "Calcs - Attrition",
+     "Headcount"
+    ],
+    "rank_reason": "#7: evidence confirmed; bounded scope; materiality low; change; 4.5K cells",
+    "worth": false,
+    "why_not": "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "hotspot-investigate:Board Reporting",
+    "kind": "investigation",
+    "title": "Look at the five heaviest calculations in Board Reporting",
+    "why": "Anaplan records how much of a model's calculation effort each line item takes. In Board Reporting, ten line items take 89.7% of it, led by the line item 'Revenue per FTE' in the module 'CAL01 KPIs' at 11.2%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: heavy calculation is often simply the model doing its main job.",
+    "steps": [
+     "With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.",
+     "For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).",
+     "Try at most one change in a development copy, reading Calculation Effort before and after."
+    ],
+    "done_when": "Each of the five has a recorded decision (keep, or one named change to trial) agreed with the owner.",
+    "role": "model builder, Board Reporting",
+    "model": "Board Reporting",
+    "objects": [
+     "CAL01 KPIs.Revenue per FTE",
+     "CAL01 KPIs.Opex Ratio",
+     "CAL01 KPIs.Revenue Growth",
+     "CAL01 KPIs.EBITDA Margin",
+     "CAL01 KPIs.FTE"
+    ],
+    "finding_ids": [
+     "F6"
+    ],
+    "strength": "confirmed",
+    "footprint_cells": 720,
+    "footprint_effort": null,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     3,
+     "CAL01 KPIs",
+     "Revenue per FTE"
+    ],
+    "rank_reason": "#8: evidence confirmed; bounded scope; materiality low; investigation; 720 cells",
+    "worth": false,
+    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "retire:Workforce Planning",
+    "kind": "investigation",
+    "title": "Find out whether anyone still uses the module 'zz Archive - 2021 Cost' in Workforce Planning",
+    "why": "A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. Until someone checks, it can neither be removed nor trusted. In Workforce Planning, no formula outside the module 'zz Archive - 2021 Cost' reads any of its 3 line items and no export reads it; it occupies 13.4K cells. That is what it takes up now, not a saving.",
+    "steps": [
+     "Ask the page builder whether any page, dashboard, saved view or line item subset still uses 'zz Archive - 2021 Cost'.",
+     "Ask whether another model imports from a saved view on it.",
+     "Record the decision: keep, or retire. If retire: make the change in a development copy first, keep the original for comparison, check the owner's key outputs over a full cycle, then sign off."
+    ],
+    "done_when": "Every question above has a recorded answer and the owner has signed a keep-or-retire decision.",
+    "role": "model owner with a page builder, Workforce Planning",
+    "model": "Workforce Planning",
+    "objects": [
+     "zz Archive - 2021 Cost"
+    ],
+    "finding_ids": [
+     "F30"
+    ],
+    "strength": "partial",
+    "footprint_cells": 13392,
+    "footprint_effort": null,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     2,
+     "zz Archive - 2021 Cost",
+     null
+    ],
+    "rank_reason": "#9: evidence partial; bounded scope; materiality low; investigation; 13.4K cells",
+    "worth": false,
+    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+    "bounded": true,
+    "footprint_measured": true
+   },
+   {
+    "key": "retire:Caldergate Data Hub",
+    "kind": "investigation",
+    "title": "Find out whether anyone still uses the module 'SYS01 Time Settings' in Caldergate Data Hub",
+    "why": "A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. Until someone checks, it can neither be removed nor trusted. In Caldergate Data Hub, no formula outside the module 'SYS01 Time Settings' reads any of its 5 line items and no export reads it; it occupies 180 cells. That is what it takes up now, not a saving.",
+    "steps": [
+     "Ask the page builder whether any page, dashboard, saved view or line item subset still uses 'SYS01 Time Settings'.",
+     "Ask whether another model imports from a saved view on it.",
+     "Record the decision: keep, or retire. If retire: make the change in a development copy first, keep the original for comparison, check the owner's key outputs over a full cycle, then sign off."
+    ],
+    "done_when": "Every question above has a recorded answer and the owner has signed a keep-or-retire decision.",
+    "role": "model owner with a page builder, Caldergate Data Hub",
+    "model": "Caldergate Data Hub",
+    "objects": [
+     "SYS01 Time Settings"
+    ],
+    "finding_ids": [
+     "F31"
+    ],
+    "strength": "partial",
+    "footprint_cells": 180,
+    "footprint_effort": null,
+    "notices": [],
+    "depends_on": [],
+    "explorer": [
+     0,
+     "SYS01 Time Settings",
+     null
+    ],
+    "rank_reason": "#10: evidence partial; bounded scope; materiality low; investigation; 180 cells",
+    "worth": false,
+    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
     "bounded": true,
     "footprint_measured": true
    }
@@ -164,6 +429,8 @@
      "Forecast Opex"
     ],
     "rank_reason": "#1: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 16.0% of its model's effort",
+    "worth": true,
+    "why_not": "",
     "bounded": true,
     "footprint_measured": true
    },
@@ -198,6 +465,8 @@
      "Journal Cost Centre"
     ],
     "rank_reason": "#2: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 6.2% of its model's effort",
+    "worth": true,
+    "why_not": "",
     "bounded": true,
     "footprint_measured": true
    },
@@ -231,6 +500,8 @@
      null
     ],
     "rank_reason": "#3: evidence partial; bounded scope; materiality high; investigation; 70.2M cells; 50.8% of its model's effort",
+    "worth": true,
+    "why_not": "",
     "bounded": true,
     "footprint_measured": true
    },
@@ -267,7 +538,9 @@
      "DAT01 GL Transactions",
      "Loaded?"
     ],
-    "rank_reason": "evidence confirmed; bounded scope; materiality medium; investigation; 1.3M cells",
+    "rank_reason": "#4: evidence confirmed; bounded scope; materiality medium; investigation; 1.3M cells",
+    "worth": false,
+    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
     "bounded": true,
     "footprint_measured": true
    },
@@ -300,7 +573,9 @@
      "SYS01 Time",
      null
     ],
-    "rank_reason": "evidence partial; bounded scope; materiality medium; investigation; 72 cells; 2.8% of its model's effort",
+    "rank_reason": "#5: evidence partial; bounded scope; materiality medium; investigation; 72 cells; 2.8% of its model's effort",
+    "worth": false,
+    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
     "bounded": true,
     "footprint_measured": true
    },
@@ -334,7 +609,9 @@
      "CAL07 P&L by Cost Centre",
      "Depreciation"
     ],
-    "rank_reason": "evidence confirmed; bounded scope; materiality low; change; 19.2K cells",
+    "rank_reason": "#6: evidence confirmed; bounded scope; materiality low; change; 19.2K cells",
+    "worth": false,
+    "why_not": "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work",
     "bounded": true,
     "footprint_measured": true
    },
@@ -372,7 +649,9 @@
      "Calcs - Attrition",
      "Headcount"
     ],
-    "rank_reason": "evidence confirmed; bounded scope; materiality low; change; 4.5K cells",
+    "rank_reason": "#7: evidence confirmed; bounded scope; materiality low; change; 4.5K cells",
+    "worth": false,
+    "why_not": "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work",
     "bounded": true,
     "footprint_measured": true
    },
@@ -409,7 +688,9 @@
      "CAL01 KPIs",
      "Revenue per FTE"
     ],
-    "rank_reason": "evidence confirmed; bounded scope; materiality low; investigation; 720 cells",
+    "rank_reason": "#8: evidence confirmed; bounded scope; materiality low; investigation; 720 cells",
+    "worth": false,
+    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
     "bounded": true,
     "footprint_measured": true
    },
@@ -442,7 +723,9 @@
      "zz Archive - 2021 Cost",
      null
     ],
-    "rank_reason": "evidence partial; bounded scope; materiality low; investigation; 13.4K cells",
+    "rank_reason": "#9: evidence partial; bounded scope; materiality low; investigation; 13.4K cells",
+    "worth": false,
+    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
     "bounded": true,
     "footprint_measured": true
    },
@@ -475,7 +758,9 @@
      "SYS01 Time Settings",
      null
     ],
-    "rank_reason": "evidence partial; bounded scope; materiality low; investigation; 180 cells",
+    "rank_reason": "#10: evidence partial; bounded scope; materiality low; investigation; 180 cells",
+    "worth": false,
+    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
     "bounded": true,
     "footprint_measured": true
    }
@@ -496,6 +781,7 @@
   ],
   "limit": null,
   "considered": 10,
+  "met_bar": 3,
   "none": null
  },
  "investigations": [
@@ -532,6 +818,8 @@
     "Forecast Opex"
    ],
    "rank_reason": "#1: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 16.0% of its model's effort",
+   "worth": true,
+   "why_not": "",
    "bounded": true,
    "footprint_measured": true
   },
@@ -566,6 +854,8 @@
     "Journal Cost Centre"
    ],
    "rank_reason": "#2: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 6.2% of its model's effort",
+   "worth": true,
+   "why_not": "",
    "bounded": true,
    "footprint_measured": true
   },
@@ -599,6 +889,267 @@
     null
    ],
    "rank_reason": "#3: evidence partial; bounded scope; materiality high; investigation; 70.2M cells; 50.8% of its model's effort",
+   "worth": true,
+   "why_not": "",
+   "bounded": true,
+   "footprint_measured": true
+  },
+  {
+   "key": "hotspot-investigate:Caldergate Data Hub",
+   "kind": "investigation",
+   "title": "Look at the five heaviest calculations in Caldergate Data Hub",
+   "why": "Anaplan records how much of a model's calculation effort each line item takes. In Caldergate Data Hub, ten line items take 99.9% of it, led by the line item 'Loaded?' in the module 'DAT01 GL Transactions' at 88.3%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: heavy calculation is often simply the model doing its main job.",
+   "steps": [
+    "With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.",
+    "For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).",
+    "Try at most one change in a development copy, reading Calculation Effort before and after."
+   ],
+   "done_when": "Each of the five has a recorded decision (keep, or one named change to trial) agreed with the owner.",
+   "role": "model builder, Caldergate Data Hub",
+   "model": "Caldergate Data Hub",
+   "objects": [
+    "DAT01 GL Transactions.Loaded?",
+    "CAL01 Volume Summary.Units",
+    "CAL01 Volume Summary.Revenue",
+    "CAL01 Volume Summary.Orders",
+    "DAT05 CRM Pipeline.Weighted Pipeline"
+   ],
+   "finding_ids": [
+    "F3"
+   ],
+   "strength": "confirmed",
+   "footprint_cells": 1298952,
+   "footprint_effort": null,
+   "notices": [],
+   "depends_on": [],
+   "explorer": [
+    0,
+    "DAT01 GL Transactions",
+    "Loaded?"
+   ],
+   "rank_reason": "#4: evidence confirmed; bounded scope; materiality medium; investigation; 1.3M cells",
+   "worth": false,
+   "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+   "bounded": true,
+   "footprint_measured": true
+  },
+  {
+   "key": "retire:Board Reporting",
+   "kind": "investigation",
+   "title": "Find out whether anyone still uses the module 'SYS01 Time' in Board Reporting",
+   "why": "A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. Until someone checks, it can neither be removed nor trusted. In Board Reporting, no formula outside the module 'SYS01 Time' reads any of its 2 line items and no export reads it; it occupies 72 cells and 2.8% of the model's measured calculation effort. That is what it takes up now, not a saving.",
+   "steps": [
+    "Ask the page builder whether any page, dashboard, saved view or line item subset still uses 'SYS01 Time'.",
+    "Ask whether another model imports from a saved view on it.",
+    "Record the decision: keep, or retire. If retire: make the change in a development copy first, keep the original for comparison, check the owner's key outputs over a full cycle, then sign off."
+   ],
+   "done_when": "Every question above has a recorded answer and the owner has signed a keep-or-retire decision.",
+   "role": "model owner with a page builder, Board Reporting",
+   "model": "Board Reporting",
+   "objects": [
+    "SYS01 Time"
+   ],
+   "finding_ids": [
+    "F8"
+   ],
+   "strength": "partial",
+   "footprint_cells": 72,
+   "footprint_effort": 2.8,
+   "notices": [],
+   "depends_on": [],
+   "explorer": [
+    3,
+    "SYS01 Time",
+    null
+   ],
+   "rank_reason": "#5: evidence partial; bounded scope; materiality medium; investigation; 72 cells; 2.8% of its model's effort",
+   "worth": false,
+   "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+   "bounded": true,
+   "footprint_measured": true
+  },
+  {
+   "key": "duplicate:Caldergate FP&A",
+   "kind": "change",
+   "title": "Remove 1 duplicate copy of one calculation in Caldergate FP&A",
+   "why": "The same calculation exists more than once under different names, with the same formula and the same dimensions. Two copies can drift apart when one is changed, and each copy takes space and calculation time. In Caldergate FP&A, the line item 'Depreciation' in the module 'OUT01 Management Pack' is the same calculation as the line item 'Depreciation' in the module 'CAL07 P&L by Cost Centre'; the copies occupy 19.2K cells and 0 other formulas read them.",
+   "steps": [
+    "Ask the owner and page builder whether any copy exists for a reason: a page that shows it under that name, an export column, or different access rights.",
+    "In a development copy, point the 0 formulas that read the copies at the line item 'Depreciation' in the module 'CAL07 P&L by Cost Centre' instead; keep the copies until the check below passes.",
+    "Compare the outputs that depend on them cell for cell, get sign-off, then remove the copies."
+   ],
+   "done_when": "Everything that read the copies gives the same values from the kept line item, and the copies are gone with no blank page or missing export column.",
+   "role": "model builder, Caldergate FP&A",
+   "model": "Caldergate FP&A",
+   "objects": [
+    "CAL07 P&L by Cost Centre.Depreciation",
+    "OUT01 Management Pack.Depreciation"
+   ],
+   "finding_ids": [
+    "F11"
+   ],
+   "strength": "confirmed",
+   "footprint_cells": 19152,
+   "footprint_effort": null,
+   "notices": [],
+   "depends_on": [],
+   "explorer": [
+    1,
+    "CAL07 P&L by Cost Centre",
+    "Depreciation"
+   ],
+   "rank_reason": "#6: evidence confirmed; bounded scope; materiality low; change; 19.2K cells",
+   "worth": false,
+   "why_not": "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work",
+   "bounded": true,
+   "footprint_measured": true
+  },
+  {
+   "key": "duplicate:Workforce Planning",
+   "kind": "change",
+   "title": "Remove 1 duplicate copy of one calculation in Workforce Planning",
+   "why": "The same calculation exists more than once under different names, with the same formula and the same dimensions. Two copies can drift apart when one is changed, and each copy takes space and calculation time. In Workforce Planning, the line item 'Headcount' in the module 'zz Archive - 2021 Cost' is the same calculation as the line item 'Headcount' in the module 'Calcs - Attrition'; the copies occupy 4.5K cells and 1 other formulas read them.",
+   "steps": [
+    "Ask the owner and page builder whether any copy exists for a reason: a page that shows it under that name, an export column, or different access rights.",
+    "In a development copy, point the 1 formulas that read the copies at the line item 'Headcount' in the module 'Calcs - Attrition' instead; keep the copies until the check below passes.",
+    "Compare the outputs that depend on them cell for cell, get sign-off, then remove the copies."
+   ],
+   "done_when": "Everything that read the copies gives the same values from the kept line item, and the copies are gone with no blank page or missing export column.",
+   "role": "model builder, Workforce Planning",
+   "model": "Workforce Planning",
+   "objects": [
+    "Calcs - Attrition.Headcount",
+    "zz Archive - 2021 Cost.Headcount"
+   ],
+   "finding_ids": [
+    "F12"
+   ],
+   "strength": "confirmed",
+   "footprint_cells": 4464,
+   "footprint_effort": null,
+   "notices": [
+    "The module 'zz Archive - 2021 Cost' may no longer be used: do that check first, since a retired module needs no tuning."
+   ],
+   "depends_on": [
+    "retire:Workforce Planning"
+   ],
+   "explorer": [
+    2,
+    "Calcs - Attrition",
+    "Headcount"
+   ],
+   "rank_reason": "#7: evidence confirmed; bounded scope; materiality low; change; 4.5K cells",
+   "worth": false,
+   "why_not": "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work",
+   "bounded": true,
+   "footprint_measured": true
+  },
+  {
+   "key": "hotspot-investigate:Board Reporting",
+   "kind": "investigation",
+   "title": "Look at the five heaviest calculations in Board Reporting",
+   "why": "Anaplan records how much of a model's calculation effort each line item takes. In Board Reporting, ten line items take 89.7% of it, led by the line item 'Revenue per FTE' in the module 'CAL01 KPIs' at 11.2%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: heavy calculation is often simply the model doing its main job.",
+   "steps": [
+    "With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.",
+    "For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).",
+    "Try at most one change in a development copy, reading Calculation Effort before and after."
+   ],
+   "done_when": "Each of the five has a recorded decision (keep, or one named change to trial) agreed with the owner.",
+   "role": "model builder, Board Reporting",
+   "model": "Board Reporting",
+   "objects": [
+    "CAL01 KPIs.Revenue per FTE",
+    "CAL01 KPIs.Opex Ratio",
+    "CAL01 KPIs.Revenue Growth",
+    "CAL01 KPIs.EBITDA Margin",
+    "CAL01 KPIs.FTE"
+   ],
+   "finding_ids": [
+    "F6"
+   ],
+   "strength": "confirmed",
+   "footprint_cells": 720,
+   "footprint_effort": null,
+   "notices": [],
+   "depends_on": [],
+   "explorer": [
+    3,
+    "CAL01 KPIs",
+    "Revenue per FTE"
+   ],
+   "rank_reason": "#8: evidence confirmed; bounded scope; materiality low; investigation; 720 cells",
+   "worth": false,
+   "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+   "bounded": true,
+   "footprint_measured": true
+  },
+  {
+   "key": "retire:Workforce Planning",
+   "kind": "investigation",
+   "title": "Find out whether anyone still uses the module 'zz Archive - 2021 Cost' in Workforce Planning",
+   "why": "A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. Until someone checks, it can neither be removed nor trusted. In Workforce Planning, no formula outside the module 'zz Archive - 2021 Cost' reads any of its 3 line items and no export reads it; it occupies 13.4K cells. That is what it takes up now, not a saving.",
+   "steps": [
+    "Ask the page builder whether any page, dashboard, saved view or line item subset still uses 'zz Archive - 2021 Cost'.",
+    "Ask whether another model imports from a saved view on it.",
+    "Record the decision: keep, or retire. If retire: make the change in a development copy first, keep the original for comparison, check the owner's key outputs over a full cycle, then sign off."
+   ],
+   "done_when": "Every question above has a recorded answer and the owner has signed a keep-or-retire decision.",
+   "role": "model owner with a page builder, Workforce Planning",
+   "model": "Workforce Planning",
+   "objects": [
+    "zz Archive - 2021 Cost"
+   ],
+   "finding_ids": [
+    "F30"
+   ],
+   "strength": "partial",
+   "footprint_cells": 13392,
+   "footprint_effort": null,
+   "notices": [],
+   "depends_on": [],
+   "explorer": [
+    2,
+    "zz Archive - 2021 Cost",
+    null
+   ],
+   "rank_reason": "#9: evidence partial; bounded scope; materiality low; investigation; 13.4K cells",
+   "worth": false,
+   "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+   "bounded": true,
+   "footprint_measured": true
+  },
+  {
+   "key": "retire:Caldergate Data Hub",
+   "kind": "investigation",
+   "title": "Find out whether anyone still uses the module 'SYS01 Time Settings' in Caldergate Data Hub",
+   "why": "A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. Until someone checks, it can neither be removed nor trusted. In Caldergate Data Hub, no formula outside the module 'SYS01 Time Settings' reads any of its 5 line items and no export reads it; it occupies 180 cells. That is what it takes up now, not a saving.",
+   "steps": [
+    "Ask the page builder whether any page, dashboard, saved view or line item subset still uses 'SYS01 Time Settings'.",
+    "Ask whether another model imports from a saved view on it.",
+    "Record the decision: keep, or retire. If retire: make the change in a development copy first, keep the original for comparison, check the owner's key outputs over a full cycle, then sign off."
+   ],
+   "done_when": "Every question above has a recorded answer and the owner has signed a keep-or-retire decision.",
+   "role": "model owner with a page builder, Caldergate Data Hub",
+   "model": "Caldergate Data Hub",
+   "objects": [
+    "SYS01 Time Settings"
+   ],
+   "finding_ids": [
+    "F31"
+   ],
+   "strength": "partial",
+   "footprint_cells": 180,
+   "footprint_effort": null,
+   "notices": [],
+   "depends_on": [],
+   "explorer": [
+    0,
+    "SYS01 Time Settings",
+    null
+   ],
+   "rank_reason": "#10: evidence partial; bounded scope; materiality low; investigation; 180 cells",
+   "worth": false,
+   "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
    "bounded": true,
    "footprint_measured": true
   }
@@ -4480,11 +5031,11 @@
    ],
    [
     36,
-    34
+    35
    ],
    [
     36,
-    35
+    34
    ],
    [
     47,
@@ -4508,19 +5059,19 @@
    ],
    [
     56,
-    43
-   ],
-   [
-    56,
     41
    ],
    [
-    57,
-    56
+    56,
+    43
    ],
    [
     57,
     55
+   ],
+   [
+    57,
+    56
    ],
    [
     58,
@@ -4572,11 +5123,11 @@
    ],
    [
     81,
-    79
+    78
    ],
    [
     81,
-    78
+    79
    ],
    [
     93,
@@ -4632,15 +5183,75 @@
    ],
    [
     119,
-    105
-   ],
-   [
-    119,
     118
    ],
    [
+    119,
+    105
+   ],
+   [
     177,
-    135
+    156
+   ],
+   [
+    177,
+    127
+   ],
+   [
+    177,
+    175
+   ],
+   [
+    177,
+    137
+   ],
+   [
+    177,
+    153
+   ],
+   [
+    177,
+    168
+   ],
+   [
+    177,
+    128
+   ],
+   [
+    177,
+    166
+   ],
+   [
+    177,
+    145
+   ],
+   [
+    177,
+    160
+   ],
+   [
+    177,
+    151
+   ],
+   [
+    177,
+    154
+   ],
+   [
+    177,
+    162
+   ],
+   [
+    177,
+    150
+   ],
+   [
+    177,
+    164
+   ],
+   [
+    177,
+    143
    ],
    [
     177,
@@ -4648,15 +5259,19 @@
    ],
    [
     177,
-    159
+    148
    ],
    [
     177,
-    152
+    131
    ],
    [
     177,
-    145
+    141
+   ],
+   [
+    177,
+    144
    ],
    [
     177,
@@ -4668,23 +5283,11 @@
    ],
    [
     177,
-    144
+    174
    ],
    [
     177,
-    168
-   ],
-   [
-    177,
-    150
-   ],
-   [
-    177,
-    169
-   ],
-   [
-    177,
-    154
+    155
    ],
    [
     177,
@@ -4692,67 +5295,11 @@
    ],
    [
     177,
-    130
+    176
    ],
    [
     177,
-    142
-   ],
-   [
-    177,
-    143
-   ],
-   [
-    177,
-    148
-   ],
-   [
-    177,
-    170
-   ],
-   [
-    177,
-    137
-   ],
-   [
-    177,
-    160
-   ],
-   [
-    177,
-    127
-   ],
-   [
-    177,
-    172
-   ],
-   [
-    177,
-    166
-   ],
-   [
-    177,
-    141
-   ],
-   [
-    177,
-    151
-   ],
-   [
-    177,
-    132
-   ],
-   [
-    177,
-    175
-   ],
-   [
-    177,
-    140
-   ],
-   [
-    177,
-    129
+    147
    ],
    [
     177,
@@ -4760,23 +5307,11 @@
    ],
    [
     177,
-    164
+    140
    ],
    [
     177,
-    134
-   ],
-   [
-    177,
-    167
-   ],
-   [
-    177,
-    171
-   ],
-   [
-    177,
-    161
+    170
    ],
    [
     177,
@@ -4784,15 +5319,7 @@
    ],
    [
     177,
-    133
-   ],
-   [
-    177,
-    149
-   ],
-   [
-    177,
-    147
+    134
    ],
    [
     177,
@@ -4804,7 +5331,51 @@
    ],
    [
     177,
-    156
+    149
+   ],
+   [
+    177,
+    135
+   ],
+   [
+    177,
+    169
+   ],
+   [
+    177,
+    172
+   ],
+   [
+    177,
+    161
+   ],
+   [
+    177,
+    130
+   ],
+   [
+    177,
+    167
+   ],
+   [
+    177,
+    132
+   ],
+   [
+    177,
+    142
+   ],
+   [
+    177,
+    129
+   ],
+   [
+    177,
+    159
+   ],
+   [
+    177,
+    171
    ],
    [
     177,
@@ -4812,39 +5383,15 @@
    ],
    [
     177,
-    174
+    133
    ],
    [
     177,
-    176
-   ],
-   [
-    177,
-    131
-   ],
-   [
-    177,
-    162
-   ],
-   [
-    177,
-    128
-   ],
-   [
-    177,
-    153
-   ],
-   [
-    177,
-    155
+    152
    ],
    [
     178,
     130
-   ],
-   [
-    178,
-    129
    ],
    [
     178,
@@ -4856,11 +5403,15 @@
    ],
    [
     178,
-    128
+    132
    ],
    [
     178,
-    132
+    129
+   ],
+   [
+    178,
+    128
    ],
    [
     179,
@@ -4872,10 +5423,6 @@
    ],
    [
     179,
-    134
-   ],
-   [
-    179,
     136
    ],
    [
@@ -4884,19 +5431,19 @@
    ],
    [
     179,
+    134
+   ],
+   [
+    179,
     133
    ],
    [
     180,
-    138
+    139
    ],
    [
     180,
     140
-   ],
-   [
-    180,
-    139
    ],
    [
     180,
@@ -4907,16 +5454,16 @@
     168
    ],
    [
-    181,
-    142
-   ],
-   [
-    181,
-    143
+    180,
+    138
    ],
    [
     181,
     145
+   ],
+   [
+    181,
+    143
    ],
    [
     181,
@@ -4927,8 +5474,20 @@
     144
    ],
    [
+    181,
+    142
+   ],
+   [
     182,
     181
+   ],
+   [
+    182,
+    178
+   ],
+   [
+    182,
+    180
    ],
    [
     182,
@@ -4937,14 +5496,6 @@
    [
     182,
     177
-   ],
-   [
-    182,
-    180
-   ],
-   [
-    182,
-    178
    ],
    [
     183,
@@ -4968,11 +5519,11 @@
    ],
    [
     191,
-    188
+    190
    ],
    [
     191,
-    190
+    188
    ],
    [
     191,
@@ -4980,11 +5531,11 @@
    ],
    [
     192,
-    187
+    188
    ],
    [
     192,
-    188
+    187
    ],
    [
     193,
@@ -4996,11 +5547,11 @@
    ],
    [
     194,
-    185
+    191
    ],
    [
     194,
-    191
+    192
    ],
    [
     194,
@@ -5008,15 +5559,15 @@
    ],
    [
     194,
-    192
-   ],
-   [
-    206,
-    205
+    185
    ],
    [
     206,
     204
+   ],
+   [
+    206,
+    205
    ],
    [
     209,
@@ -5032,7 +5583,7 @@
    ],
    [
     213,
-    120
+    73
    ],
    [
     213,
@@ -5040,19 +5591,19 @@
    ],
    [
     213,
-    73
-   ],
-   [
-    213,
     125
    ],
    [
-    214,
-    123
+    213,
+    120
    ],
    [
     214,
     213
+   ],
+   [
+    214,
+    123
    ],
    [
     215,
@@ -5080,35 +5631,35 @@
    ],
    [
     219,
-    218
+    217
    ],
    [
     219,
-    217
-   ],
-   [
-    220,
-    217
+    218
    ],
    [
     220,
     121
    ],
    [
+    220,
+    217
+   ],
+   [
+    221,
+    220
+   ],
+   [
     221,
     122
    ],
    [
-    221,
+    222,
     220
    ],
    [
     222,
     221
-   ],
-   [
-    222,
-    220
    ],
    [
     223,
@@ -5132,19 +5683,19 @@
    ],
    [
     226,
-    215
+    222
    ],
    [
     226,
-    222
-   ],
-   [
-    227,
     215
    ],
    [
     227,
     222
+   ],
+   [
+    227,
+    215
    ],
    [
     228,
@@ -5156,51 +5707,19 @@
    ],
    [
     231,
-    230
-   ],
-   [
-    231,
     223
    ],
    [
-    232,
-    100
+    231,
+    230
    ],
    [
     232,
     207
    ],
    [
-    233,
-    138
-   ],
-   [
-    233,
-    129
-   ],
-   [
-    233,
-    143
-   ],
-   [
-    233,
-    137
-   ],
-   [
-    233,
-    134
-   ],
-   [
-    233,
-    127
-   ],
-   [
-    233,
-    128
-   ],
-   [
-    233,
-    141
+    232,
+    100
    ],
    [
     233,
@@ -5208,15 +5727,51 @@
    ],
    [
     233,
+    150
+   ],
+   [
+    233,
+    143
+   ],
+   [
+    233,
+    127
+   ],
+   [
+    233,
+    141
+   ],
+   [
+    233,
+    137
+   ],
+   [
+    233,
+    129
+   ],
+   [
+    233,
+    128
+   ],
+   [
+    233,
+    134
+   ],
+   [
+    233,
     153
+   ],
+   [
+    233,
+    138
    ],
    [
     233,
     133
    ],
    [
-    233,
-    150
+    234,
+    73
    ],
    [
     234,
@@ -5227,12 +5782,8 @@
     233
    ],
    [
-    234,
-    73
-   ],
-   [
     235,
-    234
+    88
    ],
    [
     235,
@@ -5240,7 +5791,7 @@
    ],
    [
     235,
-    88
+    234
    ],
    [
     236,
@@ -5248,11 +5799,11 @@
    ],
    [
     237,
-    235
+    236
    ],
    [
     237,
-    236
+    235
    ],
    [
     238,
@@ -5272,14 +5823,10 @@
    ],
    [
     240,
-    239
-   ],
-   [
-    240,
     222
    ],
    [
-    241,
+    240,
     239
    ],
    [
@@ -5289,6 +5836,10 @@
    [
     241,
     114
+   ],
+   [
+    241,
+    239
    ],
    [
     242,
@@ -5332,7 +5883,7 @@
    ],
    [
     251,
-    246
+    248
    ],
    [
     251,
@@ -5340,7 +5891,11 @@
    ],
    [
     251,
-    247
+    243
+   ],
+   [
+    251,
+    246
    ],
    [
     251,
@@ -5356,11 +5911,7 @@
    ],
    [
     251,
-    248
-   ],
-   [
-    251,
-    243
+    247
    ],
    [
     252,
@@ -5368,11 +5919,15 @@
    ],
    [
     252,
-    251
+    242
    ],
    [
     252,
-    242
+    251
+   ],
+   [
+    253,
+    88
    ],
    [
     253,
@@ -5381,10 +5936,6 @@
    [
     253,
     252
-   ],
-   [
-    253,
-    88
    ],
    [
     254,
@@ -5396,19 +5947,19 @@
    ],
    [
     256,
-    265
+    85
    ],
    [
     256,
+    265
+   ],
+   [
+    257,
     85
    ],
    [
     257,
     268
-   ],
-   [
-    257,
-    85
    ],
    [
     258,
@@ -5428,11 +5979,11 @@
    ],
    [
     260,
-    262
+    85
    ],
    [
     260,
-    85
+    262
    ],
    [
     260,
@@ -5440,11 +5991,11 @@
    ],
    [
     261,
-    258
+    259
    ],
    [
     261,
-    259
+    258
    ],
    [
     261,
@@ -5452,11 +6003,11 @@
    ],
    [
     265,
-    108
+    223
    ],
    [
     265,
-    223
+    108
    ],
    [
     266,
@@ -5484,15 +6035,15 @@
    ],
    [
     270,
-    268
-   ],
-   [
-    270,
     267
    ],
    [
     270,
     269
+   ],
+   [
+    270,
+    268
    ],
    [
     271,
@@ -5520,11 +6071,11 @@
    ],
    [
     275,
-    268
+    274
    ],
    [
     275,
-    274
+    268
    ],
    [
     276,
@@ -5536,19 +6087,19 @@
    ],
    [
     277,
-    265
-   ],
-   [
-    277,
     87
    ],
    [
-    278,
-    199
+    277,
+    265
    ],
    [
     278,
     277
+   ],
+   [
+    278,
+    199
    ],
    [
     279,
@@ -5568,6 +6119,14 @@
    ],
    [
     282,
+    276
+   ],
+   [
+    282,
+    281
+   ],
+   [
+    282,
     279
    ],
    [
@@ -5575,12 +6134,8 @@
     280
    ],
    [
-    282,
-    276
-   ],
-   [
-    282,
-    281
+    283,
+    284
    ],
    [
     283,
@@ -5591,16 +6146,12 @@
     202
    ],
    [
-    283,
-    284
+    284,
+    282
    ],
    [
     284,
     283
-   ],
-   [
-    284,
-    282
    ],
    [
     285,
@@ -5608,11 +6159,11 @@
    ],
    [
     286,
-    195
+    196
    ],
    [
     286,
-    196
+    195
    ],
    [
     286,
@@ -5684,11 +6235,11 @@
    ],
    [
     297,
-    131
+    73
    ],
    [
     297,
-    73
+    131
    ],
    [
     298,
@@ -5716,11 +6267,11 @@
    ],
    [
     301,
-    135
+    73
    ],
    [
     301,
-    73
+    135
    ],
    [
     302,
@@ -5740,11 +6291,11 @@
    ],
    [
     304,
-    138
+    73
    ],
    [
     304,
-    73
+    138
    ],
    [
     305,
@@ -5756,11 +6307,11 @@
    ],
    [
     306,
-    140
+    73
    ],
    [
     306,
-    73
+    140
    ],
    [
     307,
@@ -5780,11 +6331,11 @@
    ],
    [
     309,
-    143
+    73
    ],
    [
     309,
-    73
+    143
    ],
    [
     310,
@@ -5812,11 +6363,11 @@
    ],
    [
     313,
-    147
+    73
    ],
    [
     313,
-    73
+    147
    ],
    [
     314,
@@ -5844,11 +6395,11 @@
    ],
    [
     317,
-    151
+    73
    ],
    [
     317,
-    73
+    151
    ],
    [
     318,
@@ -5884,51 +6435,19 @@
    ],
    [
     322,
-    156
-   ],
-   [
-    322,
     73
    ],
    [
-    323,
-    301
+    322,
+    156
    ],
    [
     323,
-    316
+    310
    ],
    [
     323,
-    306
-   ],
-   [
-    323,
-    303
-   ],
-   [
-    323,
-    305
-   ],
-   [
-    323,
-    315
-   ],
-   [
-    323,
-    322
-   ],
-   [
-    323,
-    293
-   ],
-   [
-    323,
-    298
-   ],
-   [
-    323,
-    308
+    314
    ],
    [
     323,
@@ -5936,11 +6455,23 @@
    ],
    [
     323,
-    312
+    304
    ],
    [
     323,
-    302
+    315
+   ],
+   [
+    323,
+    320
+   ],
+   [
+    323,
+    308
+   ],
+   [
+    323,
+    309
    ],
    [
     323,
@@ -5952,11 +6483,7 @@
    ],
    [
     323,
-    317
-   ],
-   [
-    323,
-    299
+    318
    ],
    [
     323,
@@ -5964,19 +6491,27 @@
    ],
    [
     323,
-    310
+    319
    ],
    [
     323,
-    309
+    312
    ],
    [
     323,
-    304
+    303
    ],
    [
     323,
-    297
+    305
+   ],
+   [
+    323,
+    299
+   ],
+   [
+    323,
+    316
    ],
    [
     323,
@@ -5984,23 +6519,7 @@
    ],
    [
     323,
-    320
-   ],
-   [
-    323,
-    314
-   ],
-   [
-    323,
-    319
-   ],
-   [
-    323,
-    318
-   ],
-   [
-    323,
-    295
+    297
    ],
    [
     323,
@@ -6009,6 +6528,38 @@
    [
     323,
     294
+   ],
+   [
+    323,
+    306
+   ],
+   [
+    323,
+    317
+   ],
+   [
+    323,
+    301
+   ],
+   [
+    323,
+    293
+   ],
+   [
+    323,
+    298
+   ],
+   [
+    323,
+    322
+   ],
+   [
+    323,
+    295
+   ],
+   [
+    323,
+    302
    ],
    [
     324,
@@ -6096,7 +6647,7 @@
    ],
    [
     353,
-    350
+    351
    ],
    [
     353,
@@ -6104,7 +6655,7 @@
    ],
    [
     353,
-    351
+    350
    ],
    [
     354,
@@ -6120,11 +6671,11 @@
    ],
    [
     367,
-    361
+    359
    ],
    [
     367,
-    359
+    361
    ],
    [
     368,
@@ -6144,7 +6695,7 @@
    ],
    [
     371,
-    354
+    370
    ],
    [
     371,
@@ -6152,7 +6703,7 @@
    ],
    [
     371,
-    370
+    354
    ],
    [
     372,
@@ -6168,19 +6719,19 @@
    ],
    [
     374,
-    372
-   ],
-   [
-    374,
     370
    ],
    [
-    375,
-    371
+    374,
+    372
    ],
    [
     375,
     345
+   ],
+   [
+    375,
+    371
    ],
    [
     376,
@@ -6192,19 +6743,15 @@
    ],
    [
     377,
+    376
+   ],
+   [
+    377,
     371
    ],
    [
     377,
     374
-   ],
-   [
-    377,
-    376
-   ],
-   [
-    378,
-    361
    ],
    [
     378,
@@ -6213,6 +6760,10 @@
    [
     378,
     365
+   ],
+   [
+    378,
+    361
    ],
    [
     379,
@@ -6228,11 +6779,11 @@
    ],
    [
     380,
-    371
+    360
    ],
    [
     380,
-    360
+    371
    ],
    [
     380,
@@ -6248,11 +6799,11 @@
    ],
    [
     383,
-    361
+    365
    ],
    [
     383,
-    365
+    361
    ],
    [
     384,
@@ -6260,18 +6811,22 @@
    ],
    [
     385,
-    361
-   ],
-   [
-    385,
     384
    ],
    [
+    385,
+    361
+   ],
+   [
+    386,
+    385
+   ],
+   [
     386,
     383
    ],
    [
-    386,
+    387,
     385
    ],
    [
@@ -6279,24 +6834,20 @@
     383
    ],
    [
-    387,
-    385
+    388,
+    355
    ],
    [
     388,
     378
    ],
    [
-    388,
-    355
-   ],
-   [
-    389,
-    355
-   ],
-   [
     389,
     379
+   ],
+   [
+    389,
+    355
    ],
    [
     390,
@@ -6320,11 +6871,11 @@
    ],
    [
     393,
-    361
+    365
    ],
    [
     393,
-    365
+    361
    ],
    [
     394,
