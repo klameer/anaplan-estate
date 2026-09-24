@@ -19,7 +19,7 @@ from collections import Counter, defaultdict
 import re
 from .model import Model, LineItem
 from .graph import Graph, build_graph
-from anaplan_grammar.parser import parse
+from .parsing import parse
 
 @dataclass
 class Finding:

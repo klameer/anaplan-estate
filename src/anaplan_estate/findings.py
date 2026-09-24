@@ -28,7 +28,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, asdict
 from collections import defaultdict, Counter
 import re
-from anaplan_grammar.parser import parse
+from .parsing import parse
 from anaplan_grammar.unparse import unparse
 from .lint import RULES, DOCS
 

@@ -25,7 +25,7 @@ import re, datetime
 from dataclasses import dataclass, field
 from collections import Counter, defaultdict
 from pathlib import Path
-from anaplan_grammar.parser import parse
+from .parsing import parse
 from anaplan_grammar.unparse import unparse
 from .model import Model, load_model, COLUMN_ROLES
 from .graph import Graph, build_graph

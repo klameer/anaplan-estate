@@ -19,8 +19,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from collections import defaultdict, deque
 from .model import Model, LineItem
-from anaplan_grammar.parser import parse, references_ctx, ParseError
-from anaplan_grammar.lexer import LexError
+from .parsing import parse, references_ctx, ParseError
+from .parsing import LexError
 
 PSEUDO_LISTS = {"TIME", "VERSIONS", "VERSION", "USERS"}
 # (function, arg index) positions whose argument is a list name, not a line item

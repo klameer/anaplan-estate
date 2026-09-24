@@ -1,5 +1,6 @@
-"""The upload front: a zip or per-model files in, the same report out, temp files gone, errors as plain pages."""
-import sys, pathlib, io, zipfile, os
+"""The upload front: a zip or per-model files in, the same report out, temp files gone, bad uploads refused before
+any analysis, a busy service says so, errors as plain pages."""
+import sys, pathlib, io, zipfile, time, asyncio
 import pytest
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "src"))
 pytest.importorskip("fastapi"); pytest.importorskip("httpx")
@@ -19,23 +20,26 @@ def _zip(folders):
     return buf.getvalue()
 
 
+def _tmp_dirs():
+    return set(p.name for p in pathlib.Path(web.tempfile.gettempdir()).glob("estate-*"))
+
+
 def test_index_explains_privacy_and_local_option():
     r = client.get("/")
     assert r.status_code == 200 and "What happens to your files" in r.text and "run it locally" in r.text.lower() and 'action="/report"' in r.text
-    assert client.get("/health").text == "ok"
+    assert client.get("/health").text == "ok" and client.head("/health").status_code == 200
 
 
-def test_zip_upload_returns_the_report_and_cleans_up(tmp_path):
-    before = set(p.name for p in pathlib.Path(web.tempfile.gettempdir()).glob("estate-*"))
+def test_zip_upload_returns_the_report_and_cleans_up():
+    before = _tmp_dirs()
     data = _zip([EX / "1 Caldergate Data Hub", EX / "2 Caldergate FP&A"])
     r = client.post("/report", data={"title": "Test estate"}, files={"estate_zip": ("estate.zip", data, "application/zip")})
     assert r.status_code == 200 and "<title>Test estate</title>" in r.text and 'id="plan"' in r.text and "Caldergate FP&amp;A" in r.text
-    assert "inline" in r.headers["content-disposition"]
-    after = set(p.name for p in pathlib.Path(web.tempfile.gettempdir()).glob("estate-*"))
-    assert after <= before
+    assert "inline" in r.headers["content-disposition"] and r.headers["cache-control"] == "no-store"
+    assert _tmp_dirs() <= before
 
 
-def test_per_model_upload():
+def test_per_model_upload_with_empty_optional_parts():
     li = (EX / "2 Caldergate FP&A" / "Line Items.csv").read_bytes()
     ac = (EX / "2 Caldergate FP&A" / "Actions.csv").read_bytes()
     r = client.post("/report", data={"title": "", "model_name": ["FP&A"]},
@@ -48,9 +52,6 @@ def test_errors_are_plain_pages():
     assert r.status_code == 400 and "not a zip" in r.text
     r = client.post("/report", data={"title": "x"})
     assert r.status_code == 400 and "Line Items*.csv" in r.text and "was found" in r.text
-    bad = "Line Items,Format,Applies To\nA,NUMBER,L\n".encode()
-    r = client.post("/report", data={"model_name": ["M"]}, files=[("line_items", ("Line Items.csv", bad, "text/csv"))])
-    assert r.status_code == 400 and "Formula" in r.text
 
 
 def test_size_limit(monkeypatch):
@@ -60,6 +61,45 @@ def test_size_limit(monkeypatch):
     assert r.status_code == 413
 
 
-def test_example_route():
-    r = client.get("/example")
+def test_bad_uploads_fail_fast_without_analysis(monkeypatch):
+    calls = []
+    monkeypatch.setattr(web, "_run_in_subprocess", lambda *a, **k: calls.append(a) or None)
+    t = time.time()
+    r = client.post("/report", files=[("line_items", ("Line Items.csv", b"Name,Format,Applies To\nA,NUMBER,L\n", "text/csv"))])
+    assert r.status_code == 400 and "no &#x27;Formula&#x27; column" in r.text and "columns found" in r.text
+    r = client.post("/report", files=[("line_items", ("Line Items.csv", b"", "text/csv"))])
+    assert r.status_code == 400 and "is empty" in r.text
+    r = client.post("/report", files=[("line_items", ("Line Items.csv", b"Line Items,Formula\n", "text/csv"))])
+    assert r.status_code == 400 and "no line items" in r.text
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        z.writestr("model/notes.txt", "x")
+    r = client.post("/report", files={"estate_zip": ("e.zip", buf.getvalue(), "application/zip")})
+    assert r.status_code == 400 and "holds no" in r.text
+    assert calls == [] and time.time() - t < 3
+
+
+def test_rate_limit(monkeypatch):
+    monkeypatch.setattr(web, "RATE_PER_HOUR", 2)
+    web._rate.clear()
+    codes = [client.post("/report", data={"title": "x"}).status_code for _ in range(3)]
+    assert codes == [400, 400, 429]
+    web._rate.clear()
+
+
+def test_busy_returns_503_without_running(monkeypatch):
+    monkeypatch.setattr(web, "QUEUE_WAIT_S", 0.01)
+    monkeypatch.setattr(web, "_slots", asyncio.Semaphore(0))          # every worker taken
+    called = []
+    monkeypatch.setattr(web, "_run_in_subprocess", lambda *a, **k: called.append(1) or None)
+    data = _zip([EX / "4 Board Reporting"])
+    r = client.post("/report", files={"estate_zip": ("estate.zip", data, "application/zip")})
+    assert r.status_code == 503 and "busy" in r.text and r.headers.get("retry-after") == "60" and not called
+
+
+def test_example_route_is_cached():
+    web._example_cache.clear()
+    t = time.time(); r = client.get("/example"); first = time.time() - t
     assert r.status_code == 200 and "fictional example" in r.text
+    t = time.time(); r2 = client.get("/example"); second = time.time() - t
+    assert r2.text == r.text and second < first

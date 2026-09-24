@@ -35,7 +35,7 @@ from __future__ import annotations
 from collections import defaultdict, Counter
 from dataclasses import dataclass, field
 import re
-from anaplan_grammar.parser import parse
+from .parsing import parse
 from anaplan_grammar.unparse import unparse
 from .model import Model, LineItem
 from .graph import Graph
