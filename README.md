@@ -1,11 +1,28 @@
 # anaplan-estate
 
+[![tests](https://github.com/klameer/anaplan-estate/actions/workflows/test.yml/badge.svg)](https://github.com/klameer/anaplan-estate/actions/workflows/test.yml)
+![python](https://img.shields.io/badge/python-3.10%20to%203.13-blue)
+[![licence](https://img.shields.io/badge/licence-MIT-green)](LICENSE)
+
 Find what to improve in Anaplan. See what a change could affect.
+
+![The action plan for the fictional Caldergate estate](docs/action-plan.png)
+
+Three commands, one HTML file, nothing leaves your machine:
+
+```bash
+pip install "https://github.com/klameer/anaplan-grammar/archive/refs/heads/main.zip"
+pip install "https://github.com/klameer/anaplan-estate/archive/refs/heads/main.zip"
+anaplan-estate my-estate-folder --html estate.html
+```
+
+Or upload the exports on the hosted page (address set at deployment) and get the same report back. A sample estate to try either way: [examples/caldergate-estate.zip](examples/caldergate-estate.zip).
 
 Automated findings and candidate recommendations for a whole estate of
 Anaplan models, from the grid exports, run on your own machine. Nothing
-leaves it. The report opens on a one-page **action plan** (at most three
-suggested actions, each with steps and a completion check), with a
+leaves it. The report opens on an **action plan** (every candidate action
+worth doing, grouped, in plain language, each with the line items involved,
+steps and a completion check), with a
 **Change impact** explorer (what depends on a line item or module, what it
 depends on, offline) and the complete **Evidence** (every finding, object,
 formula and coverage gap) behind it. It is meant to be useful without
@@ -73,7 +90,8 @@ anaplan-estate examples/caldergate-estate --out estate.md --html estate.html --c
 Open `estate.html`. Then read
 [examples/caldergate-estate/PLANTED.md](examples/caldergate-estate/PLANTED.md):
 everything that was planted and where the report finds it. Then export
-your own models and run it on those.
+your own models and run it on those. (The generated example outputs are not
+committed; the CI build attaches them as an artifact on every run.)
 
 ## Export the two files
 
@@ -185,3 +203,8 @@ python -m pytest -q tests
 ```
 
 MIT.
+
+## Related
+
+- [anaplan-grammar](https://github.com/klameer/anaplan-grammar): the formula grammar, parser and dependency graph this tool is built on.
+- [CONTRIBUTING.md](CONTRIBUTING.md), [CHANGELOG.md](CHANGELOG.md), [VALIDATION.md](VALIDATION.md).

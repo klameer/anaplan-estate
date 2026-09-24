@@ -3,6 +3,7 @@
     python scripts/regen_reports.py                       # examples/caldergate-estate -> examples/.../estate.* and out/caldergate.html
     ANAPLAN_ESTATE_PRIVATE_ROOT="G:\\...\\Winddown" python scripts/regen_reports.py --private
 
+Optional branding: ANAPLAN_ESTATE_THEME=path/to/theme.css and ANAPLAN_ESTATE_LOGO=path/to/logo.svg.
 The private estate is never substituted with fictional data: with --private and no readable root the script stops
 and says so. Links are the project's own pages; the theme is the CodelessOps report theme when its path exists.
 """
@@ -16,14 +17,16 @@ from anaplan_estate.cli import main  # noqa: E402
 
 FEEDBACK = "https://github.com/klameer/anaplan-estate/discussions"
 SOURCE = "https://github.com/klameer/anaplan-estate"
-THEME = Path(r"C:\Projects\20260714_Grounded\config\brand\report-theme-dark.css")
-LOGO = Path(r"C:\Projects\20260714_Grounded\config\brand\assets\logo.svg")
+THEME = Path(os.environ.get("ANAPLAN_ESTATE_THEME", ""))     # optional brand stylesheet (tokens and embedded fonts); absent = built-in look
+LOGO = Path(os.environ.get("ANAPLAN_ESTATE_LOGO", ""))       # optional small SVG wordmark for the attribution line
 
 
 def common(theme: bool) -> list[str]:
     args = ["--feedback-url", FEEDBACK, "--source-url", SOURCE]
-    if theme and THEME.exists():
+    if theme and str(THEME) not in ("", ".") and THEME.exists():
         args += ["--theme", str(THEME)]
+    if theme and str(LOGO) not in ("", ".") and LOGO.exists():
+        args += ["--logo", str(LOGO)]
     return args
 
 

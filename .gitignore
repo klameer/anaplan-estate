@@ -3,3 +3,8 @@ out/
 __pycache__/
 *.egg-info/
 .pytest_cache/
+# generated example outputs: built by CI and by scripts/regen_reports.py, not committed
+examples/caldergate-estate/estate.html
+examples/caldergate-estate/estate.json
+examples/caldergate-estate/estate.md
+examples/caldergate-estate/register.csv
