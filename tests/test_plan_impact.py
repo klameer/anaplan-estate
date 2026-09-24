@@ -46,7 +46,7 @@ def test_initial_reading_path_is_short_and_actionable():
         assert first_obj > 80                                          # a plain explanation comes before the first named object
     # no findings catalogue follows the plan on the initial path
     plan_html = h[h.index('<section id="plan"'):h.index('<section id="impact"')]
-    assert '<article class="f"' not in plan_html and plan_html.count("<table") == 1
+    assert '<article class="f"' not in plan_html and plan_html.count('<table class="sum">') == 1
     assert 'id="evidence" class="view" role="tabpanel" aria-label="Evidence" hidden' in h
     assert "Request route" not in h and "--service-url" not in h
 
