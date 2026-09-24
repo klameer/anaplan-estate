@@ -5,9 +5,9 @@
 These establish that the mechanics do what they say. They do not establish
 generalisation, recommendation quality or user value.
 
-- Automated tests (`python -m pytest -q tests`): 53 tests over the parser and
+- Automated tests (`python -m pytest -q tests`): 63 tests over the parser and
   rules, the example estate, the action-plan selection, the change-impact
-  traversal, corrected facts, HTML views and exports. The page script's
+  traversal, corrected facts, input guards, HTML views and exports. The page script's
   breadth-first traversal is executed under node on a synthetic graph and
   compared with the Python implementation.
 - The Change impact explorer reconciles with the analysis engine on the
@@ -15,14 +15,12 @@ generalisation, recommendation quality or user value.
   (the widest-read line item: 197 direct readers, 822 unique downstream line
   items across 56 modules, twelve links deep; the ten export actions listed
   are module-level associations, not ten proven consumers).
-- Word budget: the initial reading path (title, scope line, view buttons,
-  action plan) is counted from reader-visible text, excluding hidden search
-  indexes: 441 words on the example estate, 446 on the private estate, both
-  under the 450 target with three actions.
-- One-page print: the "Print action plan" output was rendered headless in
-  Edge to A4 PDF for both estates and is one page at 10.5pt body text with no
-  clipped names. "Print evidence" is a separate, explicit choice (8 and 16
-  pages respectively with details closed).
+- Plan length: the plan now shows every candidate (those that met the bar
+  first, the rest labelled with the reason), grouped, with a summary table on
+  top; on the private estate that is 14 cards. The earlier three-action,
+  450-word, one-page version was measured (441 and 446 visible words, one A4
+  page in headless Edge) before that change; the current plan prints on
+  several pages. "Print evidence" remains a separate, explicit choice.
 - Browser checks (desktop pane): no console errors on load; deep links
   `#F12`, `#impact`, `#impact=<node>`, `#catalogue` open the right view, clear
   conflicting filters visibly, focus the target and select the row; the
@@ -60,9 +58,9 @@ The action cards match five patterns only; the report says so on the plan.
 ## What remains pending (product validation)
 
 The rules, ranking and presentation were developed around one real estate and
-one fictional estate constructed around known scenarios. The three-action,
-450-word plan is an MVP design choice, not an established optimum. The
-ranking is a hypothesis. Nothing below has been done yet.
+one fictional estate constructed around known scenarios. The "worth doing"
+bar and the ordering are design choices, not established optima; the ranking
+is a hypothesis. Nothing below has been done yet.
 
 ### Unseen-estate protocol
 
@@ -95,9 +93,9 @@ are never reported as accuracy percentages):
 - Recommended actions: unsupported or unsafe advice; advice that is supported
   but not worth doing; advice judged useful by the reviewer and owner
   independently.
-- Priority choices: whether the three selected actions are among the ones the
+- Priority choices: whether the actions that met the bar are the ones the
   reviewer and owner would have chosen first; which material opportunity, if
-  any, was left out.
+  any, was left out or placed below the bar.
 
 Include negative cases on purpose: an estate where keeping the current design
 is the right answer, an estate with a missing Actions export, a legitimate
