@@ -61,6 +61,7 @@
     "rank_reason": "#1: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 16.0% of its model's effort",
     "worth": true,
     "why_not": "",
+    "group": "speed",
     "bounded": true,
     "footprint_measured": true
    },
@@ -97,6 +98,7 @@
     "rank_reason": "#2: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 6.2% of its model's effort",
     "worth": true,
     "why_not": "",
+    "group": "speed",
     "bounded": true,
     "footprint_measured": true
    },
@@ -132,6 +134,7 @@
     "rank_reason": "#3: evidence partial; bounded scope; materiality high; investigation; 70.2M cells; 50.8% of its model's effort",
     "worth": true,
     "why_not": "",
+    "group": "usage",
     "bounded": true,
     "footprint_measured": true
    },
@@ -171,6 +174,7 @@
     "rank_reason": "#4: evidence confirmed; bounded scope; materiality medium; investigation; 1.3M cells",
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+    "group": "look",
     "bounded": true,
     "footprint_measured": true
    },
@@ -206,6 +210,7 @@
     "rank_reason": "#5: evidence partial; bounded scope; materiality medium; investigation; 72 cells; 2.8% of its model's effort",
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+    "group": "usage",
     "bounded": true,
     "footprint_measured": true
    },
@@ -242,6 +247,7 @@
     "rank_reason": "#6: evidence confirmed; bounded scope; materiality low; change; 19.2K cells",
     "worth": false,
     "why_not": "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work",
+    "group": "duplicate",
     "bounded": true,
     "footprint_measured": true
    },
@@ -282,6 +288,7 @@
     "rank_reason": "#7: evidence confirmed; bounded scope; materiality low; change; 4.5K cells",
     "worth": false,
     "why_not": "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work",
+    "group": "duplicate",
     "bounded": true,
     "footprint_measured": true
    },
@@ -321,6 +328,7 @@
     "rank_reason": "#8: evidence confirmed; bounded scope; materiality low; investigation; 720 cells",
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+    "group": "look",
     "bounded": true,
     "footprint_measured": true
    },
@@ -356,6 +364,7 @@
     "rank_reason": "#9: evidence partial; bounded scope; materiality low; investigation; 13.4K cells",
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+    "group": "usage",
     "bounded": true,
     "footprint_measured": true
    },
@@ -391,6 +400,7 @@
     "rank_reason": "#10: evidence partial; bounded scope; materiality low; investigation; 180 cells",
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+    "group": "usage",
     "bounded": true,
     "footprint_measured": true
    }
@@ -431,6 +441,7 @@
     "rank_reason": "#1: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 16.0% of its model's effort",
     "worth": true,
     "why_not": "",
+    "group": "speed",
     "bounded": true,
     "footprint_measured": true
    },
@@ -467,6 +478,7 @@
     "rank_reason": "#2: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 6.2% of its model's effort",
     "worth": true,
     "why_not": "",
+    "group": "speed",
     "bounded": true,
     "footprint_measured": true
    },
@@ -502,6 +514,7 @@
     "rank_reason": "#3: evidence partial; bounded scope; materiality high; investigation; 70.2M cells; 50.8% of its model's effort",
     "worth": true,
     "why_not": "",
+    "group": "usage",
     "bounded": true,
     "footprint_measured": true
    },
@@ -541,6 +554,7 @@
     "rank_reason": "#4: evidence confirmed; bounded scope; materiality medium; investigation; 1.3M cells",
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+    "group": "look",
     "bounded": true,
     "footprint_measured": true
    },
@@ -576,6 +590,7 @@
     "rank_reason": "#5: evidence partial; bounded scope; materiality medium; investigation; 72 cells; 2.8% of its model's effort",
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+    "group": "usage",
     "bounded": true,
     "footprint_measured": true
    },
@@ -612,6 +627,7 @@
     "rank_reason": "#6: evidence confirmed; bounded scope; materiality low; change; 19.2K cells",
     "worth": false,
     "why_not": "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work",
+    "group": "duplicate",
     "bounded": true,
     "footprint_measured": true
    },
@@ -652,6 +668,7 @@
     "rank_reason": "#7: evidence confirmed; bounded scope; materiality low; change; 4.5K cells",
     "worth": false,
     "why_not": "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work",
+    "group": "duplicate",
     "bounded": true,
     "footprint_measured": true
    },
@@ -691,6 +708,7 @@
     "rank_reason": "#8: evidence confirmed; bounded scope; materiality low; investigation; 720 cells",
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+    "group": "look",
     "bounded": true,
     "footprint_measured": true
    },
@@ -726,6 +744,7 @@
     "rank_reason": "#9: evidence partial; bounded scope; materiality low; investigation; 13.4K cells",
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+    "group": "usage",
     "bounded": true,
     "footprint_measured": true
    },
@@ -761,6 +780,7 @@
     "rank_reason": "#10: evidence partial; bounded scope; materiality low; investigation; 180 cells",
     "worth": false,
     "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+    "group": "usage",
     "bounded": true,
     "footprint_measured": true
    }
@@ -782,6 +802,50 @@
   "limit": null,
   "considered": 10,
   "met_bar": 3,
+  "groups": [
+   {
+    "key": "speed",
+    "title": "Make heavy calculations cheaper",
+    "blurb": "Formulas that take a large share of a model's measured calculation effort and match a pattern with a known, safer alternative.",
+    "keys": [
+     "hotspot-if:Caldergate FP&A",
+     "hotspot-text:Caldergate FP&A"
+    ],
+    "met_bar": 2
+   },
+   {
+    "key": "usage",
+    "title": "Check whether modules are still used",
+    "blurb": "Modules that no formula reads and no export uses; someone has to check pages and views before they can be kept or retired.",
+    "keys": [
+     "retire:Caldergate FP&A",
+     "retire:Board Reporting",
+     "retire:Workforce Planning",
+     "retire:Caldergate Data Hub"
+    ],
+    "met_bar": 1
+   },
+   {
+    "key": "look",
+    "title": "Look at where the calculation time goes",
+    "blurb": "The heaviest calculations in a model that match no known pattern: a place to look with the owner, not a change to make.",
+    "keys": [
+     "hotspot-investigate:Caldergate Data Hub",
+     "hotspot-investigate:Board Reporting"
+    ],
+    "met_bar": 0
+   },
+   {
+    "key": "duplicate",
+    "title": "Remove duplicated calculations",
+    "blurb": "The same calculation kept under more than one name; one copy can be dropped once the reason for the second is ruled out.",
+    "keys": [
+     "duplicate:Caldergate FP&A",
+     "duplicate:Workforce Planning"
+    ],
+    "met_bar": 0
+   }
+  ],
   "none": null
  },
  "investigations": [
@@ -820,6 +884,7 @@
    "rank_reason": "#1: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 16.0% of its model's effort",
    "worth": true,
    "why_not": "",
+   "group": "speed",
    "bounded": true,
    "footprint_measured": true
   },
@@ -856,6 +921,7 @@
    "rank_reason": "#2: evidence confirmed; bounded scope; materiality high; change; 5.0M cells; 6.2% of its model's effort",
    "worth": true,
    "why_not": "",
+   "group": "speed",
    "bounded": true,
    "footprint_measured": true
   },
@@ -891,6 +957,7 @@
    "rank_reason": "#3: evidence partial; bounded scope; materiality high; investigation; 70.2M cells; 50.8% of its model's effort",
    "worth": true,
    "why_not": "",
+   "group": "usage",
    "bounded": true,
    "footprint_measured": true
   },
@@ -930,6 +997,7 @@
    "rank_reason": "#4: evidence confirmed; bounded scope; materiality medium; investigation; 1.3M cells",
    "worth": false,
    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+   "group": "look",
    "bounded": true,
    "footprint_measured": true
   },
@@ -965,6 +1033,7 @@
    "rank_reason": "#5: evidence partial; bounded scope; materiality medium; investigation; 72 cells; 2.8% of its model's effort",
    "worth": false,
    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+   "group": "usage",
    "bounded": true,
    "footprint_measured": true
   },
@@ -1001,6 +1070,7 @@
    "rank_reason": "#6: evidence confirmed; bounded scope; materiality low; change; 19.2K cells",
    "worth": false,
    "why_not": "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work",
+   "group": "duplicate",
    "bounded": true,
    "footprint_measured": true
   },
@@ -1041,6 +1111,7 @@
    "rank_reason": "#7: evidence confirmed; bounded scope; materiality low; change; 4.5K cells",
    "worth": false,
    "why_not": "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work",
+   "group": "duplicate",
    "bounded": true,
    "footprint_measured": true
   },
@@ -1080,6 +1151,7 @@
    "rank_reason": "#8: evidence confirmed; bounded scope; materiality low; investigation; 720 cells",
    "worth": false,
    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+   "group": "look",
    "bounded": true,
    "footprint_measured": true
   },
@@ -1115,6 +1187,7 @@
    "rank_reason": "#9: evidence partial; bounded scope; materiality low; investigation; 13.4K cells",
    "worth": false,
    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+   "group": "usage",
    "bounded": true,
    "footprint_measured": true
   },
@@ -1150,6 +1223,7 @@
    "rank_reason": "#10: evidence partial; bounded scope; materiality low; investigation; 180 cells",
    "worth": false,
    "why_not": "the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet",
+   "group": "usage",
    "bounded": true,
    "footprint_measured": true
   }
@@ -5051,19 +5125,19 @@
    ],
    [
     55,
-    40
+    43
    ],
    [
     55,
+    40
+   ],
+   [
+    56,
     43
    ],
    [
     56,
     41
-   ],
-   [
-    56,
-    43
    ],
    [
     57,
@@ -5083,11 +5157,11 @@
    ],
    [
     60,
-    58
+    59
    ],
    [
     60,
-    59
+    58
    ],
    [
     61,
@@ -5119,11 +5193,11 @@
    ],
    [
     81,
-    80
+    78
    ],
    [
     81,
-    78
+    80
    ],
    [
     81,
@@ -5135,11 +5209,11 @@
    ],
    [
     94,
-    93
+    90
    ],
    [
     94,
-    90
+    93
    ],
    [
     95,
@@ -5171,11 +5245,11 @@
    ],
    [
     113,
-    110
+    112
    ],
    [
     113,
-    112
+    110
    ],
    [
     118,
@@ -5191,99 +5265,7 @@
    ],
    [
     177,
-    156
-   ],
-   [
-    177,
-    127
-   ],
-   [
-    177,
-    175
-   ],
-   [
-    177,
-    137
-   ],
-   [
-    177,
-    153
-   ],
-   [
-    177,
-    168
-   ],
-   [
-    177,
-    128
-   ],
-   [
-    177,
-    166
-   ],
-   [
-    177,
-    145
-   ],
-   [
-    177,
-    160
-   ],
-   [
-    177,
-    151
-   ],
-   [
-    177,
-    154
-   ],
-   [
-    177,
-    162
-   ],
-   [
-    177,
-    150
-   ],
-   [
-    177,
-    164
-   ],
-   [
-    177,
-    143
-   ],
-   [
-    177,
-    165
-   ],
-   [
-    177,
-    148
-   ],
-   [
-    177,
-    131
-   ],
-   [
-    177,
-    141
-   ],
-   [
-    177,
-    144
-   ],
-   [
-    177,
-    173
-   ],
-   [
-    177,
-    146
-   ],
-   [
-    177,
-    174
+    170
    ],
    [
     177,
@@ -5291,11 +5273,15 @@
    ],
    [
     177,
-    157
+    160
    ],
    [
     177,
-    176
+    133
+   ],
+   [
+    177,
+    129
    ],
    [
     177,
@@ -5303,27 +5289,39 @@
    ],
    [
     177,
-    139
+    152
    ],
    [
     177,
-    140
+    153
    ],
    [
     177,
-    170
+    132
    ],
    [
     177,
-    136
+    174
    ],
    [
     177,
-    134
+    167
    ],
    [
     177,
-    138
+    166
+   ],
+   [
+    177,
+    176
+   ],
+   [
+    177,
+    163
+   ],
+   [
+    177,
+    157
    ],
    [
     177,
@@ -5331,19 +5329,11 @@
    ],
    [
     177,
-    149
+    156
    ],
    [
     177,
-    135
-   ],
-   [
-    177,
-    169
-   ],
-   [
-    177,
-    172
+    173
    ],
    [
     177,
@@ -5355,19 +5345,19 @@
    ],
    [
     177,
-    167
+    146
    ],
    [
     177,
-    132
+    144
    ],
    [
     177,
-    142
+    143
    ],
    [
     177,
-    129
+    149
    ],
    [
     177,
@@ -5375,27 +5365,103 @@
    ],
    [
     177,
+    165
+   ],
+   [
+    177,
+    148
+   ],
+   [
+    177,
+    164
+   ],
+   [
+    177,
+    168
+   ],
+   [
+    177,
+    154
+   ],
+   [
+    177,
+    150
+   ],
+   [
+    177,
+    172
+   ],
+   [
+    177,
+    140
+   ],
+   [
+    177,
+    142
+   ],
+   [
+    177,
+    135
+   ],
+   [
+    177,
     171
    ],
    [
     177,
-    163
+    136
    ],
    [
     177,
-    133
+    131
    ],
    [
     177,
-    152
+    139
    ],
    [
-    178,
-    130
+    177,
+    151
    ],
    [
-    178,
+    177,
     127
+   ],
+   [
+    177,
+    128
+   ],
+   [
+    177,
+    162
+   ],
+   [
+    177,
+    141
+   ],
+   [
+    177,
+    175
+   ],
+   [
+    177,
+    134
+   ],
+   [
+    177,
+    138
+   ],
+   [
+    177,
+    145
+   ],
+   [
+    177,
+    137
+   ],
+   [
+    177,
+    169
    ],
    [
     178,
@@ -5403,7 +5469,11 @@
    ],
    [
     178,
-    132
+    127
+   ],
+   [
+    178,
+    128
    ],
    [
     178,
@@ -5411,11 +5481,11 @@
    ],
    [
     178,
-    128
+    130
    ],
    [
-    179,
-    135
+    178,
+    132
    ],
    [
     179,
@@ -5423,11 +5493,7 @@
    ],
    [
     179,
-    136
-   ],
-   [
-    179,
-    153
+    133
    ],
    [
     179,
@@ -5435,7 +5501,15 @@
    ],
    [
     179,
-    133
+    135
+   ],
+   [
+    179,
+    153
+   ],
+   [
+    179,
+    136
    ],
    [
     180,
@@ -5443,19 +5517,19 @@
    ],
    [
     180,
-    140
-   ],
-   [
-    180,
-    137
-   ],
-   [
-    180,
     168
    ],
    [
     180,
+    140
+   ],
+   [
+    180,
     138
+   ],
+   [
+    180,
+    137
    ],
    [
     181,
@@ -5463,11 +5537,11 @@
    ],
    [
     181,
-    143
+    141
    ],
    [
     181,
-    141
+    142
    ],
    [
     181,
@@ -5475,7 +5549,11 @@
    ],
    [
     181,
-    142
+    143
+   ],
+   [
+    182,
+    177
    ],
    [
     182,
@@ -5483,7 +5561,7 @@
    ],
    [
     182,
-    178
+    179
    ],
    [
     182,
@@ -5491,11 +5569,7 @@
    ],
    [
     182,
-    179
-   ],
-   [
-    182,
-    177
+    178
    ],
    [
     183,
@@ -5519,6 +5593,10 @@
    ],
    [
     191,
+    189
+   ],
+   [
+    191,
     190
    ],
    [
@@ -5526,23 +5604,15 @@
     188
    ],
    [
-    191,
-    189
-   ],
-   [
-    192,
-    188
-   ],
-   [
     192,
     187
    ],
    [
-    193,
+    192,
     188
    ],
    [
-    194,
+    193,
     188
    ],
    [
@@ -5551,15 +5621,19 @@
    ],
    [
     194,
+    188
+   ],
+   [
+    194,
+    185
+   ],
+   [
+    194,
     192
    ],
    [
     194,
     193
-   ],
-   [
-    194,
-    185
    ],
    [
     206,
@@ -5587,15 +5661,15 @@
    ],
    [
     213,
+    120
+   ],
+   [
+    213,
     211
    ],
    [
     213,
     125
-   ],
-   [
-    213,
-    120
    ],
    [
     214,
@@ -5607,11 +5681,11 @@
    ],
    [
     215,
-    214
+    213
    ],
    [
     215,
-    213
+    214
    ],
    [
     216,
@@ -5619,11 +5693,11 @@
    ],
    [
     217,
-    215
+    216
    ],
    [
     217,
-    216
+    215
    ],
    [
     218,
@@ -5727,27 +5801,7 @@
    ],
    [
     233,
-    150
-   ],
-   [
-    233,
-    143
-   ],
-   [
-    233,
     127
-   ],
-   [
-    233,
-    141
-   ],
-   [
-    233,
-    137
-   ],
-   [
-    233,
-    129
    ],
    [
     233,
@@ -5755,7 +5809,15 @@
    ],
    [
     233,
-    134
+    133
+   ],
+   [
+    233,
+    150
+   ],
+   [
+    233,
+    141
    ],
    [
     233,
@@ -5763,11 +5825,27 @@
    ],
    [
     233,
+    129
+   ],
+   [
+    233,
+    134
+   ],
+   [
+    233,
     138
    ],
    [
     233,
-    133
+    143
+   ],
+   [
+    233,
+    137
+   ],
+   [
+    234,
+    233
    ],
    [
     234,
@@ -5776,10 +5854,6 @@
    [
     234,
     232
-   ],
-   [
-    234,
-    233
    ],
    [
     235,
@@ -5831,11 +5905,11 @@
    ],
    [
     241,
-    110
+    114
    ],
    [
     241,
-    114
+    110
    ],
    [
     241,
@@ -5843,11 +5917,11 @@
    ],
    [
     242,
-    73
+    207
    ],
    [
     242,
-    207
+    73
    ],
    [
     243,
@@ -5883,19 +5957,7 @@
    ],
    [
     251,
-    248
-   ],
-   [
-    251,
-    250
-   ],
-   [
-    251,
-    243
-   ],
-   [
-    251,
-    246
+    247
    ],
    [
     251,
@@ -5903,7 +5965,19 @@
    ],
    [
     251,
+    250
+   ],
+   [
+    251,
+    248
+   ],
+   [
+    251,
     245
+   ],
+   [
+    251,
+    243
    ],
    [
     251,
@@ -5911,7 +5985,7 @@
    ],
    [
     251,
-    247
+    246
    ],
    [
     252,
@@ -5919,11 +5993,15 @@
    ],
    [
     252,
-    242
+    251
    ],
    [
     252,
-    251
+    242
+   ],
+   [
+    253,
+    252
    ],
    [
     253,
@@ -5932,10 +6010,6 @@
    [
     253,
     110
-   ],
-   [
-    253,
-    252
    ],
    [
     254,
@@ -5955,11 +6029,11 @@
    ],
    [
     257,
-    85
+    268
    ],
    [
     257,
-    268
+    85
    ],
    [
     258,
@@ -5983,11 +6057,11 @@
    ],
    [
     260,
-    262
+    235
    ],
    [
     260,
-    235
+    262
    ],
    [
     261,
@@ -6019,11 +6093,11 @@
    ],
    [
     267,
-    265
+    266
    ],
    [
     267,
-    266
+    265
    ],
    [
     268,
@@ -6035,15 +6109,15 @@
    ],
    [
     270,
+    268
+   ],
+   [
+    270,
     267
    ],
    [
     270,
     269
-   ],
-   [
-    270,
-    268
    ],
    [
     271,
@@ -6071,11 +6145,11 @@
    ],
    [
     275,
-    274
+    268
    ],
    [
     275,
-    268
+    274
    ],
    [
     276,
@@ -6087,11 +6161,11 @@
    ],
    [
     277,
-    87
+    265
    ],
    [
     277,
-    265
+    87
    ],
    [
     278,
@@ -6119,10 +6193,6 @@
    ],
    [
     282,
-    276
-   ],
-   [
-    282,
     281
    ],
    [
@@ -6134,6 +6204,14 @@
     280
    ],
    [
+    282,
+    276
+   ],
+   [
+    283,
+    202
+   ],
+   [
     283,
     284
    ],
@@ -6142,16 +6220,12 @@
     75
    ],
    [
-    283,
-    202
+    284,
+    283
    ],
    [
     284,
     282
-   ],
-   [
-    284,
-    283
    ],
    [
     285,
@@ -6171,11 +6245,11 @@
    ],
    [
     287,
-    195
+    286
    ],
    [
     287,
-    286
+    195
    ],
    [
     288,
@@ -6235,19 +6309,19 @@
    ],
    [
     297,
-    73
-   ],
-   [
-    297,
     131
    ],
    [
-    298,
+    297,
     73
    ],
    [
     298,
     132
+   ],
+   [
+    298,
+    73
    ],
    [
     299,
@@ -6267,11 +6341,11 @@
    ],
    [
     301,
-    73
+    135
    ],
    [
     301,
-    135
+    73
    ],
    [
     302,
@@ -6291,11 +6365,11 @@
    ],
    [
     304,
-    73
+    138
    ],
    [
     304,
-    138
+    73
    ],
    [
     305,
@@ -6315,11 +6389,11 @@
    ],
    [
     307,
-    73
+    141
    ],
    [
     307,
-    141
+    73
    ],
    [
     308,
@@ -6355,11 +6429,11 @@
    ],
    [
     312,
-    73
+    146
    ],
    [
     312,
-    146
+    73
    ],
    [
     313,
@@ -6411,11 +6485,11 @@
    ],
    [
     319,
-    73
+    153
    ],
    [
     319,
-    153
+    73
    ],
    [
     320,
@@ -6427,11 +6501,11 @@
    ],
    [
     321,
-    73
+    155
    ],
    [
     321,
-    155
+    73
    ],
    [
     322,
@@ -6443,103 +6517,7 @@
    ],
    [
     323,
-    310
-   ],
-   [
-    323,
-    314
-   ],
-   [
-    323,
-    307
-   ],
-   [
-    323,
-    304
-   ],
-   [
-    323,
-    315
-   ],
-   [
-    323,
-    320
-   ],
-   [
-    323,
-    308
-   ],
-   [
-    323,
-    309
-   ],
-   [
-    323,
-    311
-   ],
-   [
-    323,
-    300
-   ],
-   [
-    323,
-    318
-   ],
-   [
-    323,
-    321
-   ],
-   [
-    323,
     319
-   ],
-   [
-    323,
-    312
-   ],
-   [
-    323,
-    303
-   ],
-   [
-    323,
-    305
-   ],
-   [
-    323,
-    299
-   ],
-   [
-    323,
-    316
-   ],
-   [
-    323,
-    313
-   ],
-   [
-    323,
-    297
-   ],
-   [
-    323,
-    296
-   ],
-   [
-    323,
-    294
-   ],
-   [
-    323,
-    306
-   ],
-   [
-    323,
-    317
-   ],
-   [
-    323,
-    301
    ],
    [
     323,
@@ -6547,7 +6525,39 @@
    ],
    [
     323,
+    294
+   ],
+   [
+    323,
+    310
+   ],
+   [
+    323,
+    306
+   ],
+   [
+    323,
+    296
+   ],
+   [
+    323,
     298
+   ],
+   [
+    323,
+    299
+   ],
+   [
+    323,
+    314
+   ],
+   [
+    323,
+    300
+   ],
+   [
+    323,
+    316
    ],
    [
     323,
@@ -6555,11 +6565,75 @@
    ],
    [
     323,
-    295
+    315
+   ],
+   [
+    323,
+    317
+   ],
+   [
+    323,
+    308
+   ],
+   [
+    323,
+    318
+   ],
+   [
+    323,
+    305
+   ],
+   [
+    323,
+    321
+   ],
+   [
+    323,
+    309
+   ],
+   [
+    323,
+    297
+   ],
+   [
+    323,
+    320
+   ],
+   [
+    323,
+    307
    ],
    [
     323,
     302
+   ],
+   [
+    323,
+    295
+   ],
+   [
+    323,
+    301
+   ],
+   [
+    323,
+    303
+   ],
+   [
+    323,
+    311
+   ],
+   [
+    323,
+    312
+   ],
+   [
+    323,
+    304
+   ],
+   [
+    323,
+    313
    ],
    [
     324,
@@ -6623,11 +6697,11 @@
    ],
    [
     339,
-    335
+    337
    ],
    [
     339,
-    337
+    335
    ],
    [
     340,
@@ -6647,7 +6721,7 @@
    ],
    [
     353,
-    351
+    350
    ],
    [
     353,
@@ -6655,7 +6729,7 @@
    ],
    [
     353,
-    350
+    351
    ],
    [
     354,
@@ -6695,15 +6769,15 @@
    ],
    [
     371,
+    354
+   ],
+   [
+    371,
     370
    ],
    [
     371,
     346
-   ],
-   [
-    371,
-    354
    ],
    [
     372,
@@ -6715,15 +6789,15 @@
    ],
    [
     374,
+    372
+   ],
+   [
+    374,
     373
    ],
    [
     374,
     370
-   ],
-   [
-    374,
-    372
    ],
    [
     375,
@@ -6739,11 +6813,11 @@
    ],
    [
     377,
-    375
+    374
    ],
    [
     377,
-    376
+    375
    ],
    [
     377,
@@ -6751,7 +6825,11 @@
    ],
    [
     377,
-    374
+    376
+   ],
+   [
+    378,
+    361
    ],
    [
     378,
@@ -6762,7 +6840,7 @@
     365
    ],
    [
-    378,
+    379,
     361
    ],
    [
@@ -6774,7 +6852,7 @@
     360
    ],
    [
-    379,
+    380,
     361
    ],
    [
@@ -6786,10 +6864,6 @@
     371
    ],
    [
-    380,
-    361
-   ],
-   [
     381,
     378
    ],
@@ -6799,11 +6873,11 @@
    ],
    [
     383,
-    365
+    361
    ],
    [
     383,
-    361
+    365
    ],
    [
     384,
@@ -6811,11 +6885,11 @@
    ],
    [
     385,
-    384
+    361
    ],
    [
     385,
-    361
+    384
    ],
    [
     386,
@@ -6871,11 +6945,11 @@
    ],
    [
     393,
-    365
+    361
    ],
    [
     393,
-    361
+    365
    ],
    [
     394,
@@ -6903,11 +6977,11 @@
    ],
    [
     414,
-    413
+    407
    ],
    [
     414,
-    407
+    413
    ],
    [
     415,
@@ -6923,19 +6997,19 @@
    ],
    [
     417,
-    416
+    407
    ],
    [
     417,
+    416
+   ],
+   [
+    418,
     407
    ],
    [
     418,
     408
-   ],
-   [
-    418,
-    407
    ],
    [
     419,

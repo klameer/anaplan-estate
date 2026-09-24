@@ -32,6 +32,9 @@ def test_initial_reading_path_is_short_and_actionable():
     worth = [a["worth"] for a in acts]
     assert worth == sorted(worth, reverse=True) and rep["plan"]["met_bar"] == sum(worth)     # met-the-bar first, then the rest, each with a reason
     assert all(a["why_not"] for a in acts if not a["worth"]) and all(not a["why_not"] for a in acts if a["worth"])
+    groups = rep["plan"]["groups"]
+    assert sorted(k for g in groups for k in g["keys"]) == sorted(a["key"] for a in acts) and all(a["group"] for a in acts)
+    assert groups[0]["keys"][0] == acts[0]["key"]                          # the group holding the top action comes first
     cards = re.findall(r'<li class="action(?: below)?" id="A\d+">', h)
     assert len(cards) == len(acts)
     for a in acts:

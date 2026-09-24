@@ -235,8 +235,12 @@ def render_markdown(er) -> str:
     out = [f"# {rep['title']}", "", f"Generated with {rep['generator']}. {rep['summary_text'][0]}", "", "## Action plan", ""]
     pl = rep["plan"]
     if pl["actions"]:
-        for i, a in enumerate(pl["actions"], 1):
-            out += [f"### {i}. {a['title']}", "", f"**Why.** {a['why']}", "", "**Steps.**", ""] + [f"{j}. {st}" for j, st in enumerate(a["steps"], 1)] + ["",
+      amap = {a["key"]: a for a in pl["actions"]}; num = {a["key"]: i for i, a in enumerate(pl["actions"], 1)}
+      for g in pl["groups"]:
+        out += [f"### {g['title']} ({g['met_bar']} of {len(g['keys'])} met the bar)", "", g["blurb"], ""]
+        for k in g["keys"]:
+            a = amap[k]; i = num[k]
+            out += [f"#### {i}. {a['title']}", "", f"**Why.** {a['why']}", "", "**Steps.**", ""] + [f"{j}. {st}" for j, st in enumerate(a["steps"], 1)] + ["",
                     f"**Done when.** {a['done_when']}", "", f"Role: {a['role']}. Evidence: {', '.join(f'[{x}](#{x})' for x in a['finding_ids']) or 'none'}."
                     + (f" Depends on: {', '.join(a['depends_on'])}." if a["depends_on"] else "")]
             out += ([f"- Below the bar: {a['why_not']}."] if not a.get("worth", True) else []) + [f"- Note: {n}" for n in a["notices"]] + [""]

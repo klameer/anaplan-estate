@@ -4,7 +4,11 @@ Generated with CodelessOps Estate Review. 4 Anaplan models, 426 line items, 145M
 
 ## Action plan
 
-### 1. Replace the long chain of IF tests in the line item 'Forecast Opex' in the module 'CAL03 Opex' with a lookup table
+### Make heavy calculations cheaper (2 of 2 met the bar)
+
+Formulas that take a large share of a model's measured calculation effort and match a pattern with a known, safer alternative.
+
+#### 1. Replace the long chain of IF tests in the line item 'Forecast Opex' in the module 'CAL03 Opex' with a lookup table
 
 **Why.** A formula built as a long chain of 'if this then that' tests checks every branch for every cell, and each new case means editing the formula. The same mapping held as rows in a small table module, read with one lookup, is quicker to calculate and can be maintained without a builder. In Caldergate FP&A, the line item 'Forecast Opex' in the module 'CAL03 Opex' carries 16.0% of the model's measured calculation effort.
 
@@ -18,7 +22,7 @@ Generated with CodelessOps Estate Review. 4 Anaplan models, 426 line items, 145M
 
 Role: model builder, Caldergate FP&A. Evidence: [F2](#F2), [F5](#F5), [F16](#F16), [F21](#F21).
 
-### 2. Stop working out text labels on every cell in Caldergate FP&A (1 formula)
+#### 2. Stop working out text labels on every cell in Caldergate FP&A (1 formula)
 
 **Why.** Anaplan runs a formula once for every cell of a module. When the formula only produces a label (a text value such as a period code) that is the same across a whole row, working it out for every cell of a large grid is wasted effort. Moving the formula into a small helper module that has only the list the label depends on means it is worked out once per item and simply looked up from there. In Caldergate FP&A this applies to the line item 'Journal Cost Centre' in the module 'DAT01 Actuals GL': together 5.0M cells and 6.2% of the model's measured calculation effort.
 
@@ -32,7 +36,11 @@ Role: model builder, Caldergate FP&A. Evidence: [F2](#F2), [F5](#F5), [F16](#F16
 
 Role: model builder, Caldergate FP&A. Evidence: [F5](#F5), [F16](#F16).
 
-### 3. Find out whether anyone still uses the module 'CAL05 Opex OLD' in Caldergate FP&A
+### Check whether modules are still used (1 of 4 met the bar)
+
+Modules that no formula reads and no export uses; someone has to check pages and views before they can be kept or retired.
+
+#### 3. Find out whether anyone still uses the module 'CAL05 Opex OLD' in Caldergate FP&A
 
 **Why.** A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. Until someone checks, it can neither be removed nor trusted. In Caldergate FP&A, no formula outside the module 'CAL05 Opex OLD' reads any of its 14 line items and no export reads it; it occupies 70.2M cells and 50.8% of the model's measured calculation effort. That is what it takes up now, not a saving.
 
@@ -46,22 +54,7 @@ Role: model builder, Caldergate FP&A. Evidence: [F5](#F5), [F16](#F16).
 
 Role: model owner with a page builder, Caldergate FP&A. Evidence: [F1](#F1).
 
-### 4. Look at the five heaviest calculations in Caldergate Data Hub
-
-**Why.** Anaplan records how much of a model's calculation effort each line item takes. In Caldergate Data Hub, ten line items take 99.9% of it, led by the line item 'Loaded?' in the module 'DAT01 GL Transactions' at 88.3%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: heavy calculation is often simply the model doing its main job.
-
-**Steps.**
-
-1. With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.
-2. For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).
-3. Try at most one change in a development copy, reading Calculation Effort before and after.
-
-**Done when.** Each of the five has a recorded decision (keep, or one named change to trial) agreed with the owner.
-
-Role: model builder, Caldergate Data Hub. Evidence: [F3](#F3).
-- Below the bar: the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet.
-
-### 5. Find out whether anyone still uses the module 'SYS01 Time' in Board Reporting
+#### 5. Find out whether anyone still uses the module 'SYS01 Time' in Board Reporting
 
 **Why.** A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. Until someone checks, it can neither be removed nor trusted. In Board Reporting, no formula outside the module 'SYS01 Time' reads any of its 2 line items and no export reads it; it occupies 72 cells and 2.8% of the model's measured calculation effort. That is what it takes up now, not a saving.
 
@@ -76,53 +69,7 @@ Role: model builder, Caldergate Data Hub. Evidence: [F3](#F3).
 Role: model owner with a page builder, Board Reporting. Evidence: [F8](#F8).
 - Below the bar: the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet.
 
-### 6. Remove 1 duplicate copy of one calculation in Caldergate FP&A
-
-**Why.** The same calculation exists more than once under different names, with the same formula and the same dimensions. Two copies can drift apart when one is changed, and each copy takes space and calculation time. In Caldergate FP&A, the line item 'Depreciation' in the module 'OUT01 Management Pack' is the same calculation as the line item 'Depreciation' in the module 'CAL07 P&L by Cost Centre'; the copies occupy 19.2K cells and 0 other formulas read them.
-
-**Steps.**
-
-1. Ask the owner and page builder whether any copy exists for a reason: a page that shows it under that name, an export column, or different access rights.
-2. In a development copy, point the 0 formulas that read the copies at the line item 'Depreciation' in the module 'CAL07 P&L by Cost Centre' instead; keep the copies until the check below passes.
-3. Compare the outputs that depend on them cell for cell, get sign-off, then remove the copies.
-
-**Done when.** Everything that read the copies gives the same values from the kept line item, and the copies are gone with no blank page or missing export column.
-
-Role: model builder, Caldergate FP&A. Evidence: [F11](#F11).
-- Below the bar: the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work.
-
-### 7. Remove 1 duplicate copy of one calculation in Workforce Planning
-
-**Why.** The same calculation exists more than once under different names, with the same formula and the same dimensions. Two copies can drift apart when one is changed, and each copy takes space and calculation time. In Workforce Planning, the line item 'Headcount' in the module 'zz Archive - 2021 Cost' is the same calculation as the line item 'Headcount' in the module 'Calcs - Attrition'; the copies occupy 4.5K cells and 1 other formulas read them.
-
-**Steps.**
-
-1. Ask the owner and page builder whether any copy exists for a reason: a page that shows it under that name, an export column, or different access rights.
-2. In a development copy, point the 1 formulas that read the copies at the line item 'Headcount' in the module 'Calcs - Attrition' instead; keep the copies until the check below passes.
-3. Compare the outputs that depend on them cell for cell, get sign-off, then remove the copies.
-
-**Done when.** Everything that read the copies gives the same values from the kept line item, and the copies are gone with no blank page or missing export column.
-
-Role: model builder, Workforce Planning. Evidence: [F12](#F12). Depends on: retire:Workforce Planning.
-- Below the bar: the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work.
-- Note: The module 'zz Archive - 2021 Cost' may no longer be used: do that check first, since a retired module needs no tuning.
-
-### 8. Look at the five heaviest calculations in Board Reporting
-
-**Why.** Anaplan records how much of a model's calculation effort each line item takes. In Board Reporting, ten line items take 89.7% of it, led by the line item 'Revenue per FTE' in the module 'CAL01 KPIs' at 11.2%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: heavy calculation is often simply the model doing its main job.
-
-**Steps.**
-
-1. With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.
-2. For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).
-3. Try at most one change in a development copy, reading Calculation Effort before and after.
-
-**Done when.** Each of the five has a recorded decision (keep, or one named change to trial) agreed with the owner.
-
-Role: model builder, Board Reporting. Evidence: [F6](#F6).
-- Below the bar: the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet.
-
-### 9. Find out whether anyone still uses the module 'zz Archive - 2021 Cost' in Workforce Planning
+#### 9. Find out whether anyone still uses the module 'zz Archive - 2021 Cost' in Workforce Planning
 
 **Why.** A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. Until someone checks, it can neither be removed nor trusted. In Workforce Planning, no formula outside the module 'zz Archive - 2021 Cost' reads any of its 3 line items and no export reads it; it occupies 13.4K cells. That is what it takes up now, not a saving.
 
@@ -137,7 +84,7 @@ Role: model builder, Board Reporting. Evidence: [F6](#F6).
 Role: model owner with a page builder, Workforce Planning. Evidence: [F30](#F30).
 - Below the bar: the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet.
 
-### 10. Find out whether anyone still uses the module 'SYS01 Time Settings' in Caldergate Data Hub
+#### 10. Find out whether anyone still uses the module 'SYS01 Time Settings' in Caldergate Data Hub
 
 **Why.** A module that no formula reads and no export uses may be left over from earlier work, or it may be read only by pages and views, which the exports do not show. Until someone checks, it can neither be removed nor trusted. In Caldergate Data Hub, no formula outside the module 'SYS01 Time Settings' reads any of its 5 line items and no export reads it; it occupies 180 cells. That is what it takes up now, not a saving.
 
@@ -151,6 +98,75 @@ Role: model owner with a page builder, Workforce Planning. Evidence: [F30](#F30)
 
 Role: model owner with a page builder, Caldergate Data Hub. Evidence: [F31](#F31).
 - Below the bar: the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet.
+
+### Look at where the calculation time goes (0 of 2 met the bar)
+
+The heaviest calculations in a model that match no known pattern: a place to look with the owner, not a change to make.
+
+#### 4. Look at the five heaviest calculations in Caldergate Data Hub
+
+**Why.** Anaplan records how much of a model's calculation effort each line item takes. In Caldergate Data Hub, ten line items take 99.9% of it, led by the line item 'Loaded?' in the module 'DAT01 GL Transactions' at 88.3%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: heavy calculation is often simply the model doing its main job.
+
+**Steps.**
+
+1. With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.
+2. For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).
+3. Try at most one change in a development copy, reading Calculation Effort before and after.
+
+**Done when.** Each of the five has a recorded decision (keep, or one named change to trial) agreed with the owner.
+
+Role: model builder, Caldergate Data Hub. Evidence: [F3](#F3).
+- Below the bar: the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet.
+
+#### 8. Look at the five heaviest calculations in Board Reporting
+
+**Why.** Anaplan records how much of a model's calculation effort each line item takes. In Board Reporting, ten line items take 89.7% of it, led by the line item 'Revenue per FTE' in the module 'CAL01 KPIs' at 11.2%. None of them matches a known pattern this report can name, so this is a place to look, not a change to make: heavy calculation is often simply the model doing its main job.
+
+**Steps.**
+
+1. With the owner, read the five heaviest formulas (they are listed under Evidence) and note what each one is for and how often it changes.
+2. For each, decide: leave as is, or one named change to try (for example the patterns in the other actions).
+3. Try at most one change in a development copy, reading Calculation Effort before and after.
+
+**Done when.** Each of the five has a recorded decision (keep, or one named change to trial) agreed with the owner.
+
+Role: model builder, Board Reporting. Evidence: [F6](#F6).
+- Below the bar: the footprint is below 5% of its model's measured effort and 50M cells, so asking someone to check it is not a good use of their time yet.
+
+### Remove duplicated calculations (0 of 2 met the bar)
+
+The same calculation kept under more than one name; one copy can be dropped once the reason for the second is ruled out.
+
+#### 6. Remove 1 duplicate copy of one calculation in Caldergate FP&A
+
+**Why.** The same calculation exists more than once under different names, with the same formula and the same dimensions. Two copies can drift apart when one is changed, and each copy takes space and calculation time. In Caldergate FP&A, the line item 'Depreciation' in the module 'OUT01 Management Pack' is the same calculation as the line item 'Depreciation' in the module 'CAL07 P&L by Cost Centre'; the copies occupy 19.2K cells and 0 other formulas read them.
+
+**Steps.**
+
+1. Ask the owner and page builder whether any copy exists for a reason: a page that shows it under that name, an export column, or different access rights.
+2. In a development copy, point the 0 formulas that read the copies at the line item 'Depreciation' in the module 'CAL07 P&L by Cost Centre' instead; keep the copies until the check below passes.
+3. Compare the outputs that depend on them cell for cell, get sign-off, then remove the copies.
+
+**Done when.** Everything that read the copies gives the same values from the kept line item, and the copies are gone with no blank page or missing export column.
+
+Role: model builder, Caldergate FP&A. Evidence: [F11](#F11).
+- Below the bar: the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work.
+
+#### 7. Remove 1 duplicate copy of one calculation in Workforce Planning
+
+**Why.** The same calculation exists more than once under different names, with the same formula and the same dimensions. Two copies can drift apart when one is changed, and each copy takes space and calculation time. In Workforce Planning, the line item 'Headcount' in the module 'zz Archive - 2021 Cost' is the same calculation as the line item 'Headcount' in the module 'Calcs - Attrition'; the copies occupy 4.5K cells and 1 other formulas read them.
+
+**Steps.**
+
+1. Ask the owner and page builder whether any copy exists for a reason: a page that shows it under that name, an export column, or different access rights.
+2. In a development copy, point the 1 formulas that read the copies at the line item 'Headcount' in the module 'Calcs - Attrition' instead; keep the copies until the check below passes.
+3. Compare the outputs that depend on them cell for cell, get sign-off, then remove the copies.
+
+**Done when.** Everything that read the copies gives the same values from the kept line item, and the copies are gone with no blank page or missing export column.
+
+Role: model builder, Workforce Planning. Evidence: [F12](#F12). Depends on: retire:Workforce Planning.
+- Below the bar: the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work.
+- Note: The module 'zz Archive - 2021 Cost' may no longer be used: do that check first, since a retired module needs no tuning.
 
 Suggested starting points from the supplied exports; the ordering is a hypothesis (see Evidence: how the actions were chosen).
 

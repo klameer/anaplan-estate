@@ -56,7 +56,7 @@ li.action .role{margin:0 0 8px}li.action .model{display:inline-block;background:
 li.action dl{margin:0}li.action dt{font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:8px}li.action dd{margin:2px 0 0}
 li.action ol{margin:2px 0 0;padding-left:20px}li.action ol li{margin:2px 0}
 li.action .notice{background:var(--notice);border-radius:6px;padding:6px 10px;font-size:13px;margin:8px 0 0}
-li.action.below{border-left-color:var(--rule);opacity:.92}li.action .notice.below{background:var(--soft)}h3.below-h{margin-top:22px}
+li.action.below{border-left-color:var(--rule);opacity:.92}li.action .notice.below{background:var(--soft)}h3.group-h{margin-top:22px;font-size:17px}
 li.action .links{font-size:12.5px;margin:8px 0 0}li.action .links a{margin-right:10px}
 .badge{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid var(--rule);color:var(--muted);margin-right:4px;white-space:nowrap}
 .badge.imp-high{border-color:var(--high);color:var(--high)}.badge.imp-medium{border-color:var(--med);color:var(--med)}.badge.imp-low{border-color:var(--low);color:var(--low)}
@@ -580,11 +580,12 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
     pl = rep["plan"]
     out.append('<section id="plan" class="view" role="tabpanel" aria-label="Action plan">')
     if pl["actions"]:
-        above = [a for a in pl["actions"] if a.get("worth", True)]; below = [a for a in pl["actions"] if not a.get("worth", True)]
-        out.append('<ol class="actions">' + "".join(_action_card(i, a, rep, nidx, midx) for i, a in enumerate(above, 1)) + "</ol>")
-        if below:
-            out.append(f'<h3 class="below-h">Also considered, below the bar ({len(below)})</h3><p class="fnote">Kept visible so nothing is hidden; each says why it was placed here. <a href="#ranking">What the bar is</a>.</p>'
-                       '<ol class="actions" start="' + str(len(above) + 1) + '">' + "".join(_action_card(len(above) + i, a, rep, nidx, midx) for i, a in enumerate(below, 1)) + "</ol>")
+        amap = {a["key"]: a for a in pl["actions"]}
+        num = {a["key"]: i for i, a in enumerate(pl["actions"], 1)}
+        for g in pl["groups"]:
+            items = [amap[k] for k in g["keys"]]
+            out.append(f'<h3 class="group-h">{_e(g["title"])} <span class="muted">({g["met_bar"]} of {len(items)} met the bar)</span></h3><p class="fnote">{_e(g["blurb"])}</p>'
+                       '<ol class="actions">' + "".join(_action_card(num[a["key"]], a, rep, nidx, midx) for a in items) + "</ol>")
     else:
         out.append(f'<p><strong>{_e(pl["none"]["message"])}</strong></p><p>Next data check: {_e(pl["none"]["next_check"])}.</p>')
     out.append(f'<p class="fnote">All {pl["considered"]} candidates are shown; {pl["met_bar"]} met the bar for being worth doing. The order is a hypothesis, not a verdict. '

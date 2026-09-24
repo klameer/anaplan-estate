@@ -58,6 +58,7 @@ class Candidate:
     rank_reason: str = ""
     worth: bool = True                                    # met the bar (WORTH); the rest are shown after it, labelled
     why_not: str = ""                                     # why it fell below the bar
+    group: str = ""                                       # key of GROUPS
 
     @property
     def bounded(self) -> bool:
@@ -328,6 +329,27 @@ def candidates(er) -> list[Candidate]:
     return sorted(out, key=rank_key)
 
 
+GROUPS = [
+    ("speed", "Make heavy calculations cheaper", "Formulas that take a large share of a model's measured calculation effort and match a pattern with a known, safer alternative."),
+    ("duplicate", "Remove duplicated calculations", "The same calculation kept under more than one name; one copy can be dropped once the reason for the second is ruled out."),
+    ("usage", "Check whether modules are still used", "Modules that no formula reads and no export uses; someone has to check pages and views before they can be kept or retired."),
+    ("look", "Look at where the calculation time goes", "The heaviest calculations in a model that match no known pattern: a place to look with the owner, not a change to make."),
+]
+
+
+def group_of(c: "Candidate") -> str:
+    k = c.key
+    if k.startswith("hotspot-investigate:"):
+        return "look"
+    if k.startswith("hotspot-") or k.startswith("if:"):
+        return "speed"
+    if k.startswith("duplicate:"):
+        return "duplicate"
+    if k.startswith("retire:"):
+        return "usage"
+    return "speed"
+
+
 WORTH = [
     "A change is worth doing when its evidence is not merely inferred, its scope is bounded, and its observed footprint is at least medium (1% of its model's measured effort, or 1M cells).",
     "An investigation is worth doing only when the footprint is high (5% of its model's measured effort, or 50M cells): asking someone to check a small module is not a good use of their time.",
@@ -359,7 +381,7 @@ def select(er, limit: int | None = None) -> dict:
     ranked = candidates(er)
     by_key = {c.key: c for c in ranked}
     for c in ranked:
-        c.why_not = why_not(c); c.worth = not c.why_not
+        c.why_not = why_not(c); c.worth = not c.why_not; c.group = group_of(c)
     for c in ranked:                                   # a prerequisite of an action above the bar is above the bar too
         if c.worth:
             for d in c.depends_on:
@@ -388,5 +410,12 @@ def select(er, limit: int | None = None) -> dict:
         if not checks:
             checks.append("no finding met the bar for a bounded, evidenced action worth doing; the catalogue under Evidence lists everything that was observed")
         nothing = {"message": "No action is suggested from these exports.", "next_check": "; ".join(checks)}
+    order = {c.key: i for i, c in enumerate(chosen)}
+    groups = []
+    for key, title, blurb in GROUPS:
+        ks = [c.key for c in chosen if c.group == key]
+        if ks:
+            groups.append({"key": key, "title": title, "blurb": blurb, "keys": ks, "met_bar": sum(1 for c in chosen if c.group == key and c.worth)})
+    groups.sort(key=lambda g: min(order[k] for k in g["keys"]))       # the group holding the top-ranked action comes first
     return {"actions": [c.to_dict() for c in chosen], "candidates": [c.to_dict() for c in ranked], "ranking": RANKING, "worth": WORTH, "limit": limit,
-            "considered": len(ranked), "met_bar": sum(1 for c in chosen if c.worth), "none": nothing}
+            "considered": len(ranked), "met_bar": sum(1 for c in chosen if c.worth), "groups": groups, "none": nothing}
