@@ -62,6 +62,7 @@ class Estate:
     actions: dict[str, Action] = field(default_factory=dict)
     processes: dict[str, Process] = field(default_factory=dict)
     ux_pages: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
 
 def _split(s: str) -> tuple[str, ...]:
@@ -114,12 +115,17 @@ _TARGET = re.compile(r"^(Import into|Export from)\s+'?(.+?)'?$")
 
 
 def load_actions(path: str | Path, est: Estate) -> None:
-    with open(path, encoding="utf-8-sig", newline="") as f:
-        r = csv.DictReader(f)
-        first = r.fieldnames[0]
-        section = None
-        for row in r:
-            name = row.get(first, "")
+    from .model import open_csv
+    rows, fields, delim, enc = open_csv(path)
+    if not fields:
+        return
+    if "Action" not in fields:
+        est.warnings.append(f"Actions export has no 'Action' column (found: {', '.join(c or '(blank)' for c in fields[:8])}); import and export targets could not be read.")
+    first = fields[0]
+    section = None
+    if True:
+        for row in rows:
+            name = row.get(first, "") or ""
             act = row.get("Action", "") or ""
             started = row.get("Start Date and Time (UTC)", "") or ""
             dur = row.get("Most recent duration (ms)", "") or ""

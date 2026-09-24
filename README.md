@@ -65,6 +65,13 @@ estate/
 Subfolders are fine (`FP&A/line items/Line Items.csv`). A `Modules.csv`
 export alongside adds subsidiary-view and module-notes checks.
 
+The loader sniffs the delimiter (comma, semicolon, tab), reads UTF-8 or
+cp1252, and accepts comma-decimal and dot-thousands numbers. English column
+headers are required; `Formula` is the only mandatory column, and every other
+absent column is listed on the report with what it disables (Cell Count
+absent means footprints are unavailable, never zero). Above 25,000 line items
+the page leaves out the per-finding search index to stay usable.
+
 ## Run
 
 ```bash

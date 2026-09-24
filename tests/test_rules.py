@@ -31,6 +31,8 @@ def model(items, modules=None, has_modules=False):
     for mod, dims in (modules or {}).items():
         m.modules.setdefault(mod, Module(name=mod)).applies_to = tuple(dims)
     m.has_modules_export = has_modules or bool(modules)
+    from anaplan_estate.model import COLUMN_ROLES
+    m.columns = set(COLUMN_ROLES) | {""}
     return m
 
 
@@ -261,5 +263,5 @@ def fleet_facts(m, g, lr, e):
             "effort_top10_share": None, "effort_top": [], "effort_by_module": [], "cells_by_module": [(n, c, 0) for n, c in by_mod.most_common()],
             "hubs": [(f"{k[0]}.{k[1]}", n) for k, n in g.hubs(10)], "unreferenced": len(g.unused()), "cycles": 0, "cycles_balance": 0, "cycles_fault": 0,
             "daisy_chains": len(g.daisy_chains()), "referenced_by_check": fleet._ref_check(m, g), "findings": len(lr.findings), "patterns": 0,
-            "rules_skipped": [], "has_modules_export": m.has_modules_export,
+            "rules_skipped": [], "has_modules_export": m.has_modules_export, "has_cells": True, "warnings": [], "missing_columns": [],
             "actions": fleet._actions_facts(e, 12) if e.actions else None}

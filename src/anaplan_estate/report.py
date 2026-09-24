@@ -17,6 +17,7 @@ from __future__ import annotations
 import csv, io, re, datetime
 from collections import Counter
 from .lint import RULES, PLANUAL, DOCS
+from .model import COLUMN_ROLES
 from .findings import AREAS, AREA_LABEL, STRENGTH_TEXT, by_area, _c, _pl
 from . import plan as planmod, impact
 
@@ -141,6 +142,11 @@ def build(er, service_url: str | None = None, contact: str | None = None, feedba
     rep["graph"] = impact.graph_data(er)
     rep["graph"]["suggested"] = _suggested_selection(er, rep["graph"])
     rep["limitations"] = _limitations(er)
+    rep["input_notices"] = [f"{m.name}: {w}" for m in ms for w in m.facts["warnings"]] + \
+                           [f"{m.name}: '{c}' column absent; {COLUMN_ROLES[c]}." for m in ms for c in m.model.missing_columns if c not in ("Module Name",)]
+    rep["generality_note"] = ("The findings catalogue and the Change impact explorer apply to any model the exports describe. The action cards are pattern-matched "
+                              "suggestions from a small set of known patterns (per-cell text labels, SUM with LOOKUP, long IF chains, duplicated calculations, modules with no "
+                              "detected reader); on an estate whose problems lie elsewhere they will be few or absent, and the catalogue is the place to look.")
     rep["summary_text"] = _summary_text(er, rep)
     rep["freshness"] = {"export_date": None, "latest_action_run": (max((m.facts["coverage"]["snapshot_actions"] for m in ms if m.facts["coverage"]["snapshot_actions"]), default=None)),
                         "analysis_date": er.generated, "actions_missing": [m.name for m in ms if not m.facts.get("actions")]}
@@ -250,6 +256,9 @@ def render_markdown(er) -> str:
     else:
         out += [pl["none"]["message"], "", f"Next data check: {pl['none']['next_check']}.", ""]
     out += ["Suggested starting points from the supplied exports; the ordering is a hypothesis (see Evidence: how the actions were chosen).", ""]
+    if rep["input_notices"]:
+        out += ["**Input notices**", ""] + [f"- {n}" for n in rep["input_notices"]] + [""]
+    out += [rep["generality_note"], ""]
     out += ["## Coverage", ""] + [f"- {l}" for l in rep["limitations"]] + [""]
     out += ["## Observations", ""] + [f"{i}. {o}" for i, o in enumerate(rep["observations"], 1)] + [""]
     mt = rep["metrics"]

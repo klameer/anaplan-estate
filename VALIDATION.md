@@ -30,6 +30,33 @@ generalisation, recommendation quality or user value.
   rests on the stylesheet's responsive rules; viewport emulation did not take
   effect in the tooling used, so it was not observed in a browser.
 
+## Input variations checked (generalisation of the loader, not of the advice)
+
+Variants of the example export were fed through the whole pipeline. Before the
+input guards (added the same day) every one of these produced a report with no
+error; the outcome column is after the guards.
+
+| Variation | Outcome now |
+|---|---|
+| Semicolon or tab delimiter | sniffed; identical results; notice shown |
+| No Formula column | stops with a message listing the columns found |
+| No Format column | all 278 line items kept (before: 107 inputs dropped as headers); column listed as absent |
+| No Cell Count column | cells "unavailable", not zero; notice on the plan; rule skipped and listed |
+| No Referenced By column | agreement "not checkable" (before: 0%) |
+| No Calculation Effort column | effort unavailable, as before |
+| No Module Name column | modules taken from header rows, as before |
+| Comma decimals (16,04) and dot thousands (5.017.824) | read correctly; effort values over 100% flagged as unreliable |
+| cp1252 encoding | decoded with a notice |
+| Every formula unparseable / no formulas | reported as parse coverage 0% / no graph; no actions meet the bar |
+| Names with commas, parentheses, dots, duplicates across modules | handled |
+| 11,000 line items (40 replicated modules) | 4 s, 8.8 MB page; above 25,000 line items the page drops the per-finding search index and says so |
+
+Not covered: exports with localised (non-English) column headers stop at the
+Formula check with a message; Polaris versus Classic effort semantics remain
+unknown from the export; naming heuristics (output-module prefixes, "from X" in
+import names) are labelled inferred and simply find less on other conventions.
+The action cards match five patterns only; the report says so on the plan.
+
 ## What remains pending (product validation)
 
 The rules, ranking and presentation were developed around one real estate and

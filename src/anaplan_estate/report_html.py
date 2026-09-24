@@ -57,6 +57,7 @@ li.action dl{margin:0}li.action dt{font-weight:600;font-size:12.5px;text-transfo
 li.action ol{margin:2px 0 0;padding-left:20px}li.action ol li{margin:2px 0}
 li.action .notice{background:var(--notice);border-radius:6px;padding:6px 10px;font-size:13px;margin:8px 0 0}
 li.action.below{border-left-color:var(--rule);opacity:.92}li.action .notice.below{background:var(--soft)}h3.group-h{margin-top:22px;font-size:17px}
+.banner{background:var(--notice);border:1px solid var(--rule);border-radius:8px;padding:8px 12px;font-size:13px;margin:0 0 12px}.banner ul{margin:4px 0 0;padding-left:18px}
 .summary{margin:4px 0 14px}table.sum{font-size:14px}table.sum td,table.sum th{padding:5px 8px}table.sum tr.tot td{font-weight:600;border-top:2px solid var(--rule)}
 li.action .links{font-size:12.5px;margin:8px 0 0}li.action .links a{margin-right:10px}
 .badge{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid var(--rule);color:var(--muted);margin-right:4px;white-space:nowrap}
@@ -446,9 +447,12 @@ def _badges(x: dict) -> str:
             f'<span class="badge">complexity {x["complexity"]}</span>')
 
 
-def _index_text(x: dict) -> str:
+def _index_text(x: dict, light: bool = False) -> str:
     """Complete search text for one finding: every affected object, every evidence row and formula, explanatory text.
-    One entry per line, prefixed by kind (object / formula / evidence / text) so a hit can say where it matched."""
+    One entry per line, prefixed by kind (object / formula / evidence / text) so a hit can say where it matched.
+    In light mode (very large estates) only the title text and object names are indexed."""
+    if light:
+        return "\n".join([f"text: {x['title']} {x['model']}"] + [f"object: {o}" for o in x["objects"]])
     formula_like = re.compile(r"[()\[\]+*/<>=]|\bIF\b|\bTHEN\b")
 
     def classify(inner: str) -> str:
@@ -528,7 +532,7 @@ def _finding(x: dict, rep: dict, nidx: dict, midx: dict) -> str:
 </dl>
 <details class="full"><summary>All affected objects ({len(x["objects"])} {_e(x["unit"])})</summary><div class="objs">{" &middot; ".join(f"<code>{_e(o)}</code>" for o in x["objects"])}</div></details>
 {ev}{val}{report_link}
-<div class="idx">{_e(_index_text(x))}</div>
+<div class="idx">{_e(_index_text(x, rep.get("_light", False)))}</div>
 <p class="fnote"><a href="#catalogue">Catalogue</a> &middot; <a href="#area-{x["area"]}">{_e(AREA_LABEL[x["area"]])}</a> &middot; <a href="#plan">Action plan</a></p>
 </article>'''
 
@@ -556,8 +560,13 @@ def _action_card(i: int, a: dict, rep: dict, nidx: dict, midx: dict) -> str:
             f'{notices}<p class="links">Evidence: {ev or "none"}{(" &middot; " + dep) if dep else ""}{depends}</p></li>')
 
 
-def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None, brand: str | None = None, csv_text: str = "") -> str:
+LIGHT_ABOVE = 25_000     # line items; above this the per-finding search index is left out to keep the page usable
+
+
+def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None, brand: str | None = None, csv_text: str = "", light: bool | None = None) -> str:
     from .report import register_rows, REGISTER_COLS
+    if light is None:
+        light = rep["scope"]["line_items"] > LIGHT_ABOVE
     fmap = {x["id"]: x for x in rep["findings"]}
     models = sorted({x["model"] for x in rep["findings"]})
     key = re.sub(r"[^a-z0-9]+", "-", f"{rep['title']} {rep['generated']}".lower())
@@ -566,6 +575,7 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
     midx = {name: i for i, name in enumerate(gd["models"])}
     midx["_mods"] = {(n[1], n[2]) for n in gd["nodes"]}
     regrows = register_rows(rep)
+    rep["_light"] = light
     data = json.dumps({"key": key, "title": rep["title"], "generated": rep["generated"], "generator": rep["generator"], "csv": csv_text,
                        "register": regrows, "register_cols": REGISTER_COLS, "graph": gd}, ensure_ascii=False).replace("</", "<\\/")
     links = rep["links"]
@@ -580,6 +590,10 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
     # ---------------- Action plan
     pl = rep["plan"]
     out.append('<section id="plan" class="view" role="tabpanel" aria-label="Action plan">')
+    if rep.get("input_notices"):
+        out.append('<div class="banner"><strong>Input notices.</strong> Some of the analysis is limited by what the exports contained:<ul>' + "".join(f"<li>{_e(n)}</li>" for n in rep["input_notices"]) + '</ul></div>')
+    if light:
+        out.append(f'<div class="banner">Large estate ({rep["scope"]["line_items"]:,} line items): the per-finding search index is left out of this page to keep it usable; search covers titles, models and object names only. The register and JSON hold everything.</div>')
     if pl["actions"]:
         amap = {a["key"]: a for a in pl["actions"]}
         num = {a["key"]: i for i, a in enumerate(pl["actions"], 1)}
@@ -594,7 +608,8 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
     else:
         out.append(f'<p><strong>{_e(pl["none"]["message"])}</strong></p><p>Next data check: {_e(pl["none"]["next_check"])}.</p>')
     out.append(f'<p class="fnote">All {pl["considered"]} candidates are shown; {pl["met_bar"]} met the bar for being worth doing. The order is a hypothesis, not a verdict. '
-               '<a href="#ranking">How chosen</a> &middot; <a href="#coverage">Coverage</a> &middot; <a href="#catalogue">All findings</a></p></section>')
+               '<a href="#ranking">How chosen</a> &middot; <a href="#coverage">Coverage</a> &middot; <a href="#catalogue">All findings</a></p>'
+               f'<p class="fnote">{_e(rep["generality_note"])}</p></section>')
     # ---------------- Change impact
     out.append('<section id="impact" class="view" role="tabpanel" aria-label="Change impact" hidden><h2>Change impact</h2>'
                '<p>Select a model, module or line item. <strong>What depends on this</strong> follows readers downstream; <strong>what this depends on</strong> follows sources upstream. Links are parsed formula references; actions are shown at module level; model feeds are inferred from names and are a boundary, not a lineage.</p>'
@@ -652,6 +667,8 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
     for m in rep["models"]:
         f, cov, rc = m["facts"], m["coverage"], m["facts"]["referenced_by_check"]
         rows = [("Files supplied", ", ".join(f"{k}: {v}" for k, v in cov["files"].items() if v) + ("" if cov["files"]["actions"] else "; no Actions export (action usage not assessed)") + ("" if cov["files"]["modules"] else "; no Modules export")),
+                ("Columns absent", "; ".join(cov.get("missing_columns", [])) or "none of the columns the analyses rely on"),
+                ("Input notices", "; ".join(cov.get("warnings", [])) or "none"),
                 ("Export date", "unknown (not in the files)"), ("Latest recorded action run", cov["snapshot_actions"] or ("not assessed (no Actions export)" if not cov["files"]["actions"] else "none recorded")), ("Analysis generated", rep["generated"]),
                 ("Engine", "not in any export (Classic or Polaris unknown)"),
                 ("Modules / line items / calculated", f"{f['modules']} / {_n_(f['line_items'])} / {_n_(f['calculated'])}"), ("Cells as exported", _n_(f["cells"])),

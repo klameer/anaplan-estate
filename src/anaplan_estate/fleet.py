@@ -27,7 +27,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from anaplan_grammar.parser import parse
 from anaplan_grammar.unparse import unparse
-from .model import Model, load_model
+from .model import Model, load_model, COLUMN_ROLES
 from .graph import Graph, build_graph
 from .lint import lint, LintResult, RULES
 from .cluster import cluster, Cluster
@@ -123,6 +123,9 @@ def _ref_check(m: Model, g: Graph) -> dict:
     resolves to a line item here but is a list or property in the model)."""
     agree = ours_only = theirs_only = 0
     why = Counter(); examples = {"collect": [], "unparsed": [], "other": [], "ours_only": []}
+    if not m.has("Referenced By"):
+        return {"agree": 0, "ours_only": 0, "anaplan_only": 0, "agreement": None,
+                "definition": "Referenced By column absent from the export: not checkable", "anaplan_only_by_cause": {}, "examples": examples}
     for k, li in m.line_items.items():
         if li.is_header:
             continue
@@ -229,7 +232,9 @@ def analyse(spec: dict, stale_months: int = 12, overrides: dict | None = None) -
         "cells": total_cells, "dimensions": sorted(m.dimensions), "edges": st["edges"], "module_edges": st["module_edges"],
         "parse_errors": st["parse_errors"], "parse_rate": round(1 - st["parse_errors"] / max(st["with_formula"], 1), 4),
         "notes_coverage": round(sum(1 for li in lis if li.notes.strip()) / max(len(lis), 1), 3),
-        "has_effort": has_effort, "effort_top10_share": top10_share,
+        "has_effort": has_effort, "effort_top10_share": top10_share, "has_cells": m.has("Cell Count"),
+        "warnings": list(m.warnings) + [w for w in getattr(e, "warnings", [])],
+        "missing_columns": [f"{c}: {COLUMN_ROLES[c]}" for c in m.missing_columns if c != "Module Name"],
         "effort_top": [(str(li), li.calc_effort, li.cell_count, li.formula[:120]) for li in eff[:20] if li.calc_effort],
         "effort_by_module": [(n, round(v, 2)) for n, v in by_mod_eff.most_common(10) if v],
         "cells_by_module": [(n, c, round(100 * c / total_cells, 1) if total_cells else 0) for n, c in by_mod_cells.most_common(10)],
@@ -261,6 +266,10 @@ def _coverage(spec: dict, m: Model, g: Graph, lr: LintResult, facts: dict) -> di
         skipped.append(("actions", "no Actions export: imports, exports, processes, run dates and model-to-model feeds not analysed"))
     if not facts["has_effort"]:
         skipped.append(("effort", "Calculation Effort column absent or blank: no effort figures for this model"))
+    if not facts["has_cells"]:
+        skipped.append(("cells", "Cell Count column absent: cell footprints unavailable for this model (not zero)"))
+    if not m.has("Referenced By"):
+        skipped.append(("referenced-by", "Referenced By column absent: dependency completeness not checkable"))
     run = [r for r in lr.rules_run if r not in {x for x, _ in skipped}]
     confirmed = ["formula references (parsed from Formula)", "Referenced By (Anaplan's column, used as the check)"]
     if m.has_modules_export:
@@ -272,6 +281,7 @@ def _coverage(spec: dict, m: Model, g: Graph, lr: LintResult, facts: dict) -> di
                "CloudWorks, API and integration schedules", "engine (Classic or Polaris): not in any export", "cell counts of summary levels (as exported)",
                "the date the Line Items and Modules exports were taken (not in the file)"]
     return {"files": files, "snapshot_actions": (facts.get("actions") or {}).get("snapshot", ""), "rules_run": run, "rules_skipped": skipped,
+            "warnings": facts["warnings"], "missing_columns": facts["missing_columns"],
             "confirmed": confirmed, "inferred": inferred, "missing": missing,
             "parse_rate": facts["parse_rate"], "referenced_by_agreement": facts["referenced_by_check"]["agreement"],
             "unresolved_context": facts["redundancy"]["unresolved_context"]}

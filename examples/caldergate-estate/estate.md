@@ -178,6 +178,8 @@ Role: model builder, Workforce Planning. Evidence: [F12](#F12). Depends on: reti
 
 Suggested starting points from the supplied exports; the ordering is a hypothesis (see Evidence: how the actions were chosen).
 
+The findings catalogue and the Change impact explorer apply to any model the exports describe. The action cards are pattern-matched suggestions from a small set of known patterns (per-cell text labels, SUM with LOOKUP, long IF chains, duplicated calculations, modules with no detected reader); on an estate whose problems lie elsewhere they will be few or absent, and the catalogue is the place to look.
+
 ## Coverage
 
 - Pages, saved views, line item subsets, filters, access drivers and integrations are not in any export; each 'no consumer detected' finding lists the checks that remain.
