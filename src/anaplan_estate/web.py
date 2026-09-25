@@ -70,6 +70,8 @@ _rate_lock = threading.Lock()
 _example_cache: dict[str, str] = {}
 _ctx = multiprocessing.get_context("spawn")
 
+FONT_CSS = ('@font-face{font-family:"Geist Sans";src:url(/static/GeistSans-Variable.woff2) format("woff2");font-weight:100 900;font-display:swap}'
+            '@font-face{font-family:"Geist Mono";src:url(/static/GeistMono-Variable.woff2) format("woff2");font-weight:100 900;font-display:swap}')
 PAGE_CSS = """
 :root{--bg:#fcfcfc;--ink:#1a1a1a;--muted:#5f6b66;--rule:#e6e8e7;--soft:#eceeed;--accent:#047857;--accent-fg:#fff;--card:#fff;--notice:#fffbeb;--err:#dc2626;
 --sans:"Geist Sans",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;--mono:"Geist Mono",Consolas,monospace}
@@ -100,7 +102,7 @@ def _e(s) -> str:
 
 
 def _page(body: str, title: str = "Anaplan estate review") -> str:
-    return f"<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>{_e(title)}</title><style>{PAGE_CSS}</style></head><body><div class=page>{body}</div></body></html>"
+    return f"<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>{_e(title)}</title><style>{FONT_CSS}{PAGE_CSS}</style></head><body><div class=page>{body}</div></body></html>"
 
 
 def _footer() -> str:
@@ -301,7 +303,7 @@ def _worker(root: str, title: str, links: dict, out_path: str, err_path: str, ta
         rep = report.build(er, **links)
         if title:
             rep["title"] = title
-        Path(out_path).write_text(report_html.render(rep, csv_text=report.register_csv(rep), home_url="/"), encoding="utf-8")
+        Path(out_path).write_text(report_html.render(rep, theme_css=FONT_CSS, csv_text=report.register_csv(rep), home_url="/"), encoding="utf-8")
         meta = {"models": len(er.models), "line_items": rep["scope"]["line_items"]}
         if target:
             meta["target_id"] = next((n[0] for n in rep["graph"]["nodes"] if (n[2], n[3]) == tuple(target)), None)
@@ -473,6 +475,14 @@ async def example_change_impact():
         return _error(500 if "not installed" not in err else 404, err)
     tid = _example_cache.get("target_id")
     return RedirectResponse(f"/example#impact={tid}" if tid is not None else "/example#impact", status_code=302)
+
+
+@app.get("/static/{name}.woff2")
+def font_file(name: str):
+    f = STATIC / f"{name}.woff2"
+    if not re.fullmatch(r"Geist(Sans|Mono)-Variable", name) or not f.exists():
+        return Response(status_code=404)
+    return FileResponse(f, media_type="font/woff2", headers={"Cache-Control": "public, max-age=31536000, immutable"})
 
 
 @app.get("/static/example-impact.png")

@@ -135,3 +135,10 @@ def test_usage_counts_without_personal_data(monkeypatch, tmp_path):
     assert "testclient" not in blob and "127.0.0.1" not in blob and "Board Reporting" not in blob
     um.usage.flush()
     assert (tmp_path / "usage.jsonl").exists() and "reports_ok" in (tmp_path / "usage.jsonl").read_text()
+
+
+def test_geist_fonts_are_served_and_declared():
+    assert client.get("/static/GeistSans-Variable.woff2").status_code == 200
+    assert client.get("/static/GeistMono-Variable.woff2").status_code == 200
+    assert client.get("/static/Other.woff2").status_code == 404
+    assert '@font-face{font-family:"Geist Sans"' in client.get("/").text
