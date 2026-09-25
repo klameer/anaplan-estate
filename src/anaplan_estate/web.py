@@ -47,7 +47,7 @@ WORKERS = int(os.environ.get("ESTATE_WORKERS", str(min(4, os.cpu_count() or 1)))
 QUEUE_WAIT_S = float(os.environ.get("ESTATE_QUEUE_WAIT_S", "20"))
 RATE_PER_HOUR = int(os.environ.get("ESTATE_RATE_PER_HOUR", "30"))
 LINKS = {"feedback_url": os.environ.get("ESTATE_FEEDBACK_URL", ""), "source_url": os.environ.get("ESTATE_SOURCE_URL", ""), "help_url": os.environ.get("ESTATE_HELP_URL", "")}
-CONTACT_URL = os.environ.get("ESTATE_CONTACT_URL", "https://www.linkedin.com/in/karimlameer")  # a private way to reach the maintainer, for people who do not use GitHub
+CONTACT_URL = os.environ.get("ESTATE_CONTACT_URL", "")          # a private way to reach the maintainer, for people who do not use GitHub
 BRAND_URL = os.environ.get("ESTATE_BRAND_URL", "https://codelessops.com")
 EXAMPLE_TARGET = ("CAL03 Opex", "Forecast Opex")               # the line item the example opens on: "what could changing this affect?"
 STATIC = Path(__file__).resolve().parent / "static"
@@ -103,7 +103,7 @@ def _page(body: str, title: str = "Anaplan estate review") -> str:
 
 
 def _footer() -> str:
-    bits = [f'Free and open source. Maintained by <a href="{_e(BRAND_URL)}">CodelessOps</a>; contributions welcome.', '<a href="/ask">Ask a question about your model</a> (free).']
+    bits = [f'Free and open source. Maintained by <a href="{_e(BRAND_URL)}">CodelessOps</a>; contributions welcome.']
     if LINKS["source_url"]:
         bits.append(f'<a href="{_e(LINKS["source_url"])}">Source</a>.')
     if LINKS["feedback_url"]:
@@ -130,11 +130,11 @@ def index(request: Request):
 <div><label>Line Items export <span class=req>required</span></label><input type=file name=line_items accept=".csv,text/csv" class=li></div>
 <div><label>Actions export <span class=opt>optional</span></label><input type=file name=actions accept=".csv,text/csv"><span class=hint>adds import and export relationships, processes and model feeds</span></div>
 <div><label>Modules export <span class=opt>optional</span></label><input type=file name=modules accept=".csv,text/csv"><span class=hint>adds module notes</span></div></div>"""
-    contact = '<p>Got a question the report does not answer? <a href="/ask">Ask about your model</a>. It is free: send the question and the exports, and Karim comes back with what to check first.</p>'
+    contact = (f'<p>Prefer a conversation? <a href="{_e(CONTACT_URL)}">Get in touch privately</a> if you would rather CodelessOps ran the report with you, or want help reading what it found.</p>' if CONTACT_URL else "")
     body = f"""<p class=brand><a href="{_e(BRAND_URL)}">CodelessOps</a> &middot; Anaplan estate review</p>
 <h1>Find what to improve in Anaplan. See what a change could affect.</h1>
 <p class=muted>A free report from your models' standard exports: an action plan in plain language, a change-impact explorer, and every finding with its evidence. No account, nothing installed, nothing kept.</p>
-<p class=cta><a class="btn primary" href="/example/change-impact">Explore an example</a> <a class="btn" href="#review">Review my estate</a> <a class="btn" href="/ask">Ask about my model</a></p>
+<p class=cta><a class="btn primary" href="/example/change-impact">Explore an example</a> <a class="btn" href="#review">Review my estate</a></p>
 <section class=demo><h2>What could changing this line item affect?</h2>
 <p>The example is a fictional four-model estate. Open it on <strong>Forecast Opex</strong> in the FP&amp;A model and the explorer shows the 27 line items across 7 modules that read it, how far away each is, the exports that would carry the change to other models, and one path for any of them. Then the action plan tells you what is worth doing first and why.</p>
 <a href="/example/change-impact"><img src="/static/example-impact.png" alt="The change-impact view for Forecast Opex in the example estate: 27 line items across 7 modules depend on it, up to 8 steps away" loading="lazy"></a>
@@ -169,26 +169,6 @@ def index(request: Request):
 }})();
 </script>"""
     return HTMLResponse(_page(body))
-
-
-@app.get("/ask", response_class=HTMLResponse)
-def ask(request: Request):
-    """The assisted offer: a specific question about a real model, answered by a person. Free."""
-    usage.visit(_client(request))
-    body = f"""<p class=brand><a href="/">CodelessOps &middot; Anaplan estate review</a></p>
-<h1>Ask a question about your model. Free.</h1>
-<p class=muted>The report answers the questions its rules know how to ask. Yours is probably more specific.</p>
-<section><h2>The kind of question</h2>
-<p>&ldquo;Can I retire this module?&rdquo; &ldquo;What breaks if I change this formula?&rdquo; &ldquo;Why is this so slow?&rdquo; &ldquo;Is this finding right, given how the model is actually used?&rdquo; Anything where the answer needs your model in front of someone, not a rule.</p></section>
-<section><h2>How it works</h2>
-<p>Send the question and your exports. If the files cannot leave your environment, <a href="/#local">run the report locally</a> and send the change review JSON or the finding instead. I run it through the private analysis I use on my own work, read the result against your question, and come back with what I would check first and why. Then a call, if that is useful.</p>
-<p>Your exports are used for your question and deleted afterwards. Nothing about your model is published or reused without your written say-so.</p></section>
-<section><h2>Why it is free</h2>
-<p>The free tool was built from one real estate and one fictional one. Real questions on real models are how it gets better. There is no fee and no catch; if a question turns into a project, that is a separate conversation and you would be the one to start it.</p></section>
-<p class=cta><a class="btn primary" href="{_e(CONTACT_URL)}">Message Karim on LinkedIn</a> <a class="btn" href="/example/change-impact">Explore the example first</a></p>
-<p class=fnote>Karim Lameer, CodelessOps. Fifteen years in finance systems and FP&amp;A; Master Anaplanner.</p>
-{_footer()}"""
-    return HTMLResponse(_page(body, "Ask a question about your Anaplan model"))
 
 
 @app.get("/health", response_class=PlainTextResponse)

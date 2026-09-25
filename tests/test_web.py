@@ -134,11 +134,3 @@ def test_usage_counts_without_personal_data(monkeypatch, tmp_path):
     assert "testclient" not in blob and "127.0.0.1" not in blob and "Board Reporting" not in blob
     um.usage.flush()
     assert (tmp_path / "usage.jsonl").exists() and "reports_ok" in (tmp_path / "usage.jsonl").read_text()
-
-
-def test_ask_page_is_free_and_links_to_contact():
-    r = client.get("/ask")
-    assert r.status_code == 200
-    assert "Free." in r.text and "Message Karim" in r.text and web.CONTACT_URL in r.text
-    home = client.get("/").text
-    assert 'href="/ask"' in home
