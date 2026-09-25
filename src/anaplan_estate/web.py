@@ -130,7 +130,7 @@ def index(request: Request):
 <div><label>Line Items export <span class=req>required</span></label><input type=file name=line_items accept=".csv,text/csv" class=li></div>
 <div><label>Actions export <span class=opt>optional</span></label><input type=file name=actions accept=".csv,text/csv"><span class=hint>adds import and export relationships, processes and model feeds</span></div>
 <div><label>Modules export <span class=opt>optional</span></label><input type=file name=modules accept=".csv,text/csv"><span class=hint>adds module notes</span></div></div>"""
-    contact = '<p>Got a question the report does not answer? <a href="/ask">Ask about your model</a>. It is free: send the question and the exports, and Karim comes back with what to check first.</p>'
+    contact = '<p>Got a question the report does not answer? <a href="/ask">Ask about your model</a>. It is free and needs no files: describe the question, and Karim comes back with what to check first.</p>'
     body = f"""<p class=brand><a href="{_e(BRAND_URL)}">CodelessOps</a> &middot; Anaplan estate review</p>
 <h1>Find what to improve in Anaplan. See what a change could affect.</h1>
 <p class=muted>A free report from your models' standard exports: an action plan in plain language, a change-impact explorer, and every finding with its evidence. No account, nothing installed, nothing kept.</p>
@@ -181,8 +181,9 @@ def ask(request: Request):
 <section><h2>The kind of question</h2>
 <p>&ldquo;Can I retire this module?&rdquo; &ldquo;What breaks if I change this formula?&rdquo; &ldquo;Why is this so slow?&rdquo; &ldquo;Is this finding right, given how the model is actually used?&rdquo; Anything where the answer needs your model in front of someone, not a rule.</p></section>
 <section><h2>How it works</h2>
-<p>Send the question and your exports. If the files cannot leave your environment, <a href="/#local">run the report locally</a> and send the change review JSON or the finding instead. I run it through the private analysis I use on my own work, read the result against your question, and come back with what I would check first and why. Then a call, if that is useful.</p>
-<p>Your exports are used for your question and deleted afterwards. Nothing about your model is published or reused without your written say-so.</p></section>
+<p>You do not need to send any files. Describe the question in words: the line item or module, what you want to change or retire, what worries you. If the report flagged something, paste the finding text (the card copies as text). Model names and formulas can be paraphrased; the shape of the problem is what matters.</p>
+<p>I read it against what the exports usually show, run the pattern through the private analysis I use on my own work, and come back with what I would check first and why. Then a call, if that is useful.</p>
+<p>Nothing you send is published or reused. If you would rather nothing about your model left your machine at all, <a href="/#local">run the report locally</a> and bring only the question.</p></section>
 <section><h2>Why it is free</h2>
 <p>The free tool was built from one real estate and one fictional one. Real questions on real models are how it gets better. There is no fee and no catch; if a question turns into a project, that is a separate conversation and you would be the one to start it.</p></section>
 <p class=cta><a class="btn primary" href="{_e(CONTACT_URL)}">Message Karim on LinkedIn</a> <a class="btn" href="/example/change-impact">Explore the example first</a></p>
