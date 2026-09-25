@@ -22,12 +22,13 @@ import html, json, re
 from .findings import AREA_LABEL, _c
 
 CSS = r"""
-:root{--bg:#F7F8F6;--ink:#1B2430;--muted:#5C6773;--rule:#D9DED9;--soft:#EEF1EE;--accent:#0E5E6F;--card:#FFFFFF;
+:root{--bg:#fcfcfc;--ink:#1a1a1a;--muted:#5f6b66;--rule:#e6e8e7;--soft:#eceeed;--accent:#047857;--card:#ffffff;--li-bg:#ecfdf5;--li-fg:#047857;--mod-bg:#eceeed;--mod-fg:#1a1a1a;
 --high:#A6301C;--med:#B7791F;--low:#4B6B5C;--conf:#0E5E6F;--part:#7A5F1F;--inf:#6B5A7A;--notice:#FFF7E6;
 --sans:"Geist Sans","IBM Plex Sans","Helvetica Neue",Arial,sans-serif;--mono:"Geist Mono","IBM Plex Mono",Consolas,monospace}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1416;--ink:#E6EBE8;--muted:#9AA6A0;--rule:#2E393C;--soft:#1B2427;--accent:#5FB3C1;--card:#161D20;
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0e0d;--ink:#e8ebe9;--muted:#9aa5a0;--rule:#222a27;--soft:#1c2320;--accent:#34d399;--card:#141917;--li-bg:rgba(52,211,153,.12);--li-fg:#34d399;--mod-bg:#1c2320;--mod-fg:#e8ebe9;
 --high:#E07A63;--med:#D9A441;--low:#8FB8A6;--conf:#5FB3C1;--part:#D9A441;--inf:#B39DDB;--notice:#2A2416}}
-:root[data-theme="dark"]{--bg:#0F1416;--ink:#E6EBE8;--muted:#9AA6A0;--rule:#2E393C;--soft:#1B2427;--accent:#5FB3C1;--card:#161D20;--high:#E07A63;--med:#D9A441;--low:#8FB8A6;--conf:#5FB3C1;--part:#D9A441;--inf:#B39DDB;--notice:#2A2416}
+:root[data-theme="dark"]{--bg:#0b0e0d;--ink:#e8ebe9;--muted:#9aa5a0;--rule:#222a27;--soft:#1c2320;--accent:#34d399;--card:#141917;--li-bg:rgba(52,211,153,.12);--li-fg:#34d399;--mod-bg:#1c2320;--mod-fg:#e8ebe9;--high:#E07A63;--med:#D9A441;--low:#8FB8A6;--conf:#5FB3C1;--part:#D9A441;--inf:#B39DDB;--notice:#2A2416}
+.obj{font-family:var(--mono);font-size:.92em;padding:1px 5px;border-radius:4px;white-space:nowrap}.obj.li{background:var(--li-bg);color:var(--li-fg)}.obj.mod{background:var(--mod-bg);color:var(--mod-fg);border:1px solid var(--rule)}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;margin:0}
 .page{max-width:1040px;margin:0 auto;padding:28px 24px 60px}
@@ -550,6 +551,17 @@ def _finding(x: dict, rep: dict, nidx: dict, midx: dict) -> str:
 </article>'''
 
 
+_OBJ_RE = re.compile(r"(line items? |modules? )&#x27;(.+?)&#x27;")
+
+
+def _eo(s) -> str:
+    """Escape, then mark named objects so line items and modules read differently in prose."""
+    def sub(m):
+        cls = "li" if m.group(1).startswith("line") else "mod"
+        return f'{m.group(1)}<span class="obj {cls}">{m.group(2)}</span>'
+    return _OBJ_RE.sub(sub, _e(s))
+
+
 def _action_card(i: int, a: dict, rep: dict, nidx: dict, midx: dict) -> str:
     ex = a.get("explorer")
     dep = ""
@@ -576,8 +588,8 @@ def _action_card(i: int, a: dict, rep: dict, nidx: dict, midx: dict) -> str:
                + '</tbody></table></div></dd>')
     if not a.get("worth", True):
         notices = f'<p class="notice below">Below the bar: {_e(a["why_not"])}.</p>' + notices
-    return (f'<li class="action{"" if a.get("worth", True) else " below"}" id="A{i}"><h2><span class="n">{i}.</span> {_e(a["title"])}</h2><p class="role"><span class="model">{_e(a["model"])}</span></p>'
-            f'<dl><dt>Why</dt><dd>{_e(a["why"])}</dd>{det}<dt>Steps</dt><dd><ol>{"".join(f"<li>{_e(s)}</li>" for s in a["steps"])}</ol></dd><dt>Done when</dt><dd>{_e(a["done_when"])}</dd></dl>'
+    return (f'<li class="action{"" if a.get("worth", True) else " below"}" id="A{i}"><h2><span class="n">{i}.</span> {_eo(a["title"])}</h2><p class="role"><span class="model">{_e(a["model"])}</span></p>'
+            f'<dl><dt>Why</dt><dd>{_eo(a["why"])}</dd>{det}<dt>Steps</dt><dd><ol>{"".join(f"<li>{_eo(s)}</li>" for s in a["steps"])}</ol></dd><dt>Done when</dt><dd>{_eo(a["done_when"])}</dd></dl>'
             f'{notices}<p class="links">Evidence: {ev or "none"}{(" &middot; " + dep) if dep else ""}{depends}</p></li>')
 
 

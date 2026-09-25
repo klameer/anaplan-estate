@@ -71,26 +71,27 @@ _example_cache: dict[str, str] = {}
 _ctx = multiprocessing.get_context("spawn")
 
 PAGE_CSS = """
-:root{--bg:#F7F8F6;--ink:#1B2430;--muted:#5C6773;--rule:#D9DED9;--soft:#EEF1EE;--accent:#0E5E6F;--card:#fff;--notice:#FFF7E6}
-@media (prefers-color-scheme:dark){:root{--bg:#0F1416;--ink:#E6EBE8;--muted:#9AA6A0;--rule:#2E393C;--soft:#1B2427;--accent:#5FB3C1;--card:#161D20;--notice:#2A2416}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;font-size:15px;line-height:1.5}
-.page{max-width:860px;margin:0 auto;padding:32px 24px 60px}h1{font-size:28px;margin:0 0 6px;font-weight:600}h2{font-size:18px;margin:26px 0 8px}
-p{max-width:72ch;margin:6px 0}.muted{color:var(--muted)}.fnote{font-size:12.5px;color:var(--muted)}
-.card{background:var(--card);border:1px solid var(--rule);border-radius:8px;padding:14px 16px;margin:12px 0}
+:root{--bg:#fcfcfc;--ink:#1a1a1a;--muted:#5f6b66;--rule:#e6e8e7;--soft:#eceeed;--accent:#047857;--accent-fg:#fff;--card:#fff;--notice:#fffbeb;--err:#dc2626;
+--sans:"Geist Sans",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;--mono:"Geist Mono",Consolas,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#0b0e0d;--ink:#e8ebe9;--muted:#9aa5a0;--rule:#222a27;--soft:#1c2320;--accent:#34d399;--accent-fg:#05140e;--card:#141917;--notice:#2a2416;--err:#f87171}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+.page{max-width:760px;margin:0 auto;padding:40px 24px 60px}h1{font-size:30px;line-height:1.2;margin:0 0 10px;font-weight:600;letter-spacing:-.01em}h2{font-size:17px;margin:32px 0 8px;font-weight:600}
+p{max-width:64ch;margin:6px 0}.muted{color:var(--muted)}.fnote{font-size:12.5px;color:var(--muted)}.lead{font-size:16px;color:var(--muted);max-width:60ch}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:16px 18px;margin:12px 0}
 .notice{background:var(--notice);border-radius:6px;padding:8px 12px;font-size:13.5px;margin:10px 0}
-label{display:block;font-size:13px;margin:8px 0 2px;color:var(--muted)}input[type=text],input[type=file]{font:inherit;font-size:13.5px;padding:6px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink);width:100%}
-.row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;align-items:end;border-top:1px solid var(--rule);padding-top:8px;margin-top:8px}
-@media (max-width:640px){.row{grid-template-columns:1fr}}
-button{font:inherit;font-size:14px;padding:8px 14px;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink);cursor:pointer}button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-a{color:var(--accent)}code{font-family:Consolas,monospace;font-size:12.5px;background:var(--soft);padding:1px 4px;border-radius:3px}pre{background:var(--soft);padding:10px;border-radius:6px;overflow-x:auto;font-size:12.5px}
-footer{margin-top:36px;border-top:1px solid var(--rule);padding-top:10px;font-size:12.5px;color:var(--muted)}
-.brand{font-family:Consolas,monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}.brand a{color:var(--accent);text-decoration:none;font-weight:600}
-.cta{margin:14px 0 22px}.btn{display:inline-block;font:inherit;font-size:14px;padding:8px 14px;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none}
-.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.cta .btn{font-size:15px;padding:10px 18px;margin-right:8px}
-section.demo{margin:8px 0 26px}section.demo img{display:block;width:100%;max-width:900px;border:1px solid var(--rule);border-radius:8px;margin:10px 0}
+label{display:block;font-size:13px;margin:0 0 4px;color:var(--muted)}input[type=text],input[type=file]{font:inherit;font-size:13.5px;padding:7px 9px;border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink);width:100%}
+.row.model{border-top:1px solid var(--rule);padding-top:14px;margin-top:14px}.row.model:first-child{border-top:0;padding-top:0;margin-top:0}
+.row .name{margin-bottom:12px;max-width:320px}.row .files{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:start}
+@media (max-width:640px){.row .files{grid-template-columns:1fr}}
+button{font:inherit;font-size:14px;padding:8px 14px;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink);cursor:pointer}button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600}
+a{color:var(--accent)}code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px 4px;border-radius:3px}pre{background:var(--soft);padding:10px;border-radius:6px;overflow-x:auto;font-size:12.5px;font-family:var(--mono)}
+footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:10px;font-size:12.5px;color:var(--muted)}
+.brand{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}.brand a{color:var(--accent);text-decoration:none;font-weight:500}
+.cta{margin:18px 0 8px}.btn{display:inline-block;font:inherit;font-size:14px;padding:8px 14px;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600}.cta .btn{font-size:15px;padding:10px 18px;margin-right:8px}
 #review{scroll-margin-top:12px}.req{color:var(--accent);font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-left:4px}.opt{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-left:4px}
-.hint{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}.row.missing input.li{outline:2px solid #C0392B;outline-offset:1px}
-.err{color:#C0392B;font-weight:600}details#zipalt{margin:10px 0}details#zipalt summary{cursor:pointer;font-weight:600;font-size:13.5px}
+.hint{display:block;font-size:11.5px;color:var(--muted);margin-top:3px}.row.missing input.li{outline:2px solid var(--err);outline-offset:1px}
+.err{color:var(--err);font-weight:600}details{margin:10px 0}details summary{cursor:pointer;font-weight:600;font-size:14px}details .card{margin-top:8px}
 """
 
 
@@ -126,33 +127,35 @@ anaplan-estate-web</pre>
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
     usage.visit(_client(request))
-    row = """<div class="row model"><div><label>Model name</label><input type=text name=model_name placeholder="e.g. FP&amp;A"></div>
-<div><label>Line Items export <span class=req>required</span></label><input type=file name=line_items accept=".csv,text/csv" class=li></div>
-<div><label>Actions export <span class=opt>optional</span></label><input type=file name=actions accept=".csv,text/csv"><span class=hint>adds import and export relationships, processes and model feeds</span></div>
-<div><label>Modules export <span class=opt>optional</span></label><input type=file name=modules accept=".csv,text/csv"><span class=hint>adds module notes</span></div></div>"""
-    contact = (f'<p>Prefer a conversation? <a href="{_e(CONTACT_URL)}">Get in touch privately</a> if you would rather CodelessOps ran the report with you, or want help reading what it found.</p>' if CONTACT_URL else "")
+    row = """<div class="row model"><div class=name><label>Model name</label><input type=text name=model_name placeholder="e.g. FP&amp;A"></div>
+<div class=files>
+<div><label>Line Items export <span class=req>required</span></label><input type=file name=line_items accept=".csv,text/csv" class=li><span class=hint>the one file needed</span></div>
+<div><label>Actions export <span class=opt>optional</span></label><input type=file name=actions accept=".csv,text/csv"><span class=hint>adds imports, exports and processes</span></div>
+<div><label>Modules export <span class=opt>optional</span></label><input type=file name=modules accept=".csv,text/csv"><span class=hint>adds module notes</span></div>
+</div></div>"""
     body = f"""<p class=brand><a href="{_e(BRAND_URL)}">CodelessOps</a> &middot; Anaplan estate review</p>
-<h1>Find what to improve in Anaplan. See what a change could affect.</h1>
-<p class=muted>A free report from your models' standard exports: an action plan in plain language, a change-impact explorer, and every finding with its evidence. No account, nothing installed, nothing kept.</p>
-<p class=cta><a class="btn primary" href="/example/change-impact">Explore an example</a> <a class="btn" href="#review">Review my estate</a></p>
-<section class=demo><h2>What could changing this line item affect?</h2>
-<p>The example is a fictional four-model estate. Open it on <strong>Forecast Opex</strong> in the FP&amp;A model and the explorer shows the 27 line items across 7 modules that read it, how far away each is, the exports that would carry the change to other models, and one path for any of them. Then the action plan tells you what is worth doing first and why.</p>
-<a href="/example/change-impact"><img src="/static/example-impact.png" alt="The change-impact view for Forecast Opex in the example estate: 27 line items across 7 modules depend on it, up to 8 steps away" loading="lazy"></a>
-<p class=fnote>Everything in the example is <a href="/example">open to explore</a>: the action plan, the dependency diagram, the findings and their formulas.</p></section>
+<h1>Do a quick review on your Anaplan estate</h1>
+<p class=lead>Upload your models' line items, actions and modules and get actionable steps on what you can do to improve. Simple and no fuss. No account, nothing installed, nothing kept.</p>
+<p class=cta><a class="btn primary" href="/example#plan">Explore an example</a> <a class="btn" href="#review">Review my estate</a></p>
+<p class=fnote>The example is a fictional four-model estate. Free and open source; <a href="#local">runs on your own machine</a> if you would rather nothing left it.</p>
 <section id=review><h2>Review my estate</h2>
-<p>Export each model's <strong>Line Items</strong> grid (Model Settings &gt; Modules &gt; Line Items tab &gt; Export, every column). That is the only file needed; Actions and Modules exports add more when you have them.</p>
+<p>Export each model's <strong>Line Items</strong> grid (Model Settings &gt; Modules &gt; Line Items tab &gt; Export, every column). Actions and Modules exports are optional.</p>
 <form method="post" action="/report" enctype="multipart/form-data" class="card" id=f novalidate>
 <div id=rows>{row}</div>
 <p><button type=button class=btn id=add>Add another model</button></p>
 <details id=zipalt><summary>Or upload one zip of the whole estate</summary><p class=fnote>One folder per model inside the zip, each holding that model's <code>Line Items*.csv</code> and optionally <code>Actions*.csv</code> and <code>Modules*.csv</code>. Folder names become model names.</p><input type=file name=estate_zip accept=".zip,application/zip" id=zip></details>
-<label>Report title (the estate name, optional)</label><input type=text name=title placeholder="e.g. Acme Anaplan estate" maxlength=120>
+<label>Report title (optional)</label><input type=text name=title placeholder="e.g. Acme Anaplan estate" maxlength=120>
 <p class=err id=err role=alert hidden></p>
 <p><button type=submit class="btn primary">Build the report</button> <span class=fnote id=busy hidden>Building the report: a few seconds for a small model, up to a minute for a large estate.</span></p>
-<p class=fnote>Your files are written to a temporary folder for the seconds the analysis takes and deleted as soon as the report is sent. Nothing is stored; file names, model names and formulas are never logged. Limits: {MAX_MB:.0f} MB, {MAX_MODELS} models, about {TIMEOUT_S:.0f} seconds. If you would rather nothing left your machine, <a href="#local">run it locally</a>.</p>
+<p class=fnote>Files are held in a temporary folder for the seconds the analysis takes and deleted as soon as the report is sent. Nothing is stored; file names, model names and formulas are never logged. Limits: {MAX_MB:.0f} MB, {MAX_MODELS} models, about {TIMEOUT_S:.0f} seconds.</p>
 </form></section>
-{_local_instructions()}
-<section><h2>Then</h2><p>The report is complete on its own: every action carries its steps, its evidence and a completion check, and the explorer answers the dependency questions. {contact}</p></section>
-<p class=fnote>The findings and the change-impact explorer apply to any model the exports describe. The action cards match a small set of known patterns and will be few or absent on an estate whose problems lie elsewhere; the report says so. Rules and ranking were developed on a small number of estates and are a hypothesis to test, not a verdict.</p>
+<details id=local><summary>Rather not upload? Run it on your own machine</summary>
+<div class=card><p>The same engine, the same page, nothing leaves your computer. You need Python 3.10 or newer.</p>
+<pre>pip install "https://github.com/klameer/anaplan-grammar/archive/refs/heads/master.zip"
+pip install "anaplan-estate[web] @ https://github.com/klameer/anaplan-estate/archive/refs/heads/master.zip"
+anaplan-estate-web</pre>
+<p class=fnote>Then open <a href="http://localhost:8000">localhost:8000</a> and use it exactly as here. Command line instead: <code>anaplan-estate my-estate-folder --html estate.html</code>, one folder per model inside.</p></div></details>
+<p class=fnote>Rules and ranking were developed on a small number of estates: a starting point, not a verdict.</p>
 {_footer()}
 <script>
 (function(){{
@@ -166,6 +169,8 @@ def index(request: Request):
    if(!hasZip&&!hasLi){{e.preventDefault();err.hidden=false;err.textContent='Add at least one Line Items export (or a zip of the estate) before building the report.';var r=document.querySelector('.row.model');r.classList.add('missing');r.querySelector('input.li').focus();return}}
    err.hidden=true;document.getElementById('busy').hidden=false;f.querySelector('button[type=submit]').disabled=true;
  }});
+ var loc=document.getElementById('local');if(location.hash==='#local'&&loc){{loc.open=true}}
+ document.querySelectorAll('a[href="#local"]').forEach(function(a){{a.addEventListener('click',function(){{if(loc)loc.open=true}})}});
 }})();
 </script>"""
     return HTMLResponse(_page(body))

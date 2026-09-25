@@ -28,10 +28,11 @@ def test_index_leads_with_the_example_then_the_form():
     r = client.get("/")
     h = r.text
     assert r.status_code == 200 and 'action="/report"' in h and client.get("/health").text == "ok" and client.head("/health").status_code == 200
-    assert h.index("Explore an example") < h.index("Review my estate") < h.index("What could changing this line item affect?") < h.index('id="review"' if 'id="review"' in h else "id=review") < h.index("deleted as soon as the report is sent")
+    assert "Do a quick review on your Anaplan estate" in h
+    assert h.index('href="/example#plan"') < h.index("Review my estate") < h.index("id=review") < h.index("deleted as soon as the report is sent")
     assert h.count('class="row model"') == 1 and "Add another model" in h and "Or upload one zip" in h
-    assert "adds import and export relationships" in h and "adds module notes" in h
-    assert "/static/example-impact.png" in h and "anaplan-estate-web" in h and "localhost:8000" in h
+    assert "adds imports, exports and processes" in h and "adds module notes" in h
+    assert "example-impact.png" not in h and "anaplan-estate-web" in h and "localhost:8000" in h    # no hero image; local run still explained
     assert "CodelessOps" in h[h.index("<body"):h.index("<body") + 400]        # the provider is visible at the top
 
 
