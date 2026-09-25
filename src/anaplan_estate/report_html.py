@@ -596,7 +596,7 @@ def _action_card(i: int, a: dict, rep: dict, nidx: dict, midx: dict) -> str:
 LIGHT_ABOVE = 25_000     # line items; above this the per-finding search index is left out to keep the page usable
 
 
-def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None, brand: str | None = None, csv_text: str = "", light: bool | None = None) -> str:
+def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None, brand: str | None = None, csv_text: str = "", light: bool | None = None, home_url: str | None = None) -> str:
     from .report import register_rows, REGISTER_COLS
     if light is None:
         light = rep["scope"]["line_items"] > LIGHT_ABOVE
@@ -614,7 +614,7 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
     links = rep["links"]
     attrib = brand or f"Generated with {rep['generator']}"
     out = [f"<title>{_e(rep['title'])}</title>", f"<style>{_theme_bits(theme_css)}{CSS}</style>", '<div class="page">']
-    out.append('<header class="top">' + f'<h1>{_e(rep["title"])}</h1><p class="attrib">{logo_svg or ""}<span>{_e(attrib)}</span></p>'
+    out.append('<header class="top">' + f'<h1>{_e(rep["title"])}</h1><p class="attrib">{logo_svg or ""}<span>{_e(attrib)}</span>{(f' &middot; <a href="{_e(home_url)}">Review your own estate</a>' if home_url else "")}</p>'
                + f'<p class="lead">{_e(rep["summary_text"][0])}</p></header>')
     out.append('<nav class="views" role="tablist" aria-label="Views"><button type="button" role="tab" data-view="plan" aria-selected="true" aria-controls="plan">Action plan</button>'
                '<button type="button" role="tab" data-view="impact" aria-selected="false" aria-controls="impact">Change impact</button>'

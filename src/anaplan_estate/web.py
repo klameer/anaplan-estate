@@ -301,7 +301,7 @@ def _worker(root: str, title: str, links: dict, out_path: str, err_path: str, ta
         rep = report.build(er, **links)
         if title:
             rep["title"] = title
-        Path(out_path).write_text(report_html.render(rep, csv_text=report.register_csv(rep)), encoding="utf-8")
+        Path(out_path).write_text(report_html.render(rep, csv_text=report.register_csv(rep), home_url="/"), encoding="utf-8")
         meta = {"models": len(er.models), "line_items": rep["scope"]["line_items"]}
         if target:
             meta["target_id"] = next((n[0] for n in rep["graph"]["nodes"] if (n[2], n[3]) == tuple(target)), None)
