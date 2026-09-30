@@ -561,7 +561,7 @@ def _per_model(er, m, nid) -> list[Finding]:
             li = model.line_items.get((x.module, x.line_item))
             rows.append(f"| {_q(x.object)} | {li.summary if li else ''} | {', '.join(li.applies_to) if li and li.applies_to else 'module dimensions'} | {_c(li.cell_count) if li else ''} | `{li.formula if li else ''}` |")
         new(area="maintain", kind="fix", title="Ratios whose totals are added up", objects=[x.object for x in xs], unit="line items",
-            observed=f"{_pl(len(xs), 'line item')} divide one amount by another (or are formatted as a percentage) and have the summary method Sum. Each total then shows the sum of the ratios below it, not the ratio of the totals: three regions at 40% show 120%.",
+            observed=f"{_pl(len(xs), 'line item')} {'divides' if len(xs) == 1 else 'divide'} one amount by another (or {'is' if len(xs) == 1 else 'are'} formatted as a percentage) and {'has' if len(xs) == 1 else 'have'} the summary method Sum. Each total then shows the sum of the ratios below it, not the ratio of the totals: three regions at 40% show 120%.",
             why="A summed ratio is a number nobody intends. The cells at the lowest level are right; every parent, and every quarter and year where the time summary is Sum, is not. Whoever reads the total on a page or an export reads a wrong figure, and a formula that reads the parent carries it on.",
             scope=f"{_pl(len(xs), 'line item')}; {sum(len(g.rev.get((x.module, x.line_item), ())) for x in xs)} formulas read them", benefit="not quantified from the exports", benefit_kind="none",
             strength="confirmed", basis="Parsed formula (the result is a quotient) and the Summary column as exported. A divisor that is a literal, a single model-wide value, or a rate that is not itself summed is not counted.",
@@ -580,10 +580,10 @@ def _per_model(er, m, nid) -> list[Finding]:
             li = model.line_items.get((x.module, x.line_item))
             rows.append(f"| {_q(x.object)} | {x.message} | {('`' + li.formula + '`') if li and li.formula else 'no formula (typed-in values)'} |")
         new(area="maintain", kind="fix", title="The odd one out in a run of matching formulas", objects=[x.object for x in xs], unit="line items",
-            observed=f"{_pl(len(xs), 'line item')} break a pattern their neighbours share: in a run of five or more line items with one formula shape, this one has a different shape, no formula, or one reference its neighbours do not share.",
+            observed=f"{_pl(len(xs), 'line item')} break{'s' if len(xs) == 1 else ''} a pattern {'its' if len(xs) == 1 else 'their'} neighbours share: in a run of five or more line items with one formula shape, this one has a different shape, no formula, or one reference its neighbours do not share.",
             why="A row that was missed when a block was copied, pasted and edited looks exactly like this, and so does a deliberate exception. The difference is whether anyone can say why. Spreadsheet audits look for this first because it is where a wrong number hides in plain sight.",
             scope=f"{_pl(len(xs), 'line item')} in {_pl(len({x.module for x in xs}), 'module')}", benefit="not quantified from the exports", benefit_kind="none",
-            strength="inferred", basis="Formula shapes compared between neighbouring line items of one module, in the order of the export. Intent is not in the export.",
+            strength="confirmed", basis="Formula shapes compared between neighbouring line items of one module, in the order of the export. That the line item differs is observed; whether it should is not in the export.",
             missing=["the reason for each exception (check the line item's notes and ask the owner)"],
             next_step="For each, ask the owner whether the exception is meant. Where it is, record why in the line item's notes; where it is not, bring it in line with its neighbours in a development copy and compare the outputs that read it.",
             keep_design="An exception can be the whole business rule: one driver phased differently, one entity on another basis. It is right to keep once the reason is written down.",

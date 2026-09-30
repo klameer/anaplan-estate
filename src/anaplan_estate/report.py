@@ -127,7 +127,7 @@ def _url(u: str | None) -> str:
 # ---------------------------------------------------------------- build
 
 def build(er, service_url: str | None = None, contact: str | None = None, feedback_url: str | None = None, source_url: str | None = None,
-          help_url: str | None = None, generator: str = "CodelessOps Estate Review") -> dict:
+          help_url: str | None = None, generator: str = "CodelessOps Estate Review", top: int | None = planmod.TOP) -> dict:
     ms = er.models
     fs = er.findings
     rep = {"title": f"Anaplan estate: {len(ms)} model{'s' if len(ms) != 1 else ''}", "generated": er.generated, "description": DESCRIPTION,
@@ -138,7 +138,7 @@ def build(er, service_url: str | None = None, contact: str | None = None, feedba
                     "cells": sum(m.facts["cells"] for m in ms), "findings": len(fs),
                     "parse_rate": round(1 - sum(m.facts["parse_errors"] for m in ms) / max(sum(m.facts["calculated"] for m in ms), 1), 4)}
     rep["observations"] = _observations(er)
-    rep["plan"] = planmod.select(er)
+    rep["plan"] = planmod.select(er, top=top)
     rep["investigations"] = rep["plan"]["actions"]
     rep["metrics"] = {"models": len(ms), "review_first": sum(1 for x in fs if x.importance in ("high", "medium")),
                       "reference": sum(1 for x in fs if x.importance == "low"), "validated_defects": 0,
@@ -148,9 +148,9 @@ def build(er, service_url: str | None = None, contact: str | None = None, feedba
     rep["limitations"] = _limitations(er)
     rep["input_notices"] = [f"{m.name}: {w}" for m in ms for w in m.facts["warnings"]] + \
                            [f"{m.name}: '{c}' column absent; {COLUMN_ROLES[c]}." for m in ms for c in m.model.missing_columns if c not in ("Module Name",)]
-    rep["generality_note"] = ("The findings catalogue and the Change impact explorer apply to any model the exports describe. The action cards are pattern-matched "
-                              "suggestions from a small set of known patterns (per-cell text labels, SUM with LOOKUP, long IF chains, duplicated calculations, modules with no "
-                              "detected reader); on an estate whose problems lie elsewhere they will be few or absent, and the catalogue is the place to look.")
+    rep["generality_note"] = ("Every test that found something offers a candidate action; the plan is the first of them in a stated order, and the rest are listed beneath it with the reason. "
+                              "The order weighs what the exports can show (evidence, measured effort, cells, whether a total may be wrong). It cannot weigh what they do not show: "
+                              "which outputs the business relies on, or what a change would cost you. Treat the plan as where to look first.")
     rep["summary_text"] = _summary_text(er, rep)
     rep["freshness"] = {"export_date": None, "latest_action_run": (max((m.facts["coverage"]["snapshot_actions"] for m in ms if m.facts["coverage"]["snapshot_actions"]), default=None)),
                         "analysis_date": er.generated, "actions_missing": [m.name for m in ms if not m.facts.get("actions")]}
@@ -192,8 +192,8 @@ def build(er, service_url: str | None = None, contact: str | None = None, feedba
     rep["glossary"] = GLOSSARY
     rep["strength_text"] = STRENGTH_TEXT
     rep["statuses"] = ["To review", "Investigation in progress", "Accepted exception", "Change planned", "Resolved"]
-    rep["validation_note"] = ("Rules, ranking and presentation were developed around a small number of estates; the three-action, 450-word plan is a design choice, "
-                              "not an established optimum, and the ordering is a hypothesis to revise. Nothing here was validated in a live Anaplan model.")
+    rep["validation_note"] = ("Tests, ranking and presentation were developed around a small number of estates; the size of the plan and the bar for being on it are design choices, "
+                              "not established optima, and the ordering is a hypothesis to revise. Nothing here was validated in a live Anaplan model.")
     return rep
 
 
@@ -265,29 +265,28 @@ def _finding_md(x: dict) -> list[str]:
     return out
 
 
-def render_markdown(er) -> str:
-    rep = build(er)
+def render_markdown(er, top: int | None = planmod.TOP) -> str:
+    rep = build(er, top=top)
     fmap = {x["id"]: x for x in rep["findings"]}
     out = [f"# {rep['title']}", "", f"Generated with {rep['generator']}. {rep['summary_text'][0]}", "", "## Action plan", ""]
     pl = rep["plan"]
     if pl["actions"]:
-      amap = {a["key"]: a for a in pl["actions"]}; num = {a["key"]: i for i, a in enumerate(pl["actions"], 1)}
-      out += ["| Group | Met the bar | Models with an action worth doing |", "|---|---|---|"]
-      out += [f"| {g['title']} | {g['met_bar']} of {len(g['keys'])} | {', '.join(sorted({amap[k]['model'] for k in g['keys'] if amap[k]['worth']})) or 'none'} |" for g in pl["groups"]]
-      out += [f"| All candidates | {pl['met_bar']} of {pl['considered']} | |", ""]
-      for g in pl["groups"]:
-        out += [f"### {g['title']} ({g['met_bar']} of {len(g['keys'])} met the bar)", "", g["blurb"], ""]
-        for k in g["keys"]:
-            a = amap[k]; i = num[k]
-            out += [f"#### {i}. {a['title']}", "", f"**Why.** {a['why']}", ""]
+        out += [f"The {len(pl['actions'])} most impactful things to do, from {pl['considered']} candidates across every test ({pl['met_bar']} met the bar).", "",
+                "| # | Do this | Model | Test |", "|---|---|---|---|"]
+        out += [f"| {i} | {a['title']} | {a['model']} | {', '.join(a['tests'])} |" for i, a in enumerate(pl["actions"], 1)] + [""]
+        for i, a in enumerate(pl["actions"], 1):
+            out += [f"### {i}. {a['title']}", "", f"**Why.** {a['why']}", ""]
             if a.get("detail"):
                 out += ["| Line item | Module | Effort | Cells | Formula |", "|---|---|---|---|---|"] + [f"| {d['name'] or d['object']} | {d['module']} | {_eff(d.get('effort'))} | {_c(d['cells'])} | `{d['formula']}` |" for d in a["detail"]] + [""]
             out += ["**Steps.**", ""] + [f"{j}. {st}" for j, st in enumerate(a["steps"], 1)] + ["",
-                    f"**Done when.** {a['done_when']}", "", f"Role: {a['role']}. Evidence: {', '.join(f'[{x}](#{x})' for x in a['finding_ids']) or 'none'}."
+                    f"**Done when.** {a['done_when']}", "", f"Role: {a['role']}. Test: {', '.join(a['tests']) or 'n/a'}. Evidence: {', '.join(f'[{x}](#{x})' for x in a['finding_ids']) or 'none'}."
                     + (f" Depends on: {', '.join(a['depends_on'])}." if a["depends_on"] else "")]
-            out += ([f"- Below the bar: {a['why_not']}."] if not a.get("worth", True) else []) + [f"- Note: {n}" for n in a["notices"]] + [""]
+            out += [f"- Note: {n}" for n in a["notices"]] + [""]
     else:
         out += [pl["none"]["message"], "", f"Next data check: {pl['none']['next_check']}.", ""]
+    if pl["rest"]:
+        out += [f"### Everything else that was found ({len(pl['rest'])})", "", "| Rank | Candidate | Model | Test | Why it is not on the plan |", "|---|---|---|---|---|"]
+        out += [f"| {i} | {c['title']} | {c['model']} | {', '.join(c['tests'])} | {c['why_not']} |" for i, c in enumerate(pl["rest"], len(pl["actions"]) + 1)] + [""]
     out += ["Suggested starting points from the supplied exports; the ordering is a hypothesis (see Evidence: how the actions were chosen).", ""]
     if rep["input_notices"]:
         out += ["**Input notices**", ""] + [f"- {n}" for n in rep["input_notices"]] + [""]
@@ -309,7 +308,7 @@ def render_markdown(er) -> str:
         for e in rep["map"]["edges"]:
             out.append(f"  {ids[e['from']]} -.->|{e['actions']} inferred| {ids[e['to']]}")
         out += ["```", ""]
-    out += ["## How the actions were chosen", "", f"{pl['considered']} candidates were built from the findings and all are shown; {pl['met_bar']} met the bar for being worth doing. The number is not fixed.", "",
+    out += ["## How the actions were chosen", "", f"{pl['considered']} candidates were built from the results of every test; {pl['met_bar']} met the bar for being worth doing, and the first {len(pl['actions'])} are the plan.", "",
             "**What counts as worth doing**", ""] + [f"- {r}" for r in pl["worth"]] + ["", "**Order**", ""] + [f"- {r}" for r in pl["ranking"]] + [""]
     if pl["candidates"]:
         out += ["| Rank | Candidate | Evidence | Kind | Scope | Footprint |", "|---|---|---|---|---|---|"]

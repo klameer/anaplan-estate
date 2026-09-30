@@ -8,6 +8,16 @@
   view opens on "Tests run", each test with its result (found, clear, or
   not run and why), and every finding carries the number of the test that
   produced it.
+- The action plan is now picked from the results of every test: each test
+  that found something offers a candidate, candidates are ranked (evidence,
+  scope, materiality, change before investigation, ease, footprint), and
+  the first five that meet the bar are the plan (`--top N`, `ESTATE_TOP`).
+  Materiality comes from measured effort and cells, or is fixed by the test
+  where cells say nothing about what is at stake: a total that may be wrong
+  ranks high, upkeep ranks low. Everything else is listed under the plan
+  with the reason. The four grouped sections are gone.
+- Home page and /tests: "Don't see a test you want?" with a way to get in
+  touch.
 - Seven new tests: line items with a dimension their formula does not use
   (1.7, with the cells that repeat a value), where the cells are (1.8), data
   loaded but never read (2.4), names that say leftover (2.5), ratios whose

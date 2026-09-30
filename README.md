@@ -34,8 +34,10 @@ contacting anyone.
 ## What gets checked
 
 42 tests in six areas, the same on every model. The report lists each one
-with its result on your exports: found, clear, or not run and why, then
-picks the most impactful things to do and sets them out as an action plan.
+with its result on your exports: found, clear, or not run and why. Every
+test that found something offers a candidate action; the five that rank
+highest open the report as the action plan (`--top N` to change that), and
+the rest are listed beneath it with the reason.
 
 1. **Performance and size** (8): where calculation effort and cells
    concentrate, SUM with LOOKUP, per-cell text and lookups, dimensions a
@@ -170,13 +172,14 @@ analysed. `scripts/regen_reports.py` regenerates the example outputs.
 ## What you get
 
 - **Action plan** (the default view): the estate name, one scope and
-  freshness line, and grouped candidate actions. Each: do this, why
+  freshness line, and the five most impactful actions, picked from the
+  results of every test. Each: do this, why
   (evidence and supportable value; footprint is called footprint, never
   savings), two or three steps naming the actual objects, done when, a
-  suggested role, links to the evidence and to Change impact, and any
-  decision-changing uncertainty or coverage blocker on the card. Candidates
-  that meet the evidence bar appear first; others carry their reason for
-  falling below it. The ordering is deterministic and explained under
+  suggested role, the test it answers, links to the evidence and to Change
+  impact, and any decision-changing uncertainty or coverage blocker on the
+  card. Every other candidate is listed under the plan with the reason it is
+  not on it. The ordering is deterministic and explained under
   Evidence ("How the actions were chosen"); it is a hypothesis, not a
   verdict. The current action plan may print across several pages.
 - **Change impact**: search or select a model, module or line item.

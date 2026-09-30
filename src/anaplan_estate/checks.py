@@ -126,6 +126,59 @@ CHECKS = [
     Check("6.3", "input-guards", "Input checks on the files", "Delimiter, encoding and number format are detected; a missing column disables the checks that need it and is reported as unavailable, never as zero.", fact="input_notices"),
 ]
 
+# How a test enters the action plan (plan.py): key -> (act, weight, do).
+#   act     change       a concrete change with a way to confirm it worked
+#           investigate  someone has to find something out before anything changes
+#           observe      context for the reader; never an action on its own
+#   weight  footprint    ranked by what the objects measurably occupy (share of calculation effort, cells)
+#           high|medium|low   a fixed band, for tests where cells say nothing about what is at stake: a total that
+#                        may be wrong is high however small the line item; how a formula reads is low however large
+#   do      the action, as an instruction; the card adds the model and the count
+PLAN = {
+    "effort-concentration": ("observe", "footprint", ""),
+    "sum-lookup": ("change", "footprint", "Split the formulas that add up and look up in one step"),
+    "large-text": ("change", "footprint", "Move per-cell text and lookups into small system modules"),
+    "finditem": ("change", "footprint", "Move per-cell text and lookups into small system modules"),
+    "text-join": ("change", "footprint", "Move per-cell text and lookups into small system modules"),
+    "per-item-functions": ("change", "footprint", "Move per-cell text and lookups into small system modules"),
+    "over-dimensioned": ("change", "footprint", "Take out the dimensions these formulas do not use"),
+    "cell-concentration": ("observe", "footprint", ""),
+    "unread-modules": ("investigate", "footprint", "Find out whether anyone still uses the modules nothing reads"),
+    "unread-module-twin": ("investigate", "footprint", "Find out whether anyone still uses the modules nothing reads"),
+    "unread-line-items": ("investigate", "footprint", "Find out whether anything reads these calculated line items"),
+    "import-target-unread": ("investigate", "footprint", "Find out whether the data loaded here is still needed"),
+    "leftover-names": ("investigate", "low", "Check the objects whose names say leftover"),
+    "hubs": ("observe", "low", ""),
+    "pass-through-chains": ("change", "footprint", "Point readers at the source, not at a chain of copies"),
+    "circular": ("observe", "low", ""),
+    "model-feeds": ("observe", "low", ""),
+    "shared-dimensions": ("observe", "low", ""),
+    "exact-duplicates": ("change", "footprint", "Remove duplicate copies of a calculation"),
+    "aliases": ("change", "footprint", "Remove line items that only copy another"),
+    "near-twins": ("investigate", "low", "Check the formulas that differ from a twin in one place"),
+    "same-text": ("observe", "low", ""),
+    "cross-model-duplicates": ("observe", "low", ""),
+    "if-count": ("change", "footprint", "Break up the formulas with more than 10 IFs"),
+    "hard-coded-numbers": ("change", "low", "Give hard-coded assumptions a named input"),
+    "long-formulas": ("change", "low", "Document or split the very long formulas"),
+    "select-fixed-period": ("change", "low", "Replace selections of a fixed period or version"),
+    "divide-fn": ("investigate", "low", "Confirm what a zero divisor should show"),
+    "subsidiary-views": ("change", "low", "Give subsidiary views used in calculation their own module"),
+    "summaries-unread": ("change", "footprint", "Turn off summaries nothing reads"),
+    "large-modules": ("investigate", "low", "Review the modules with more than 50 line items"),
+    "empty-modules": ("change", "low", "Remove or document the empty modules"),
+    "module-notes": ("observe", "low", ""),
+    "ratio-summed": ("change", "high", "Fix the totals of ratios that are added up"),
+    "odd-one-out": ("investigate", "high", "Check the line items that break their neighbours' pattern"),
+    "actions-outside-process": ("investigate", "low", "Ask how the imports and exports with no recent run are triggered"),
+    "actions-stale": ("investigate", "low", "Ask how the imports and exports with no recent run are triggered"),
+    "actions-never-run": ("investigate", "low", "Ask how the imports and exports with no recent run are triggered"),
+    "several-imports-one-target": ("investigate", "low", "Check the targets loaded by more than one import"),
+    "unparsed": ("observe", "low", ""),
+    "referenced-by-agreement": ("observe", "low", ""),
+    "input-guards": ("observe", "low", ""),
+}
+
 BY_KEY = {c.key: c for c in CHECKS}
 BY_NUM = {c.num: c for c in CHECKS}
 _BY_RULE: dict[str, str] = {}
@@ -137,6 +190,11 @@ for _c in CHECKS:
 def _order(num: str) -> tuple[int, int]:
     a, b = num.split(".")
     return int(a), int(b)
+
+
+def plan_of(num: str) -> tuple[str, str, str]:
+    """(act, weight, do) for a test, by its number."""
+    return PLAN[BY_NUM[num].key]
 
 
 def N(key: str) -> str:

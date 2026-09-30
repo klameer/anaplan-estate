@@ -61,6 +61,7 @@ def _find_example() -> Path:
 
 
 EXAMPLE = _find_example()
+TOP = int(os.environ.get("ESTATE_TOP", "5"))                    # how many actions the plan opens on
 CHUNK = 1024 * 256
 
 app = FastAPI(title="Anaplan estate review", docs_url=None, redoc_url=None, openapi_url=None)
@@ -99,6 +100,7 @@ ol.areas li{display:grid;grid-template-columns:1.6em 1fr;font-size:14.5px}ol.are
 p.more{margin:10px 0 18px;font-size:15px}p.lead+p.lead{margin-top:10px}.toc{font-size:13px;margin:14px 0 0}
 table.ckt{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0 18px}table.ckt td,table.ckt th{text-align:left;vertical-align:top;padding:6px 8px;border-bottom:1px solid var(--rule)}
 table.ckt th{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}table.ckt td.n{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+#missing{margin-top:28px}#missing h2{margin:0 0 4px}
 .err{color:var(--err);font-weight:600}details{margin:10px 0}details summary{cursor:pointer;font-weight:600;font-size:14px}details .card{margin-top:8px}
 """
 
@@ -132,6 +134,15 @@ anaplan-estate-web</pre>
 <p class=fnote>Then open <a href="http://localhost:8000">localhost:8000</a> and use it exactly as here. For a command-line run instead: <code>anaplan-estate my-estate-folder --html estate.html</code>, with one folder per model inside <code>my-estate-folder</code>.{(f' Source: <a href="{_e(src)}">{_e(src)}</a>.' if src else '')}</p></section>"""
 
 
+def _missing_test() -> str:
+    """The invitation to ask for a test that is not on the list. Private contact first where one is configured, the
+    public suggestion page beside it, the maintainer's site when neither is."""
+    primary = CONTACT_URL or LINKS["feedback_url"] or BRAND_URL
+    also = (f' <span class=fnote>Or <a href="{_e(LINKS["feedback_url"])}">suggest it in public</a> (needs a GitHub account).</span>' if CONTACT_URL and LINKS["feedback_url"] else "")
+    return (f'<section id=missing class=card><h2>Don\'t see a test you want?</h2>'
+            f'<p>Get in touch and we can build it together.</p><p><a class="btn" href="{_e(primary)}">Get in touch</a>{also}</p></section>')
+
+
 def _areas() -> str:
     """The test areas on the home page: name, how many tests, one line on what they look at."""
     return "<ol class=areas>" + "".join(
@@ -153,6 +164,7 @@ def tests_page():
                        f'<td>{_e(", ".join([checks_mod.NEEDS_TEXT[x] for x in c.needs] + (["two or more models"] if c.scope == "estate" else [])))}</td></tr>' for c in cs)
         parts.append(f'<h2 id="a{cat.num}">{cat.num}. {_e(cat.title)} <span class=cnt>{len(cs)} tests</span></h2><p class=muted>{_e(cat.blurb)}</p>'
                      f'<table class=ckt><thead><tr><th>#</th><th>Test</th><th>Needs</th></tr></thead><tbody>{rows}</tbody></table>')
+    parts.append(_missing_test())
     parts.append('<p class=cta><a class="btn primary" href="/example#checks">See them run on an example</a> <a class="btn" href="/#review">Review my estate</a></p>')
     return HTMLResponse(_page("".join(parts) + _footer(), "All the tests: Anaplan estate review"), headers={"Cache-Control": "public, max-age=3600"})
 
@@ -197,6 +209,7 @@ def index(request: Request):
 pip install "anaplan-estate[web] @ https://github.com/klameer/anaplan-estate/archive/refs/heads/master.zip"
 anaplan-estate-web</pre>
 <p class=fnote>Then open <a href="http://localhost:8000">localhost:8000</a> and use it exactly as here. Command line instead: <code>anaplan-estate my-estate-folder --html estate.html</code>, one folder per model inside.</p></div></details>
+{_missing_test()}
 <p class=fnote>Rules and ranking were developed on a small number of estates: a starting point, not a verdict.</p>
 {_footer()}
 <script>
@@ -340,7 +353,7 @@ def _worker(root: str, title: str, links: dict, out_path: str, err_path: str, ta
     try:
         from . import fleet, report, report_html
         er = fleet.run(root)
-        rep = report.build(er, **links)
+        rep = report.build(er, top=(TOP or None), **links)
         if title:
             rep["title"] = title
         Path(out_path).write_text(report_html.render(rep, theme_css=FONT_CSS, csv_text=report.register_csv(rep), home_url="/"), encoding="utf-8")

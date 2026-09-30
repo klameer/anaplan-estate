@@ -159,3 +159,15 @@ def test_index_says_what_to_upload_what_is_tested_and_what_comes_back_and_tests_
     for c in checks.CHECKS:
         assert f'id="c{c.num}"' in r.text and web._e(c.what) in r.text
     assert client.get("/checks", follow_redirects=False).headers["location"] == "/tests"
+
+
+def test_home_and_tests_page_invite_a_request_for_a_missing_test(monkeypatch):
+    for path in ("/", "/tests"):
+        h = client.get(path).text
+        sec = h[h.index("<section id=missing"):]; sec = sec[:sec.index("</section>")]
+        assert "Don&#x27;t see a test you want?" in sec or "Don't see a test you want?" in sec
+        assert "Get in touch and we can build it together." in sec and f'href="{web.BRAND_URL}"' in sec     # nothing configured: the maintainer's site
+    monkeypatch.setattr(web, "CONTACT_URL", "https://example.org/contact")
+    monkeypatch.setitem(web.LINKS, "feedback_url", "https://example.org/discuss")
+    sec = client.get("/").text; sec = sec[sec.index("<section id=missing"):]; sec = sec[:sec.index("</section>")]
+    assert 'href="https://example.org/contact">Get in touch</a>' in sec and 'href="https://example.org/discuss">suggest it in public</a>' in sec

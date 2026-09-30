@@ -118,4 +118,4 @@ def test_generality_note_is_on_the_plan():
     rep = report.build(er)
     h = report_html.render(rep, csv_text=report.register_csv(rep))
     plan = h[h.index('<section id="plan"'):h.index('<section id="impact"')]
-    assert "pattern-matched" in plan and "catalogue is the place to look" in plan
+    assert "Every test that found something offers a candidate action" in plan and "where to look first" in plan

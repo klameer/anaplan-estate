@@ -60,6 +60,7 @@ li.action .notice{background:var(--notice);border-radius:6px;padding:6px 10px;fo
 li.action table.det{font-size:12.5px}li.action table.det code{font-size:11.5px;white-space:pre-wrap}li.action .wrap{margin:4px 0}
 li.action.below{border-left-color:var(--rule);opacity:.92}li.action .notice.below{background:var(--soft)}h3.group-h{margin-top:22px;font-size:17px}
 .banner{background:var(--notice);border:1px solid var(--rule);border-radius:8px;padding:8px 12px;font-size:13px;margin:0 0 12px}.banner ul{margin:4px 0 0;padding-left:18px}
+.lead2{font-size:15px;margin:2px 0 8px}details.rest{margin:16px 0 10px}details.rest summary{cursor:pointer;font-weight:600}table.restt{font-size:12.5px}
 .summary{margin:4px 0 14px}table.sum{font-size:14px}table.sum td,table.sum th{padding:5px 8px}table.sum tr.tot td{font-weight:600;border-top:2px solid var(--rule)}
 li.action .links{font-size:12.5px;margin:8px 0 0}li.action .links a{margin-right:10px}
 .badge{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid var(--rule);color:var(--muted);margin-right:4px;white-space:nowrap}
@@ -582,14 +583,15 @@ def _action_card(i: int, a: dict, rep: dict, nidx: dict, midx: dict) -> str:
     det = ""
     if a.get("detail"):
         has_eff = any(d.get("effort") is not None for d in a["detail"]); has_role = any(d.get("role") for d in a["detail"])
-        det = ('<dt>The ' + (f'{len(a["detail"])} line items' if len(a["detail"]) != 1 else 'line item') + '</dt><dd><div class="wrap"><table class="det"><thead><tr><th>Line item</th><th>Module</th>'
+        label = a.get("detail_label") or "line items"
+        det = ('<dt>The ' + (f'{len(a["detail"])} {label}' if len(a["detail"]) != 1 else label[:-1]) + '</dt><dd><div class="wrap"><table class="det"><thead><tr><th>' + ('Line item' if label == 'line items' else 'Object') + '</th><th>Module</th>'
                + ('<th>Role</th>' if has_role else '') + ('<th>Effort</th>' if has_eff else '') + '<th>Cells</th><th>Formula</th></tr></thead><tbody>'
                + "".join(f'<tr><td>{_e(d["name"] or d["object"])}</td><td>{_e(d["module"])}</td>' + (f'<td>{_e(d.get("role", ""))}</td>' if has_role else '')
                          + (f'<td>{_pct(d.get("effort"))}</td>' if has_eff else '') + f'<td>{_c(d["cells"])}</td><td><code>{_e(d["formula"])}</code></td></tr>' for d in a["detail"])
                + '</tbody></table></div></dd>')
     if not a.get("worth", True):
         notices = f'<p class="notice below">Below the bar: {_e(a["why_not"])}.</p>' + notices
-    return (f'<li class="action{"" if a.get("worth", True) else " below"}" id="A{i}"><h2><span class="n">{i}.</span> {_eo(a["title"])}</h2><p class="role"><span class="model">{_e(a["model"])}</span></p>'
+    return (f'<li class="action{"" if a.get("worth", True) else " below"}" id="A{i}"><h2><span class="n">{i}.</span> {_eo(a["title"])}</h2><p class="role"><span class="model">{_e(a["model"])}</span>{"".join(f' <a class="badge" href="#check-{t}">test {t}</a>' for t in a.get("tests", []))}</p>'
             f'<dl><dt>Why</dt><dd>{_eo(a["why"])}</dd>{det}<dt>Steps</dt><dd><ol>{"".join(f"<li>{_eo(s)}</li>" for s in a["steps"])}</ol></dd><dt>Done when</dt><dd>{_eo(a["done_when"])}</dd></dl>'
             f'{notices}<p class="links">Evidence: {ev or "none"}{(" &middot; " + dep) if dep else ""}{depends}</p></li>')
 
@@ -649,21 +651,24 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
     if light:
         out.append(f'<div class="banner">Large estate ({rep["scope"]["line_items"]:,} line items): the per-finding search index is left out of this page to keep it usable; search covers titles, models and object names only. The register and JSON hold everything.</div>')
     if pl["actions"]:
-        amap = {a["key"]: a for a in pl["actions"]}
-        num = {a["key"]: i for i, a in enumerate(pl["actions"], 1)}
-        rows = "".join(f'<tr><td><a href="#group-{g["key"]}">{_e(g["title"])}</a></td><td>{g["met_bar"]} of {len(g["keys"])}</td>'
-                       f'<td>{_e(", ".join(sorted({amap[k]["model"] for k in g["keys"] if amap[k]["worth"]})) or "none")}</td></tr>' for g in pl["groups"])
-        out.append(f'<div class="summary"><table class="sum"><thead><tr><th>Group</th><th>Met the bar</th><th>Models with an action worth doing</th></tr></thead><tbody>{rows}'
-                   f'<tr class="tot"><td>All candidates</td><td>{pl["met_bar"]} of {pl["considered"]}</td><td></td></tr></tbody></table></div>')
-        for g in pl["groups"]:
-            items = [amap[k] for k in g["keys"]]
-            out.append(f'<h3 class="group-h" id="group-{g["key"]}">{_e(g["title"])} <span class="muted">({g["met_bar"]} of {len(items)} met the bar)</span></h3><p class="fnote">{_e(g["blurb"])}</p>'
-                       '<ol class="actions">' + "".join(_action_card(num[a["key"]], a, rep, nidx, midx) for a in items) + "</ol>")
+        n = len(pl["actions"])
+        tests_of = lambda a: " ".join(f'<a href="#check-{t}">{t}</a>' for t in a["tests"])
+        rows = "".join(f'<tr><td>{i}</td><td><a href="#A{i}">{_eo(a["title"])}</a></td><td>{_e(a["model"])}</td><td>{tests_of(a)}</td></tr>' for i, a in enumerate(pl["actions"], 1))
+        out.append(f'<p class="lead2">The {n} most impactful thing{"s" if n != 1 else ""} to do, picked from {pl["considered"]} candidates across all {rep["checks"]["total"]} tests.</p>'
+                   f'<div class="summary"><table class="sum"><thead><tr><th>#</th><th>Do this</th><th>Model</th><th>Test</th></tr></thead><tbody>{rows}</tbody></table></div>')
+        out.append('<ol class="actions">' + "".join(_action_card(i, a, rep, nidx, midx) for i, a in enumerate(pl["actions"], 1)) + "</ol>")
     else:
         out.append(f'<p><strong>{_e(pl["none"]["message"])}</strong></p><p>Next data check: {_e(pl["none"]["next_check"])}.</p>')
+    if pl["rest"]:
+        fl = lambda c: " ".join(f'<a href="#{f}">{f}</a>' for f in c["finding_ids"])
+        out.append(f'<details class="rest"><summary>Everything else that was found ({len(pl["rest"])})</summary><p class="fnote">In rank order. Each one opens in the evidence.</p>'
+                   '<div class="wrap"><table class="restt"><thead><tr><th>#</th><th>Candidate</th><th>Model</th><th>Test</th><th>Why it is not on the plan</th><th>Evidence</th></tr></thead><tbody>'
+                   + "".join(f'<tr><td>{i}</td><td>{_eo(c["title"])}</td><td>{_e(c["model"])}</td><td>{" ".join(f"<a href=#check-{t}>{t}</a>" for t in c["tests"])}</td><td>{_e(c["why_not"])}</td><td>{fl(c)}</td></tr>'
+                             for i, c in enumerate(pl["rest"], len(pl["actions"]) + 1))
+                   + "</tbody></table></div></details>")
     ck = rep["checks"]
     out.append(f'<p class="fnote">{ck["total"]} tests were run on these exports: {ck["found"]} found something, {ck["clear"]} came back clear, {ck["not_run"]} could not run. <a href="#checks">See every test and its result</a>.</p>')
-    out.append(f'<p class="fnote">All {pl["considered"]} candidates are shown; {pl["met_bar"]} met the bar for being worth doing. The order is a hypothesis, not a verdict. '
+    out.append(f'<p class="fnote">{pl["considered"]} candidates were ranked; {pl["met_bar"]} met the bar for being worth doing and the first {len(pl["actions"])} are the plan. The order is a hypothesis, not a verdict. '
                '<a href="#ranking">How chosen</a> &middot; <a href="#coverage">Coverage</a> &middot; <a href="#catalogue">All findings</a></p>'
                f'<p class="fnote">{_e(rep["generality_note"])}</p></section>')
     # ---------------- Change impact
@@ -706,7 +711,7 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
             out.append(f'<details><summary>{fid}. {_e(fmap[fid]["title"])}</summary>' + _finding(fmap[fid], rep, nidx, midx) + "</details>")
     out.append("</div>")
     # ranking
-    out.append(f'<h3 id="ranking">How the actions were chosen</h3><p>{pl["considered"]} candidate{"s were" if pl["considered"] != 1 else " was"} built from the findings and all are shown; {pl["met_bar"]} met the bar for being worth doing, the rest are listed after them with the reason. The number is not fixed.</p>'
+    out.append(f'<h3 id="ranking">How the actions were chosen</h3><p>{pl["considered"]} candidate{"s were" if pl["considered"] != 1 else " was"} built from the results of every test; {pl["met_bar"]} met the bar for being worth doing, and the first {len(pl["actions"])} are the plan. The rest are listed under the plan with the reason.</p>'
                '<h4>What counts as worth doing</h4><ul>' + "".join(f"<li>{_e(r)}</li>" for r in pl["worth"]) + "</ul><h4>Order</h4><ul>" + "".join(f"<li>{_e(r)}</li>" for r in pl["ranking"]) + "</ul>")
     if pl["candidates"]:
         out.append('<details><summary>All candidates in rank order (' + str(len(pl["candidates"])) + ')</summary><div class="wrap"><table><thead><tr><th>#</th><th>Candidate</th><th>Evidence</th><th>Kind</th><th>Scope</th><th>Footprint</th><th>Depends on</th></tr></thead><tbody>'

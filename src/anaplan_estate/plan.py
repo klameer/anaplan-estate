@@ -1,29 +1,35 @@
-"""The action plan: one to three suggested starting points, chosen from the findings by
-an explainable, deterministic ordering, and written as compact cards (do this / why /
-steps / done when).
+"""The action plan: the most impactful things to do, picked from the results of every test.
 
-Selection is separate from presentation: `candidates` produces generic records with
-evidence fields; `select` orders them and keeps at most five; the renderers only
-format. Nothing here names this or that estate: generators read rule ids, effort
-shares, cell counts and evidence strength, and the same code returns fewer than
-three cards (or none, with the next data check) when the evidence is thin.
+Every test that found something offers a candidate action (the registry in checks.py says
+whether a test asks for a change, an investigation or is only an observation, and how it is
+weighed). Four kinds of candidate are written by hand, because they join several tests into
+one decision: a heavy line item matched to the pattern that explains it, the largest module
+nothing reads, the largest duplicated calculation, a long IF chain that encodes a table.
+Every other finding gets a card built from its own fields.
 
-Ordering (RANKING below), in this order: candidates resting on inferred evidence
-last (hypotheses); a bounded scope (a named object or a small group) before an
-open-ended review; a materiality band from the observed footprint (effort share
-within its own model, or cells; bands, never cross-model comparison of raw
-shares); a concrete change before an investigation; confirmed before partial
-evidence; then the larger footprint in cells; then the title, so ties never depend
-on input order. A large footprint on inferred evidence or an open scope therefore
-does not displace a small, well-evidenced change. This is a hypothesis about what is
-worth doing first, developed on a small number of estates; it is meant to be revised.
+Selection is separate from presentation: `candidates` produces records with evidence fields;
+`select` orders them, keeps those that meet a stated bar, and puts the first `top` of them on
+the plan. The rest are listed with the reason. Nothing here names this or that estate, and
+the same code returns fewer cards (or none, with the next data check) when the evidence is thin.
+
+Ordering (RANKING below): candidates resting on inferred evidence last; a bounded scope
+before an open-ended review; a materiality band (from the observed footprint, or fixed by the
+test where cells say nothing about what is at stake: a total that may be wrong ranks high
+however small the line item); a concrete change before an investigation; confirmed before
+partial evidence; the simpler change first; then the larger footprint in cells; then the
+title, so ties never depend on input order. No numeric score is shown. This is a hypothesis
+about what is worth doing first, developed on a small number of estates; it is meant to be revised.
 """
 from __future__ import annotations
 from dataclasses import dataclass, field, asdict
 from collections import defaultdict
 from .findings import _c, _pl, STRENGTH_ORDER
+from . import checks as checksmod
 
 BOUNDED = 10          # a scope of this many named objects or fewer counts as bounded
+TOP = 5               # how many actions the plan opens on, unless the caller says otherwise
+FIXED_BAND = {"high": 0, "medium": 1, "low": 2}
+EASE = {"low": 0, "medium": 1, "high": 2}
 
 IF_WHY = ("A long chain of 'if this then that' tests is hard to maintain: each new case means editing the formula, and the mapping is easier to check when it sits as rows in a small table "
           "read with one lookup. Whether the table also calculates faster depends on the engine and the formula (Anaplan documents that IF stops at the first true branch), so treat the "
@@ -32,10 +38,13 @@ TEXT_RULES = ("A-TEXT-FORMAT", "A-FINDITEM", "A-TEXT-JOIN", "A-SYSTEMS-FN")
 
 RANKING = [
     "Inferred evidence last: a candidate resting on names or an unresolved comparison is a hypothesis, whatever its footprint.",
-    f"Scope: a bounded scope ({BOUNDED} named objects or fewer) before an open-ended review.",
-    "Materiality band from the observed footprint: high (5% or more of its own model's measured effort, or 50M cells or more), medium (1% or 1M), low. Effort shares are banded within one model and never compared across models as absolute value.",
+    f"Scope: a bounded scope ({BOUNDED} named objects or fewer) before an open-ended review. A test that names more starts with its {BOUNDED} largest.",
+    "Materiality band. For tests about cost, from the observed footprint: high (5% or more of its own model's measured effort, or 50M cells or more), medium (1% or 1M), low. "
+    "For tests where cells say nothing about what is at stake, the band is fixed by the test: a total that may be wrong is high however small the line item; how a formula reads is low however large. "
+    "Effort shares are banded within one model and never compared across models as absolute value.",
     "Kind: a concrete change with a validation criterion before an investigation.",
     "Evidence: confirmed before partial (observation confidence, not confidence in the recommendation).",
+    "Ease: the simpler change first.",
     "Then the larger observed footprint in cells, then the title. Ties never depend on the order the files were read.",
     "Overlapping findings on the same objects are merged into one decision; a change whose objects sit in a module with no consumer detected depends on that consumer check, which is then placed first.",
 ]
@@ -60,10 +69,13 @@ class Candidate:
     depends_on: list[str] = field(default_factory=list)   # keys of candidates to complete first
     explorer: list | None = None                          # [model_index, module, name|None] for the Change impact link
     rank_reason: str = ""
-    worth: bool = True                                    # met the bar (WORTH); the rest are shown after it, labelled
-    why_not: str = ""                                     # why it fell below the bar
-    group: str = ""                                       # key of GROUPS
+    worth: bool = True                                    # met the bar (WORTH)
+    why_not: str = ""                                     # why it is not on the plan: below the bar, or ranked below the top n
     detail: list[dict] = field(default_factory=list)      # the named objects, one row each: object, module, effort, cells, formula (shown on the card)
+    tests: list[str] = field(default_factory=list)        # numbers of the tests (checks.py) this action answers
+    weight: str = "footprint"                             # footprint | high | medium | low: how the band is set (checks.PLAN)
+    complexity: str = "medium"                            # low | medium | high: how hard the change is
+    detail_label: str = "line items"                      # noun for the rows of `detail`
 
     @property
     def bounded(self) -> bool:
@@ -80,17 +92,19 @@ class Candidate:
 
 def band(c: Candidate) -> int:
     """0 high, 1 medium, 2 low: the thresholds the findings use for importance."""
+    if c.weight in FIXED_BAND:
+        return FIXED_BAND[c.weight]
     eff = c.footprint_effort or 0; cells = c.footprint_cells or 0
     return 0 if (eff >= 5 or cells >= 50_000_000) else 1 if (eff >= 1 or cells >= 1_000_000) else 2
 
 
 def rank_key(c: Candidate):
     return (1 if c.strength == "inferred" else 0, 0 if c.bounded else 1, band(c), 0 if c.kind == "change" else 1,
-            STRENGTH_ORDER[c.strength], -(c.footprint_cells or 0), c.title)
+            STRENGTH_ORDER[c.strength], EASE.get(c.complexity, 1), -(c.footprint_cells or 0), c.title)
 
 
 def _reason(c: Candidate) -> str:
-    return (f"evidence {c.strength}; " + ("bounded scope" if c.bounded else "open scope") + f"; materiality {('high', 'medium', 'low')[band(c)]}; {c.kind}"
+    return (f"evidence {c.strength}; " + ("bounded scope" if c.bounded else "open scope") + f"; materiality {('high', 'medium', 'low')[band(c)]}" + (" (set by the test)" if c.weight in FIXED_BAND else "") + f"; {c.kind}"
             + (f"; {_c(c.footprint_cells)} cells" if c.footprint_cells else "; no measured footprint")
             + (f"; {c.footprint_effort:.1f}% of its model's effort" if c.footprint_effort else ""))
 
@@ -189,7 +203,8 @@ def _hotspot_candidates(er, fmap, mi, m) -> list[Candidate]:
                                  "Compare the results before and after, and read the Calculation Effort column before and after."],
                           done_when="Every value that used the result still matches the original, cell for cell, and the measured effort share has fallen.",
                           role=f"model builder, {m.name}", model=m.name, objects=names, finding_ids=ids, strength="confirmed",
-                          footprint_cells=cells, footprint_effort=eff, explorer=explorer, detail=detail)
+                          footprint_cells=cells, footprint_effort=eff, explorer=explorer, detail=detail,
+                          tests=checksmod.for_rules(sorted(kinds)), complexity="low")
         elif fam == "mixed":
             c = Candidate(key=f"hotspot-mixed:{m.name}", kind="change",
                           title=f"Split the heavy 'add up and look up' formulas in {m.name} ({_pl(n, 'formula')})",
@@ -201,7 +216,8 @@ def _hotspot_candidates(er, fmap, mi, m) -> list[Candidate]:
                                  "Keep the split only where the effort share falls; then do the next formula."],
                           done_when="Values match the original cell for cell and the measured effort share has fallen.",
                           role=f"model builder, {m.name}", model=m.name, objects=names, finding_ids=ids, strength="confirmed",
-                          footprint_cells=cells, footprint_effort=eff, explorer=explorer, detail=detail)
+                          footprint_cells=cells, footprint_effort=eff, explorer=explorer, detail=detail,
+                          tests=[checksmod.N("sum-lookup")], complexity="low")
         else:
             c = Candidate(key=f"hotspot-if:{m.name}", kind="change",
                           title=f"Consider replacing the long chain of IF tests in {_named(first, m)} with a lookup table",
@@ -211,7 +227,8 @@ def _hotspot_candidates(er, fmap, mi, m) -> list[Candidate]:
                                  "Export the line item before and after and confirm every cell is equal; read Calculation Effort before and after and keep the change only if it is at least as good."],
                           done_when="Every cell is equal before and after, the table holds every case the chain held, and the measured effort is no worse.",
                           role=f"model builder, {m.name}", model=m.name, objects=names, finding_ids=ids, strength="confirmed",
-                          footprint_cells=cells, footprint_effort=eff, explorer=explorer, detail=detail)
+                          footprint_cells=cells, footprint_effort=eff, explorer=explorer, detail=detail,
+                          tests=[checksmod.N("if-count")])
         out.append(c)
     if not out:
         first = top[0][0]
@@ -228,7 +245,8 @@ def _hotspot_candidates(er, fmap, mi, m) -> list[Candidate]:
                              footprint_cells=sum(t[2] for t in top[:5]), footprint_effort=None,   # concentration is not a change footprint; banded by cells only
                              explorer=[mi, _li(first, m)[0], _li(first, m)[1] or None],
                              detail=[{"object": t[0], "module": _li(t[0], m)[0], "name": _li(t[0], m)[1], "effort": t[1], "cells": t[2],
-                                      "formula": (m.model.line_items[_li(t[0], m)].formula if _li(t[0], m) in m.model.line_items else t[3])} for t in top[:5]]))
+                                      "formula": (m.model.line_items[_li(t[0], m)].formula if _li(t[0], m) in m.model.line_items else t[3])} for t in top[:5]],
+                             tests=[checksmod.N("effort-concentration")]))
     return out
 
 
@@ -258,7 +276,7 @@ def _retire_candidate(er, fmap, mi, m) -> Candidate | None:
                      steps=steps, done_when="Every question above has a recorded answer and the owner has signed a keep-or-retire decision.",
                      role=f"model owner with a page builder, {m.name}", model=m.name, objects=[s["module"]], finding_ids=ids,
                      strength=(x.strength if x else "partial"), footprint_cells=s["cells"], footprint_effort=(s["effort"] if m.facts["has_effort"] and s["effort"] else None),
-                     notices=notices, explorer=[mi, s["module"], None])
+                     notices=notices, explorer=[mi, s["module"], None], tests=[checksmod.N("unread-modules")])
 
 
 def _duplicate_candidate(er, fmap, mi, m) -> Candidate | None:
@@ -284,7 +302,7 @@ def _duplicate_candidate(er, fmap, mi, m) -> Candidate | None:
                      strength=(x.strength if x else "confirmed"), footprint_cells=g["redundant_cells"],
                      explorer=[mi, keep["module"], keep["name"]],
                      detail=[{"object": i["key"], "module": i["module"], "name": i["name"], "effort": None, "cells": i["cells"], "formula": i["formula"],
-                              "role": "kept" if i is keep else "copy"} for i in g["items"]])
+                              "role": "kept" if i is keep else "copy"} for i in g["items"]], tests=[checksmod.N("exact-duplicates")])
 
 
 def _if_chain_candidate(er, fmap, mi, m) -> Candidate | None:
@@ -302,18 +320,85 @@ def _if_chain_candidate(er, fmap, mi, m) -> Candidate | None:
                             "Export the line item before and after and confirm every cell is equal; read Calculation Effort before and after."],
                      done_when="Every cell is equal before and after, the table holds every case the chain held, and the measured effort is no worse.",
                      role=f"model builder, {m.name}", model=m.name, objects=[first], finding_ids=[x.id], strength=x.strength,
-                     footprint_effort=x.footprint_effort, explorer=[mi, _li(first, m)[0], _li(first, m)[1] or None])
+                     footprint_effort=x.footprint_effort, explorer=[mi, _li(first, m)[0], _li(first, m)[1] or None], tests=[checksmod.N("if-count")])
+
+
+def _unit(n: int, unit: str) -> str:
+    """'1 line item', '30 line items'; units that carry a bracketed gloss are left as they are."""
+    return f"{n:,} {unit[:-1] if n == 1 and unit.endswith('s') and '(' not in unit else unit}"
+
+
+def _test_candidate(er, mi, m, x, idx) -> Candidate | None:
+    """A card for one finding, from the finding's own fields: what the test asks for (checks.PLAN), why it matters, the
+    next step, and the named objects, largest first. More than BOUNDED objects: the card starts with the largest."""
+    if not x.checks or x.kind_label == "observation":
+        return None
+    act, weight, do = checksmod.plan_of(x.checks[0])
+    if act == "observe" or not do or not x.objects:
+        return None
+    model = m.model
+
+    def cells_of(name):
+        k = idx.get(name)
+        if k:
+            return model.line_items[k].cell_count
+        if name in model.modules:
+            return sum(model.line_items[(name, n)].cell_count for n in model.modules[name].line_items if (name, n) in model.line_items)
+        return 0
+
+    ranked = sorted(x.objects, key=lambda o: (-cells_of(o), x.objects.index(o)))
+    shown = ranked[:BOUNDED]
+    first = shown[0]
+    kind_word = {"actions": "the action", "targets": "the import target"}.get(x.unit)
+    named = f"{kind_word} '{first}'" if kind_word else _named(first, m)
+    n = len(x.objects)
+    others = f" and {n - 1} more" if n > 1 else ""
+    detail = []
+    for o in shown:
+        k = idx.get(o)
+        if k:
+            li = model.line_items[k]
+            detail.append({"object": o, "module": k[0], "name": k[1], "effort": (li.calc_effort if m.facts["has_effort"] else None), "cells": li.cell_count, "formula": li.formula})
+        elif o in model.modules:
+            detail.append({"object": o, "module": o, "name": "", "effort": None, "cells": cells_of(o), "formula": ""})
+    change = act == "change"
+    steps = [x.next_step,
+             ("Make the change in a development copy first, keep the original for comparison, and compare the outputs that read the affected line items before applying it in production."
+              if change else "Record the answer for each one where the next builder will find it (the notes on the line item or module): keep it, with the reason, or change it.")]
+    done = x.validation[0] if x.validation else ("Every value that read the changed line items still matches the original, cell for cell." if change
+                                                 else "Each object named here has a recorded decision, agreed with the owner: keep with the reason, or change.")
+    notices = [f"Showing the {len(shown)} largest of {n}; the full list is under Evidence."] if n > len(shown) else []
+    cells = x.footprint_cells if x.footprint_cells else (sum(cells_of(o) for o in x.objects) or None if weight == "footprint" else None)
+    ex_mod, ex_name = (idx[first] if first in idx else (first, None)) if (first in idx or first in model.modules) else (None, None)
+    return Candidate(key=f"test:{x.checks[0]}:{m.name}:{first}", kind="change" if change else "investigation",
+                     title=f"{do} in {m.name} ({_unit(n, x.unit)})",
+                     why=f"{x.why} In {m.name} this applies to {named}{others}. {x.summary}",
+                     steps=steps, done_when=done, role=(f"model owner with a page builder, {m.name}" if x.area in ("usage", "integration") else f"model builder, {m.name}"),
+                     model=m.name, objects=shown, finding_ids=[x.id], strength=x.strength, footprint_cells=cells, footprint_effort=x.footprint_effort,
+                     notices=notices, explorer=([mi, ex_mod, ex_name] if ex_mod else None), detail=detail, tests=list(x.checks), weight=weight, complexity=x.complexity,
+                     detail_label=("line items" if detail and all(d["name"] for d in detail) else "modules" if detail and not any(d["name"] for d in detail) else "objects"))
 
 
 def candidates(er) -> list[Candidate]:
     fmap = _fmap(er)
     out: list[Candidate] = []
     for mi, m in enumerate(er.models):
-        out += _hotspot_candidates(er, fmap, mi, m)
+        mine = list(_hotspot_candidates(er, fmap, mi, m))
         for gen in (_retire_candidate, _duplicate_candidate, _if_chain_candidate):
             c = gen(er, fmap, mi, m)
             if c:
-                out.append(c)
+                mine.append(c)
+        # every other finding of this model: a card from the finding itself, unless a hand-written card already answers its tests
+        idx = {f"{k[0]}.{k[1]}": k for k in m.model.line_items}
+        answered = {t for c in mine if not c.key.startswith(("hotspot-if:", "if:")) for t in c.tests}
+        if_objects = {o for c in mine if c.key.startswith(("hotspot-if:", "if:")) for o in c.objects}
+        for x in er.findings:
+            if x.model != m.name or (set(x.checks) & answered) or (x.rules == ["A-IF-COUNT"] and set(x.objects) & if_objects):
+                continue
+            c = _test_candidate(er, mi, m, x, idx)
+            if c:
+                mine.append(c)
+        out += mine
     keys = {(c.model, tuple(c.objects)) for c in out if c.key.startswith("hotspot-if:")}
     out = [c for c in out if not (c.key.startswith("if:") and (c.model, tuple(c.objects)) in keys)]
     by_model = {m.name: m for m in er.models}
@@ -339,30 +424,10 @@ def candidates(er) -> list[Candidate]:
     return sorted(out, key=rank_key)
 
 
-GROUPS = [
-    ("speed", "Make heavy calculations cheaper", "Formulas that take a large share of a model's measured calculation effort and match a pattern with a known, safer alternative."),
-    ("duplicate", "Remove duplicated calculations", "The same calculation kept under more than one name; one copy can be dropped once the reason for the second is ruled out."),
-    ("usage", "Check whether modules are still used", "Modules that no formula reads and no export uses; someone has to check pages and views before they can be kept or retired."),
-    ("look", "Look at where the calculation time goes", "The heaviest calculations in a model that match no known pattern: a place to look with the owner, not a change to make."),
-]
-
-
-def group_of(c: "Candidate") -> str:
-    k = c.key
-    if k.startswith("hotspot-investigate:"):
-        return "look"
-    if k.startswith("hotspot-") or k.startswith("if:"):
-        return "speed"
-    if k.startswith("duplicate:"):
-        return "duplicate"
-    if k.startswith("retire:"):
-        return "usage"
-    return "speed"
-
-
 WORTH = [
-    "A change is worth doing when its evidence is not merely inferred, its scope is bounded, and its observed footprint is at least medium (1% of its model's measured effort, or 1M cells).",
-    "An investigation is worth doing only when the footprint is high (5% of its model's measured effort, or 50M cells): asking someone to check a small module is not a good use of their time.",
+    "A change is worth doing when its evidence is not merely inferred, its scope is bounded, and its materiality is at least medium (1% of its model's measured effort, or 1M cells, or a test that ranks high by nature, such as a total that may be wrong).",
+    "An investigation is worth doing only when its materiality is high (5% of its model's measured effort, or 50M cells, or a test that ranks high by nature): asking someone to check a small module is not a good use of their time.",
+    "A test about upkeep (naming, long formulas, hard-coded numbers, housekeeping of actions) never competes for the plan; its findings are listed below it and under Evidence.",
     "A prerequisite (for example a consumer check on a module that a change would tune) is included whenever the action that needs it is.",
 ]
 
@@ -378,41 +443,48 @@ def why_not(c: Candidate) -> str:
     if not c.bounded:
         return f"the scope is open-ended ({len(c.objects)} objects), not a named object or small group"
     b = band(c)
+    if c.weight == "low":
+        return "this test ranks low by nature: it is about upkeep (naming, documentation, housekeeping of formulas and actions), not what the model costs or whether a number is right"
     if c.kind == "change" and b > 1:
         return "the footprint is small (under 1% of its model's measured effort and under 1M cells), so the gain is unlikely to repay the work"
     if c.kind == "investigation" and b > 0:
         if c.key.startswith("hotspot-investigate:"):
             return (f"this is an observation of where calculation time goes, not a change with a measured benefit; the five line items hold {_c(c.footprint_cells or 0)} cells "
                     "(under 50M), so it is not worth someone's time before the actions above")
+        if not c.key.startswith("retire:"):
+            return (f"the objects hold {_c(c.footprint_cells or 0)} cells, below the 50M cells or 5% of effort at which an investigation is worth someone's time before the actions above")
         return (f"the module holds {_c(c.footprint_cells or 0)} cells" + (f" and {c.footprint_effort:.1f}% of its model's measured effort" if c.footprint_effort else "")
                 + ", below the 50M cells or 5% of effort at which a consumer check is worth someone's time before the actions above")
     return ""
 
 
-def select(er, limit: int | None = None) -> dict:
-    """Every candidate, in rank order: those that meet the bar first (a prerequisite placed before the action that
-    needs it), then the rest labelled with why they fell below it. `limit` caps the count only when given."""
+def select(er, top: int | None = TOP) -> dict:
+    """Every candidate in rank order. `actions` is the plan: the first `top` that meet the bar (a prerequisite placed
+    before the action that needs it, and counted). `rest` is everything else, each with the reason it is not on the
+    plan. `top=None` puts every candidate that meets the bar on the plan."""
     ranked = candidates(er)
     by_key = {c.key: c for c in ranked}
     for c in ranked:
-        c.why_not = why_not(c); c.worth = not c.why_not; c.group = group_of(c)
+        c.why_not = why_not(c); c.worth = not c.why_not
     for c in ranked:                                   # a prerequisite of an action above the bar is above the bar too
         if c.worth:
             for d in c.depends_on:
                 if d in by_key and not by_key[d].worth:
                     by_key[d].worth = True; by_key[d].why_not = ""
-    chosen: list[Candidate] = []
+    worth: list[Candidate] = []
     for c in ranked:
         if not c.worth:
             continue
-        for d in [by_key[d] for d in c.depends_on if d in by_key and by_key[d] not in chosen]:
-            chosen.append(d)
-        if c not in chosen:
-            chosen.append(c)
-    chosen += [c for c in ranked if not c.worth]
-    if limit is not None:
-        chosen = chosen[:limit]
-    for i, c in enumerate(chosen, 1):
+        for d in [by_key[d] for d in c.depends_on if d in by_key and by_key[d] not in worth]:
+            worth.append(d)
+        if c not in worth:
+            worth.append(c)
+    chosen = worth if top is None else worth[:top]
+    beyond = [c for c in worth if c not in chosen]
+    for c in beyond:
+        c.why_not = f"met the bar; ranked below the top {top}"
+    rest = beyond + [c for c in ranked if not c.worth]
+    for i, c in enumerate(chosen + rest, 1):
         c.rank_reason = f"#{i}: " + c.rank_reason
     nothing = None
     if not chosen:
@@ -424,12 +496,5 @@ def select(er, limit: int | None = None) -> dict:
         if not checks:
             checks.append("no finding met the bar for a bounded, evidenced action worth doing; the catalogue under Evidence lists everything that was observed")
         nothing = {"message": "No action is suggested from these exports.", "next_check": "; ".join(checks)}
-    order = {c.key: i for i, c in enumerate(chosen)}
-    groups = []
-    for key, title, blurb in GROUPS:
-        ks = [c.key for c in chosen if c.group == key]
-        if ks:
-            groups.append({"key": key, "title": title, "blurb": blurb, "keys": ks, "met_bar": sum(1 for c in chosen if c.group == key and c.worth)})
-    groups.sort(key=lambda g: min(order[k] for k in g["keys"]))       # the group holding the top-ranked action comes first
-    return {"actions": [c.to_dict() for c in chosen], "candidates": [c.to_dict() for c in ranked], "ranking": RANKING, "worth": WORTH, "limit": limit,
-            "considered": len(ranked), "met_bar": sum(1 for c in chosen if c.worth), "groups": groups, "none": nothing}
+    return {"actions": [c.to_dict() for c in chosen], "rest": [c.to_dict() for c in rest], "candidates": [c.to_dict() for c in chosen + rest], "ranking": RANKING, "worth": WORTH,
+            "top": top, "considered": len(ranked), "met_bar": len(worth), "none": nothing}

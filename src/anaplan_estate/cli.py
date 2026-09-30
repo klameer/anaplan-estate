@@ -51,6 +51,7 @@ def main(argv=None):
     ap.add_argument("--name", action="append", metavar="FOLDER=MODEL", help="rename a discovered model")
     ap.add_argument("--skip", action="append", metavar="MODEL", help="leave a discovered model out (e.g. a copy)")
     ap.add_argument("--stale-months", type=int, default=12, help="window before the Actions snapshot after which an action counts as having no recent recorded run")
+    ap.add_argument("--top", type=int, default=5, help="how many actions the plan opens on (default 5); 0 puts every candidate that meets the bar on it")
     ap.add_argument("--list", action="store_true", help="only list the models that would be analysed")
     args = ap.parse_args(argv)
     if args.list:
@@ -58,7 +59,7 @@ def main(argv=None):
             print(f"{s['name']:30s} {s['line_items']}  actions={'yes' if s['actions'] else 'no'} modules={'yes' if s['modules'] else 'no'}")
         return
     er = fleet.run(args.root, aliases=_kv(args.alias), stale_months=args.stale_months, names=_kv(args.name), skip=args.skip)
-    rep = report.build(er, contact=args.contact, feedback_url=args.feedback_url, source_url=args.source_url, help_url=args.help_url)
+    rep = report.build(er, contact=args.contact, feedback_url=args.feedback_url, source_url=args.source_url, help_url=args.help_url, top=(args.top or None))
     for flag, given, kept in (("--feedback-url", args.feedback_url, rep["links"]["feedback"]), ("--source-url", args.source_url, rep["links"]["source"]), ("--help-url", args.help_url, rep["links"]["help"])):
         if given and not kept:
             print(f"{flag}: not a plain http(s) URL, link omitted from the report", file=sys.stderr)
@@ -76,7 +77,7 @@ def main(argv=None):
         logo = Path(args.logo).read_text(encoding="utf-8") if args.logo else None
         Path(args.html).write_text(report_html.render(rep, theme_css=css, logo_svg=logo, brand=args.brand, csv_text=csv_text), encoding="utf-8")
         print(f"wrote {args.html}", file=sys.stderr)
-    md = report.render_markdown(er)
+    md = report.render_markdown(er, top=(args.top or None))
     if args.out:
         Path(args.out).write_text(md, encoding="utf-8"); print(f"wrote {args.out}", file=sys.stderr)
     elif not (args.json or args.html or args.csv):

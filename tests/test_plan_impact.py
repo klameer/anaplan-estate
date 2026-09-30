@@ -26,34 +26,56 @@ def _words(fragment):
 
 def test_initial_reading_path_is_short_and_actionable():
     er, rep, h = _rep()
-    opening = h[h.index('<header class="top">'):h.index('<section id="impact"')]
-    acts = rep["plan"]["actions"]
-    assert len(acts) == rep["plan"]["considered"] >= 1
-    worth = [a["worth"] for a in acts]
-    assert worth == sorted(worth, reverse=True) and rep["plan"]["met_bar"] == sum(worth)     # met-the-bar first, then the rest, each with a reason
-    assert all(a["why_not"] for a in acts if not a["worth"]) and all(not a["why_not"] for a in acts if a["worth"])
-    for a in acts:                                           # an exclusion reason never contradicts the card's own figures
+    pl = rep["plan"]
+    acts, rest = pl["actions"], pl["rest"]
+    assert 1 <= len(acts) <= plan.TOP == pl["top"] and pl["considered"] == len(acts) + len(rest) and pl["met_bar"] >= len(acts)
+    assert all(a["worth"] and not a["why_not"] for a in acts) and all(c["why_not"] for c in rest)     # on the plan, or listed with the reason
+    assert [c["key"] for c in pl["candidates"]] == [c["key"] for c in acts + rest]
+    for a in acts + rest:                                    # an exclusion reason never contradicts the card's own figures
         if a["key"].startswith("hotspot-investigate:") and not a["worth"]:
             assert "cells" in a["why_not"] and "5%" not in a["why_not"]
         if "IF tests" in a["title"]:
             assert "measure" in a["why"] and "quicker" not in a["why"] and "every branch for every cell" not in a["why"]
-    groups = rep["plan"]["groups"]
+        assert a["tests"], a["title"]                                     # every candidate says which test it answers
     plan_html = h[h.index('<section id="plan"'):h.index('<section id="impact"')]
-    assert plan_html.index('<table class="sum">') < plan_html.index('<li class="action') and f'{rep["plan"]["met_bar"]} of {rep["plan"]["considered"]}' in plan_html
-    assert sorted(k for g in groups for k in g["keys"]) == sorted(a["key"] for a in acts) and all(a["group"] for a in acts)
-    assert groups[0]["keys"][0] == acts[0]["key"]                          # the group holding the top action comes first
-    cards = re.findall(r'<li class="action(?: below)?" id="A\d+">', h)
+    assert plan_html.index('<table class="sum">') < plan_html.index('<li class="action') and f"picked from {pl['considered']} candidates across all {rep['checks']['total']} tests" in plan_html
+    cards = re.findall(r'<li class="action" id="A\d+">', h)
     assert len(cards) == len(acts)
+    assert f"Everything else that was found ({len(rest)})" in plan_html and plan_html.count("<tr><td>") >= len(acts) + len(rest)
     for a in acts:
         assert a["title"] and a["why"] and 2 <= len(a["steps"]) <= 3 and a["done_when"] and a["role"]
-        assert 100 <= len((a["title"] + " " + a["why"] + " " + " ".join(a["steps"]) + " " + a["done_when"]).split()) <= 300
+        assert 100 <= len((a["title"] + " " + a["why"] + " " + " ".join(a["steps"]) + " " + a["done_when"]).split()) <= 300, a["title"]
         first_obj = min(i for i in (a["why"].find("the line item '"), a["why"].find("the module '")) if i >= 0)
         assert first_obj > 80                                          # a plain explanation comes before the first named object
     # no findings catalogue follows the plan on the initial path
-    plan_html = h[h.index('<section id="plan"'):h.index('<section id="impact"')]
     assert '<article class="f"' not in plan_html and plan_html.count('<table class="sum">') == 1
     assert 'id="evidence" class="view" role="tabpanel" aria-label="Evidence" hidden' in h
     assert "Request route" not in h and "--service-url" not in h
+
+
+def test_plan_draws_on_every_test_and_weighs_a_wrong_total_above_a_small_footprint():
+    er, rep, h = _rep()
+    pl = rep["plan"]
+    from anaplan_estate import checks
+    ratio = next(c for c in pl["candidates"] if c["tests"] == [checks.N("ratio-summed")])
+    odd = next(c for c in pl["candidates"] if c["tests"] == [checks.N("odd-one-out")])
+    assert ratio in pl["actions"] and ratio["weight"] == "high" and ratio["kind"] == "change" and "set by the test" in ratio["rank_reason"]
+    assert odd in pl["actions"] and odd["kind"] == "investigation"
+    # upkeep tests are candidates too, and never on the plan
+    hard = [c for c in pl["candidates"] if c["tests"] == [checks.N("hard-coded-numbers")]]
+    assert hard and all(c in pl["rest"] and "ranks low by nature" in c["why_not"] for c in hard)
+    # a test that names many objects starts with its largest, and says so
+    many = next(c for c in pl["candidates"] if c["tests"] == [checks.N("summaries-unread")] and c["model"] == "Caldergate FP&A")
+    assert len(many["objects"]) == plan.BOUNDED and any("largest of 30" in n for n in many["notices"])
+    cells = [d["cells"] for d in many["detail"]]
+    assert cells == sorted(cells, reverse=True)
+    # one decision per test and model: a hand-written card replaces the generic one for the same test
+    seen = [(c["model"], t) for c in pl["candidates"] for t in c["tests"] if not c["key"].startswith(("hotspot-if", "if:")) and t != checks.N("if-count")]
+    assert len(seen) == len(set(seen))
+    # the size of the plan is the caller's: all that meet the bar, or fewer
+    assert len(plan.select(er, top=None)["actions"]) == pl["met_bar"] and len(plan.select(er, top=2)["actions"]) == 2
+    observed = {t for c in pl["candidates"] for t in c["tests"]}
+    assert checks.N("cell-concentration") not in observed and checks.N("hubs") not in observed        # observations inform, they are not actions
 
 
 def test_plan_merges_overlaps_and_names_bounded_objects():
@@ -72,7 +94,8 @@ def test_plan_merges_overlaps_and_names_bounded_objects():
     hot = next(a for a in acts if a["key"].startswith("hotspot-"))
     assert hot["objects"] and all("." in o for o in hot["objects"])
     assert [d["object"] for d in hot["detail"]] == hot["objects"] and all(d["formula"] for d in hot["detail"])
-    card = h[h.index(f'<li class="action" id="A{acts.index(hot) + 1}"'):]; card = card[:card.index("</li></ol>") if "</li></ol>" in card else len(card)]
+    card = h[h.index(f'<li class="action" id="A{acts.index(hot) + 1}"'):]
+    assert 'href="#check-' in card[:card.index("<dl>")]              # the card says which test it answers; card = card[:card.index("</li></ol>") if "</li></ol>" in card else len(card)]
     assert '<table class="det">' in card and report_html._e(hot["detail"][0]["formula"]) in card and "listed under Evidence" not in card
 
 
