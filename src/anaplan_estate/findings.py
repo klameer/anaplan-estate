@@ -560,11 +560,11 @@ def _per_model(er, m, nid) -> list[Finding]:
         for x in xs:
             li = model.line_items.get((x.module, x.line_item))
             rows.append(f"| {_q(x.object)} | {li.summary if li else ''} | {', '.join(li.applies_to) if li and li.applies_to else 'module dimensions'} | {_c(li.cell_count) if li else ''} | `{li.formula if li else ''}` |")
-        new(area="maintain", kind="fix", title="Ratios whose totals are added up", objects=[x.object for x in xs], unit="line items",
-            observed=f"{_pl(len(xs), 'line item')} {'divides' if len(xs) == 1 else 'divide'} one amount by another (or {'is' if len(xs) == 1 else 'are'} formatted as a percentage) and {'has' if len(xs) == 1 else 'have'} the summary method Sum. Each total then shows the sum of the ratios below it, not the ratio of the totals: three regions at 40% show 120%.",
-            why="A summed ratio is a number nobody intends. The cells at the lowest level are right; every parent, and every quarter and year where the time summary is Sum, is not. Whoever reads the total on a page or an export reads a wrong figure, and a formula that reads the parent carries it on.",
+        new(area="maintain", kind="fix", title="Percentages whose totals are added up", objects=[x.object for x in xs], unit="line items",
+            observed=f"{_pl(len(xs), 'line item')} formatted as a percentage {'divides' if len(xs) == 1 else 'divide'} one amount by another and {'has' if len(xs) == 1 else 'have'} the summary method Sum. Each total then shows the sum of the percentages below it, not the percentage of the totals: three regions at 40% show 120%.",
+            why="A summed percentage is a number nobody intends. The cells at the lowest level are right; every parent, and every quarter and year where the time summary is Sum, is not. Whoever reads the total on a page or an export reads a wrong figure, and a formula that reads the parent carries it on.",
             scope=f"{_pl(len(xs), 'line item')}; {sum(len(g.rev.get((x.module, x.line_item), ())) for x in xs)} formulas read them", benefit="not quantified from the exports", benefit_kind="none",
-            strength="confirmed", basis="Parsed formula (the result is a quotient) and the Summary column as exported. A divisor that is a literal, a single model-wide value, or a rate that is not itself summed is not counted.",
+            strength="confirmed", basis="Percentage format, parsed formula (the result is a quotient) and the Summary column, all as exported. Divisions not formatted as a percentage are not tested: most are conversions or spreads whose totals are right to add.",
             missing=["whether a page, an export or a formula shows or reads the totals of each line item", "hierarchies on the dimensions: a flat list has no parent to be wrong"],
             next_step="Open the first one on a grid with a parent showing and compare the total with numerator total divided by denominator total; then set the summary to Formula, or to None where no total is needed.",
             keep_design="A line item whose totals are never shown or read does no harm, though None says so more clearly. A ratio held at a level with no parents (a flat list, no time summary shown) has no total to be wrong.",
@@ -598,7 +598,7 @@ def _per_model(er, m, nid) -> list[Finding]:
             li = model.line_items.get((x.module, x.line_item))
             rows.append(f"| {_q(x.object)} | {x.message} | {_c(li.cell_count) if li else ''} | {(f'{li.calc_effort:.2f}%' if li and has_effort else 'n/a')} | `{li.formula if li else ''}` |")
         saved = sum(int(x.value or 0) for x in xs)
-        assumed = any("size assumed" in x.message for x in xs)
+        assumed = False
         unpriced = sum(1 for x in xs if not int(x.value or 0))
         new(area="capacity", kind="fix", title="Line items with a dimension their formula does not use", objects=[x.object for x in xs], unit="line items",
             observed=f"{_pl(len(xs), 'calculated line item')} of 10,000 cells or more apply to a list, Time or Versions that nothing in the formula varies over, so the same value is stored once per item of that dimension. About {_c(saved)} of their cells repeat a value"

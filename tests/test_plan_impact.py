@@ -99,6 +99,22 @@ def test_plan_merges_overlaps_and_names_bounded_objects():
     assert '<table class="det">' in card and report_html._e(hot["detail"][0]["formula"]) in card and "listed under Evidence" not in card
 
 
+def test_a_prerequisite_is_on_the_plan_only_with_the_action_that_needs_it(monkeypatch):
+    a = _cand("a", "confirmed", "change", 1, cells=90_000_000)
+    b = _cand("b", "confirmed", "change", 1, cells=80_000_000)
+    needs = _cand("needs-check", "confirmed", "change", 1, cells=70_000_000); needs.depends_on = ["check"]
+    check = _cand("check", "inferred", "investigation", 1, cells=10)          # below the bar on its own; above it as a prerequisite
+    small = _cand("small", "confirmed", "change", 1, cells=60_000_000)
+    monkeypatch.setattr(plan, "candidates", lambda er: sorted([a, b, needs, check, small], key=rank_key))
+
+    class _ER: models = []
+    keys = lambda top: [c["key"] for c in plan.select(_ER(), top=top)["actions"]]
+    assert keys(4) == ["a", "b", "check", "needs-check"]                      # the check comes first, with the action
+    assert keys(3) == ["a", "b", "small"]                                     # no room for both: the check does not take the place alone
+    rest = {c["key"]: c["why_not"] for c in plan.select(_ER(), top=3)["rest"]}
+    assert "check to do first" in rest["check"] and "ranked below the top 3" in rest["needs-check"]
+
+
 def _cand(key, strength, kind, n_objects, cells=None, effort=None):
     return Candidate(key=key, kind=kind, title=key, why="w", steps=["a", "b"], done_when="d", role="r", model="M",
                      objects=[f"o{i}" for i in range(n_objects)], finding_ids=[], strength=strength, footprint_cells=cells, footprint_effort=effort)

@@ -256,6 +256,10 @@ class Judge:
                 name = (node.get("path") or [""])[0]
                 up = str(name).upper()
                 axes.add(TIME if up == "TIME" else VERSIONS if up in ("VERSIONS", "VERSION") else name)
+            elif r.kind == "list_item":
+                name = (node.get("path") or [""])[0]
+                if name in own:                 # List.Property on a list the item applies to varies by item; the exports cannot tell it from List.Member
+                    axes.add(name)
             elif r.kind == "unresolved":
                 flags["unresolved"] += 1
             return axes, flags

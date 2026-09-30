@@ -16,7 +16,7 @@ Where calculation time and cells go, and the formula patterns Anaplan documents 
 | 1.4 | FINDITEM on a large line item | FINDITEM in a line item with 10,000 cells or more. | the Cell Count column |
 | 1.5 | Text joins on a large line item | Text concatenation (&) in a line item with 10,000 cells or more. | the Cell Count column |
 | 1.6 | Per-item functions repeated on every cell | PARENT, ITEM, NAME, CODE, START, END and similar in a line item with two or more dimensions and 5,000 cells or more, where a one-dimension system module would compute the answer once. | the Cell Count column |
-| 1.7 | Line items with a dimension their formula does not use | A calculated line item of 10,000 cells or more that applies to a list, Time or Versions that nothing in its formula varies over: the dimension multiplies cells without changing the value. | the Cell Count column |
+| 1.7 | Line items with a dimension their formula does not use | A calculated line item of 10,000 cells or more that applies to a list, Time or Versions that nothing in its formula varies over: the dimension multiplies cells without changing the value. TRUE or FALSE flags and modules on a line item subset are not counted. | the Cell Count column |
 | 1.8 | Where the cells are | The modules and line items holding the largest share of the model's cells. | the Cell Count column |
 
 ## 2. Usage and leftovers
@@ -29,7 +29,7 @@ What nothing appears to read: candidates to ask about, never verdicts.
 | 2.2 | Unread modules that repeat a module in use | An unread module whose calculated line items match, in formula and context, line items of a module that is read, with the share matched. |  |
 | 2.3 | Calculated line items nothing reads | A calculated line item of 50,000 cells or more that no formula reads. | the Cell Count column |
 | 2.4 | Data loaded but never read | A module that an import action loads, none of whose line items is read by any formula or used by an export action. | the Actions export |
-| 2.5 | Names that say leftover | Modules, line items, actions and referenced list items whose name carries a leftover marker (OLD, TEMP, COPY, BACKUP, DO NOT USE, v2, 'Copy of', default names), with whether anything still reads them. |  |
+| 2.5 | Names that say leftover | Modules, line items, actions and referenced list items whose name carries a leftover marker (OLD, TEMP, COPY, BACKUP, DO NOT USE, v2, 'Copy of', default names), with whether anything still reads them. 'Delete' flags and version names are not counted. |  |
 
 ## 3. Dependencies and change impact
 
@@ -64,8 +64,8 @@ Totals that may be wrong, repeated logic, and formulas the next builder has to d
 | 4.13 | Modules with more than 50 line items | A module holding more than 50 line items. |  |
 | 4.14 | Empty modules | A module with no line items. |  |
 | 4.15 | Modules without notes | How many modules carry no notes, largest first. | the Modules export |
-| 4.16 | Ratios whose totals are added up | A line item that divides one amount by another (or is formatted as a percentage) and has the summary method Sum, so every total is the sum of the ratios below it and not the ratio of the totals. | the Summary column |
-| 4.17 | The odd one out in a run of matching formulas | Five or more neighbouring line items in a module share one formula shape and exactly one among them differs: a different shape, no formula at all, or one reference its siblings do not share. |  |
+| 4.16 | Percentages whose totals are added up | A line item formatted as a percentage that divides one amount by another and has the summary method Sum, so every total is the sum of the percentages below it and not the percentage of the totals. | the Summary column |
+| 4.17 | The odd one out in a run of matching formulas | Five or more neighbouring line items in a module share one formula shape and exactly one among them differs: a different shape, no formula at all, or one reference its siblings do not share. A subtotal of its neighbours is not counted. |  |
 
 ## 5. Imports, exports and processes
 

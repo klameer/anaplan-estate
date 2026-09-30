@@ -466,6 +466,7 @@ def select(er, top: int | None = TOP) -> dict:
     by_key = {c.key: c for c in ranked}
     for c in ranked:
         c.why_not = why_not(c); c.worth = not c.why_not
+    own = {c.key for c in ranked if c.worth}           # met the bar on its own evidence
     for c in ranked:                                   # a prerequisite of an action above the bar is above the bar too
         if c.worth:
             for d in c.depends_on:
@@ -479,10 +480,19 @@ def select(er, top: int | None = TOP) -> dict:
             worth.append(d)
         if c not in worth:
             worth.append(c)
-    chosen = worth if top is None else worth[:top]
+    chosen: list[Candidate] = []
+    for c in worth:                                    # a prerequisite enters with the action that needs it, never in its place
+        if c.key not in own or c in chosen:
+            continue
+        deps = [by_key[d] for d in c.depends_on if d in by_key and by_key[d] not in chosen]
+        if top is not None and len(chosen) + len(deps) + 1 > top:
+            if len(chosen) >= top:
+                break
+            continue                                   # does not fit with its prerequisite: the next one that fits takes the place
+        chosen += deps + [c]
     beyond = [c for c in worth if c not in chosen]
     for c in beyond:
-        c.why_not = f"met the bar; ranked below the top {top}"
+        c.why_not = (f"met the bar; ranked below the top {top}" if c.key in own else f"a check to do first for an action that is ranked below the top {top}")
     rest = beyond + [c for c in ranked if not c.worth]
     for i, c in enumerate(chosen + rest, 1):
         c.rank_reason = f"#{i}: " + c.rank_reason

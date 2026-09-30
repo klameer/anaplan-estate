@@ -47,7 +47,7 @@ anaplan-estate examples/caldergate-estate --out estate.md
 | 17 | Modules with no notes: most of them | Every model | H-NOTES |
 | 18 | A version called "Budget v2 DO NOT USE", still selected by a board pack line, with a note saying to ask Dan before removing it | FP&A `OUT02 Board Pack.Old Budget Revenue` | F-SELECT-TIME (hard-coded version selection) |
 | 19 | A module name with a typo nobody fixed because renaming breaks the views | FP&A `CAL04 Margn` | Read the module list |
-| 29 | A ratio left on the default summary: cost per FTE divides two summed amounts and is itself summed, so the all-departments total adds up the ratios | FP&A `CAL06 Department Summary.Cost per FTE` | F-RATIO-SUM (test 4.16) |
+| 29 | A percentage left on the default summary: EBITDA margin is summed, so the all-cost-centres total adds up the percentages | FP&A `CAL07 P&L by Cost Centre.EBITDA Margin` | F-RATIO-SUM (test 4.16) |
 | 30 | Thirty phased drivers pasted from one formula; one reads `Current Period?` where the other twenty-nine read `Actual?` | FP&A `CAL12 Driver Phasing.Insurance Phased` | F-ODD-ONE (test 4.17) |
 | 31 | Rates and thresholds held on every cost centre, role, month and version when they are one number; text labels held on every month and version | FP&A `INP03 Headcount.NI Rate`, `CAL02 Revenue.Revenue Label`; Workforce `Calcs - Cost.NI Rate`, `Calcs - Headcount by CC.Bonus %` | G-OVERDIM (test 1.7) |
 | 32 | Names that say leftover: the OLD module, the `zz Archive` module, the "Old Budget Revenue" line still selecting "Budget v2 DO NOT USE", the Hub v1 import | FP&A `CAL05 Opex OLD`, `OUT02 Board Pack.Old Budget Revenue`; Workforce `zz Archive - 2021 Cost` | H-LEFTOVER (test 2.5) |

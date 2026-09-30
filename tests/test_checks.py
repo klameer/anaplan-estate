@@ -40,35 +40,38 @@ def test_published_list_is_generated_from_the_registry():
 
 # ---- 4.16 ratios whose totals are added up
 
-def test_ratio_of_two_summed_amounts_with_summary_sum_is_flagged():
-    m = model([("M", "A", "", ("L",)), ("M", "B", "", ("L",)),
-               ("M", "R1", "A / B", ("L",)), ("M", "R2", "IF B = 0 THEN 0 ELSE (A - B) / B * 100", ("L",)), ("M", "R3", "DIVIDE(A, B)", ("L",))])
+def _pct(m, *names):
+    for n in names:
+        m.line_items[("M", n)].format_raw = PCT
+    return m
+
+
+def test_percentage_that_divides_two_amounts_with_summary_sum_is_flagged():
+    m = _pct(model([("M", "A", "", ("L",)), ("M", "B", "", ("L",)),
+                    ("M", "R1", "A / B", ("L",)), ("M", "R2", "IF B = 0 THEN 0 ELSE (A - B) / B * 100", ("L",)), ("M", "R3", "DIVIDE(A, B)", ("L",))]), "R1", "R2", "R3")
     fs, _ = run_rules(m, "F-RATIO-SUM")
     assert {f.line_item for f in fs} == {"R1", "R2", "R3"} and all(f.severity == "major" for f in fs)
-    assert "totals add the ratios" in fs[0].message and "Formula" in fs[0].fix
+    assert "totals add the percentages" in fs[0].message and "Formula" in fs[0].fix
 
 
-def test_scalings_conversions_and_formula_summaries_are_not_flagged():
-    m = model([("M", "A", "", ("L",)), ("M", "B", "", ("L",)), ("M", "Rate", "", ("L",), {"summary": "NONE"}),
+def test_conversions_spreads_scalings_and_formula_summaries_are_not_flagged():
+    m = model([("M", "A", "", ("L",)), ("M", "B", "", ("L",)), ("M", "Rate", "", ("L",)), ("M", "Months", "", ("L",)),
                ("S", "Global", "", (), {"ts": "Not Applicable"}),
-               ("M", "Monthly", "A / 12", ("L",)),                                    # a literal divisor is a scaling
-               ("M", "Converted", "A / Rate", ("L",)),                                # the divisor is a rate that is not summed
-               ("M", "Scaled", "A / 'S'.Global", ("L",)),                             # one value for the whole model
-               ("M", "Right", "A / B", ("L",), {"summary": "FORMULA"}),
-               ("M", "Off", "A / B", ("L",), {"summary": "NONE"}),
-               ("M", "Product", "A / B * Rate", ("L",))])                             # not a quotient in the end
+               ("M", "Converted", "A / Rate", ("L",)),                                # amount / FX rate, the rate's summary left on Sum: seen on every real model
+               ("M", "Spread", "IF B > 0 THEN A / Months ELSE 0", ("L",)),            # amount / months
+               ("M", "Average", "A / B", ("L",)),                                     # not formatted as a percentage: not tested (a known miss)
+               ("M", "Monthly", "A / 12", ("L",)), ("M", "Scaled", "A / 'S'.Global", ("L",)),
+               ("M", "Right", "A / B", ("L",), {"summary": "FORMULA"}), ("M", "Off", "A / B", ("L",), {"summary": "NONE"}),
+               ("M", "Product", "A / B * Rate", ("L",))])
+    _pct(m, "Monthly", "Scaled", "Right", "Off", "Product")                           # a percentage format does not make these a summed ratio
     fs, _ = run_rules(m, "F-RATIO-SUM")
     assert fs == []
 
 
-def test_percentage_format_with_sum_is_flagged_and_time_only_sum_says_so():
-    m = model([("M", "A", "", ("L",)), ("M", "Rate", "", ("L",), {"summary": "NONE"}), ("M", "B", "", ("L",)),
-               ("M", "Pct", "A / Rate", ("L",)), ("M", "TimeOnly", "A / B", ("L",), {"summary": "NONE;time=SUM"})])
-    m.line_items[("M", "Pct")].format_raw = PCT
+def test_time_only_sum_says_so():
+    m = _pct(model([("M", "A", "", ("L",)), ("M", "B", "", ("L",)), ("M", "TimeOnly", "A / B", ("L",), {"summary": "NONE;time=SUM"})]), "TimeOnly")
     fs, _ = run_rules(m, "F-RATIO-SUM")
-    got = {f.line_item: f.message for f in fs}
-    assert set(got) == {"Pct", "TimeOnly"}
-    assert "formatted as a percentage" in got["Pct"] and "every time total" in got["TimeOnly"] and "every parent" not in got["TimeOnly"]
+    assert len(fs) == 1 and "every time total" in fs[0].message and "every parent" not in fs[0].message
 
 
 # ---- 4.17 the odd one out
@@ -93,6 +96,12 @@ def test_a_typed_in_value_or_another_shape_inside_a_run_is_the_odd_one_out():
         assert len(fs) == 1 and fs[0].line_item == "P3" and word in fs[0].message
 
 
+def test_a_subtotal_of_its_neighbours_is_not_the_odd_one_out():
+    names = [f"P{i}" for i in range(7)]
+    m = model(_run(names, lambda n: "P0 + P1 + P2" if n == "P3" else "IF 'S'.Flag THEN 0 ELSE 'D'.x"))
+    assert run_rules(m, "F-ODD-ONE")[0] == []
+
+
 def test_a_consistent_run_a_short_run_and_a_mixed_module_are_quiet():
     same = model(_run([f"P{i}" for i in range(8)], lambda n: "IF 'S'.Flag THEN 0 ELSE 'D'.x"))
     short = model(_run([f"P{i}" for i in range(4)], lambda n: "'D'.x * 2" if n == "P1" else "IF 'S'.Flag THEN 0 ELSE 'D'.x"))
@@ -109,6 +118,9 @@ def test_dimension_no_reference_varies_over_is_flagged_and_a_hierarchy_is_left_a
                ("M", "Fits", "'S'.Rate * 2", ("L",)),
                ("M", "Parent", "'S'.ByChild", ("L",)),                # reads a list it does not apply to: a hierarchy or mapping the export cannot show
                ("M", "Const", "0.2", ("L", "K")),
+               ("M", "Prop", "L.'Some Property'", ("L",), {"ts": "Not Applicable", "vers": "Not Applicable"}),              # a list property varies by item; not a constant
+               ("M", "Flag", "TRUE", ("L", "K"), {"fmt": "BOOLEAN"}),   # drives an action or a filter
+               ("Sub", "Collected", "COLLECT()", ("L", "K")), ("Sub", "Attr", "'S'.Rate", ("L", "K")),   # a module on a line item subset
                ("M", "Small", "'S'.Rate", ("L", "K"), {"cells": 500})])
     fs, _ = run_rules(m, "G-OVERDIM")
     got = {f.line_item: f.message for f in fs}
@@ -120,9 +132,9 @@ def test_dimension_no_reference_varies_over_is_flagged_and_a_hierarchy_is_left_a
 
 def test_leftover_markers_and_the_ordinary_names_that_look_like_them():
     for name, marker in (("CAL05 Opex OLD", "OLD"), ("Old Budget Revenue", "Old"), ("Budget DO NOT USE", "DO NOT USE"), ("Revenue v2", "v2"), ("Copy of Revenue", "Copy of"),
-                         ("zz Archive 2021", "zz"), ("TEMP calc", "TEMP"), ("Line item 3", "Line item 3"), ("Opex BACKUP", "BACKUP")):
+                         ("zz Archive 2021", "zz"), ("TEMP calc", "TEMP"), ("Line item 3", "Line item 3"), ("Opex BACKUP", "BACKUP"), ("TO DELETE Opex", "TO DELETE")):
         assert leftover_marker(name) == marker, name
-    for name in ("Temp Labour", "Threshold", "Bold Text", "Copy Centre Costs", "Stress Test", "Uplift V", "Gold", "EV2 Charger", "Revenue"):
+    for name in ("Delete All?", "Delete Timesheet Data?", "Temp Labour", "Threshold", "Bold Text", "Copy Centre Costs", "Stress Test", "Uplift V", "Gold", "EV2 Charger", "Revenue"):
         assert leftover_marker(name) == "", name
 
 
@@ -135,6 +147,8 @@ def test_leftover_module_line_item_and_list_item_say_whether_they_are_still_read
     assert "still read by 1 formula" in msg[("M", "Old Rate")]
     assert "VERSIONS.Budget v2 DO NOT USE" in msg[("M", "c")]
     assert ("Calc OLD", "a") not in msg                               # the module says it once
+    live = model([("M", "a", "", ("L",)), ("M", "b", "a[SELECT: VERSIONS.'2024 October Fcst v2']", ("L",))])
+    assert run_rules(live, "H-LEFTOVER")[0] == []                     # a version called v2 is a version
 
 
 # ---- 2.4 and 5.4: from the Actions export
@@ -181,7 +195,7 @@ def test_example_estate_reports_every_check_and_finds_the_planted_ones():
     by_id = {x["id"]: x for x in rep["findings"]}
     ratio = [by_id[i] for i in res["ratio-summed"]["findings"]]
     odd = [by_id[i] for i in res["odd-one-out"]["findings"]]
-    assert ratio and ratio[0]["objects"] == ["CAL06 Department Summary.Cost per FTE"] and ratio[0]["checks"] == [checks.N("ratio-summed")]
+    assert ratio and ratio[0]["objects"] == ["CAL07 P&L by Cost Centre.EBITDA Margin"] and ratio[0]["checks"] == [checks.N("ratio-summed")]
     assert odd and odd[0]["objects"] == ["CAL12 Driver Phasing.Insurance Phased"]
     assert res["over-dimensioned"]["status"] == "found" and res["leftover-names"]["status"] == "found" and res["several-imports-one-target"]["status"] == "found"
     assert any(n["model"] == "Workforce Planning" for n in res["effort-concentration"]["not_run"])      # exported before Calculation Effort existed

@@ -385,7 +385,7 @@ def fpa() -> ModelDef:
             N("Staff Cost", "'CAL07 P&L by Cost Centre'.Staff Cost[SUM: 'SYS02 Cost Centre Attributes'.Department]"),
             N("FTE", "'INP03 Headcount'.FTE[SUM: 'SYS02 Cost Centre Attributes'.Department]"),
             N("Benchmark Opex", "'CAL03 Opex'.Opex GBP[SUM: 'SYS02 Cost Centre Attributes'.Department, LOOKUP: 'SYS09 Department Settings'.Benchmark Account]", notes="temp fix for Q3 close, remove later"),
-            N("Cost per FTE", "DIVIDE(Opex + Staff Cost, FTE)"),     # summary left on Sum: the department total adds up the ratios
+            N("Cost per FTE", "DIVIDE(Opex + Staff Cost, FTE)", summary="FORMULA"),
         ]),
         Mod("SYS09 Department Settings", "System", ("Departments",), "Not Applicable", "Not Applicable", "", [
             L("Benchmark Account", "Accounts"), T("Head of Department"), B("Cost Centre Owner Approves?"),
@@ -399,7 +399,7 @@ def fpa() -> ModelDef:
             N("EBITDA", "Gross Margin - Opex - Staff Cost"),
             N("Depreciation", "'CAL10 Depreciation'.Charge"),
             N("EBIT", "EBITDA - Depreciation"),
-            P("EBITDA Margin", "DIVIDE(EBITDA, Revenue)", summary="FORMULA"),
+            P("EBITDA Margin", "DIVIDE(EBITDA, Revenue)"),      # summary left on Sum: the all-cost-centres total adds up the percentages
             N("Opex Budget", "Opex[SELECT: VERSIONS.Budget]"),
             N("Opex Variance to Budget", "Opex - Opex Budget"),
         ]),
