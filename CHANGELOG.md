@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 (2026-09-30)
 
 - The tests are now a numbered catalogue (`checks.py`, published as
   docs/TESTS.md and at /tests): 42 tests in six areas. The home page says
