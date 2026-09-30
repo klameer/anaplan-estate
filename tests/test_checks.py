@@ -34,8 +34,8 @@ def test_every_rule_belongs_to_exactly_one_check():
 
 
 def test_published_list_is_generated_from_the_registry():
-    assert (ROOT / "docs" / "CHECKS.md").read_text(encoding="utf-8").strip() == checks.markdown().strip(), \
-        "docs/CHECKS.md is stale: python -m anaplan_estate.checks > docs/CHECKS.md"
+    assert (ROOT / "docs" / "TESTS.md").read_text(encoding="utf-8").strip() == checks.markdown().strip(), \
+        "docs/TESTS.md is stale: python -m anaplan_estate.checks > docs/TESTS.md"
 
 
 # ---- 4.16 ratios whose totals are added up
@@ -189,6 +189,6 @@ def test_example_estate_reports_every_check_and_finds_the_planted_ones():
         assert x["checks"], x["title"]                                 # every finding says which check produced it
     h = report_html.render(rep, csv_text=report.register_csv(rep))
     assert 'id="checks"' in h and f'id="check-{checks.N("ratio-summed")}"' in h and f'href="#check-{checks.N("ratio-summed")}"' in h
-    assert f"{ck['total']} checks were run on these exports" in h[h.index('<section id="plan"'):h.index('<section id="impact"')]
+    assert f"{ck['total']} tests were run on these exports" in h[h.index('<section id="plan"'):h.index('<section id="impact"')]
     md = report.render_markdown(er)
-    assert "## Checks run" in md and f"| {checks.N('odd-one-out')} | The odd one out" in md
+    assert "## Tests run" in md and f"| {checks.N('odd-one-out')} | The odd one out" in md

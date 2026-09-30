@@ -47,16 +47,16 @@ anaplan-estate examples/caldergate-estate --out estate.md
 | 17 | Modules with no notes: most of them | Every model | H-NOTES |
 | 18 | A version called "Budget v2 DO NOT USE", still selected by a board pack line, with a note saying to ask Dan before removing it | FP&A `OUT02 Board Pack.Old Budget Revenue` | F-SELECT-TIME (hard-coded version selection) |
 | 19 | A module name with a typo nobody fixed because renaming breaks the views | FP&A `CAL04 Margn` | Read the module list |
-| 29 | A ratio left on the default summary: cost per FTE divides two summed amounts and is itself summed, so the all-departments total adds up the ratios | FP&A `CAL06 Department Summary.Cost per FTE` | F-RATIO-SUM (check 4.16) |
-| 30 | Thirty phased drivers pasted from one formula; one reads `Current Period?` where the other twenty-nine read `Actual?` | FP&A `CAL12 Driver Phasing.Insurance Phased` | F-ODD-ONE (check 4.17) |
-| 31 | Rates and thresholds held on every cost centre, role, month and version when they are one number; text labels held on every month and version | FP&A `INP03 Headcount.NI Rate`, `CAL02 Revenue.Revenue Label`; Workforce `Calcs - Cost.NI Rate`, `Calcs - Headcount by CC.Bonus %` | G-OVERDIM (check 1.7) |
-| 32 | Names that say leftover: the OLD module, the `zz Archive` module, the "Old Budget Revenue" line still selecting "Budget v2 DO NOT USE", the Hub v1 import | FP&A `CAL05 Opex OLD`, `OUT02 Board Pack.Old Budget Revenue`; Workforce `zz Archive - 2021 Cost` | H-LEFTOVER (check 2.5) |
+| 29 | A ratio left on the default summary: cost per FTE divides two summed amounts and is itself summed, so the all-departments total adds up the ratios | FP&A `CAL06 Department Summary.Cost per FTE` | F-RATIO-SUM (test 4.16) |
+| 30 | Thirty phased drivers pasted from one formula; one reads `Current Period?` where the other twenty-nine read `Actual?` | FP&A `CAL12 Driver Phasing.Insurance Phased` | F-ODD-ONE (test 4.17) |
+| 31 | Rates and thresholds held on every cost centre, role, month and version when they are one number; text labels held on every month and version | FP&A `INP03 Headcount.NI Rate`, `CAL02 Revenue.Revenue Label`; Workforce `Calcs - Cost.NI Rate`, `Calcs - Headcount by CC.Bonus %` | G-OVERDIM (test 1.7) |
+| 32 | Names that say leftover: the OLD module, the `zz Archive` module, the "Old Budget Revenue" line still selecting "Budget v2 DO NOT USE", the Hub v1 import | FP&A `CAL05 Opex OLD`, `OUT02 Board Pack.Old Budget Revenue`; Workforce `zz Archive - 2021 Cost` | H-LEFTOVER (test 2.5) |
 
 ## Planted, in the actions
 
 | # | What | Where | Report section |
 |---|---|---|---|
-| 20 | An import from a hub that no longer exists, last run March 2021, in no process. It loads the same module as the import that replaced it | FP&A `Import from Caldergate Hub v1 - Cost Centres` | External sources ("Caldergate Hub v1"); stale; orphan; several imports loading one target (check 5.4) |
+| 20 | An import from a hub that no longer exists, last run March 2021, in no process. It loads the same module as the import that replaced it | FP&A `Import from Caldergate Hub v1 - Cost Centres` | External sources ("Caldergate Hub v1"); stale; orphan; several imports loading one target (test 5.4) |
 | 21 | A manual FX upload last run November 2023, in no process | FP&A `Import FX from Treasury file` | Stale; orphan |
 | 22 | Rates once imported from FP&A, now "keyed by hand"; the import survives | Workforce `Import from Caldergate FP&A - Assumptions` | Stale; orphan; still counted as a feed FP&A to Workforce |
 | 23 | Two models load Workday independently | Data Hub `Import Employees from Workday`; Workforce `Import Employees from Workday` | External sources: Workday, 2 imports |
@@ -71,9 +71,9 @@ anaplan-estate examples/caldergate-estate --out estate.md
 | 27 | The feed graph: Hub feeds FP&A and Workforce; Workforce feeds FP&A; FP&A and Workforce feed Board Reporting; and one stale feed FP&A to Workforce | Import action names | How the models connect |
 | 28 | Workforce Planning was exported before Calculation Effort existed, so that chapter says so | Workforce | Where the calculation time goes |
 
-Rows 29 to 32 were added with the numbered check catalogue
-([docs/CHECKS.md](../../docs/CHECKS.md)); the report's *Checks run* table
-shows every check and what it found here.
+Rows 29 to 32 were added with the numbered test list
+([docs/TESTS.md](../../docs/TESTS.md)); the report's *Tests run* table
+shows every test and what it found here.
 
 ## What is not planted
 

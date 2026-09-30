@@ -1,6 +1,6 @@
 """The catalogue of checks: every test the engine runs on an estate, numbered by category.
 
-This is the one place the list lives. The home page, the README (docs/CHECKS.md is generated
+This is the one place the list lives. The home page, the README (docs/TESTS.md is generated
 from here), the report's "Checks run" table and the check numbers on each finding all read it,
 so what a visitor is told will be tested is what is tested.
 
@@ -161,14 +161,14 @@ def catalogue() -> list[dict]:
 
 
 def markdown() -> str:
-    """docs/CHECKS.md, generated: `python -m anaplan_estate.checks > docs/CHECKS.md`."""
-    out = ["# The checks", "",
-           f"Every test the engine runs on an estate: {len(CHECKS)} checks in {len(CATEGORIES)} categories. Generated from `src/anaplan_estate/checks.py`; "
-           "the report's *Checks run* table shows the result of each one on your exports.", "",
-           "A check that needs an optional export or column says so; without it the check is reported as not run, never as clear. "
+    """docs/TESTS.md, generated: `python -m anaplan_estate.checks > docs/TESTS.md`."""
+    out = ["# The tests", "",
+           f"Every test the engine runs on an estate: {len(CHECKS)} tests in {len(CATEGORIES)} areas. Generated from `src/anaplan_estate/checks.py`; "
+           "the report's *Tests run* table shows the result of each one on your exports.", "",
+           "A test that needs an optional export or column says so; without it the test is reported as not run, never as clear. "
            "A hit is an observation or a review candidate, not a verdict.", ""]
     for cat, cs in by_category():
-        out += [f"## {cat.num}. {cat.title}", "", cat.blurb, "", "| # | Check | What is tested | Needs |", "|---|---|---|---|"]
+        out += [f"## {cat.num}. {cat.title}", "", cat.blurb, "", "| # | Test | What is tested | Needs |", "|---|---|---|---|"]
         for c in cs:
             needs = ", ".join(NEEDS_TEXT[n] for n in c.needs) + ("; two or more models" if c.scope == "estate" else "")
             out.append(f"| {c.num} | {c.title} | {c.what} | {needs.lstrip('; ')} |")

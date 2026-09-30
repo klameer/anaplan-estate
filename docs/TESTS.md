@@ -1,14 +1,14 @@
-# The checks
+# The tests
 
-Every test the engine runs on an estate: 42 checks in 6 categories. Generated from `src/anaplan_estate/checks.py`; the report's *Checks run* table shows the result of each one on your exports.
+Every test the engine runs on an estate: 42 tests in 6 areas. Generated from `src/anaplan_estate/checks.py`; the report's *Tests run* table shows the result of each one on your exports.
 
-A check that needs an optional export or column says so; without it the check is reported as not run, never as clear. A hit is an observation or a review candidate, not a verdict.
+A test that needs an optional export or column says so; without it the test is reported as not run, never as clear. A hit is an observation or a review candidate, not a verdict.
 
 ## 1. Performance and size
 
 Where calculation time and cells go, and the formula patterns Anaplan documents as expensive.
 
-| # | Check | What is tested | Needs |
+| # | Test | What is tested | Needs |
 |---|---|---|---|
 | 1.1 | Where calculation effort concentrates | The line items and modules carrying the largest share of Anaplan's measured Calculation Effort, and the share held by the top ten. | the Calculation Effort column |
 | 1.2 | SUM combined with LOOKUP or SELECT | A formula that aggregates (SUM) and looks up or selects in the same formula, which Anaplan documents as slow. |  |
@@ -23,7 +23,7 @@ Where calculation time and cells go, and the formula patterns Anaplan documents 
 
 What nothing appears to read: candidates to ask about, never verdicts.
 
-| # | Check | What is tested | Needs |
+| # | Test | What is tested | Needs |
 |---|---|---|---|
 | 2.1 | Modules nothing reads | A module with two or more calculated line items that no formula outside it reads and no export action uses. |  |
 | 2.2 | Unread modules that repeat a module in use | An unread module whose calculated line items match, in formula and context, line items of a module that is read, with the share matched. |  |
@@ -35,7 +35,7 @@ What nothing appears to read: candidates to ask about, never verdicts.
 
 What depends on what, inside a model and between models.
 
-| # | Check | What is tested | Needs |
+| # | Test | What is tested | Needs |
 |---|---|---|---|
 | 3.1 | Line items with the widest change impact | A line item read directly by 25 or more formulas, with its full downstream reach. |  |
 | 3.2 | Pass-through chains | Three or more line items in a row that only copy the one before. |  |
@@ -47,7 +47,7 @@ What depends on what, inside a model and between models.
 
 Totals that may be wrong, repeated logic, and formulas the next builder has to decode.
 
-| # | Check | What is tested | Needs |
+| # | Test | What is tested | Needs |
 |---|---|---|---|
 | 4.1 | The same calculation under two names | Line items with the same resolved formula and the same dimensions, time scale, time range, versions, format, summary and formula scope. |  |
 | 4.2 | Line items that only copy another | A formula that is a single reference to a line item with identical context. |  |
@@ -71,7 +71,7 @@ Totals that may be wrong, repeated logic, and formulas the next builder has to d
 
 What loads the model, what has stopped running, what sits outside every process.
 
-| # | Check | What is tested | Needs |
+| # | Test | What is tested | Needs |
 |---|---|---|---|
 | 5.1 | Imports and exports outside every process | An import or export action that is in no process. | the Actions export |
 | 5.2 | Imports and exports with no recent run | No recorded run in the 12 months before the latest run in the export. | the Actions export |
@@ -82,7 +82,7 @@ What loads the model, what has stopped running, what sits outside every process.
 
 Checks the report runs on itself, so every finding says how strong its evidence is.
 
-| # | Check | What is tested | Needs |
+| # | Test | What is tested | Needs |
 |---|---|---|---|
 | 6.1 | Formulas the parser did not follow | Formulas whose references are therefore missing from the dependency graph. |  |
 | 6.2 | Agreement with Anaplan's own Referenced By | The parsed dependency graph compared edge by edge with Anaplan's Referenced By column; below 95% every dependent finding is downgraded. | the Referenced By column |

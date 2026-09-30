@@ -28,7 +28,7 @@ def test_index_leads_with_the_example_then_the_form():
     r = client.get("/")
     h = r.text
     assert r.status_code == 200 and 'action="/report"' in h and client.get("/health").text == "ok" and client.head("/health").status_code == 200
-    assert "Do a quick review on your Anaplan estate" in h
+    assert "tests on your Anaplan estate</h1>" in h and "sets them out as an action plan" in h and "No account, nothing installed, nothing kept." in h
     assert h.index('href="/example#plan"') < h.index("Review my estate") < h.index("id=review") < h.index("deleted as soon as the report is sent")
     assert h.count('class="row model"') == 1 and "Add another model" in h and "Or upload one zip" in h
     assert "adds imports, exports and processes" in h and "adds module notes" in h
@@ -144,14 +144,18 @@ def test_geist_fonts_are_served_and_declared():
     assert '@font-face{font-family:"Geist Sans"' in client.get("/").text
 
 
-def test_index_lists_every_check_before_the_form_and_checks_page_describes_them():
+def test_index_says_what_to_upload_what_is_tested_and_what_comes_back_and_tests_page_lists_them():
     from anaplan_estate import checks
     h = client.get("/").text
     n = len(checks.CHECKS)
-    assert f"The {n} checks run on your estate" in h and h.index("id=checks") < h.index("id=review")
-    for c in checks.CHECKS:
-        assert f"<span class=n>{c.num}</span><span>{web._e(c.title)}</span>" in h
-    r = client.get("/checks")
-    assert r.status_code == 200 and f"The {n} checks" in r.text
+    assert f"<h1>Run {n} tests on your Anaplan estate</h1>" in h
+    order = [h.index("Upload your models"), h.index("<ol class=areas>"), h.index('href="/tests"'), h.index("action plan"), h.index('href="/example#plan"'), h.index("id=review")]
+    assert order == sorted(order)                                   # do this, this happens, this comes back, then the two buttons, then the form
+    for cat, cs in checks.by_category():
+        assert f"<strong>{web._e(cat.title)}</strong> <span class=cnt>{len(cs)} tests</span>" in h
+    assert "hundreds" not in h.lower()                              # the number on the page is the number of tests that run
+    r = client.get("/tests")
+    assert r.status_code == 200 and f"All {n} tests" in r.text
     for c in checks.CHECKS:
         assert f'id="c{c.num}"' in r.text and web._e(c.what) in r.text
+    assert client.get("/checks", follow_redirects=False).headers["location"] == "/tests"

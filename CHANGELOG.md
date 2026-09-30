@@ -2,12 +2,13 @@
 
 ## Unreleased
 
-- The checks are now a numbered catalogue (`checks.py`, published as
-  docs/CHECKS.md, on the home page and at /checks): 42 checks in six
-  categories. The report's Evidence view opens on "Checks run", each check
-  with its result (found, clear, or not run and why), and every finding
-  carries the number of the check that produced it.
-- Seven new checks: line items with a dimension their formula does not use
+- The tests are now a numbered catalogue (`checks.py`, published as
+  docs/TESTS.md and at /tests): 42 tests in six areas. The home page says
+  what to upload, what is tested and what comes back. The report's Evidence
+  view opens on "Tests run", each test with its result (found, clear, or
+  not run and why), and every finding carries the number of the test that
+  produced it.
+- Seven new tests: line items with a dimension their formula does not use
   (1.7, with the cells that repeat a value), where the cells are (1.8), data
   loaded but never read (2.4), names that say leftover (2.5), ratios whose
   totals are added up (4.16), the odd one out in a run of matching formulas

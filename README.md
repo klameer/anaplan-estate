@@ -33,8 +33,9 @@ contacting anyone.
 
 ## What gets checked
 
-42 checks in six categories, the same on every model. The report lists each
-one with its result on your exports: found, clear, or not run and why.
+42 tests in six areas, the same on every model. The report lists each one
+with its result on your exports: found, clear, or not run and why, then
+picks the most impactful things to do and sets them out as an action plan.
 
 1. **Performance and size** (8): where calculation effort and cells
    concentrate, SUM with LOOKUP, per-cell text and lookups, dimensions a
@@ -51,8 +52,8 @@ one with its result on your exports: found, clear, or not run and why.
 6. **How far to trust the analysis** (3): unparsed formulas, agreement with
    Anaplan's own Referenced By column, input checks.
 
-The full numbered list, with what each check tests and what it needs, is in
-[docs/CHECKS.md](docs/CHECKS.md) (generated from
+The full numbered list, with what each test looks for and what it needs, is in
+[docs/TESTS.md](docs/TESTS.md) (generated from
 `src/anaplan_estate/checks.py`, the one place the list lives).
 
 For each model it reports where the calculation time goes, what depends on
@@ -186,7 +187,7 @@ analysed. `scripts/regen_reports.py` regenerates the example outputs.
   (or "not assessed" when there is no Actions export), inferred model
   feeds shown as a boundary, an observed-footprint cell total (not a
   saving), and a change-review download with the full analysed reach.
-- **Evidence**: every check with its result (found, clear, not run), then
+- **Evidence**: every test with its result (found, clear, not run), then
   the complete findings catalogue as a searchable table
   (open one for the working detail: what was found, proposed step,
   preconditions, dependencies, validation plan, reasons to keep the

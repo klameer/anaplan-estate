@@ -243,7 +243,7 @@ def register_csv(rep: dict) -> str:
 def _finding_md(x: dict) -> list[str]:
     ex = x["preview"]
     out = [f"### {x['id']}. {x['title']}", "",
-           f"{x['model']} · check {', '.join(x['checks']) or 'n/a'} · {x['kind_label']} · importance {x['importance']} · evidence {x['strength']} · complexity {x['complexity']} · export actions: {x['action_usage']}", "",
+           f"{x['model']} · test {', '.join(x['checks']) or 'n/a'} · {x['kind_label']} · importance {x['importance']} · evidence {x['strength']} · complexity {x['complexity']} · export actions: {x['action_usage']}", "",
            f"{x['preview_label']}: {', '.join('`' + o + '`' for o in ex)} ({x['object_label']})", "",
            f"**Observed.** {x['summary']}", "", f"**Why it matters.** {x['why']}", "", f"**Next investigation step.** {x['next_step']}", "",
            "<details><summary>Full assessment and affected objects</summary>", "",
@@ -293,9 +293,9 @@ def render_markdown(er) -> str:
         out += ["**Input notices**", ""] + [f"- {n}" for n in rep["input_notices"]] + [""]
     out += [rep["generality_note"], ""]
     ck = rep["checks"]
-    out += ["## Checks run", "", f"{ck['total']} checks: {ck['found']} found something, {ck['clear']} clear, {ck['not_run']} not run. A check that could not run is never reported as clear.", ""]
+    out += ["## Tests run", "", f"{ck['total']} tests: {ck['found']} found something, {ck['clear']} clear, {ck['not_run']} not run. A test that could not run is never reported as clear.", ""]
     for cat in ck["categories"]:
-        out += [f"### {cat['num']}. {cat['title']}", "", "| # | Check | Result | Findings |", "|---|---|---|---|"]
+        out += [f"### {cat['num']}. {cat['title']}", "", "| # | Test | Result | Findings |", "|---|---|---|---|"]
         out += [f"| {r['num']} | {r['title']} | {check_result_text(r)} | {', '.join(r['findings'])} |" for r in ck["results"] if r["category"] == cat["num"]] + [""]
     out += ["## Coverage", ""] + [f"- {l}" for l in rep["limitations"]] + [""]
     out += ["## Observations", ""] + [f"{i}. {o}" for i, o in enumerate(rep["observations"], 1)] + [""]
@@ -342,7 +342,7 @@ def render_markdown(er) -> str:
         out += ["## Source-name candidates (from import action names)", ""] + [f"- {k}: {len(v)} action(s), e.g. {v[0]}" for k, v in sorted(rep["map"]["external"].items(), key=lambda kv: -len(kv[1]))] + [""]
     if rep["shared_dims"]:
         out += ["## Dimensions shared across models", "", ", ".join(f"{d} ({len(ms)})" for d, ms in rep["shared_dims"]), ""]
-    out += ["## Methodology", "", "| Check | Rule | Severity | Source | Description | Planual | Documentation |", "|---|---|---|---|---|---|---|"]
+    out += ["## Methodology", "", "| Test | Rule | Severity | Source | Description | Planual | Documentation |", "|---|---|---|---|---|---|---|"]
     for r in rep["methodology"]:
         docs = ", ".join("[" + d["title"] + "](" + d["url"] + ")" for d in r["docs"])
         out.append(f"| {', '.join(r['checks'])} | {r['id']} {r['title']} | {r['severity']} | {r['source']} | {r['description']} | {', '.join(r['planual'])} | {docs} |")
