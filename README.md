@@ -6,6 +6,9 @@
 
 Find what to improve in Anaplan. See what a change could affect.
 
+**Review the project:** [case study and design choices](CASE_STUDY.md) ·
+[validation evidence](VALIDATION.md) · [independent review exercise](docs/REVIEW_GUIDE.md).
+
 ![The action plan for the fictional Caldergate estate](docs/action-plan.png)
 
 Three commands, one HTML file, nothing leaves your machine:
@@ -82,6 +85,7 @@ formula nobody dares touch, an import from a hub that no longer exists.
 ```bash
 git clone https://github.com/klameer/anaplan-estate
 cd anaplan-estate
+pip install "https://github.com/klameer/anaplan-grammar/archive/refs/heads/master.zip"
 pip install -e .
 anaplan-estate examples/caldergate-estate --out estate.md --html estate.html --csv register.csv
 ```
@@ -141,15 +145,15 @@ analysed. `scripts/regen_reports.py` regenerates the example outputs.
 ## What you get
 
 - **Action plan** (the default view): the estate name, one scope and
-  freshness line, and one to three suggested actions. Each: do this, why
+  freshness line, and grouped candidate actions. Each: do this, why
   (evidence and supportable value; footprint is called footprint, never
   savings), two or three steps naming the actual objects, done when, a
   suggested role, links to the evidence and to Change impact, and any
-  decision-changing uncertainty or coverage blocker on the card. Fewer
-  than three appear when fewer are supported; none, with the next data
-  check, when nothing qualifies. The ordering is deterministic and
-  explained under Evidence ("How the actions were chosen"); it is a
-  hypothesis, not a verdict. "Print action plan" gives one A4 page.
+  decision-changing uncertainty or coverage blocker on the card. Candidates
+  that meet the evidence bar appear first; others carry their reason for
+  falling below it. The ordering is deterministic and explained under
+  Evidence ("How the actions were chosen"); it is a hypothesis, not a
+  verdict. The current action plan may print across several pages.
 - **Change impact**: search or select a model, module or line item.
   "What depends on this" follows readers downstream; "what this depends
   on" follows sources upstream. Shortest-link distances, unique counts,

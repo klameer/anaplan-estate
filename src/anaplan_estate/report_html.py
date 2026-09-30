@@ -613,8 +613,9 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
                        "register": regrows, "register_cols": REGISTER_COLS, "graph": gd}, ensure_ascii=False).replace("</", "<\\/")
     links = rep["links"]
     attrib = brand or f"Generated with {rep['generator']}"
+    home_link = f' &middot; <a href="{_e(home_url)}">Review your own estate</a>' if home_url else ""
     out = [f"<title>{_e(rep['title'])}</title>", f"<style>{_theme_bits(theme_css)}{CSS}</style>", '<div class="page">']
-    out.append('<header class="top">' + f'<h1>{_e(rep["title"])}</h1><p class="attrib">{logo_svg or ""}<span>{_e(attrib)}</span>{(f' &middot; <a href="{_e(home_url)}">Review your own estate</a>' if home_url else "")}</p>'
+    out.append('<header class="top">' + f'<h1>{_e(rep["title"])}</h1><p class="attrib">{logo_svg or ""}<span>{_e(attrib)}</span>{home_link}</p>'
                + f'<p class="lead">{_e(rep["summary_text"][0])}</p></header>')
     out.append('<nav class="views" role="tablist" aria-label="Views"><button type="button" role="tab" data-view="plan" aria-selected="true" aria-controls="plan">Action plan</button>'
                '<button type="button" role="tab" data-view="impact" aria-selected="false" aria-controls="impact">Change impact</button>'
