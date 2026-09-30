@@ -64,6 +64,7 @@ li.action.below{border-left-color:var(--rule);opacity:.92}li.action .notice.belo
 li.action .links{font-size:12.5px;margin:8px 0 0}li.action .links a{margin-right:10px}
 .badge{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid var(--rule);color:var(--muted);margin-right:4px;white-space:nowrap}
 .badge.imp-high{border-color:var(--high);color:var(--high)}.badge.imp-medium{border-color:var(--med);color:var(--med)}.badge.imp-low{border-color:var(--low);color:var(--low)}
+.badge.ck-found{border-color:var(--med);color:var(--med)}.badge.ck-clear{border-color:var(--conf);color:var(--conf)}a.badge{text-decoration:none}
 .badge.st-confirmed{border-color:var(--conf);color:var(--conf)}.badge.st-partial{border-color:var(--part);color:var(--part)}.badge.st-inferred{border-color:var(--inf);color:var(--inf)}
 .map{margin:12px 0;overflow-x:auto}.map svg{max-width:100%;height:auto;font-family:var(--sans)}
 .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--soft);padding:10px;border-radius:8px;margin:10px 0 12px}
@@ -531,7 +532,7 @@ def _finding(x: dict, rep: dict, nidx: dict, midx: dict) -> str:
     benefit = f'<dt>Proposed step and benefit</dt><dd>{_inline(x["next_step"])} <span class="fnote">{_inline(x["benefit"])} ({x["benefit_kind"]})</span></dd>'
     missing_dd = f'<dt>Preconditions and missing information</dt><dd><ul>{missing}</ul></dd>' if missing else ""
     return f'''<article class="f" id="{x["id"]}" data-id="{x["id"]}" data-uid="{_e(x["uid"])}" data-model="{_e(x["model"])}" data-area="{x["area"]}" data-importance="{x["importance"]}" data-strength="{x["strength"]}" data-cells="{cells_v}" data-effort="{eff_v}" data-search="{_e(head)}">
-<header><h3><span class="muted">{x["id"]}.</span> {_e(x["title"])}</h3><span class="badge">{x["kind_label"]}</span>{_badges(x)}<span class="badge">export actions: {_e(x["action_usage"])}</span></header>
+<header><h3><span class="muted">{x["id"]}.</span> {_e(x["title"])}</h3><span class="badge">{x["kind_label"]}</span>{"".join(f'<a class="badge" href="#check-{c}">check {c}</a>' for c in x["checks"])}{_badges(x)}<span class="badge">export actions: {_e(x["action_usage"])}</span></header>
 <div class="objs">{_e(x["model"])} &middot; {" &middot; ".join(f"<code>{_e(o)}</code>" for o in ex)} <span class="muted">({_e(x["preview_label"])}; {_e(x["object_label"])})</span></div>
 <p class="hit" hidden></p>
 <div class="review noprint"><label>Status <select class="stsel" aria-label="Review status for {x["id"]} (yours, stored in this browser)">{status_opts}</select></label><label style="flex:1 1 260px">Note <textarea class="note" rows="1" aria-label="Your note on {x["id"]} (stored in this browser)" placeholder="your note (kept in this browser only)"></textarea></label></div>
@@ -596,6 +597,24 @@ def _action_card(i: int, a: dict, rep: dict, nidx: dict, midx: dict) -> str:
 LIGHT_ABOVE = 25_000     # line items; above this the per-finding search index is left out to keep the page usable
 
 
+def _checks_section(rep: dict) -> str:
+    """Evidence: every check in the catalogue with its result on these exports."""
+    from .report import check_result_text
+    ck = rep["checks"]
+    out = [f'<h3 id="checks">Checks run</h3><p class="muted">{ck["total"]} checks were run on these exports: {ck["found"]} found something, {ck["clear"]} came back clear, {ck["not_run"]} could not run. '
+           'A check that could not run is never reported as clear. A hit is an observation or a review candidate, not a verdict.</p>']
+    for cat in ck["categories"]:
+        rows = []
+        for r in ck["results"]:
+            if r["category"] != cat["num"]:
+                continue
+            links = " ".join(f'<a href="#{f}">{f}</a>' for f in r["findings"])
+            rows.append(f'<tr id="check-{r["num"]}"><td>{r["num"]}</td><td>{_e(r["title"])}<br><span class="fnote">{_e(r["what"])}</span></td>'
+                        f'<td><span class="badge ck-{r["status"].replace(" ", "")}">{r["status"]}</span><br><span class="fnote">{_e(check_result_text(r))}</span></td><td>{links}</td></tr>')
+        out.append(f'<h4>{cat["num"]}. {_e(cat["title"])}</h4><p class="fnote">{_e(cat["blurb"])}</p><div class="wrap"><table><thead><tr><th>#</th><th>Check</th><th>Result</th><th>Findings</th></tr></thead><tbody>{"".join(rows)}</tbody></table></div>')
+    return "".join(out)
+
+
 def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None, brand: str | None = None, csv_text: str = "", light: bool | None = None, home_url: str | None = None) -> str:
     from .report import register_rows, REGISTER_COLS
     if light is None:
@@ -641,6 +660,8 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
                        '<ol class="actions">' + "".join(_action_card(num[a["key"]], a, rep, nidx, midx) for a in items) + "</ol>")
     else:
         out.append(f'<p><strong>{_e(pl["none"]["message"])}</strong></p><p>Next data check: {_e(pl["none"]["next_check"])}.</p>')
+    ck = rep["checks"]
+    out.append(f'<p class="fnote">{ck["total"]} checks were run on these exports: {ck["found"]} found something, {ck["clear"]} came back clear, {ck["not_run"]} could not run. <a href="#checks">See every check and its result</a>.</p>')
     out.append(f'<p class="fnote">All {pl["considered"]} candidates are shown; {pl["met_bar"]} met the bar for being worth doing. The order is a hypothesis, not a verdict. '
                '<a href="#ranking">How chosen</a> &middot; <a href="#coverage">Coverage</a> &middot; <a href="#catalogue">All findings</a></p>'
                f'<p class="fnote">{_e(rep["generality_note"])}</p></section>')
@@ -659,7 +680,8 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
     out.append('<div class="ix-grid"><div id="ix-summary" class="ix-summary"><p class="fnote">No selection yet.</p></div><div id="ix-graph"></div><div id="ix-path"></div><div id="ix-table"></div></div></section>')
     # ---------------- Evidence
     out.append('<section id="evidence" class="view" role="tabpanel" aria-label="Evidence" hidden><h2>Evidence</h2>'
-               '<nav class="subnav" aria-label="Evidence sections"><a href="#catalogue">Findings catalogue</a><a href="#ranking">How the actions were chosen</a><a href="#coverage">Coverage</a><a href="#models">Models and inventory</a><a href="#map">Model map</a><a href="#dependencies">Dependency evidence</a><a href="#methodology">Methodology</a><a href="#glossary">Glossary</a><a href="#register">Register and downloads</a></nav>')
+               '<nav class="subnav" aria-label="Evidence sections"><a href="#checks">Checks run</a><a href="#catalogue">Findings catalogue</a><a href="#ranking">How the actions were chosen</a><a href="#coverage">Coverage</a><a href="#models">Models and inventory</a><a href="#map">Model map</a><a href="#dependencies">Dependency evidence</a><a href="#methodology">Methodology</a><a href="#glossary">Glossary</a><a href="#register">Register and downloads</a></nav>')
+    out.append(_checks_section(rep))
     # catalogue
     out.append('<h3 id="catalogue">Findings catalogue</h3><p class="muted">Every finding, compact. Open one for the working detail: what was found, the proposed step, preconditions, dependencies, the validation plan, reasons to keep the design, all affected objects and the evidence. Search covers every object name, evidence row and formula. Status and note are yours; <span class="store-note">they are stored in this browser only and travel only through the working register download.</span></p>')
     out.append('<div class="controls noprint" role="search"><label class="sr" for="q">Search findings</label><input id="q" type="search" placeholder="Search titles, IDs, models, object names, formulas">'
@@ -763,8 +785,8 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
         out.append("<h4>Same name and formula in more than one model</h4>" + md_fragment(["| Line item | Models | Formula |", "|---|---|---|"] + [f"| `{d['line_item']}` | {', '.join(d['models'])} | `{d['formula']}` |" for d in rep["duplicates"]]))
     # methodology
     out.append('<h3 id="methodology">Methodology</h3><p class="muted">Every rule that ran, its source, and the official documentation it rests on (consulted 2026-09-22). Rule results are automated readings of the exports; nothing here was validated in a live Anaplan model.</p>')
-    out.append('<details><summary>Rules and documentation (' + str(len(rep["methodology"])) + ')</summary><div class="wrap"><table><thead><tr><th>Rule</th><th>Severity</th><th>Source</th><th>Description</th><th>Planual</th><th>Documentation</th></tr></thead><tbody>' +
-               "".join(f'<tr><td>{r["id"]}<br><span class="muted">{_e(r["title"])}</span></td><td>{r["severity"]}</td><td>{r["source"]}</td><td>{_e(r["description"])}</td><td>{_e("; ".join(r["planual"]))}</td>'
+    out.append('<details><summary>Rules and documentation (' + str(len(rep["methodology"])) + ')</summary><div class="wrap"><table><thead><tr><th>Check</th><th>Rule</th><th>Severity</th><th>Source</th><th>Description</th><th>Planual</th><th>Documentation</th></tr></thead><tbody>' +
+               "".join(f'<tr><td>{", ".join(r["checks"])}</td><td>{r["id"]}<br><span class="muted">{_e(r["title"])}</span></td><td>{r["severity"]}</td><td>{r["source"]}</td><td>{_e(r["description"])}</td><td>{_e("; ".join(r["planual"]))}</td>'
                        f'<td>{_doc_links(r["docs"])}</td></tr>' for r in rep["methodology"]) + "</tbody></table></div></details>")
     out.append("<h4>Evidence strength labels</h4><ul>" + "".join(f"<li><strong>{k}.</strong> {_e(v)}</li>" for k, v in rep["strength_text"].items()) + "</ul>")
     out.append('<h3 id="glossary">Glossary</h3><ul>' + "".join(f"<li><strong>{_e(t)}.</strong> {_e(d)}</li>" for t, d in rep["glossary"]) + "</ul>")

@@ -227,7 +227,8 @@ def fpa() -> ModelDef:
         N("Driver Count", "IF Has Drivers? THEN 1 ELSE 0"),
     ]
     # CAL12: one line per driver, phased by the Actual? flag. Copy-paste module; makes Actual? the hub.
-    phased = [N(f"{d} Phased", f"IF 'SYS01 Time Settings'.Actual? THEN 0 ELSE 'INP02 Opex Drivers'.{d}") for d in OPEX_DRIVERS[:30]]
+    # One of the thirty was pasted with the wrong flag (Current Period? for Actual?): the odd one out.
+    phased = [N(f"{d} Phased", f"IF 'SYS01 Time Settings'.{'Current Period?' if d == 'Insurance' else 'Actual?'} THEN 0 ELSE 'INP02 Opex Drivers'.{d}") for d in OPEX_DRIVERS[:30]]
     phased.append(N("Total Phased", " + ".join(f"{d} Phased" for d in OPEX_DRIVERS[:30])))
     # CAL03: the 12-branch IF that maps drivers to accounts
     acct_map = [("6100 Rent", "Rent"), ("6110 Rates", "Business Rates"), ("6120 Utilities", "Utilities"), ("6200 Travel", "Travel"),
@@ -384,7 +385,7 @@ def fpa() -> ModelDef:
             N("Staff Cost", "'CAL07 P&L by Cost Centre'.Staff Cost[SUM: 'SYS02 Cost Centre Attributes'.Department]"),
             N("FTE", "'INP03 Headcount'.FTE[SUM: 'SYS02 Cost Centre Attributes'.Department]"),
             N("Benchmark Opex", "'CAL03 Opex'.Opex GBP[SUM: 'SYS02 Cost Centre Attributes'.Department, LOOKUP: 'SYS09 Department Settings'.Benchmark Account]", notes="temp fix for Q3 close, remove later"),
-            N("Cost per FTE", "DIVIDE(Opex + Staff Cost, FTE)", summary="FORMULA"),
+            N("Cost per FTE", "DIVIDE(Opex + Staff Cost, FTE)"),     # summary left on Sum: the department total adds up the ratios
         ]),
         Mod("SYS09 Department Settings", "System", ("Departments",), "Not Applicable", "Not Applicable", "", [
             L("Benchmark Account", "Accounts"), T("Head of Department"), B("Cost Centre Owner Approves?"),

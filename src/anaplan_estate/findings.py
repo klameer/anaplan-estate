@@ -30,7 +30,8 @@ from collections import defaultdict, Counter
 import re
 from .parsing import parse
 from anaplan_grammar.unparse import unparse
-from .lint import RULES, DOCS
+from .lint import RULES, DOCS, leftover_marker
+from .checks import N, BY_NUM, for_rules
 
 AREAS = [
     ("capacity", "Potential capacity or performance improvements", "Where cells and measured calculation effort concentrate, and what could be released if an investigation confirms it."),
@@ -88,6 +89,8 @@ class Finding:
     unit: str = "objects"                                # noun for counts of `objects`
     action_usage: str = "none detected"                  # none detected | not assessed (no Actions export) | n/a
     uid: str = ""                                        # report-scoped stable identity (model + rules + leading object); survives renumbering
+    checks: list[str] = field(default_factory=list)      # numbers of the catalogue checks (checks.py) this finding reports; from `rules` when not given
+    hits: dict = field(default_factory=dict)             # check number -> count, for checks that are not lint rules (lint rules are counted from the lint result)
 
     def to_dict(self):
         return asdict(self)
@@ -228,6 +231,7 @@ def _per_model(er, m, nid) -> list[Finding]:
                                  "A module containing matching line items: repoint any page from the module to the matching line items first, and account for the unmatched line items separately."],
                  importance="high" if (total_cells >= 50_000_000 or total_eff >= 5) else "medium" if (total_cells >= 1_000_000 or total_eff >= 1) else "low",
                  complexity="medium", evidence=rows, rules=["G-UNUSED", "REDUNDANT-EXACT"],
+                 checks=[N("unread-modules"), N("unread-module-twin")], hits={N("unread-modules"): len(mods), N("unread-module-twin"): len(with_twin)},
                  validation=["After a removal, the Line Items export no longer lists the module and every page listed in the check opens without a blank card. Cell counts are an observed footprint; any memory or open-time change is measured in the workspace, not assumed from cells."],
                  footprint_cells=total_cells, footprint_effort=(total_eff if has_effort else None))
         fd._modules = {s["module"] for s in mods}
@@ -250,7 +254,7 @@ def _per_model(er, m, nid) -> list[Finding]:
             next_step="Complete the consumer and retention checks (pages, saved views, subsets, integrations, retained data) for the largest module's line items, then record a keep-or-retire recommendation for each.",
             implementation=["Prerequisites: consumer checks returned none and the owner accepts. Then make the proposed change in a development copy with the originals kept for comparison, reconcile named outputs over a cycle, owner sign-off, apply."],
             keep_design="A line item read only by a page is not spare. A calculation kept for audit or reconciliation can be right to keep even if nothing reads it now.",
-            importance="medium" if cells >= 10_000_000 else "low", complexity="medium", evidence=rows, rules=["G-UNUSED"],
+            importance="medium" if cells >= 10_000_000 else "low", complexity="medium", evidence=rows, rules=["G-UNUSED"], checks=[N("unread-line-items")],
             validation=["Re-run this report after removal: the list shrinks to the line items a page needs."], footprint_cells=cells, footprint_effort=(eff if has_effort else None))
 
     # ---- maintain: exact duplicates
@@ -276,7 +280,7 @@ def _per_model(er, m, nid) -> list[Finding]:
             object_label=f"{_pl(c['exact_groups'], 'group')}; {_pl(c['exact_redundant'], 'duplicate line item')} plus one kept line item per group",
             implementation=["Prerequisites: equivalence validated for the group, the reason for the second object ruled out, the owner accepts.",
                             "Then: repoint each reader of the copy to the kept line item in a development copy, reconcile the outputs that read it, owner sign-off, remove the copy."],
-            importance="medium" if c["exact_cells"] >= 10_000_000 else "low", complexity="medium", evidence=rows, rules=["REDUNDANT-EXACT"],
+            importance="medium" if c["exact_cells"] >= 10_000_000 else "low", complexity="medium", evidence=rows, rules=["REDUNDANT-EXACT"], hits={N("exact-duplicates"): c["exact_redundant"]},
             validation=["Re-run this report: the group count falls; no page shows a blank; no export loses a column."], footprint_cells=c["exact_cells"])
         out[-1].objects = [e["items"][0]["key"] for e in red.exact]
 
@@ -544,7 +548,163 @@ def _per_model(er, m, nid) -> list[Finding]:
             missing=["how each action is triggered (page, API, CloudWorks, by hand)", "the expected frequency of each load", "run history beyond the most recent run"],
             next_step="For each action with no recorded run in the window, ask the owner how and how often it runs; document the answer in the action's notes.",
             keep_design="Year-end loads, ad-hoc reloads and API-driven actions legitimately show no recent run and no process. Retiring an import does not by itself justify removing its target module or the data it loaded.",
-            importance="low", complexity="low", evidence=rows, rules=["ACTIONS"])
+            importance="low", complexity="low", evidence=rows, rules=["ACTIONS"],
+            checks=[N("actions-outside-process"), N("actions-stale"), N("actions-never-run")],
+            hits={N("actions-outside-process"): len(a["not_in_process"]), N("actions-stale"): len(a["no_recent_run"]), N("actions-never-run"): len(a["never_recorded"])})
+
+    # ---- correctness: ratios with the summary method Sum
+    if by_rule.get("F-RATIO-SUM"):
+        xs = by_rule["F-RATIO-SUM"]
+        rows = ["| Line item | Summary | Applies to | Cells | Formula |", "|---|---|---|---|---|"]
+        for x in xs:
+            li = model.line_items.get((x.module, x.line_item))
+            rows.append(f"| {_q(x.object)} | {li.summary if li else ''} | {', '.join(li.applies_to) if li and li.applies_to else 'module dimensions'} | {_c(li.cell_count) if li else ''} | `{li.formula if li else ''}` |")
+        new(area="maintain", kind="fix", title="Ratios whose totals are added up", objects=[x.object for x in xs], unit="line items",
+            observed=f"{_pl(len(xs), 'line item')} divide one amount by another (or are formatted as a percentage) and have the summary method Sum. Each total then shows the sum of the ratios below it, not the ratio of the totals: three regions at 40% show 120%.",
+            why="A summed ratio is a number nobody intends. The cells at the lowest level are right; every parent, and every quarter and year where the time summary is Sum, is not. Whoever reads the total on a page or an export reads a wrong figure, and a formula that reads the parent carries it on.",
+            scope=f"{_pl(len(xs), 'line item')}; {sum(len(g.rev.get((x.module, x.line_item), ())) for x in xs)} formulas read them", benefit="not quantified from the exports", benefit_kind="none",
+            strength="confirmed", basis="Parsed formula (the result is a quotient) and the Summary column as exported. A divisor that is a literal, a single model-wide value, or a rate that is not itself summed is not counted.",
+            missing=["whether a page, an export or a formula shows or reads the totals of each line item", "hierarchies on the dimensions: a flat list has no parent to be wrong"],
+            next_step="Open the first one on a grid with a parent showing and compare the total with numerator total divided by denominator total; then set the summary to Formula, or to None where no total is needed.",
+            keep_design="A line item whose totals are never shown or read does no harm, though None says so more clearly. A ratio held at a level with no parents (a flat list, no time summary shown) has no total to be wrong.",
+            importance="medium", complexity="low", evidence=rows, rules=["F-RATIO-SUM"],
+            validation=["After the change the parent equals the parent of the numerator divided by the parent of the denominator; leaf cells are unchanged."],
+            implementation=["Prerequisites: none beyond a development copy. Summary Formula recalculates each total from the totals of the referenced line items, so check that those carry the summaries the formula needs."])
+
+    # ---- correctness: the odd one out
+    if by_rule.get("F-ODD-ONE"):
+        xs = by_rule["F-ODD-ONE"]
+        rows = ["| Line item | What differs | Formula |", "|---|---|---|"]
+        for x in xs:
+            li = model.line_items.get((x.module, x.line_item))
+            rows.append(f"| {_q(x.object)} | {x.message} | {('`' + li.formula + '`') if li and li.formula else 'no formula (typed-in values)'} |")
+        new(area="maintain", kind="fix", title="The odd one out in a run of matching formulas", objects=[x.object for x in xs], unit="line items",
+            observed=f"{_pl(len(xs), 'line item')} break a pattern their neighbours share: in a run of five or more line items with one formula shape, this one has a different shape, no formula, or one reference its neighbours do not share.",
+            why="A row that was missed when a block was copied, pasted and edited looks exactly like this, and so does a deliberate exception. The difference is whether anyone can say why. Spreadsheet audits look for this first because it is where a wrong number hides in plain sight.",
+            scope=f"{_pl(len(xs), 'line item')} in {_pl(len({x.module for x in xs}), 'module')}", benefit="not quantified from the exports", benefit_kind="none",
+            strength="inferred", basis="Formula shapes compared between neighbouring line items of one module, in the order of the export. Intent is not in the export.",
+            missing=["the reason for each exception (check the line item's notes and ask the owner)"],
+            next_step="For each, ask the owner whether the exception is meant. Where it is, record why in the line item's notes; where it is not, bring it in line with its neighbours in a development copy and compare the outputs that read it.",
+            keep_design="An exception can be the whole business rule: one driver phased differently, one entity on another basis. It is right to keep once the reason is written down.",
+            importance="medium", complexity="low", evidence=rows, rules=["F-ODD-ONE"],
+            validation=["Every listed line item either matches its neighbours or carries a note saying why it does not."])
+
+    # ---- capacity: dimensions a formula does not use
+    if by_rule.get("G-OVERDIM"):
+        xs = sorted(by_rule["G-OVERDIM"], key=lambda x: -int(x.value or 0))
+        rows = ["| Line item | Finding | Cells | Effort share | Formula |", "|---|---|---|---|---|"]
+        for x in xs:
+            li = model.line_items.get((x.module, x.line_item))
+            rows.append(f"| {_q(x.object)} | {x.message} | {_c(li.cell_count) if li else ''} | {(f'{li.calc_effort:.2f}%' if li and has_effort else 'n/a')} | `{li.formula if li else ''}` |")
+        saved = sum(int(x.value or 0) for x in xs)
+        assumed = any("size assumed" in x.message for x in xs)
+        unpriced = sum(1 for x in xs if not int(x.value or 0))
+        new(area="capacity", kind="fix", title="Line items with a dimension their formula does not use", objects=[x.object for x in xs], unit="line items",
+            observed=f"{_pl(len(xs), 'calculated line item')} of 10,000 cells or more apply to a list, Time or Versions that nothing in the formula varies over, so the same value is stored once per item of that dimension. About {_c(saved)} of their cells repeat a value"
+                     + (f" ({unpriced} could not be priced: the size of the dimension could not be solved from the cell counts)" if unpriced else "") + ".",
+            why="Every dimension multiplies cells and calculation. A rate held by cost centre, role, month and version when it is one number is calculated and stored hundreds of thousands of times. Anaplan's guidance is to hold a value at the dimensions it varies over and let readers pick it up from there.",
+            scope=f"{_pl(len(xs), 'line item')} in {_pl(len({x.module for x in xs}), 'module')}",
+            benefit=f"If each were held at the dimensions its formula needs: about {_c(saved)} cells fewer. Dimension sizes are solved from the exported cell counts, not stated by the export.", benefit_kind="conditional",
+            strength="partial" if (assumed or weak_graph) else "confirmed",
+            basis="Each formula's references say which dimensions its value varies over; compared with the dimensions the line item applies to. Dimension sizes solved from cell counts" + (" (some assumed, marked in the table)." if assumed else "."),
+            missing=["pages that show the line item on this grid (a page can be the reason for the dimensions)", "subset and hierarchy relations between lists, which the exports do not describe"],
+            next_step="Take the largest: hold the value in a module with only the dimensions the formula needs, point its readers there, and compare cell count and Calculation Effort before and after.",
+            keep_design="A line item shown on a page beside others on the same grid may be dimensioned for the reader, not the engine. A flag that will vary by that dimension once data is loaded is dimensioned for what is coming.",
+            importance="high" if saved >= 50_000_000 else "medium" if saved >= 1_000_000 else "low", complexity="medium", evidence=rows, rules=["G-OVERDIM"], footprint_cells=saved or None,
+            implementation=["Prerequisites: no page needs the line item on its present grid; the owner accepts. Then move it in a development copy, repoint readers, reconcile the outputs that read it, sign-off."],
+            validation=["Readers return the same values cell for cell; the model's cell count falls by about the figure above."])
+
+    # ---- capacity: where the cells are (observation)
+    if f["has_cells"] and f["cells"] and f["cells_by_module"]:
+        lis_by_cells = sorted((li for li in model.line_items.values() if not li.is_header and li.cell_count), key=lambda li: (-li.cell_count, li.module, li.name))[:10]
+        rows = ["| Module | Cells | Share of the model |", "|---|---|---|"] + [f"| {_q(n)} | {_c(c)} | {p}% |" for n, c, p in f["cells_by_module"]]
+        rows += ["", "| Largest line items | Cells | Applies to | Format |", "|---|---|---|---|"] + [f"| {_q(str(li))} | {_c(li.cell_count)} | {', '.join(li.applies_to) or 'module dimensions'} | {li.format_type} |" for li in lis_by_cells]
+        top3 = f["cells_by_module"][:3]
+        share3 = round(sum(p for *_, p in top3), 1)
+        new(area="capacity", kind="capacity", title="Where the cells are", objects=[n for n, *_ in f["cells_by_module"]], unit="modules",
+            observed=f"{_pl(len(top3), 'module')} hold{'s' if len(top3) == 1 else ''} {share3}% of {m.name}'s {_c(f['cells'])} exported cells; the largest is {_q(top3[0][0])} at {top3[0][2]}%.",
+            why="Model size, open time and workspace headroom follow cells. A change to a dimension of one of these modules moves the whole model's size; a change anywhere else barely shows.",
+            scope=f"the {len(f['cells_by_module'])} largest modules and the {len(lis_by_cells)} largest line items", benefit="Observed footprint only; no reduction is claimed.", benefit_kind="footprint",
+            strength="confirmed", basis="Anaplan's Cell Count column as exported (summary cells are not included).", missing=["cells of summary levels", "workspace allowance"],
+            next_step="Read the dimensions of the largest module against the other findings that name it (unused dimensions, modules nothing reads, large text); that is where a size change would show.",
+            keep_design="The largest module is often the one doing the model's main job at the grain the business needs.", importance="low", complexity="low", evidence=rows, rules=["CELLS"], kind_label="observation",
+            hits={N("cell-concentration"): len(top3)})
+
+    # ---- usage: import targets nothing reads
+    if has_actions:
+        covered = {s["module"] for s in red.overlap + red.orphan_modules}
+        dead = []
+        for tgt in (f["actions"].get("import_targets") or []):
+            mod = model.modules.get(tgt)
+            if not mod or not mod.line_items or tgt in covered or tgt in export_sources:
+                continue
+            keys = [(tgt, n) for n in mod.line_items if (tgt, n) in model.line_items and not model.line_items[(tgt, n)].is_header]
+            if keys and not any(g.rev.get(k) for k in keys):
+                imps = [a for a in m.actions.actions.values() if a.kind == "import" and a.target == tgt]
+                dead.append((tgt, keys, imps))
+        if dead:
+            dead.sort(key=lambda d: -sum(model.line_items[k].cell_count for k in d[1]))
+            rows = ["| Module | Line items | Cells | Loaded by | Most recent recorded run |", "|---|---|---|---|---|"]
+            for tgt, keys, imps in dead:
+                rows.append(f"| {_q(tgt)} | {len(keys)} | {_c(sum(model.line_items[k].cell_count for k in keys))} | {', '.join(_q(a.name) for a in imps)} | {max((a.last_run[:10] for a in imps if a.last_run), default='none recorded')} |")
+            cells = sum(model.line_items[k].cell_count for _, keys, _ in dead for k in keys)
+            new(area="usage", kind="retire", title="Data loaded but never read", objects=[d[0] for d in dead], unit="modules",
+                observed=f"{_pl(len(dead), 'module')} {'is' if len(dead) == 1 else 'are'} loaded by an import action, and no formula reads any of {'its' if len(dead) == 1 else 'their'} line items and no export action uses {'it' if len(dead) == 1 else 'them'}. Together {_c(cells)} cells.",
+                why="A load that nothing reads still runs, still takes its time in the process and still has to be kept working. Either a page shows the data directly, or the load is left over from something that stopped reading it.",
+                scope=f"{_pl(len(dead), 'module')}; {sum(len(d[2]) for d in dead)} import actions", benefit=f"If no consumer is found: {_c(cells)} cells and the imports that load them.", benefit_kind="conditional",
+                strength="partial" if not weak_graph else "inferred", basis=f"Import targets from the Actions export; parsed formula references. {coverage_note}",
+                missing=_usage_checks("each listed module", has_modules, True, False),
+                next_step="Complete the consumer checks (pages, saved views, exports, integrations) for the largest module, ask whether its import can stop, and record a keep-or-retire recommendation for the load and the module.",
+                action_usage=action_usage,
+                keep_design="Data loaded for a page, for audit or for a saved view another model imports is read without any formula reading it.",
+                importance="medium" if cells >= 10_000_000 else "low", complexity="medium", evidence=rows, rules=["IMPORT-UNREAD"], footprint_cells=cells or None)
+
+    # ---- usage: names that say leftover
+    left = by_rule.get("H-LEFTOVER", [])
+    act_left = []
+    if has_actions:
+        act_left = sorted(((a.name, leftover_marker(a.name), a) for a in m.actions.actions.values() if leftover_marker(a.name)), key=lambda t: t[0])
+    if left or act_left:
+        rows = ["| Object | Kind | What the name says | State |", "|---|---|---|---|"]
+        for x in left:
+            rows.append(f"| {_q(x.object)} | {'line item' if x.line_item else 'module'} | {x.message.split(';')[0]} | {x.message.split(';', 1)[1].strip() if ';' in x.message else ''} |")
+        for name, mk, a in act_left:
+            rows.append(f"| {_q(name)} | {a.kind} action | action name carries '{mk}' | most recent recorded run {a.last_run[:10] if a.last_run else 'none'}; {'in a process' if a.processes else 'in no process'} |")
+        objs = list(dict.fromkeys([x.object for x in left] + [n for n, *_ in act_left]))
+        still = sum(1 for x in left if "still read" in x.message or "still refers" in x.message)
+        new(area="usage", kind="retire", title="Names that say leftover", objects=objs, unit="objects",
+            observed=f"{_pl(len(objs), 'object')} carr{'ies' if len(objs) == 1 else 'y'} a name that marks leftover work (OLD, COPY, BACKUP, DO NOT USE, a version suffix, a zz prefix or a default name). {still} of the findings show the object still read or still referred to by a formula.",
+            why="A name like this is the previous builder telling the next one something. Where nothing reads the object, it is a candidate to retire. Where formulas still read it, either the name is wrong or live numbers depend on something marked as dead; both are worth knowing.",
+            scope=f"{_pl(len(objs), 'object')}", benefit="not quantified from the exports", benefit_kind="none", strength="inferred",
+            basis="Names only, matched against a fixed list of markers. Reader counts come from parsed references.",
+            missing=["what the owner knows about each", "pages and saved views that show them"],
+            next_step="Start with the ones formulas still read: confirm whether the object is live, and rename it or repoint its readers. For the unread ones, complete the consumer checks and record a keep-or-retire recommendation for each.",
+            action_usage=action_usage,
+            keep_design="A module kept for an audit or a version kept for comparison can be marked old and still be needed; the note on it should say until when.",
+            importance="low", complexity="low", evidence=rows, rules=["H-LEFTOVER"], hits={N("leftover-names"): len(act_left)} if act_left else {})
+
+    # ---- integration: several imports into one target
+    if has_actions:
+        multi = [(tgt, n) for tgt, n in f["actions"]["imports_by_target"] if n >= 2]
+        if multi:
+            cutoff = f["actions"]["stale_cutoff"]
+            rows = ["| Target | Import action | Most recent recorded run | In a process |", "|---|---|---|---|"]
+            mixed = 0
+            for tgt, n in multi:
+                imps = sorted((a for a in m.actions.actions.values() if a.kind == "import" and a.target == tgt), key=lambda a: a.last_run or "")
+                old = [a for a in imps if not a.last_run or (cutoff and a.last_run[:10] < cutoff)]
+                if old and len(old) < len(imps):
+                    mixed += 1
+                for a in imps:
+                    rows.append(f"| {_q(tgt)} | {_q(a.name)} | {a.last_run[:10] if a.last_run else 'none recorded'} | {'yes' if a.processes else 'no'} |")
+            new(area="integration", kind="schedule", title="Several imports loading one target", objects=[t for t, _ in multi], unit="targets",
+                observed=f"{_pl(len(multi), 'module or list')} {'is' if len(multi) == 1 else 'are'} loaded by two or more import actions. In {mixed} of them one import has run recently and another has no run in the last {f['actions']['stale_months']} months.",
+                why="Two loads into one place is normal where sources are split (actuals from one system, budget from another). It is also what a replaced source leaves behind: the old import stays, and whoever runs it by hand overwrites the new data.",
+                scope=f"{_pl(len(multi), 'target')}; {sum(n for _, n in multi)} import actions", benefit="not quantified from the exports", benefit_kind="none", strength="partial",
+                basis="Import targets and most recent run per action, from the Actions export.", missing=["whether the imports load different line items, periods or versions of the target", "how each is triggered"],
+                next_step="For each target where one import is current and another is not, ask whether the older one was replaced; if it was, it is a candidate to remove before someone runs it.",
+                keep_design="Separate imports for separate sources, periods or versions of one module are a clean design.",
+                importance="low", complexity="low", evidence=rows, rules=["IMPORT-MULTI"])
 
     # ---- limitation: unparsed formulas
     if by_rule.get("F-PARSE"):
@@ -606,6 +766,11 @@ def build(er) -> list[Finding]:
             x.preview = x.objects[:3]
         x.preview_label = (f"All {len(x.objects)} {x.unit}" if len(x.preview) >= len(x.objects) else f"Showing {len(x.preview)} of {len(x.objects)} {x.unit}")
         x.uid = stable_uid(x)
+        if not x.checks:
+            x.checks = for_rules(x.rules)
+        for num in x.checks:                       # a check that is not a lint rule is counted here, by its objects unless the finding said otherwise
+            if not BY_NUM[num].rules and num not in x.hits:
+                x.hits[num] = len(x.objects)
     fs.sort(key=lambda x: (IMPORTANCE_ORDER[x.importance], STRENGTH_ORDER[x.strength], -(x.footprint_cells or 0), -(x.footprint_effort or 0)))
     for i, x in enumerate(fs, 1):
         old = x.id

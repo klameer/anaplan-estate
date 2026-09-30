@@ -20,6 +20,8 @@ import re
 from .model import Model, LineItem
 from .graph import Graph, build_graph
 from .parsing import parse
+from .redundancy import skeleton
+from . import dims
 
 @dataclass
 class Finding:
@@ -409,6 +411,210 @@ def r_notes(m: Model, g: Graph, t):
         top = ", ".join(x.name for x in missing[:5])
         yield Finding("H-NOTES", "info", "(model)", None, f"{len(missing)} of {len(real)} modules have no notes; largest: {top}",
                       "Add a one-line purpose note to each module, largest first.", "GRAPH", f"{len(missing)}/{len(real)}")
+
+
+# ---------- correctness: ratios whose totals are added up
+
+def _ratio_den(n):
+    """The denominator when the formula's result is a quotient: A / B, DIVIDE(A, B), the same inside IF branches,
+    ROUND or a sign, or scaled by a literal (A / B * 100, A / B - 1). None when the result is not a quotient or the
+    divisor is a literal (A / 12 is a scaling, not a ratio)."""
+    if not isinstance(n, dict):
+        return None
+    t = n.get("t")
+    if t == "un":
+        return _ratio_den(n.get("x"))
+    if t == "if":
+        return _ratio_den(n.get("b")) or _ratio_den(n.get("a"))
+    if t == "call":
+        f, args = n.get("f"), n.get("args") or []
+        if f == "DIVIDE" and len(args) == 2:
+            return None if args[1].get("t") == "num" else args[1]
+        if f == "ROUND" and args:
+            return _ratio_den(args[0])
+        return None
+    if t == "bin":
+        op, l, r = n["op"], n["l"], n["r"]
+        if op == "/":
+            return None if r.get("t") == "num" else r
+        if op in ("*", "+", "-"):
+            if r.get("t") == "num":
+                return _ratio_den(l)
+            if l.get("t") == "num":
+                return _ratio_den(r)
+    return None
+
+
+def _summary_parts(summary: str) -> tuple[str, str]:
+    """(main, time) summary methods from the reduced Summary string ('SUM', 'SUM;time=CLOSING_BALANCE')."""
+    main = (summary or "").split(";")[0].strip().upper()
+    time = summary.split("time=", 1)[1].strip().upper() if "time=" in (summary or "") else main
+    return main, time
+
+
+_NO_TIME = ("", "-", "not applicable")
+
+
+@rule("F-RATIO-SUM", "Ratio with the summary method Sum", "major", "FORMULA",
+      "A line item whose result is one amount divided by another (or that is formatted as a percentage) and whose summary method is Sum. Every parent, "
+      "and every quarter and year where the time summary is Sum, then shows the sum of the ratios below it, not the ratio of the totals: three regions at 40% show 120%. "
+      "A divisor that is a literal (A / 12), a single value for the whole model, or a rate that is itself not summed (a conversion such as amount / FX rate) is not flagged.")
+def r_ratio_sum(m: Model, g: Graph, t):
+    for k, li in m.line_items.items():
+        if li.is_header or li.format_type != "NUMBER":
+            continue
+        main, time = _summary_parts(li.summary)
+        if "SUM" not in (main, time):
+            continue
+        ast = _ast(li)
+        den = _ratio_den(ast) if ast is not None else None
+        if den is None:
+            continue
+        pct = "PERCENTAGE" in (li.format_raw or "").upper()
+        node = den
+        while isinstance(node, dict) and node.get("t") in ("clause", "un"):
+            node = node.get("x")
+        additive = False                     # the divisor is itself an amount that is summed
+        if isinstance(node, dict) and node.get("t") == "ref":
+            r = g.resolve(li, list(node.get("path") or []))
+            if r.kind == "line_item":
+                d = m.line_items[r.target]
+                dmod = m.modules.get(d.module)
+                if not d.applies_to and (d.time_scale or "").strip().lower() in _NO_TIME and not (dmod and dmod.applies_to):
+                    continue                 # one value for the whole model: dividing by it is a scaling
+                additive = _summary_parts(d.summary)[0] == "SUM"
+        if not (pct or additive):
+            continue
+        where = "on every parent and every time total" if main == "SUM" and time == "SUM" else "on every parent" if main == "SUM" else "on every time total (quarter, year)"
+        basis = "formatted as a percentage" if pct and not additive else "the divisor is itself a summed amount" + (", and it is formatted as a percentage" if pct else "")
+        yield Finding("F-RATIO-SUM", "major", li.module, li.name, f"a ratio with summary {li.summary}: totals add the ratios {where} ({basis})",
+                      "Set the summary to Formula so each total is recalculated from the totals of what it divides, or to None where no total is shown.", "FORMULA", str(li.cell_count))
+
+
+# ---------- correctness: the odd one out in a run of matching formulas
+
+def _shape(li: LineItem):
+    """(skeleton text, leaves) of the formula as written; None for a line item with no formula or one that did not parse."""
+    ast = _ast(li)
+    if ast is None:
+        return None
+    return skeleton(ast)
+
+
+@rule("F-ODD-ONE", "The odd one out among neighbouring line items", "minor", "FORMULA",
+      "Within one module, five or more neighbouring line items share one formula shape and exactly one among them differs: it has another shape, or no formula at all "
+      "(a typed-in value in a run of calculations), or the same shape with one reference that every sibling shares and it does not. This is what a copy, paste and "
+      "edit that missed one row leaves behind; it is also what a deliberate exception looks like, and the exports cannot say which.", min_run=5)
+def r_odd_one(m: Model, g: Graph, t):
+    n_min = t["min_run"]
+    for name, mod in m.modules.items():
+        items = [m.line_items[(name, n)] for n in mod.line_items if (name, n) in m.line_items and not m.line_items[(name, n)].is_header]
+        if len(items) < n_min + 1:
+            continue
+        shapes = [_shape(li) for li in items]
+        by_shape = defaultdict(list)
+        for i, s in enumerate(shapes):
+            if s is not None and len(s[1]) >= 2:          # a bare copy (one leaf) is not a shape worth comparing
+                by_shape[s[0]].append(i)
+        for sk, pos in by_shape.items():
+            if len(pos) < n_min:
+                continue
+            runs, cur = [], [pos[0]]
+            for a, b in zip(pos, pos[1:]):
+                if b - a <= 2:
+                    cur.append(b)
+                else:
+                    runs.append(cur); cur = [b]
+            runs.append(cur)
+            for run in runs:
+                if len(run) < n_min:
+                    continue
+                gaps = [a + 1 for a, b in zip(run, run[1:]) if b - a == 2]
+                if len(gaps) == 1:                         # exactly one line item inside the run breaks the pattern
+                    odd = items[gaps[0]]
+                    what = ("has no formula" if not odd.formula else "has a different formula shape")
+                    yield Finding("F-ODD-ONE", "minor", name, odd.name, f"{what}, between {len(run)} neighbouring line items that share one shape ({items[run[0]].name} to {items[run[-1]].name})",
+                                  "Confirm the exception is intended and say so in the line item's notes; if it is not, bring it back in line with its neighbours.", "FORMULA", str(len(run)))
+                leaves = [shapes[i][1] for i in run]
+                for p in range(len(leaves[0])):
+                    col = [lv[p] for lv in leaves]
+                    vals = Counter(col)
+                    if len(vals) == 2 and vals.most_common(1)[0][1] == len(run) - 1:
+                        (common, _), (other, _) = vals.most_common(2)
+                        odd = items[run[col.index(other)]]
+                        yield Finding("F-ODD-ONE", "minor", name, odd.name, f"reads {other} where its {len(run) - 1} neighbours of the same shape read {common}",
+                                      "Confirm the different reference is intended and say so in the line item's notes; if it is not, point it where its neighbours point.", "FORMULA", str(len(run)))
+
+
+# ---------- size: a dimension the formula does not use
+
+@rule("G-OVERDIM", "Dimension the formula does not vary over", "major", "GRAPH",
+      "A calculated line item applies to a list, Time or Versions that nothing in its formula varies over, so the same value is stored once per item of that "
+      "dimension. The cells it would not hold without that dimension are counted where the dimension's size can be solved from the exported cell counts. "
+      "Not judged: formulas using COLLECT(), references the export does not contain, and any line item whose references carry a list it does not apply to "
+      "(a hierarchy or subset relation the exports do not describe).", planual=("2.01-20",), min_cells=10000)
+def r_overdim(m: Model, g: Graph, t):
+    if not m.has("Cell Count"):
+        return
+    sizes = dims.infer_sizes(m)
+    judge = dims.Judge(m, g, sizes)
+    for k, li in m.line_items.items():
+        if li.is_header or not li.formula or li.cell_count < t["min_cells"] or k in g.parse_errors:
+            continue
+        j = judge.judge(li)
+        if not j["judged"] or not j["extra"] or j["partial"] or j["implicit"]:
+            continue
+        dims.price(j, li, sizes)
+        extra = ", ".join(j["extra"])
+        varies = ("its formula varies only over " + ", ".join(j["required"])) if j["required"] else "its formula is a constant"
+        saved = (f"; about {j['saved_cells']:,} of its {li.cell_count:,} cells repeat a value" + (" (size assumed)" if j["price_assumed"] else "")) if j["saved_cells"] else f"; {li.cell_count:,} cells"
+        yield Finding("G-OVERDIM", "major", li.module, li.name, f"applies to {extra} but {varies}{saved}",
+                      f"Hold it without {extra} (in a module dimensioned as the formula needs) and let readers pick it up from there, unless a page needs it on this grid.",
+                      "GRAPH", str(j["saved_cells"] or 0))
+
+
+# ---------- leftovers by name
+
+LEFTOVER = re.compile(r"(?<![A-Za-z])(OLD|TMP|BACKUP|BKP|DELETE|DELETEME|DEPRECATED|OBSOLETE|UNUSED|LEGACY|DO NOT USE|DONT USE|DON'T USE|TO DELETE|XXX)(?![A-Za-z])"
+                      r"|^copy of\b|(?<![A-Za-z0-9])v\d+(?![A-Za-z0-9])|^zz|^(line item|new module|module|new line item)\s*\d*$", re.I)
+LEFTOVER_CAPS = re.compile(r"(?<![A-Za-z])(TEMP|COPY|TEST)(?![A-Za-z])")     # only in capitals: Temp Labour, Copy Centre and Stress Test are ordinary names
+
+
+def leftover_marker(name: str) -> str:
+    """The leftover marker in a name ('OLD', 'v2', 'DO NOT USE'), or ''."""
+    mm = LEFTOVER.search(name or "") or LEFTOVER_CAPS.search(name or "")
+    return mm.group(0).strip() if mm else ""
+
+
+@rule("H-LEFTOVER", "Name that says leftover", "info", "GRAPH",
+      "A module, a line item, or a list item a formula refers to, whose name carries a marker of leftover work: OLD, TEMP, COPY, BACKUP, DELETE, DEPRECATED, "
+      "UNUSED, LEGACY, DO NOT USE, a version suffix such as v2, 'Copy of', a zz prefix, or a default name (TEMP, COPY and TEST only in capitals). A name is a hint, not evidence: each is listed with "
+      "whether formulas still read it, because a leftover that is still read is the one that matters.")
+def r_leftover(m: Model, g: Graph, t):
+    flagged_modules = set()
+    for name, mod in m.modules.items():
+        mk = leftover_marker(name)
+        if not mk or not mod.line_items:
+            continue
+        flagged_modules.add(name)
+        keys = [(name, n) for n in mod.line_items if (name, n) in m.line_items]
+        readers = {a for k in keys for a in g.rev.get(k, ()) if a[0] != name}
+        cells = sum(m.line_items[k].cell_count for k in keys)
+        yield Finding("H-LEFTOVER", "info", name, None, f"module name carries '{mk}'; {len(keys)} line items, {cells:,} cells; "
+                      + (f"still read by {len(readers)} formula{'' if len(readers) == 1 else 's'} in other modules" if readers else "no formula outside it reads it"),
+                      "Ask the owner whether it is still needed; if it is, give it a name that says what it is.", "GRAPH", str(cells))
+    for k, li in m.line_items.items():
+        if li.is_header:
+            continue
+        mk = leftover_marker(li.name)
+        if mk and li.module not in flagged_modules:
+            n = len(g.rev.get(k, ()))
+            yield Finding("H-LEFTOVER", "info", li.module, li.name, f"line item name carries '{mk}'; " + (f"still read by {n} formula{'' if n == 1 else 's'}" if n else "no formula reads it"),
+                          "Ask the owner whether it is still needed; if it is, give it a name that says what it is.", "GRAPH", str(li.cell_count))
+        named = sorted({".".join(r.path) for r in g.refs.get(k, []) if r.kind == "list_item" and leftover_marker(r.path[-1])})
+        if named:
+            yield Finding("H-LEFTOVER", "info", li.module, li.name, f"formula still refers to {', '.join(named[:3])}",
+                          "Check whether the list item is still meant to be in use; a formula that selects it keeps it alive.", "GRAPH", str(li.cell_count))
 
 
 # ---------- runner ----------

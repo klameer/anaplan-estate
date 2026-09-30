@@ -201,7 +201,7 @@ def test_large_module_is_review_not_target():
 def test_overlapping_alternatives_do_not_double_count():
     items = [("T", "a", "", ("L",))] + [("Big", f"li{i}", "", ("L",), {"cells": 2_000_000}) for i in range(55)] + [("Big", "c", "'T'.a * 2", ("L",), {"cells": 2_000_000}), ("Big", "d", "'T'.a * 3", ("L",), {"cells": 2_000_000})]
     er = _estate_from(model(items))
-    big = [f for f in er.findings if "Big" in f.objects]
+    big = [f for f in er.findings if "Big" in f.objects and f.kind_label != "observation"]
     assert len(big) == 2
     counted = [f for f in big if f.counts_benefit]
     assert len(counted) == 1 and counted[0].area == "usage"

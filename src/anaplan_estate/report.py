@@ -19,7 +19,7 @@ from collections import Counter
 from .lint import RULES, PLANUAL, DOCS
 from .model import COLUMN_ROLES
 from .findings import AREAS, AREA_LABEL, STRENGTH_TEXT, by_area, _c, _pl
-from . import plan as planmod, impact
+from . import plan as planmod, impact, checks as checksmod
 
 DESCRIPTION = "Automated findings and candidate recommendations from each model's Line Items, Modules and Actions exports."
 
@@ -166,6 +166,10 @@ def build(er, service_url: str | None = None, contact: str | None = None, feedba
                               "coverage": f["coverage"], "redundancy": m.redundancy.to_dict(),
                               "patterns": [c.to_dict() for c in m.clusters], "findings_by_rule": m.lint.counts["by_rule"],
                               "lint": [{"rule": x.rule, "severity": x.severity, "object": x.object, "message": x.message, "fix": x.fix} for x in m.lint.findings]})
+    res = checksmod.results(er)
+    rep["checks"] = {"categories": [{"num": c.num, "title": c.title, "blurb": c.blurb} for c in checksmod.CATEGORIES], "results": res,
+                     "total": len(res), "found": sum(1 for r in res if r["status"] == "found"), "clear": sum(1 for r in res if r["status"] == "clear"),
+                     "not_run": sum(1 for r in res if r["status"] == "not run")}
     rep["shared_dims"] = er.shared_dims
     rep["duplicates"] = er.duplicates
     rep["methodology"] = [{"id": rid, "title": r.title, "severity": r.severity, "source": r.source, "description": r.description,
@@ -179,7 +183,12 @@ def build(er, service_url: str | None = None, contact: str | None = None, feedba
         {"id": "ACTIONS", "title": "Imports and exports: recorded runs and process membership", "severity": "info", "source": "ACTIONS", "description": "Most recent recorded run per action relative to the export's latest run; process membership. Not a verdict on use.", "planual": [], "docs": [{"title": DOCS["actions"][0], "url": DOCS["actions"][1], "quote": DOCS["actions"][2]}]},
         {"id": "EFFORT", "title": "Calculation Effort concentration", "severity": "info", "source": "ANAPLAN", "description": "Anaplan's per-line-item share, as exported, per model.", "planual": ["2.03-07 Review the calculation effort"], "docs": [{"title": DOCS["line-items"][0], "url": DOCS["line-items"][1], "quote": DOCS["line-items"][2]}]},
         {"id": "DUP-CROSS", "title": "Same name and formula in more than one model", "severity": "info", "source": "GRAPH", "description": "Formula tree equality across models; local data may differ.", "planual": [], "docs": []},
+        {"id": "CELLS", "title": "Where the cells are", "severity": "info", "source": "ANAPLAN", "description": "Anaplan's Cell Count column, as exported, by module and line item. Summary cells are not included.", "planual": [], "docs": []},
+        {"id": "IMPORT-UNREAD", "title": "Import target nothing reads", "severity": "info", "source": "ACTIONS", "description": "A module an import action loads, none of whose line items a formula reads and which no export action uses. Pages and saved views can still read it.", "planual": [], "docs": []},
+        {"id": "IMPORT-MULTI", "title": "Several imports into one target", "severity": "info", "source": "ACTIONS", "description": "Two or more import actions with the same target, with the most recent recorded run of each. Normal for split sources; also what a replaced source leaves behind.", "planual": [], "docs": []},
     ]
+    for r in rep["methodology"]:
+        r["checks"] = checksmod.for_rules([r["id"]]) or {"ACTIONS": [checksmod.N("actions-outside-process"), checksmod.N("actions-stale"), checksmod.N("actions-never-run")]}.get(r["id"], [])
     rep["glossary"] = GLOSSARY
     rep["strength_text"] = STRENGTH_TEXT
     rep["statuses"] = ["To review", "Investigation in progress", "Accepted exception", "Change planned", "Resolved"]
@@ -188,9 +197,24 @@ def build(er, service_url: str | None = None, contact: str | None = None, feedba
     return rep
 
 
+def check_result_text(r: dict) -> str:
+    """'found: 12 (FP&A 7, Workforce 5)', 'clear', 'not run: needs the Actions export'; a partly run check says both."""
+    skipped = ""
+    if r["not_run"]:
+        whys = sorted({n["why"] for n in r["not_run"]})
+        who = ", ".join(n["model"] for n in r["not_run"] if n["model"] != "Estate")
+        skipped = f"not run{(' in ' + who) if who and r['status'] != 'not run' else ''}: {'; '.join(whys)}"
+    if r["status"] == "not run":
+        return skipped or "not run"
+    if r["status"] == "clear":
+        return "clear" + (f"; {skipped}" if skipped else "")
+    per = ", ".join(f"{p['model']} {p['hits']}" for p in r["by_model"])
+    return f"found: {r['hits']}" + (f" ({per})" if per and len(r["by_model"]) > 1 else f" ({per.rsplit(' ', 1)[0]})" if per else "") + (f"; {skipped}" if skipped else "")
+
+
 # ---------------------------------------------------------------- register
 
-REGISTER_COLS = ["id", "uid", "area", "title", "model", "kind_label", "importance", "strength", "complexity", "benefit_kind", "footprint_cells", "footprint_effort", "action_usage", "object_label", "preview_label", "scope", "benefit", "next_step", "preview", "objects", "rules", "related"]
+REGISTER_COLS = ["id", "uid", "area", "title", "model", "kind_label", "importance", "strength", "complexity", "benefit_kind", "footprint_cells", "footprint_effort", "action_usage", "object_label", "preview_label", "scope", "benefit", "next_step", "preview", "objects", "rules", "related", "checks"]
 
 
 def register_rows(rep: dict) -> list[dict]:
@@ -198,7 +222,7 @@ def register_rows(rep: dict) -> list[dict]:
     for x in rep["findings"]:
         r = {k: ("" if x.get(k) is None else x.get(k, "")) for k in REGISTER_COLS}
         r["area"] = AREA_LABEL.get(x["area"], x["area"])
-        r["objects"] = "; ".join(x["objects"]); r["preview"] = "; ".join(x["preview"]); r["rules"] = "; ".join(x["rules"]); r["related"] = "; ".join(x["related"])
+        r["objects"] = "; ".join(x["objects"]); r["preview"] = "; ".join(x["preview"]); r["rules"] = "; ".join(x["rules"]); r["related"] = "; ".join(x["related"]); r["checks"] = "; ".join(x["checks"])
         rows.append(r)
     return rows
 
@@ -217,7 +241,7 @@ def register_csv(rep: dict) -> str:
 def _finding_md(x: dict) -> list[str]:
     ex = x["preview"]
     out = [f"### {x['id']}. {x['title']}", "",
-           f"{x['model']} · {x['kind_label']} · importance {x['importance']} · evidence {x['strength']} · complexity {x['complexity']} · export actions: {x['action_usage']}", "",
+           f"{x['model']} · check {', '.join(x['checks']) or 'n/a'} · {x['kind_label']} · importance {x['importance']} · evidence {x['strength']} · complexity {x['complexity']} · export actions: {x['action_usage']}", "",
            f"{x['preview_label']}: {', '.join('`' + o + '`' for o in ex)} ({x['object_label']})", "",
            f"**Observed.** {x['summary']}", "", f"**Why it matters.** {x['why']}", "", f"**Next investigation step.** {x['next_step']}", "",
            "<details><summary>Full assessment and affected objects</summary>", "",
@@ -266,6 +290,11 @@ def render_markdown(er) -> str:
     if rep["input_notices"]:
         out += ["**Input notices**", ""] + [f"- {n}" for n in rep["input_notices"]] + [""]
     out += [rep["generality_note"], ""]
+    ck = rep["checks"]
+    out += ["## Checks run", "", f"{ck['total']} checks: {ck['found']} found something, {ck['clear']} clear, {ck['not_run']} not run. A check that could not run is never reported as clear.", ""]
+    for cat in ck["categories"]:
+        out += [f"### {cat['num']}. {cat['title']}", "", "| # | Check | Result | Findings |", "|---|---|---|---|"]
+        out += [f"| {r['num']} | {r['title']} | {check_result_text(r)} | {', '.join(r['findings'])} |" for r in ck["results"] if r["category"] == cat["num"]] + [""]
     out += ["## Coverage", ""] + [f"- {l}" for l in rep["limitations"]] + [""]
     out += ["## Observations", ""] + [f"{i}. {o}" for i, o in enumerate(rep["observations"], 1)] + [""]
     mt = rep["metrics"]
@@ -311,10 +340,10 @@ def render_markdown(er) -> str:
         out += ["## Source-name candidates (from import action names)", ""] + [f"- {k}: {len(v)} action(s), e.g. {v[0]}" for k, v in sorted(rep["map"]["external"].items(), key=lambda kv: -len(kv[1]))] + [""]
     if rep["shared_dims"]:
         out += ["## Dimensions shared across models", "", ", ".join(f"{d} ({len(ms)})" for d, ms in rep["shared_dims"]), ""]
-    out += ["## Methodology", "", "| Rule | Severity | Source | Description | Planual | Documentation |", "|---|---|---|---|---|---|"]
+    out += ["## Methodology", "", "| Check | Rule | Severity | Source | Description | Planual | Documentation |", "|---|---|---|---|---|---|---|"]
     for r in rep["methodology"]:
         docs = ", ".join("[" + d["title"] + "](" + d["url"] + ")" for d in r["docs"])
-        out.append(f"| {r['id']} {r['title']} | {r['severity']} | {r['source']} | {r['description']} | {', '.join(r['planual'])} | {docs} |")
+        out.append(f"| {', '.join(r['checks'])} | {r['id']} {r['title']} | {r['severity']} | {r['source']} | {r['description']} | {', '.join(r['planual'])} | {docs} |")
     out += ["", "## Glossary", ""] + [f"- **{t}.** {d}" for t, d in rep["glossary"]]
     out += ["", "## Validation status", "", rep["validation_note"], ""]
     links = rep["links"]
