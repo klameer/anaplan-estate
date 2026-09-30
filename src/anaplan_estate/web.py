@@ -89,6 +89,7 @@ label{display:block;font-size:13px;margin:0 0 4px;color:var(--muted)}input[type=
 button{font:inherit;font-size:14px;padding:8px 14px;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink);cursor:pointer}button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600}
 a{color:var(--accent)}code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px 4px;border-radius:3px}pre{background:var(--soft);padding:10px;border-radius:6px;overflow-x:auto;font-size:12.5px;font-family:var(--mono)}
 footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:10px;font-size:12.5px;color:var(--muted)}
+.disclaimer{background:var(--notice);border-radius:6px;padding:8px 12px;font-size:13px;color:var(--ink);margin:0 0 12px}
 .brand{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}.brand a{color:var(--accent);text-decoration:none;font-weight:500}
 .cta{margin:18px 0 8px}.btn{display:inline-block;font:inherit;font-size:14px;padding:8px 14px;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none}
 .btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600}.cta .btn{font-size:15px;padding:10px 18px;margin-right:8px}
@@ -121,7 +122,12 @@ def _footer() -> str:
         bits.append(f'Something missing or not quite right? <a href="{_e(LINKS["feedback_url"])}">Suggest an improvement</a> (public, needs a GitHub account)' + (f' or <a href="{_e(CONTACT_URL)}">get in touch privately</a>.' if CONTACT_URL else "."))
     elif CONTACT_URL:
         bits.append(f'Something missing or not quite right? <a href="{_e(CONTACT_URL)}">Get in touch</a>.')
-    return "<footer><p>" + " ".join(bits) + "</p></footer>"
+    return "<footer>" + DISCLAIMER + "<p>" + " ".join(bits) + "</p></footer>"
+
+
+DISCLAIMER = ('<p class=disclaimer id=disclaimer><strong>Mandatory disclaimer!</strong> Since Anaplan Estate is an independent creation and not officially sanctioned by Anaplan, '
+              'our lawyers kindly ask us to remind everyone that if you download or use it, you are doing so at your own risk. '
+              'Anaplan is a trademark of Anaplan, Inc.; this project is not affiliated with, endorsed by or supported by Anaplan.</p>')
 
 
 def _local_instructions() -> str:

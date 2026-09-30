@@ -171,3 +171,10 @@ def test_home_and_tests_page_invite_a_request_for_a_missing_test(monkeypatch):
     monkeypatch.setitem(web.LINKS, "feedback_url", "https://example.org/discuss")
     sec = client.get("/").text; sec = sec[sec.index("<section id=missing"):]; sec = sec[:sec.index("</section>")]
     assert 'href="https://example.org/contact">Get in touch</a>' in sec and 'href="https://example.org/discuss">suggest it in public</a>' in sec
+
+
+def test_every_page_carries_the_disclaimer():
+    for path in ("/", "/tests"):
+        h = client.get(path).text
+        assert "Mandatory disclaimer!" in h and "at your own risk" in h and "not affiliated with" in h
+        assert h.index("id=missing") < h.index("id=disclaimer") < h.index("contributions welcome")      # after the content, before the credits
