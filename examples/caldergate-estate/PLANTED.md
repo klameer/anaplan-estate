@@ -37,7 +37,7 @@ anaplan-estate examples/caldergate-estate --out estate.md
 | 7 | SUM and LOOKUP in one formula (Anaplan: never use SUM and LOOKUP in the same formula), with the note "temp fix for Q3 close, remove later" | FP&A `CAL06 Department Summary.Benchmark Opex` | F-MIXED-CLAUSE |
 | 8 | Four-step pass-through chains: CAL07 to CAL11 to OUT01 to OUT02 | FP&A `OUT02 Board Pack.Revenue` and three more | A-DAISY |
 | 9 | Opening cash from last month's closing cash (the normal balance pattern, reported as info) | FP&A `CAL08 Cash Flow` | G-CYCLE |
-| 10 | One flag every calculation reads: 36 direct dependents | FP&A `SYS01 Time Settings.Actual?` | G-HUB; Most depended-on line items |
+| 10 | One flag every calculation reads: 35 direct dependents | FP&A `SYS01 Time Settings.Actual?` | G-HUB; Most depended-on line items |
 | 11 | An empty module | FP&A `CAL09 Scenario Planning` | G-EMPTY-MODULE |
 | 12 | Subsidiary views used in calculation | FP&A `CAL01 Volumes.Launched?`; Workforce `Calcs - Attrition.Leavers` | A-SUBSIDIARY |
 | 13 | Text line items with millions of cells: the journal reference on every GL cell, the employee name on every month | FP&A `DAT01 Actuals GL.Source Journal`; Workforce `Data - Employees.Employee Name` | A-TEXT-FORMAT |
@@ -47,12 +47,16 @@ anaplan-estate examples/caldergate-estate --out estate.md
 | 17 | Modules with no notes: most of them | Every model | H-NOTES |
 | 18 | A version called "Budget v2 DO NOT USE", still selected by a board pack line, with a note saying to ask Dan before removing it | FP&A `OUT02 Board Pack.Old Budget Revenue` | F-SELECT-TIME (hard-coded version selection) |
 | 19 | A module name with a typo nobody fixed because renaming breaks the views | FP&A `CAL04 Margn` | Read the module list |
+| 29 | A ratio left on the default summary: cost per FTE divides two summed amounts and is itself summed, so the all-departments total adds up the ratios | FP&A `CAL06 Department Summary.Cost per FTE` | F-RATIO-SUM (check 4.16) |
+| 30 | Thirty phased drivers pasted from one formula; one reads `Current Period?` where the other twenty-nine read `Actual?` | FP&A `CAL12 Driver Phasing.Insurance Phased` | F-ODD-ONE (check 4.17) |
+| 31 | Rates and thresholds held on every cost centre, role, month and version when they are one number; text labels held on every month and version | FP&A `INP03 Headcount.NI Rate`, `CAL02 Revenue.Revenue Label`; Workforce `Calcs - Cost.NI Rate`, `Calcs - Headcount by CC.Bonus %` | G-OVERDIM (check 1.7) |
+| 32 | Names that say leftover: the OLD module, the `zz Archive` module, the "Old Budget Revenue" line still selecting "Budget v2 DO NOT USE", the Hub v1 import | FP&A `CAL05 Opex OLD`, `OUT02 Board Pack.Old Budget Revenue`; Workforce `zz Archive - 2021 Cost` | H-LEFTOVER (check 2.5) |
 
 ## Planted, in the actions
 
 | # | What | Where | Report section |
 |---|---|---|---|
-| 20 | An import from a hub that no longer exists, last run March 2021, in no process | FP&A `Import from Caldergate Hub v1 - Cost Centres` | External sources ("Caldergate Hub v1"); stale; orphan |
+| 20 | An import from a hub that no longer exists, last run March 2021, in no process. It loads the same module as the import that replaced it | FP&A `Import from Caldergate Hub v1 - Cost Centres` | External sources ("Caldergate Hub v1"); stale; orphan; several imports loading one target (check 5.4) |
 | 21 | A manual FX upload last run November 2023, in no process | FP&A `Import FX from Treasury file` | Stale; orphan |
 | 22 | Rates once imported from FP&A, now "keyed by hand"; the import survives | Workforce `Import from Caldergate FP&A - Assumptions` | Stale; orphan; still counted as a feed FP&A to Workforce |
 | 23 | Two models load Workday independently | Data Hub `Import Employees from Workday`; Workforce `Import Employees from Workday` | External sources: Workday, 2 imports |
@@ -66,6 +70,10 @@ anaplan-estate examples/caldergate-estate --out estate.md
 | 26 | The same NI and working-days formulas written by two different partners | `Employer NI`, `Working Days` in FP&A and Workforce | Logic duplicated across models |
 | 27 | The feed graph: Hub feeds FP&A and Workforce; Workforce feeds FP&A; FP&A and Workforce feed Board Reporting; and one stale feed FP&A to Workforce | Import action names | How the models connect |
 | 28 | Workforce Planning was exported before Calculation Effort existed, so that chapter says so | Workforce | Where the calculation time goes |
+
+Rows 29 to 32 were added with the numbered check catalogue
+([docs/CHECKS.md](../../docs/CHECKS.md)); the report's *Checks run* table
+shows every check and what it found here.
 
 ## What is not planted
 

@@ -388,7 +388,8 @@ def _per_model(er, m, nid) -> list[Finding]:
             next_step="Read the formulas of the top five and match each against the other findings that name it (SUM with LOOKUP, IF chains, text in large modules); decide which one to trial in a development copy first.",
             keep_design="High effort in the line item that does the model's main job is expected.", importance="medium", complexity="medium", evidence=rows, rules=["EFFORT"], kind_label="observation",
             summary=f"Ten line items carry {f['effort_top10_share']}% of {m.name}'s measured calculation effort, led by {_q(f['effort_top'][0][0])} at {f['effort_top'][0][1]:.1f}%; a concentration to investigate, not a saving.",
-            object_label=f"top {len(f['effort_top'])} line items by effort share; ten summarised", footprint_effort=None)
+            object_label=f"top {len(f['effort_top'])} line items by effort share; ten summarised", footprint_effort=None,
+            hits={N("effort-concentration"): 1})
 
     # ---- capacity: SUM with LOOKUP/SELECT
     if by_rule.get("F-MIXED-CLAUSE"):
@@ -628,7 +629,7 @@ def _per_model(er, m, nid) -> list[Finding]:
             strength="confirmed", basis="Anaplan's Cell Count column as exported (summary cells are not included).", missing=["cells of summary levels", "workspace allowance"],
             next_step="Read the dimensions of the largest module against the other findings that name it (unused dimensions, modules nothing reads, large text); that is where a size change would show.",
             keep_design="The largest module is often the one doing the model's main job at the grain the business needs.", importance="low", complexity="low", evidence=rows, rules=["CELLS"], kind_label="observation",
-            hits={N("cell-concentration"): len(top3)})
+            hits={N("cell-concentration"): 1})
 
     # ---- usage: import targets nothing reads
     if has_actions:

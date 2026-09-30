@@ -142,3 +142,16 @@ def test_geist_fonts_are_served_and_declared():
     assert client.get("/static/GeistMono-Variable.woff2").status_code == 200
     assert client.get("/static/Other.woff2").status_code == 404
     assert '@font-face{font-family:"Geist Sans"' in client.get("/").text
+
+
+def test_index_lists_every_check_before_the_form_and_checks_page_describes_them():
+    from anaplan_estate import checks
+    h = client.get("/").text
+    n = len(checks.CHECKS)
+    assert f"The {n} checks run on your estate" in h and h.index("id=checks") < h.index("id=review")
+    for c in checks.CHECKS:
+        assert f"<span class=n>{c.num}</span><span>{web._e(c.title)}</span>" in h
+    r = client.get("/checks")
+    assert r.status_code == 200 and f"The {n} checks" in r.text
+    for c in checks.CHECKS:
+        assert f'id="c{c.num}"' in r.text and web._e(c.what) in r.text

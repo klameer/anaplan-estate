@@ -37,7 +37,7 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, RedirectResponse, Response
 from starlette.background import BackgroundTask
-from . import usage as usage_mod
+from . import usage as usage_mod, checks as checks_mod
 from .usage import usage
 
 MAX_MB = float(os.environ.get("ESTATE_MAX_MB", "80"))
@@ -93,6 +93,11 @@ footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:10px;font-si
 .btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600}.cta .btn{font-size:15px;padding:10px 18px;margin-right:8px}
 #review{scroll-margin-top:12px}.req{color:var(--accent);font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-left:4px}.opt{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-left:4px}
 .hint{display:block;font-size:11.5px;color:var(--muted);margin-top:3px}.row.missing input.li{outline:2px solid var(--err);outline-offset:1px}
+.cats{display:grid;grid-template-columns:1fr 1fr;gap:0 32px}@media (max-width:640px){.cats{grid-template-columns:1fr}}
+.cat h3{font-size:13px;margin:14px 0 4px;font-weight:600}.cat h3 .n,.ck .n{font-family:var(--mono);font-size:11.5px;color:var(--muted);padding-top:2px}
+.cat h3,ol.ck li{display:grid;grid-template-columns:2.9em 1fr}ol.ck{list-style:none;padding:0;margin:0;font-size:13.5px}ol.ck li{padding:1px 0}
+table.ckt{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0 18px}table.ckt td,table.ckt th{text-align:left;vertical-align:top;padding:6px 8px;border-bottom:1px solid var(--rule)}
+table.ckt th{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}table.ckt td.n{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
 .err{color:var(--err);font-weight:600}details{margin:10px 0}details summary{cursor:pointer;font-weight:600;font-size:14px}details .card{margin-top:8px}
 """
 
@@ -126,6 +131,31 @@ anaplan-estate-web</pre>
 <p class=fnote>Then open <a href="http://localhost:8000">localhost:8000</a> and use it exactly as here. For a command-line run instead: <code>anaplan-estate my-estate-folder --html estate.html</code>, with one folder per model inside <code>my-estate-folder</code>.{(f' Source: <a href="{_e(src)}">{_e(src)}</a>.' if src else '')}</p></section>"""
 
 
+def _checks_summary() -> str:
+    """The catalogue on the home page: every check by number and name, grouped by category."""
+    cats = "".join(f'<div class=cat><h3><span class=n>{cat.num}</span><span>{_e(cat.title)}</span></h3><ol class=ck>'
+                   + "".join(f'<li title="{_e(c.what)}"><span class=n>{c.num}</span><span>{_e(c.title)}</span></li>' for c in cs) + "</ol></div>"
+                   for cat, cs in checks_mod.by_category())
+    return (f'<section id=checks><h2>The {len(checks_mod.CHECKS)} checks run on your estate</h2>'
+            f'<p>Every model gets the same {len(checks_mod.CHECKS)} checks, in {len(checks_mod.CATEGORIES)} categories. The report lists each one with its result: found, clear, or not run and why.</p>'
+            f'<div class=cats>{cats}</div><p class=fnote><a href="/checks">What each check tests, and what it needs</a>. A hit is a candidate to review, not a verdict.</p></section>')
+
+
+@app.get("/checks", response_class=HTMLResponse)
+def checks_page():
+    """The full catalogue: what each check tests and which export or column it needs."""
+    parts = [f'<p class=brand><a href="{_e(BRAND_URL)}">CodelessOps</a> &middot; <a href="/">Anaplan estate review</a></p>',
+             f'<h1>The {len(checks_mod.CHECKS)} checks</h1>',
+             '<p class=lead>Every test run on an estate, numbered by category. The report shows the result of each one on your exports.</p>',
+             '<p class=fnote>A check that needs an optional export or column is reported as not run without it, never as clear. A hit is an observation or a candidate to review, not a verdict.</p>']
+    for cat, cs in checks_mod.by_category():
+        rows = "".join(f'<tr id="c{c.num}"><td class=n>{c.num}</td><td><strong>{_e(c.title)}</strong><br>{_e(c.what)}</td>'
+                       f'<td>{_e(", ".join([checks_mod.NEEDS_TEXT[n] for n in c.needs] + (["two or more models"] if c.scope == "estate" else [])))}</td></tr>' for c in cs)
+        parts.append(f'<h2>{cat.num}. {_e(cat.title)}</h2><p class=muted>{_e(cat.blurb)}</p><table class=ckt><thead><tr><th>#</th><th>Check</th><th>Needs</th></tr></thead><tbody>{rows}</tbody></table>')
+    parts.append('<p class=cta><a class="btn primary" href="/example#checks">See them on an example</a> <a class="btn" href="/#review">Review my estate</a></p>')
+    return HTMLResponse(_page("".join(parts) + _footer(), "The checks: Anaplan estate review"), headers={"Cache-Control": "public, max-age=3600"})
+
+
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
     usage.visit(_client(request))
@@ -140,6 +170,7 @@ def index(request: Request):
 <p class=lead>Upload your models' line items, actions and modules and get actionable steps on what you can do to improve. Simple and no fuss. No account, nothing installed, nothing kept.</p>
 <p class=cta><a class="btn primary" href="/example#plan">Explore an example</a> <a class="btn" href="#review">Review my estate</a></p>
 <p class=fnote>The example is a fictional four-model estate. Free and open source; <a href="#local">runs on your own machine</a> if you would rather nothing left it.</p>
+{_checks_summary()}
 <section id=review><h2>Review my estate</h2>
 <p>Export each model's <strong>Line Items</strong> grid (Model Settings &gt; Modules &gt; Line Items tab &gt; Export, every column). Actions and Modules exports are optional.</p>
 <form method="post" action="/report" enctype="multipart/form-data" class="card" id=f novalidate>

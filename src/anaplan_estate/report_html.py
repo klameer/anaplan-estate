@@ -609,8 +609,9 @@ def _checks_section(rep: dict) -> str:
             if r["category"] != cat["num"]:
                 continue
             links = " ".join(f'<a href="#{f}">{f}</a>' for f in r["findings"])
-            rows.append(f'<tr id="check-{r["num"]}"><td>{r["num"]}</td><td>{_e(r["title"])}<br><span class="fnote">{_e(r["what"])}</span></td>'
-                        f'<td><span class="badge ck-{r["status"].replace(" ", "")}">{r["status"]}</span><br><span class="fnote">{_e(check_result_text(r))}</span></td><td>{links}</td></tr>')
+            detail = re.sub(r"^(found: |clear(; )?|not run: )", "", check_result_text(r))       # the badge already says which
+            rows.append(f'<tr id="check-{r["num"]}"><td style="white-space:nowrap">{r["num"]}</td><td>{_e(r["title"])}<br><span class="fnote">{_e(r["what"])}</span></td>'
+                        f'<td><span class="badge ck-{r["status"].replace(" ", "")}">{r["status"]}</span>' + (f'<br><span class="fnote">{_e(detail)}</span>' if detail else "") + f'</td><td>{links}</td></tr>')
         out.append(f'<h4>{cat["num"]}. {_e(cat["title"])}</h4><p class="fnote">{_e(cat["blurb"])}</p><div class="wrap"><table><thead><tr><th>#</th><th>Check</th><th>Result</th><th>Findings</th></tr></thead><tbody>{"".join(rows)}</tbody></table></div>')
     return "".join(out)
 

@@ -208,6 +208,8 @@ def check_result_text(r: dict) -> str:
         return skipped or "not run"
     if r["status"] == "clear":
         return "clear" + (f"; {skipped}" if skipped else "")
+    if r["key"] in ("effort-concentration", "cell-concentration"):            # reported once per model, not counted
+        return "found: reported for " + ", ".join(p["model"] for p in r["by_model"]) + (f"; {skipped}" if skipped else "")
     per = ", ".join(f"{p['model']} {p['hits']}" for p in r["by_model"])
     return f"found: {r['hits']}" + (f" ({per})" if per and len(r["by_model"]) > 1 else f" ({per.rsplit(' ', 1)[0]})" if per else "") + (f"; {skipped}" if skipped else "")
 
