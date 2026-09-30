@@ -4,8 +4,8 @@ This is the one place the list lives. The home page, the README (docs/CHECKS.md 
 from here), the report's "Checks run" table and the check numbers on each finding all read it,
 so what a visitor is told will be tested is what is tested.
 
-Numbers are append-only: a published number never moves to another check. A new check takes the
-next number in its category.
+Numbers follow the order of this list and can be reordered freely while the catalogue is unpublished;
+code refers to a check by its key, never by its number.
 
 A check is tied to the engine in one of three ways:
   rules   lint rule ids (lint.RULES); hits are the rule's findings

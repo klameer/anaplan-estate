@@ -6,8 +6,7 @@
   docs/CHECKS.md, on the home page and at /checks): 42 checks in six
   categories. The report's Evidence view opens on "Checks run", each check
   with its result (found, clear, or not run and why), and every finding
-  carries the number of the check that produced it. Numbers are
-  append-only.
+  carries the number of the check that produced it.
 - Seven new checks: line items with a dimension their formula does not use
   (1.7, with the cells that repeat a value), where the cells are (1.8), data
   loaded but never read (2.4), names that say leftover (2.5), ratios whose
