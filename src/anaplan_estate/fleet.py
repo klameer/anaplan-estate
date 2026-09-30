@@ -370,6 +370,11 @@ def run(root: str | Path, aliases: dict[str, str] | None = None, stale_months: i
     for s in specs:
         if names and s["name"] in names:
             s["name"] = names[s["name"]]
+    seen: Counter = Counter()
+    for s in specs:                                    # '1 FPA' and '2 FPA' both clean to 'FPA': findings and counts are kept apart by name
+        seen[s["name"]] += 1
+        if seen[s["name"]] > 1:
+            s["name"] = f"{s['name']} ({seen[s['name']]})"
     models = [analyse(s, stale_months, overrides) for s in specs]
     edges, external = cross(models, aliases or {})
     er = EstateRun(models, edges, external, duplicates(models), shared_dimensions(models))

@@ -65,7 +65,7 @@ li.action.below{border-left-color:var(--rule);opacity:.92}li.action .notice.belo
 li.action .links{font-size:12.5px;margin:8px 0 0}li.action .links a{margin-right:10px}
 .badge{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid var(--rule);color:var(--muted);margin-right:4px;white-space:nowrap}
 .badge.imp-high{border-color:var(--high);color:var(--high)}.badge.imp-medium{border-color:var(--med);color:var(--med)}.badge.imp-low{border-color:var(--low);color:var(--low)}
-.badge.ck-found{border-color:var(--med);color:var(--med)}.badge.ck-clear{border-color:var(--conf);color:var(--conf)}a.badge{text-decoration:none}
+tr[id^="check-"]{scroll-margin-top:64px}.badge.ck-found{border-color:var(--med);color:var(--med)}.badge.ck-clear{border-color:var(--conf);color:var(--conf)}a.badge{text-decoration:none}
 .badge.st-confirmed{border-color:var(--conf);color:var(--conf)}.badge.st-partial{border-color:var(--part);color:var(--part)}.badge.st-inferred{border-color:var(--inf);color:var(--inf)}
 .map{margin:12px 0;overflow-x:auto}.map svg{max-width:100%;height:auto;font-family:var(--sans)}
 .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--soft);padding:10px;border-radius:8px;margin:10px 0 12px}
@@ -589,9 +589,10 @@ def _action_card(i: int, a: dict, rep: dict, nidx: dict, midx: dict) -> str:
                + "".join(f'<tr><td>{_e(d["name"] or d["object"])}</td><td>{_e(d["module"])}</td>' + (f'<td>{_e(d.get("role", ""))}</td>' if has_role else '')
                          + (f'<td>{_pct(d.get("effort"))}</td>' if has_eff else '') + f'<td>{_c(d["cells"])}</td><td><code>{_e(d["formula"])}</code></td></tr>' for d in a["detail"])
                + '</tbody></table></div></dd>')
+    tests = "".join(' <a class="badge" href="#check-%s">test %s</a>' % (t, t) for t in a.get("tests", []))
     if not a.get("worth", True):
         notices = f'<p class="notice below">Below the bar: {_e(a["why_not"])}.</p>' + notices
-    return (f'<li class="action{"" if a.get("worth", True) else " below"}" id="A{i}"><h2><span class="n">{i}.</span> {_eo(a["title"])}</h2><p class="role"><span class="model">{_e(a["model"])}</span>{"".join(f' <a class="badge" href="#check-{t}">test {t}</a>' for t in a.get("tests", []))}</p>'
+    return (f'<li class="action{"" if a.get("worth", True) else " below"}" id="A{i}"><h2><span class="n">{i}.</span> {_eo(a["title"])}</h2><p class="role"><span class="model">{_e(a["model"])}</span>{tests}</p>'
             f'<dl><dt>Why</dt><dd>{_eo(a["why"])}</dd>{det}<dt>Steps</dt><dd><ol>{"".join(f"<li>{_eo(s)}</li>" for s in a["steps"])}</ol></dd><dt>Done when</dt><dd>{_eo(a["done_when"])}</dd></dl>'
             f'{notices}<p class="links">Evidence: {ev or "none"}{(" &middot; " + dep) if dep else ""}{depends}</p></li>')
 
@@ -636,7 +637,8 @@ def render(rep: dict, theme_css: str | None = None, logo_svg: str | None = None,
     links = rep["links"]
     attrib = brand or f"Generated with {rep['generator']}"
     home_link = f' &middot; <a href="{_e(home_url)}">Review your own estate</a>' if home_url else ""
-    out = [f"<title>{_e(rep['title'])}</title>", f"<style>{_theme_bits(theme_css)}{CSS}</style>", '<div class="page">']
+    out = ['<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">',   # a saved report opens from disk: say the encoding and the width
+           f"<title>{_e(rep['title'])}</title>", f"<style>{_theme_bits(theme_css)}{CSS}</style>", '<div class="page">']
     out.append('<header class="top">' + f'<h1>{_e(rep["title"])}</h1><p class="attrib">{logo_svg or ""}<span>{_e(attrib)}</span>{home_link}</p>'
                + f'<p class="lead">{_e(rep["summary_text"][0])}</p></header>')
     out.append('<nav class="views" role="tablist" aria-label="Views"><button type="button" role="tab" data-view="plan" aria-selected="true" aria-controls="plan">Action plan</button>'

@@ -52,7 +52,7 @@ class Graph:
             if (fn, argi) in LIST_ARG:
                 # FINDITEM(List, ...), ITEM(List), PREVIOUS(x, List): the argument is a list name even
                 # when a same-module line item shares the name (seen in production: a text line item
-                # "Marvista Contracts" next to FINDITEM(Marvista Contracts, ...) on the list of that name).
+                # "Contracts" next to FINDITEM(Contracts, ...) on the list of that name).
                 return Ref(p, "dimension")
             if key in m.line_items:
                 return Ref(p, "line_item", key)

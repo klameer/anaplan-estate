@@ -1,7 +1,7 @@
 """Regenerate the checked-in example outputs and, when the private inputs are present, the private estate report.
 
     python scripts/regen_reports.py                       # examples/caldergate-estate -> examples/.../estate.* and out/caldergate.html
-    ANAPLAN_ESTATE_PRIVATE_ROOT="G:\\...\\Winddown" python scripts/regen_reports.py --private
+    ANAPLAN_ESTATE_PRIVATE_ROOT="path/to/private/estate" python scripts/regen_reports.py --private
 
 Optional branding: ANAPLAN_ESTATE_THEME=path/to/theme.css and ANAPLAN_ESTATE_LOGO=path/to/logo.svg.
 The private estate is never substituted with fictional data: with --private and no readable root the script stops
@@ -44,8 +44,8 @@ def run(argv=None):
         root = os.environ.get("ANAPLAN_ESTATE_PRIVATE_ROOT", "")
         if not root or not Path(root).is_dir():
             sys.exit("ANAPLAN_ESTATE_PRIVATE_ROOT is not set to a readable folder; the private report was NOT regenerated and no fictional data was substituted.")
-        main([root, "--name", "FPA=FP&A", "--skip", "Exec", "--title", "Exscientia Anaplan estate",
-              "--out", str(out / "exs_estate.md"), "--json", str(out / "exs_estate.json"), "--html", str(out / "exs_estate.html"), "--csv", str(out / "exs_register.csv")] + common(not a.no_theme))
+        main([root, "--name", "FPA=FP&A", "--skip", "Exec", "--title", os.environ.get("ANAPLAN_ESTATE_PRIVATE_TITLE", "Private Anaplan estate"),
+              "--out", str(out / "private_estate.md"), "--json", str(out / "private_estate.json"), "--html", str(out / "private_estate.html"), "--csv", str(out / "private_register.csv")] + common(not a.no_theme))
 
 
 if __name__ == "__main__":

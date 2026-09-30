@@ -5,28 +5,33 @@
 These establish that the mechanics do what they say. They do not establish
 generalisation, recommendation quality or user value.
 
-- Automated tests (`python -m pytest -q tests`): 63 tests over the parser and
-  rules, the example estate, the action-plan selection, the change-impact
-  traversal, corrected facts, input guards, HTML views and exports. The page script's
-  breadth-first traversal is executed under node on a synthetic graph and
-  compared with the Python implementation.
+- Automated tests (`python -m pytest -q tests`): 134 tests over the parser and
+  rules, the test catalogue, the example estate, the action-plan selection,
+  the change-impact traversal, corrected facts, input guards, thin and hostile
+  input, HTML views and exports. Run on Python 3.10, 3.11, 3.12, 3.13 and
+  3.14, with anaplan-grammar installed from its public repository as CI and
+  the Dockerfile install it. The page script's breadth-first traversal is
+  executed under node on a synthetic graph and compared with the Python
+  implementation.
 - The Change impact explorer reconciles with the analysis engine on the
   example estate (every model's top three hubs) and on one private real estate
   (the widest-read line item: 197 direct readers, 822 unique downstream line
   items across 56 modules, twelve links deep; the ten export actions listed
   are module-level associations, not ten proven consumers).
-- Plan length: the plan now shows every candidate (those that met the bar
-  first, the rest labelled with the reason), grouped, with a summary table on
-  top; on the private estate that is 14 cards. The earlier three-action,
-  450-word, one-page version was measured (441 and 446 visible words, one A4
-  page in headless Edge) before that change; the current plan prints on
-  several pages. "Print evidence" remains a separate, explicit choice.
+- Plan: every test that found something offers a candidate action; the
+  first five that meet the bar are the plan (`--top N`), and every other
+  candidate is listed beneath it with the reason. On the private estate that
+  is 5 cards from 125 candidates, 32 of which met the bar. The earlier
+  three-action, 450-word, one-page version was measured (441 and 446 visible
+  words, one A4 page in headless Edge) before these changes; the current plan
+  prints on several pages. "Print evidence" remains a separate, explicit choice.
 - Browser checks (desktop pane): no console errors on load; deep links
   `#F12`, `#impact`, `#impact=<node>`, `#catalogue` open the right view, clear
   conflicting filters visibly, focus the target and select the row; the
-  explorer renders summary, columns, table and paths. Narrow-screen layout
-  rests on the stylesheet's responsive rules; viewport emulation did not take
-  effect in the tooling used, so it was not observed in a browser.
+  explorer renders summary, columns, table and paths. At a 375-pixel
+  viewport the home page, the list of tests and the report lay out without
+  horizontal scrolling (the report declares its encoding and viewport, so a
+  saved copy opens the same way from disk).
 
 ## Input variations checked (generalisation of the loader, not of the advice)
 
@@ -53,12 +58,55 @@ Not covered: exports with localised (non-English) column headers stop at the
 Formula check with a message; Polaris versus Classic effort semantics remain
 unknown from the export; naming heuristics (output-module prefixes, "from X" in
 import names) are labelled inferred and simply find less on other conventions.
-The action cards match five patterns only; the report says so on the plan.
+Four kinds of action card are written by hand (a heavy line item matched to the
+pattern that explains it, the largest module nothing reads, the largest
+duplicated calculation, a long IF chain); every other card is assembled from
+its finding's own fields and reads more plainly.
+
+## Checks made before the 42-test release (2026-09-30)
+
+These are still implementation checks. They say the tool runs, counts
+consistently and fails safely; they do not say the advice is right.
+
+- **Real exports.** Eleven real model exports went through the whole pipeline:
+  six models of one private estate and five single-model exports, the largest
+  16,987 line items. No crash; the slowest took 3.5 seconds end to end through
+  the web service and produced an 8.7 MB page. Formulas parsed: 100%.
+- **What the first real run changed.** Four of the seven tests added with the
+  catalogue were wrong or noisy on real models and were corrected the same
+  day: summed ratios were mostly currency conversions and spreads (the test
+  now looks only at percentage-formatted line items: 40 hits became 1 on the
+  private estate, and 28 plausible ones on another model); the odd one out
+  caught subtotals among the line items they add up; leftover names caught
+  'Delete?' flags and version names; unused dimensions caught flags, line
+  item subset modules and list properties. Those estates are now regression
+  evidence for these tests, not unseen tests of them.
+- **Known weak spots after that.** The odd one out is noisy in runs of only
+  five or six line items; unused dimensions still reports flags dimensioned by
+  Users; summed ratios that are not formatted as a percentage are missed.
+- **Thin input.** Each optional column of the Line Items export removed in
+  turn, and all at once: no crash, and no test that found something on the
+  full export reports "clear" on the thinner one. It reports "not run" and
+  names the column.
+- **Hostile input.** Module, line item, action and model names, notes and
+  formulas carrying markup: none reaches the page as markup, and the embedded
+  data cannot close its own script element.
+- **The service over HTTP.** Every page; zip and per-model uploads; a real
+  six-model estate; refusals (not a zip, no Line Items file, no Formula
+  column, empty, binary, nothing, 81 MB) each with a plain page and no
+  traceback; eight uploads at once; no temporary folder left behind.
+- **Independent code review** of the change, which found and led to fixes
+  for: a syntax error on Python 3.10 and 3.11, tests reported clear when a
+  column they rely on was absent, counts that multiplied when two folders
+  cleaned to one model name, a count that disagreed with its finding, and
+  quadratic work on very large findings.
+- **Same input twice** gives the same report, byte for byte.
 
 ## What remains pending (product validation)
 
 The rules, ranking and presentation were developed around one real estate and
-one fictional estate constructed around known scenarios. The "worth doing"
+one fictional estate constructed around known scenarios, and since adjusted
+against four further single-model exports. The "worth doing"
 bar and the ordering are design choices, not established optima; the ranking
 is a hypothesis. Nothing below has been done yet.
 

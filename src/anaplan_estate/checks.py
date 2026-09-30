@@ -13,7 +13,9 @@ A check is tied to the engine in one of three ways:
   fact    a model or estate fact computed in fleet.py, reported without a finding
 
 `needs` names what the check cannot run without: "actions", "modules" (the optional exports),
-"effort", "cells", "referenced_by", "summary" (columns of the Line Items export).
+"effort", "cells", "referenced_by", "summary", "format", "applies_to" (columns of the Line Items
+export), "context" (every column two line items are compared on before they are called the same
+calculation).
 """
 from __future__ import annotations
 from dataclasses import dataclass
@@ -39,6 +41,7 @@ class Check:
     needs: tuple[str, ...] = ()
     planual: tuple[str, ...] = ()
     scope: str = "model"           # model | estate (needs two or more models)
+    counted: str = "rules"         # rules: hits are the lint rule's objects; findings: hits are what the finding lists (the rule casts wider than the test)
 
     @property
     def category(self) -> int:
@@ -55,7 +58,9 @@ CATEGORIES = [
 ]
 
 NEEDS_TEXT = {"actions": "the Actions export", "modules": "the Modules export", "effort": "the Calculation Effort column", "cells": "the Cell Count column",
-              "referenced_by": "the Referenced By column", "summary": "the Summary column"}
+              "referenced_by": "the Referenced By column", "summary": "the Summary column", "format": "the Format column", "applies_to": "the Applies To column",
+              "context": "the Format, Applies To, Summary, Time Scale, Time Range, Versions and Formula Scope columns"}
+CONTEXT_COLUMNS = ("Format", "Applies To", "Summary", "Time Scale", "Time Range", "Versions", "Formula Scope")
 
 CHECKS = [
     # ---- 1 performance
@@ -63,23 +68,23 @@ CHECKS = [
           "The line items and modules carrying the largest share of Anaplan's measured Calculation Effort, and the share held by the top ten.", tags=("EFFORT",), needs=("effort",), planual=("2.03-07",)),
     Check("1.2", "sum-lookup", "SUM combined with LOOKUP or SELECT",
           "A formula that aggregates (SUM) and looks up or selects in the same formula, which Anaplan documents as slow.", rules=("F-MIXED-CLAUSE",), planual=("2.02-08", "2.02-14")),
-    Check("1.3", "large-text", "Large text line items", "A text-formatted line item with more than 50,000 cells.", rules=("A-TEXT-FORMAT",), needs=("cells",), planual=("2.03-02",)),
+    Check("1.3", "large-text", "Large text line items", "A text-formatted line item with more than 50,000 cells.", rules=("A-TEXT-FORMAT",), needs=("cells", "format",), planual=("2.03-02",)),
     Check("1.4", "finditem", "FINDITEM on a large line item", "FINDITEM in a line item with 10,000 cells or more.", rules=("A-FINDITEM",), needs=("cells",), planual=("2.02-15",)),
     Check("1.5", "text-join", "Text joins on a large line item", "Text concatenation (&) in a line item with 10,000 cells or more.", rules=("A-TEXT-JOIN",), needs=("cells",), planual=("2.02-04", "2.02-05")),
     Check("1.6", "per-item-functions", "Per-item functions repeated on every cell",
           "PARENT, ITEM, NAME, CODE, START, END and similar in a line item with two or more dimensions and 5,000 cells or more, where a one-dimension system module would compute the answer once.",
-          rules=("A-SYSTEMS-FN",), needs=("cells",), planual=("2.01-08", "2.01-09")),
+          rules=("A-SYSTEMS-FN",), needs=("cells", "applies_to",), planual=("2.01-08", "2.01-09")),
     Check("1.7", "over-dimensioned", "Line items with a dimension their formula does not use",
           "A calculated line item of 10,000 cells or more that applies to a list, Time or Versions that nothing in its formula varies over: the dimension multiplies cells without changing the value. TRUE or FALSE flags and modules on a line item subset are not counted.",
-          rules=("G-OVERDIM",), needs=("cells",), planual=("2.01-20",)),
+          rules=("G-OVERDIM",), needs=("cells", "applies_to",), planual=("2.01-20",)),
     Check("1.8", "cell-concentration", "Where the cells are", "The modules and line items holding the largest share of the model's cells.", tags=("CELLS",), needs=("cells",)),
     # ---- 2 usage
     Check("2.1", "unread-modules", "Modules nothing reads",
           "A module with two or more calculated line items that no formula outside it reads and no export action uses.", tags=("USAGE-MODULE",)),
     Check("2.2", "unread-module-twin", "Unread modules that repeat a module in use",
-          "An unread module whose calculated line items match, in formula and context, line items of a module that is read, with the share matched.", tags=("USAGE-TWIN",)),
+          "An unread module whose calculated line items match, in formula and context, line items of a module that is read, with the share matched.", tags=("USAGE-TWIN",), needs=("context",)),
     Check("2.3", "unread-line-items", "Calculated line items nothing reads",
-          "A calculated line item of 50,000 cells or more that no formula reads.", rules=("G-UNUSED",), needs=("cells",)),
+          "A calculated line item of 50,000 cells or more that no formula reads, outside the modules above and outside output-style modules.", rules=("G-UNUSED",), needs=("cells",), counted="findings"),
     Check("2.4", "import-target-unread", "Data loaded but never read",
           "A module that an import action loads, none of whose line items is read by any formula or used by an export action.", tags=("IMPORT-UNREAD",), needs=("actions",)),
     Check("2.5", "leftover-names", "Names that say leftover",
@@ -90,12 +95,12 @@ CHECKS = [
     Check("3.2", "pass-through-chains", "Pass-through chains", "Three or more line items in a row that only copy the one before.", rules=("A-DAISY",), planual=("2.02-19",)),
     Check("3.3", "circular", "Circular references", "Line items that depend on each other: a balance pattern through a time offset, or a reference the parser may have misread.", rules=("G-CYCLE",)),
     Check("3.4", "model-feeds", "Which model feeds which", "Model-to-model feeds, inferred from the names of import actions.", fact="edges", needs=("actions",), scope="estate"),
-    Check("3.5", "shared-dimensions", "Dimensions shared across models", "List names used as a dimension in more than one model.", fact="shared_dims", scope="estate"),
+    Check("3.5", "shared-dimensions", "Dimensions shared across models", "List names used as a dimension in more than one model.", fact="shared_dims", scope="estate", needs=("applies_to",)),
     # ---- 4 correctness and maintainability
     Check("4.1", "exact-duplicates", "The same calculation under two names",
-          "Line items with the same resolved formula and the same dimensions, time scale, time range, versions, format, summary and formula scope.", tags=("REDUNDANT-EXACT",)),
-    Check("4.2", "aliases", "Line items that only copy another", "A formula that is a single reference to a line item with identical context.", tags=("REDUNDANT-ALIAS",)),
-    Check("4.3", "near-twins", "Formulas that differ in exactly one place", "Two line items in different modules with the same formula shape and context, differing in one constant, reference or list item.", tags=("REDUNDANT-NEAR",)),
+          "Line items with the same resolved formula and the same dimensions, time scale, time range, versions, format, summary and formula scope.", tags=("REDUNDANT-EXACT",), needs=("context",)),
+    Check("4.2", "aliases", "Line items that only copy another", "A formula that is a single reference to a line item with identical context.", tags=("REDUNDANT-ALIAS",), needs=("context",)),
+    Check("4.3", "near-twins", "Formulas that differ in exactly one place", "Two line items in different modules with the same formula shape and context, differing in one constant, reference or list item.", tags=("REDUNDANT-NEAR",), needs=("context",)),
     Check("4.4", "same-text", "Identical formula text that cannot be compared", "Identical formula text where COLLECT() or a blank context field stops the comparison; listed so it is not read as a duplicate.", tags=("REDUNDANT-SAME-TEXT",)),
     Check("4.5", "cross-model-duplicates", "The same line item and formula in more than one model", "A line item name with the same formula tree in two or more models.", tags=("DUP-CROSS",), scope="estate"),
     Check("4.6", "if-count", "Formulas with more than 10 IFs", "More than 10 IF THEN ELSE in one formula, with the lookup table the chain encodes where there is one.", rules=("A-IF-COUNT",), planual=("2.02-01", "2.02-02")),
@@ -103,14 +108,14 @@ CHECKS = [
     Check("4.8", "long-formulas", "Very long formulas", "A formula of more than 120 tokens.", rules=("F-LONG",), planual=("2.02-02", "2.02-18")),
     Check("4.9", "select-fixed-period", "SELECT on a fixed period or version", "SELECT naming a specific time period or version.", rules=("F-SELECT-TIME",), planual=("2.02-12", "2.02-14")),
     Check("4.10", "divide-fn", "DIVIDE() where a zero divisor shows Infinity", "DIVIDE() present: it returns Infinity on a zero divisor where / returns zero.", rules=("F-DIVIDE-FN",)),
-    Check("4.11", "subsidiary-views", "Subsidiary views used in calculation", "A line item dimensioned differently from its module and read by formulas.", rules=("A-SUBSIDIARY",), planual=("2.01-06",)),
-    Check("4.12", "summaries-unread", "Summaries on line items nothing reads", "A number line item of 10,000 cells or more with a summary method and no formula reader.", rules=("A-SUMMARY-ON",), needs=("cells", "summary"), planual=("2.01-10", "2.03-01")),
+    Check("4.11", "subsidiary-views", "Subsidiary views used in calculation", "A line item dimensioned differently from its module and read by formulas.", rules=("A-SUBSIDIARY",), planual=("2.01-06",), needs=("applies_to",)),
+    Check("4.12", "summaries-unread", "Summaries on line items nothing reads", "A number line item of 10,000 cells or more with a summary method and no formula reader.", rules=("A-SUMMARY-ON",), needs=("cells", "summary", "format",), planual=("2.01-10", "2.03-01")),
     Check("4.13", "large-modules", "Modules with more than 50 line items", "A module holding more than 50 line items.", rules=("A-LI-COUNT",), planual=("2.01-12",)),
     Check("4.14", "empty-modules", "Empty modules", "A module with no line items.", rules=("G-EMPTY-MODULE",)),
     Check("4.15", "module-notes", "Modules without notes", "How many modules carry no notes, largest first.", rules=("H-NOTES",), needs=("modules",)),
     Check("4.16", "ratio-summed", "Percentages whose totals are added up",
           "A line item formatted as a percentage that divides one amount by another and has the summary method Sum, so every total is the sum of the percentages below it and not the percentage of the totals.",
-          rules=("F-RATIO-SUM",), needs=("summary",)),
+          rules=("F-RATIO-SUM",), needs=("summary", "format",)),
     Check("4.17", "odd-one-out", "The odd one out in a run of matching formulas",
           "Five or more neighbouring line items in a module share one formula shape and exactly one among them differs: a different shape, no formula at all, or one reference its siblings do not share. A subtotal of its neighbours is not counted.",
           rules=("F-ODD-ONE",)),
@@ -239,7 +244,8 @@ def markdown() -> str:
 def _available(m, need: str) -> bool:
     f = m.facts
     return {"actions": bool(f.get("actions")), "modules": m.model.has_modules_export, "effort": f["has_effort"], "cells": f["has_cells"],
-            "referenced_by": m.model.has("Referenced By"), "summary": m.model.has("Summary")}[need]
+            "referenced_by": m.model.has("Referenced By"), "summary": m.model.has("Summary"), "format": m.model.has("Format"),
+            "applies_to": m.model.has("Applies To"), "context": all(m.model.has(c) for c in CONTEXT_COLUMNS)}[need]
 
 
 def results(er) -> list[dict]:
@@ -254,13 +260,15 @@ def results(er) -> list[dict]:
             if missing:
                 not_run.append({"model": m.name, "why": "needs " + " and ".join(missing)})
                 continue
-            hits, keys, objs = 0, set(), set()
-            for x in m.lint.findings:
-                if x.rule in c.rules:
-                    hits += 1
-                    objs.update((x.object, x.module))
-                    if x.line_item:
-                        keys.add((x.module, x.line_item))
+            hit, keys, objs = set(), set(), set()
+            if c.counted == "rules":
+                for x in m.lint.findings:
+                    if x.rule in c.rules:
+                        hit.add(x.object)                      # one object, one hit, however many ways the rule caught it
+                        objs.update((x.object, x.module))
+                        if x.line_item:
+                            keys.add((x.module, x.line_item))
+            hits = len(hit)
             for fd in er.findings:
                 if fd.model != m.name or c.num not in fd.checks:
                     continue

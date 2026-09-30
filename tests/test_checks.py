@@ -134,7 +134,7 @@ def test_leftover_markers_and_the_ordinary_names_that_look_like_them():
     for name, marker in (("CAL05 Opex OLD", "OLD"), ("Old Budget Revenue", "Old"), ("Budget DO NOT USE", "DO NOT USE"), ("Revenue v2", "v2"), ("Copy of Revenue", "Copy of"),
                          ("zz Archive 2021", "zz"), ("TEMP calc", "TEMP"), ("Line item 3", "Line item 3"), ("Opex BACKUP", "BACKUP"), ("TO DELETE Opex", "TO DELETE")):
         assert leftover_marker(name) == marker, name
-    for name in ("Delete All?", "Delete Timesheet Data?", "Temp Labour", "Threshold", "Bold Text", "Copy Centre Costs", "Stress Test", "Uplift V", "Gold", "EV2 Charger", "Revenue"):
+    for name in ("Delete All?", "Delete Staging Rows?", "Temp Labour", "Threshold", "Bold Text", "Copy Centre Costs", "Stress Test", "Uplift V", "Gold", "EV2 Charger", "Revenue"):
         assert leftover_marker(name) == "", name
 
 
@@ -147,7 +147,7 @@ def test_leftover_module_line_item_and_list_item_say_whether_they_are_still_read
     assert "still read by 1 formula" in msg[("M", "Old Rate")]
     assert "VERSIONS.Budget v2 DO NOT USE" in msg[("M", "c")]
     assert ("Calc OLD", "a") not in msg                               # the module says it once
-    live = model([("M", "a", "", ("L",)), ("M", "b", "a[SELECT: VERSIONS.'2024 October Fcst v2']", ("L",))])
+    live = model([("M", "a", "", ("L",)), ("M", "b", "a[SELECT: VERSIONS.'Reforecast v2']", ("L",))])
     assert run_rules(live, "H-LEFTOVER")[0] == []                     # a version called v2 is a version
 
 

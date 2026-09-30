@@ -141,12 +141,22 @@ def _usage_modules(m) -> dict[str, dict]:
 # Every card is written for someone who owns or uses the model, not only for a builder: the "why" opens with a
 # plain explanation of the kind of problem, then names the modules and line items involved, then the figures.
 
+_INDEX: dict[int, dict[str, tuple[str, str]]] = {}     # per model (by identity): 'Module.Line item' -> key; built once, an analysis names thousands
+
+
+def _index(m) -> dict[str, tuple[str, str]]:
+    idx = _INDEX.get(id(m.model))
+    if idx is None or len(idx) != len(m.model.line_items):
+        idx = _INDEX[id(m.model)] = {f"{k[0]}.{k[1]}": k for k in m.model.line_items}
+    return idx
+
+
 def _li(name: str, m=None) -> tuple[str, str]:
     """(module, line item) for a 'Module.Line item' name, resolved against the model because both parts can contain dots."""
     if m is not None:
-        for k in m.model.line_items:
-            if f"{k[0]}.{k[1]}" == name:
-                return k
+        k = _index(m).get(name)
+        if k:
+            return k
         if name in m.model.modules:
             return (name, "")
     mod, _, item = name.partition(".")
@@ -324,8 +334,9 @@ def _if_chain_candidate(er, fmap, mi, m) -> Candidate | None:
 
 
 def _unit(n: int, unit: str) -> str:
-    """'1 line item', '30 line items'; units that carry a bracketed gloss are left as they are."""
-    return f"{n:,} {unit[:-1] if n == 1 and unit.endswith('s') and '(' not in unit else unit}"
+    """'1 line item', '30 line items'; a bracketed gloss on the unit ('chains (head named)') belongs to the evidence, not the title."""
+    unit = unit.split(" (")[0]
+    return f"{n:,} {unit[:-1] if n == 1 and unit.endswith('s') else unit}"
 
 
 def _test_candidate(er, mi, m, x, idx) -> Candidate | None:
@@ -346,11 +357,14 @@ def _test_candidate(er, mi, m, x, idx) -> Candidate | None:
             return sum(model.line_items[(name, n)].cell_count for n in model.modules[name].line_items if (name, n) in model.line_items)
         return 0
 
-    ranked = sorted(x.objects, key=lambda o: (-cells_of(o), x.objects.index(o)))
+    order = {o: i for i, o in reversed(list(enumerate(x.objects)))}
+    size = {o: cells_of(o) for o in order}
+    ranked = sorted(order, key=lambda o: (-size[o], order[o]))
     shown = ranked[:BOUNDED]
     first = shown[0]
     kind_word = {"actions": "the action", "targets": "the import target"}.get(x.unit)
-    named = f"{kind_word} '{first}'" if kind_word else _named(first, m)
+    known = first in idx or first in model.modules
+    named = f"{kind_word} '{first}'" if kind_word else _named(first, m) if known else f"'{first}'"
     n = len(x.objects)
     others = f" and {n - 1} more" if n > 1 else ""
     detail = []
@@ -368,7 +382,7 @@ def _test_candidate(er, mi, m, x, idx) -> Candidate | None:
     done = x.validation[0] if x.validation else ("Every value that read the changed line items still matches the original, cell for cell." if change
                                                  else "Each object named here has a recorded decision, agreed with the owner: keep with the reason, or change.")
     notices = [f"Showing the {len(shown)} largest of {n}; the full list is under Evidence."] if n > len(shown) else []
-    cells = x.footprint_cells if x.footprint_cells else (sum(cells_of(o) for o in x.objects) or None if weight == "footprint" else None)
+    cells = x.footprint_cells if x.footprint_cells else (sum(size.values()) or None if weight == "footprint" else None)
     ex_mod, ex_name = (idx[first] if first in idx else (first, None)) if (first in idx or first in model.modules) else (None, None)
     return Candidate(key=f"test:{x.checks[0]}:{m.name}:{first}", kind="change" if change else "investigation",
                      title=f"{do} in {m.name} ({_unit(n, x.unit)})",
@@ -389,7 +403,7 @@ def candidates(er) -> list[Candidate]:
             if c:
                 mine.append(c)
         # every other finding of this model: a card from the finding itself, unless a hand-written card already answers its tests
-        idx = {f"{k[0]}.{k[1]}": k for k in m.model.line_items}
+        idx = _index(m)
         answered = {t for c in mine if not c.key.startswith(("hotspot-if:", "if:")) for t in c.tests}
         if_objects = {o for c in mine if c.key.startswith(("hotspot-if:", "if:")) for o in c.objects}
         for x in er.findings:
@@ -462,6 +476,8 @@ def select(er, top: int | None = TOP) -> dict:
     """Every candidate in rank order. `actions` is the plan: the first `top` that meet the bar (a prerequisite placed
     before the action that needs it, and counted). `rest` is everything else, each with the reason it is not on the
     plan. `top=None` puts every candidate that meets the bar on the plan."""
+    if top is not None and top < 1:
+        top = None                                     # no cap
     ranked = candidates(er)
     by_key = {c.key: c for c in ranked}
     for c in ranked:

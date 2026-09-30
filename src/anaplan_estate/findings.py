@@ -254,7 +254,7 @@ def _per_model(er, m, nid) -> list[Finding]:
             next_step="Complete the consumer and retention checks (pages, saved views, subsets, integrations, retained data) for the largest module's line items, then record a keep-or-retire recommendation for each.",
             implementation=["Prerequisites: consumer checks returned none and the owner accepts. Then make the proposed change in a development copy with the originals kept for comparison, reconcile named outputs over a cycle, owner sign-off, apply."],
             keep_design="A line item read only by a page is not spare. A calculation kept for audit or reconciliation can be right to keep even if nothing reads it now.",
-            importance="medium" if cells >= 10_000_000 else "low", complexity="medium", evidence=rows, rules=["G-UNUSED"], checks=[N("unread-line-items")],
+            importance="medium" if cells >= 10_000_000 else "low", complexity="medium", evidence=rows, rules=["G-UNUSED"], checks=[N("unread-line-items")], hits={N("unread-line-items"): n},
             validation=["Re-run this report after removal: the list shrinks to the line items a page needs."], footprint_cells=cells, footprint_effort=(eff if has_effort else None))
 
     # ---- maintain: exact duplicates
@@ -357,7 +357,7 @@ def _per_model(er, m, nid) -> list[Finding]:
             importance="low", complexity="low", evidence=rows, rules=["A-DAISY"], footprint_cells=cells)
 
     # ---- dependency: hubs
-    hubs = [(k, n) for k, n in g.hubs(20) if n >= 25]
+    hubs = [(k, n) for k, n in g.hubs(50) if n >= 25]
     if hubs:
         rows = ["| Line item | Direct readers | Downstream (transitive) | Modules downstream |", "|---|---|---|---|"]
         for k, n in hubs:
@@ -770,7 +770,7 @@ def build(er) -> list[Finding]:
         if not x.checks:
             x.checks = for_rules(x.rules)
         for num in x.checks:                       # a check that is not a lint rule is counted here, by its objects unless the finding said otherwise
-            if not BY_NUM[num].rules and num not in x.hits:
+            if not (BY_NUM[num].rules and BY_NUM[num].counted == "rules") and num not in x.hits:
                 x.hits[num] = len(x.objects)
     fs.sort(key=lambda x: (IMPORTANCE_ORDER[x.importance], STRENGTH_ORDER[x.strength], -(x.footprint_cells or 0), -(x.footprint_effort or 0)))
     for i, x in enumerate(fs, 1):

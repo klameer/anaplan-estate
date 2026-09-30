@@ -16,6 +16,10 @@
   where cells say nothing about what is at stake: a total that may be wrong
   ranks high, upkeep ranks low. Everything else is listed under the plan
   with the reason. The four grouped sections are gone.
+- Counts: a test that lost a column it relies on reports "not run" (never
+  "clear"); one object is one hit; two folders that clean to one model name
+  stay two models. The report declares its encoding and viewport, so a saved
+  copy opens correctly from disk and on a phone.
 - Home page and /tests: "Don't see a test you want?" with a way to get in
   touch.
 - Seven new tests: line items with a dimension their formula does not use
