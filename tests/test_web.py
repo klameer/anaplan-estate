@@ -28,7 +28,7 @@ def test_index_leads_with_the_example_then_the_form():
     r = client.get("/")
     h = r.text
     assert r.status_code == 200 and 'action="/report"' in h and client.get("/health").text == "ok" and client.head("/health").status_code == 200
-    assert "tests on your Anaplan estate</h1>" in h and "sets them out as an action plan" in h and "No account, nothing installed, nothing kept." in h
+    assert "tests on your estate</h1>" in h and "sets them out as an action plan" in h and "No account, nothing installed, nothing kept." in h
     assert h.index('href="/example#plan"') < h.index("Review my estate") < h.index("id=review") < h.index("deleted as soon as the report is sent")
     assert h.count('class="row model"') == 1 and "Add another model" in h and "Or upload one zip" in h
     assert "adds imports, exports and processes" in h and "adds module notes" in h
@@ -148,7 +148,7 @@ def test_index_says_what_to_upload_what_is_tested_and_what_comes_back_and_tests_
     from anaplan_estate import checks
     h = client.get("/").text
     n = len(checks.CHECKS)
-    assert f"<h1>Run {n} tests on your Anaplan estate</h1>" in h
+    assert f"<h1>Run {n} tests on your estate</h1>" in h
     order = [h.index("Upload your models"), h.index("<ol class=areas>"), h.index('href="/tests"'), h.index("action plan"), h.index('href="/example#plan"'), h.index("id=review")]
     assert order == sorted(order)                                   # do this, this happens, this comes back, then the two buttons, then the form
     for cat, cs in checks.by_category():
