@@ -49,8 +49,6 @@ RATE_PER_HOUR = int(os.environ.get("ESTATE_RATE_PER_HOUR", "30"))
 LINKS = {"feedback_url": os.environ.get("ESTATE_FEEDBACK_URL", ""), "source_url": os.environ.get("ESTATE_SOURCE_URL", ""), "help_url": os.environ.get("ESTATE_HELP_URL", "")}
 CONTACT_URL = os.environ.get("ESTATE_CONTACT_URL", "")          # a private way to reach the maintainer, for people who do not use GitHub
 BRAND_URL = os.environ.get("ESTATE_BRAND_URL", "https://codelessops.com")
-VIDEO_URL = os.environ.get("ESTATE_VIDEO_URL", "")              # an .mp4 walkthrough shown on the home page; unset by default so a local install makes no outside request
-VIDEO_POSTER = os.environ.get("ESTATE_VIDEO_POSTER", "")        # its still frame; defaults to the same address ending .jpg
 EXAMPLE_TARGET = ("CAL03 Opex", "Forecast Opex")               # the line item the example opens on: "what could changing this affect?"
 STATIC = Path(__file__).resolve().parent / "static"
 def _find_example() -> Path:
@@ -93,7 +91,7 @@ a{color:var(--accent)}code{font-family:var(--mono);font-size:12.5px;background:v
 footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:10px;font-size:12.5px;color:var(--muted)}
 .disclaimer{background:var(--notice);border-radius:6px;padding:8px 12px;font-size:13px;color:var(--ink);margin:0 0 12px}
 .brand{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}.brand a{color:var(--accent);text-decoration:none;font-weight:500}
-.cta{margin:18px 0 8px}.clip{margin:18px 0;max-width:340px}.clip video{display:block;width:100%;height:auto;border:1px solid var(--rule);border-radius:6px}.btn{display:inline-block;font:inherit;font-size:14px;padding:8px 14px;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none}
+.cta{margin:18px 0 8px}.btn{display:inline-block;font:inherit;font-size:14px;padding:8px 14px;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none}
 .btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600}.cta .btn{font-size:15px;padding:10px 18px;margin-right:8px}
 #review{scroll-margin-top:12px}.req{color:var(--accent);font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-left:4px}.opt{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-left:4px}
 .hint{display:block;font-size:11.5px;color:var(--muted);margin-top:3px}.row.missing input.li{outline:2px solid var(--err);outline-offset:1px}
@@ -191,8 +189,6 @@ def index(request: Request):
 <div><label>Actions export <span class=opt>optional</span></label><input type=file name=actions accept=".csv,text/csv"><span class=hint>adds imports, exports and processes</span></div>
 <div><label>Modules export <span class=opt>optional</span></label><input type=file name=modules accept=".csv,text/csv"><span class=hint>adds module notes</span></div>
 </div></div>"""
-    poster = VIDEO_POSTER or re.sub(r"\.mp4$", ".jpg", VIDEO_URL)
-    clip = f'<figure class=clip><video controls muted playsinline preload=none poster="{_e(poster)}" width=1080 height=1350><source src="{_e(VIDEO_URL)}" type="video/mp4"></video><figcaption class=fnote>36 seconds, no sound: the upload, the tests, the action plan and the change impact view.</figcaption></figure>' if VIDEO_URL else ""
     body = f"""<p class=brand><a href="{_e(BRAND_URL)}">CodelessOps</a> estate review</p>
 <h1>Run {len(checks_mod.CHECKS)} tests on your estate</h1>
 <p class=lead>Upload your models' line items, actions and modules. That runs {len(checks_mod.CHECKS)} tests across every model, in {len(checks_mod.CATEGORIES)} areas:</p>
@@ -202,7 +198,6 @@ def index(request: Request):
 <p class=lead>Simple and no fuss. No account, nothing installed, nothing kept.</p>
 <p class=cta><a class="btn primary" href="/example#plan">Explore an example</a> <a class="btn" href="#review">Review my estate</a></p>
 <p class=fnote>The example is a fictional four-model estate. Free and open source; <a href="#local">runs on your own machine</a> if you would rather nothing left it.</p>
-{clip}
 <section id=review><h2>Review my estate</h2>
 <p>Export each model's <strong>Line Items</strong> grid (Model Settings &gt; Modules &gt; Line Items tab &gt; Export, every column). Actions and Modules exports are optional.</p>
 <form method="post" action="/report" enctype="multipart/form-data" class="card" id=f novalidate>
