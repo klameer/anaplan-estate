@@ -67,6 +67,14 @@ def test_errors_are_plain_pages():
     assert r.status_code == 400 and "Line Items*.csv" in r.text and "was found" in r.text
 
 
+def test_walkthrough_clip_only_when_configured(monkeypatch):
+    assert "<video" not in client.get("/").text
+    monkeypatch.setattr(web, "VIDEO_URL", "https://example.test/clip.mp4")
+    h = client.get("/").text
+    assert 'src="https://example.test/clip.mp4"' in h and 'poster="https://example.test/clip.jpg"' in h and "preload=none" in h
+    assert h.index('href="/example#plan"') < h.index("<video") < h.index("id=review")
+
+
 def test_size_limit(monkeypatch):
     monkeypatch.setattr(web, "MAX_MB", 0.0001)
     data = _zip([EX / "1 Caldergate Data Hub"])

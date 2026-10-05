@@ -95,7 +95,8 @@ The same upload page can be run locally too: `pip install ".[web]"` then
 http://localhost:8000. `Dockerfile` and `railway.toml` describe the hosted
 service; limits and links come from `ESTATE_MAX_MB`, `ESTATE_MAX_MODELS`,
 `ESTATE_TIMEOUT_S`, `ESTATE_WORKERS`, `ESTATE_RATE_PER_HOUR`, `ESTATE_FEEDBACK_URL`,
-`ESTATE_SOURCE_URL`, `ESTATE_HELP_URL`.
+`ESTATE_SOURCE_URL`, `ESTATE_HELP_URL`. `ESTATE_VIDEO_URL` (an .mp4) shows a
+walkthrough clip on the home page; leave it unset and the page makes no outside request.
 
 Usage of the hosted service is counted without personal data: per report,
 the outcome, model and line-item counts, an upload-size bucket and the
