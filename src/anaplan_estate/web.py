@@ -64,7 +64,7 @@ EXAMPLE = _find_example()
 TOP = int(os.environ.get("ESTATE_TOP", "5"))                    # how many actions the plan opens on
 CHUNK = 1024 * 256
 
-app = FastAPI(title="Anaplan estate review", docs_url=None, redoc_url=None, openapi_url=None)
+app = FastAPI(title="CodelessOps estate review", docs_url=None, redoc_url=None, openapi_url=None)
 _slots = asyncio.Semaphore(WORKERS)
 _rate: dict[str, deque] = {}
 _rate_lock = threading.Lock()
@@ -110,7 +110,7 @@ def _e(s) -> str:
     return html.escape(str(s), quote=True)
 
 
-def _page(body: str, title: str = "Anaplan estate review") -> str:
+def _page(body: str, title: str = "CodelessOps estate review") -> str:
     return f"<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>{_e(title)}</title><style>{FONT_CSS}{PAGE_CSS}</style></head><body><div class=page>{body}</div></body></html>"
 
 
@@ -172,7 +172,7 @@ def tests_page():
                      f'<table class=ckt><thead><tr><th>#</th><th>Test</th><th>Needs</th></tr></thead><tbody>{rows}</tbody></table>')
     parts.append(_missing_test())
     parts.append('<p class=cta><a class="btn primary" href="/example#checks">See them run on an example</a> <a class="btn" href="/#review">Review my estate</a></p>')
-    return HTMLResponse(_page("".join(parts) + _footer(), "All the tests: Anaplan estate review"), headers={"Cache-Control": "public, max-age=3600"})
+    return HTMLResponse(_page("".join(parts) + _footer(), "All the tests: CodelessOps estate review"), headers={"Cache-Control": "public, max-age=3600"})
 
 
 @app.get("/checks")
@@ -190,7 +190,7 @@ def index(request: Request):
 <div><label>Modules export <span class=opt>optional</span></label><input type=file name=modules accept=".csv,text/csv"><span class=hint>adds module notes</span></div>
 </div></div>"""
     body = f"""<p class=brand><a href="{_e(BRAND_URL)}">CodelessOps</a> estate review</p>
-<h1>Run {len(checks_mod.CHECKS)} tests on your Anaplan estate</h1>
+<h1>Run {len(checks_mod.CHECKS)} tests on your estate</h1>
 <p class=lead>Upload your models' line items, actions and modules. That runs {len(checks_mod.CHECKS)} tests across every model, in {len(checks_mod.CATEGORIES)} areas:</p>
 {_areas()}
 <p class=more><a href="/tests">Here is the list of all {len(checks_mod.CHECKS)} tests</a></p>
