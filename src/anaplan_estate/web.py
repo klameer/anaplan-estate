@@ -125,7 +125,7 @@ def _footer() -> str:
     return "<footer>" + DISCLAIMER + "<p>" + " ".join(bits) + "</p></footer>"
 
 
-DISCLAIMER = ('<p class=disclaimer id=disclaimer><strong>Mandatory disclaimer!</strong> Since Anaplan Estate is an independent creation and not officially sanctioned by Anaplan, '
+DISCLAIMER = ('<p class=disclaimer id=disclaimer><strong>Mandatory disclaimer!</strong> Since the Model Health Check is an independent creation and not officially sanctioned by Anaplan, '
               'our lawyers kindly ask us to remind everyone that if you download or use it, you are doing so at your own risk. '
               'Anaplan is a trademark of Anaplan, Inc.; this project is not affiliated with, endorsed by or supported by Anaplan.</p>')
 
@@ -160,7 +160,7 @@ def _areas() -> str:
 def tests_page():
     """The full list: what each test looks for and which export or column it needs."""
     n = len(checks_mod.CHECKS)
-    parts = [f'<p class=brand><a href="{_e(BRAND_URL)}">CodelessOps</a> <a href="/">estate review</a></p>',
+    parts = [f'<p class=brand><a href="{_e(BRAND_URL)}">CodelessOps</a> <a href="/">Model Health Check</a></p>',
              f'<h1>All {n} tests</h1>',
              '<p class=lead>Every test run on your estate, by area. The report shows the result of each one on your exports: found, clear, or not run and why.</p>',
              '<p class=fnote>A test that needs an optional export or column is reported as not run without it, never as clear. A hit is a candidate to review, not a verdict.</p>',
@@ -189,7 +189,7 @@ def index(request: Request):
 <div><label>Actions export <span class=opt>optional</span></label><input type=file name=actions accept=".csv,text/csv"><span class=hint>adds imports, exports and processes</span></div>
 <div><label>Modules export <span class=opt>optional</span></label><input type=file name=modules accept=".csv,text/csv"><span class=hint>adds module notes</span></div>
 </div></div>"""
-    body = f"""<p class=brand><a href="{_e(BRAND_URL)}">CodelessOps</a> estate review</p>
+    body = f"""<p class=brand><a href="{_e(BRAND_URL)}">CodelessOps</a> Model Health Check</p>
 <h1>Model Health Check: run {len(checks_mod.CHECKS)} tests on your estate</h1>
 <p class=lead>Upload your models' line items, actions and modules. That runs {len(checks_mod.CHECKS)} tests across every model, in {len(checks_mod.CATEGORIES)} areas:</p>
 {_areas()}
@@ -198,7 +198,7 @@ def index(request: Request):
 <p class=lead>Simple and no fuss. No account, nothing installed, nothing kept.</p>
 <p class=cta><a class="btn primary" href="/example#plan">Explore an example</a> <a class="btn" href="#review">Run the Model Health Check</a></p>
 <p class=fnote>The example is a fictional four-model estate. Free and open source; <a href="#local">runs on your own machine</a> if you would rather nothing left it.</p>
-<section id=review><h2>Review my estate</h2>
+<section id=review><h2>Run the Model Health Check</h2>
 <p>Export each model's <strong>Line Items</strong> grid (Model Settings &gt; Modules &gt; Line Items tab &gt; Export, every column). Actions and Modules exports are optional.</p>
 <form method="post" action="/report" enctype="multipart/form-data" class="card" id=f novalidate>
 <div id=rows>{row}</div>
